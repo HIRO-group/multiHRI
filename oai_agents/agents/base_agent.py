@@ -397,6 +397,7 @@ class OAITrainer(ABC):
         return np.mean(tot_mean_reward), rew_per_layout
 
     def set_new_teammates(self):
+        # TODO Ava/Chihui adapt to multiple teammates
         for i in range(self.args.n_envs):
             # each layout has different potential teammates
             if type(self.teammates) == dict:

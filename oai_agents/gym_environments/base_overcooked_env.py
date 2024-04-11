@@ -81,6 +81,7 @@ class OvercookedGymEnv(Env):
         self.visualization_enabled = False
         self.step_count = 0
         self.reset_p_idx = None
+        # TODO Ava/Chihui adapt all teammate refs to teammates (plural)
         self.teammate = None
         self.p_idx = None
         self.joint_action = [None, None]
@@ -140,7 +141,8 @@ class OvercookedGymEnv(Env):
         return self.joint_action
 
     def set_teammate(self, teammate):
-        # TODO assert has attribute observation space
+        # TODO set multiple teammates
+        # TODO Ava/Chihui assert has attribute observation space
         self.teammate = teammate
         self.stack_frames_need_reset = [True, True]
 
@@ -195,6 +197,7 @@ class OvercookedGymEnv(Env):
         joint_action[self.p_idx] = action
         tm_obs = self.get_obs(p_idx=self.t_idx, enc_fn=self.teammate.encoding_fn)
         with th.no_grad():
+            # TODO Ava/Chihui Get actions from all teammates
             joint_action[self.t_idx] = self.teammate.predict(tm_obs, deterministic=self.deterministic)[0]
         joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
         self.joint_action = joint_action
