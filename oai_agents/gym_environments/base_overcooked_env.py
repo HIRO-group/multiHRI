@@ -82,9 +82,9 @@ class OvercookedGymEnv(Env):
         self.step_count = 0
         self.reset_p_idx = None
         # TODO Ava/Chihui adapt all teammate refs to teammates (plural)
-        self.teammate = None
+        self.teammates = []
         self.p_idx = None
-        self.joint_action = [None, None]
+        self.joint_action = []
         self.deterministic = deterministic
         if full_init:
             self.set_env_layout(**kwargs)
@@ -124,7 +124,7 @@ class OvercookedGymEnv(Env):
             self.env_idx = self.args.layout_names.index(self.layout_name)
 
         self.terrain = self.mdp.terrain_mtx
-        self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'], Subtasks.SUBTASKS_TO_IDS['unknown']]
+        self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'] for _ in range(self.mdp.num_players)]
         self.env.reset()
         self.valid_counters = [self.env.mdp.find_free_counters_valid_for_player(self.env.state, self.mlam, i) for i in
                                range(2)]
@@ -140,18 +140,21 @@ class OvercookedGymEnv(Env):
     def get_joint_action(self):
         return self.joint_action
 
-    def set_teammate(self, teammate):
+    def set_teammates(self, teammates):
         # TODO set multiple teammates
         # TODO Ava/Chihui assert has attribute observation space
-        self.teammate = teammate
-        self.stack_frames_need_reset = [True, True]
+        self.teammates = teammates
+        self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
 
     def stack_frames(self, p_idx):
         if p_idx == self.p_idx:
             return self.main_agent_stack_frames
-        elif self.teammate is not None:
+        elif len(self.teammates) != 0:
             # TODO Get rid of magic numbers
-            return self.teammate.policy.observation_space['visual_obs'].shape[0] == (27 * self.args.num_stack)
+            for t_idx in self.t_idxes:
+                if p_idx == t_idx:
+                    teammate = self.get_teammate_from_idx(t_idx)
+                    return teammate.policy.observation_space['visual_obs'].shape[0] == (27 * self.args.num_stack)
         return False
 
     def setup_visualization(self):
@@ -183,22 +186,29 @@ class OvercookedGymEnv(Env):
                 (self.teammate is not None and p_idx == self.t_idx and 'subtask_mask' in self.teammate.policy.observation_space.keys())):
             obs['subtask_mask'] = self.action_masks(p_idx)
 
-        if p_idx == self.t_idx and self.teammate is not None:
-            obs = {k: v for k, v in obs.items() if k in self.teammate.policy.observation_space.keys()}
-        # else:
-        #     obs = {k: v for k, v in obs.items() if k in self.observation_space.keys()}
+        
+        for t_idx in self.t_idxes:
+            if p_idx == t_idx:
+                teammate = self.get_teammate_from_idx(t_idx)
+                obs = {k: v for k, v in obs.items() if k in teammate.policy.observation_space.keys()}
+                break
         return obs
+    
+    def get_teammate_from_idx(self, idx):
+        return self.teammates[idx-1]
 
     def step(self, action):
-        if self.teammate is None:
+        if len(self.teammates) == 0:
             raise ValueError('set_teammate must be set called before starting game.')
-
-        joint_action = [None, None]
+        joint_action = [None for _ in range(self.mdp.num_players)]
         joint_action[self.p_idx] = action
-        tm_obs = self.get_obs(p_idx=self.t_idx, enc_fn=self.teammate.encoding_fn)
         with th.no_grad():
             # TODO Ava/Chihui Get actions from all teammates
-            joint_action[self.t_idx] = self.teammate.predict(tm_obs, deterministic=self.deterministic)[0]
+            for t_idx in self.t_idxes:
+                teammate = self.get_teammate_from_idx(t_idx)
+                tm_obs = self.get_obs(p_idx=t_idx, enc_fn=teammate.encoding_fn)
+                joint_action[t_idx] = teammate.predict(tm_obs, deterministic=self.deterministic)[0]
+
         joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
         self.joint_action = joint_action
 
@@ -207,8 +217,9 @@ class OvercookedGymEnv(Env):
         if self.is_eval_env:
             if self.prev_state and self.state.time_independent_equal(self.prev_state) and tuple(joint_action) == tuple(
                     self.prev_actions):
-                joint_action = [Action.STAY, Action.STAY]
-                joint_action[self.t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
+                joint_action = [Action.STAY for _ in range(self.mdp.num_players)]
+                for t_idx in self.t_idxes:
+                    joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
 
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
@@ -226,14 +237,13 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = p_idx
 
     def reset(self, p_idx=None):
-        if p_idx is not None:
-            self.p_idx = p_idx
-        elif self.reset_p_idx is not None:
-            self.p_idx = self.reset_p_idx
-        else:
-            self.p_idx = np.random.randint(2)
-        self.t_idx = 1 - self.p_idx
-        self.stack_frames_need_reset = [True, True]
+        self.p_idx = 0
+        
+        
+        self.t_idxes = [_ for _ in range(1, self.mdp.num_players)]
+        
+
+        self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
 
         self.env.reset()
         self.prev_state = None

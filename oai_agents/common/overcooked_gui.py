@@ -55,7 +55,7 @@ from scripts.train_agents import get_bc_and_human_proxy
 class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
-    def __init__(self, args, layout_name=None, agent=None, teammate=None, p_idx=0, horizon=400,
+    def __init__(self, args, layout_name=None, agent=None, teammates=None, p_idx=0, horizon=400,
                  trial_id=None, user_id=None, stream=None, outlet=None, fps=5):
         self.x = None
         self._running = True
@@ -72,13 +72,16 @@ class OvercookedGUI:
                                         is_eval_env=True, horizon=horizon)
         self.agent = agent
         self.p_idx = p_idx
-        self.env.set_teammate(teammate)
+        self.env.set_teammates(teammates)
         self.env.reset(p_idx=self.p_idx)
         if self.agent != 'human':
             self.agent.set_encoding_params(self.p_idx, self.args.horizon, env=self.env, is_haha=isinstance(self.agent, HierarchicalRL), tune_subtasks=False)
             self.env.encoding_fn = self.agent.encoding_fn
-        self.env.teammate.set_encoding_params(self.env.t_idx, self.args.horizon, env=self.env, is_haha=isinstance(self.env.teammate, HierarchicalRL), tune_subtasks=True)
-        self.teammate_name=teammate.name
+        
+        for t_idx, teammate in enumerate(self.env.teammates):
+            teammate.set_encoding_params(t_idx+1, self.args.horizon, env=self.env, is_haha=isinstance(teammate, HierarchicalRL), tune_subtasks=True)
+
+        self.teammate_names= [n.name for n in self.env.teammates]
         self.deterministic = True
         self.env.deterministic = self.deterministic
 
@@ -219,7 +222,7 @@ class OvercookedGUI:
             "dimension": (self.x, self.y, self.surface_size, self.tile_size, self.grid_shape, self.hud_size),
             "Unix_timestamp": time.time(),
             "LSL_timestamp": local_clock(),
-            "agent": self.teammate_name,
+            # "agent": self.teammate_name,
             "p_idx": self.p_idx,
             "collision": collision,
             "num_collisions": self.num_collisions

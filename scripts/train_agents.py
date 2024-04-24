@@ -275,7 +275,7 @@ if __name__ == '__main__':
     #get_behavioral_cloning_play_agent(args, training_steps=2e8)
     # print('GOT BCP', flush=True)
     #get_fcp_agent(args, training_steps=2e8)
-    get_test_fcp_pop(args)
+    # get_test_fcp_pop(args)
     # print('GOT FCP', flush=True)
     #get_hrl_worker(args, training_steps=1e8)
     #print('GOT WORK', flush=True)
@@ -288,7 +288,7 @@ if __name__ == '__main__':
     # get_fcp_population(args, 2e7)
     #get_fcp_agent(args, training_steps=1e8)
     # get_hrl_worker(args)
-    # get_hrl_agent(args, 5e7)
+    get_hrl_agent(args, teammate_types=('fcp', 'fcp'), training_steps=10)
 
     # create_test_population(args, 1e3)
     # create_pop_from_agents(args)
