@@ -37,7 +37,8 @@ if __name__ == "__main__":
 
     tm1 = load_agent(Path('/home/ava/Research/Codes/HMT/HAHA_fcp_219'), args)
     tm2 = load_agent(Path('/home/ava/Research/Codes/HMT/HAHA_fcp_219'), args)
-    teammates = [tm1, tm2]
+    tm3 = load_agent(Path('/home/ava/Research/Codes/HMT/HAHA_fcp_219'), args)
+    teammates = [tm1, tm2, tm3]
     agent = 'human'
 
     dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
