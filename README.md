@@ -1,4 +1,13 @@
-# Hierarchical Ad Hoc Agents (HAHA)
+# Multi HRI
+
+## Set up guide
+1. Follow setup instrcution for overcooked_ai from [here](https://github.com/HIRO-group/overcooked_ai)
+3. Clone this repository: `git clone git@github.com:HIRO-group/multiHRI.git`
+2. Activate conda env: `conda activate mhri`
+3. cd into the repo and run: `pip install -e .`
+
+
+<!-- # Hierarchical Ad Hoc Agents (HAHA)
 Code for [Hierarchical Reinforcement Learning for Ad Hoc Teaming](https://www.southampton.ac.uk/~eg/AAMAS2023/pdfs/p2337.pdf). Used to train a variety of agents for the overcooked domain.  
 
 ## Set up guide
@@ -9,7 +18,7 @@ Code for [Hierarchical Reinforcement Learning for Ad Hoc Teaming](https://www.so
 ***Note***: The above repo is a modified version of the original [overcooked ai repo](https://github.com/HumanCompatibleAI/overcooked_ai)
 5. Clone modified overcooked-ai repo: `git clone https://github.com/StephAO/HAHA.git'   
 6. Move to repo dir: `cd HAHA`
-7. Install this package: `pip install -e .`
+7. Install this package: `pip install -e .` -->
 
 ## General Structure
 - `oai_agents`: Main directory

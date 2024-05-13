@@ -35,9 +35,10 @@ if __name__ == "__main__":
     # agent = HumanManagerHRL(worker, args)
 
 
-    tm1 = load_agent(Path('/home/ava/Research/Codes/HMT/HAHA_fcp_219'), args)
-    tm2 = load_agent(Path('/home/ava/Research/Codes/HMT/HAHA_fcp_219'), args)
-    tm3 = load_agent(Path('/home/ava/Research/Codes/HMT/HAHA_fcp_219'), args)
+    # tm1 = load_agent(Path('/home/ava/Downloads/HAHA_fcp_219'), args)
+    tm1 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
+    tm2 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
+    tm3 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
     teammates = [tm1, tm2, tm3]
     agent = 'human'
 

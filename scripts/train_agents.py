@@ -268,7 +268,7 @@ def get_all_agents(args, training_steps=1e7, agents_to_train='all'):
 
 if __name__ == '__main__':
     args = get_arguments()
-    #get_selfplay_agent(args, training_steps=2e8)
+    get_selfplay_agent(args, training_steps=2e8)
     # print('GOT SP', flush=True)
     # get_bc_and_human_proxy(args, epochs=2)
     # print('GOT BC&HP', flush=True)
@@ -288,7 +288,7 @@ if __name__ == '__main__':
     # get_fcp_population(args, 2e7)
     #get_fcp_agent(args, training_steps=1e8)
     # get_hrl_worker(args)
-    get_hrl_agent(args, teammate_types=('fcp', 'fcp'), training_steps=10)
+    # get_hrl_agent(args, teammate_types=('fcp', 'fcp'), training_steps=10)
 
     # create_test_population(args, 1e3)
     # create_pop_from_agents(args)

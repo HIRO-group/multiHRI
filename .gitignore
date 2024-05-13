@@ -134,3 +134,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+multiHRI/oai_agent/data/
