@@ -208,7 +208,7 @@ class HierarchicalRL(OAIAgent):
         dist = self.manager.get_distribution(obs)
         probs = dist.distribution.probs
         probs = probs[0]
-        assert np.isclose(np.sum(probs.numpy()), 1)
+        assert np.isclose(np.sum(probs.cpu().numpy()), 1)
         if self.layout_name == None:
             raise ValueError("Set current layout using set_curr_layout before attempting manual adjustment")
 
