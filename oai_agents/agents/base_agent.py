@@ -342,7 +342,7 @@ class OAITrainer(ABC):
         if seed is not None:
             th.manual_seed(seed)
             np.random.seed(seed)
-
+        # TEAMMATE and POP(TODO): replace eval_teammates with eval_teammates_collection
         self.eval_teammates = None
 
         # For environment splits while training
@@ -353,6 +353,7 @@ class OAITrainer(ABC):
             for split in combinations(range(self.n_layouts), split_size + 1):
                 self.splits.append(split)
         self.env_setup_idx, self.weighted_ratio = 0, 0.9
+        # TODO: Claim eval_envs
 
     def _get_constructor_parameters(self):
         return dict(name=self.name, args=self.args)
@@ -373,12 +374,16 @@ class OAITrainer(ABC):
                  deterministic=False):
         tot_mean_reward = []
         rew_per_layout = {}
+        # TEAMMATE and POPULATION(TODO): replace eval_teammates with eval_teammates_collection
         use_layout_specific_tms = type(self.eval_teammates) == dict
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
+        # TODO: Assert self.eval_envs is not none
         for i, env in enumerate(self.eval_envs):
+            # TEAMMATE and POPULATION(TODO): replace eval_teammates with eval_teammates_collection
             tms = self.eval_teammates[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates
             rew_per_layout[env.layout_name] = []
             for tm in tms[:3]:
+                # TEAMMATE and POPULATION(TODO): replace set_teammate with set_teammates
                 env.set_teammate(tm)
                 for p_idx in [0, 1]:
                     env.set_reset_p_idx(p_idx)
@@ -398,6 +403,8 @@ class OAITrainer(ABC):
 
     def set_new_teammates(self):
         # TODO Ava/Chihui adapt to multiple teammates
+        # TEAMMATE and POPULATION(TODO): replace teammates with teammates_collection
+        # TEAMMATE and POPULATION(TODO): replace teammate with teammates
         for i in range(self.args.n_envs):
             # each layout has different potential teammates
             if type(self.teammates) == dict:
@@ -406,6 +413,7 @@ class OAITrainer(ABC):
             else: # all layouts share teammates
                 teammates = self.teammates
             teammate = teammates[np.random.randint(len(teammates))]
+            # TEAMMATE and POPULATION(TODO): replace set_teammate with set_teammates
             self.env.env_method('set_teammate', teammate, indices=i)
 
     def get_agents(self) -> List[OAIAgent]:

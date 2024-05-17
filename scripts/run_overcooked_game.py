@@ -9,6 +9,7 @@ from oai_agents.common.overcooked_gui import OvercookedGUI
 
 
 if __name__ == "__main__":
+    # TEAMMATE and POP(TODO): replace --teammate by --teammates after figuring out how to assign multiple teammates in an argument.
     """
     Sample commands
     python scripts/run_overcooked_game.py --agent human --teammate agent_models/HAHA

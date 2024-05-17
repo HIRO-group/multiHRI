@@ -14,7 +14,7 @@ from pathlib import Path
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_util import make_vec_env
 
-
+# TEAMMATE and POP(TODO): implement a function for agents_collection, which has a dictionary or a list of agents group, to use this function
 def calculate_agent_pairing_score_matrix(agents, args):
     eval_envs_kwargs = {'is_eval_env': True, 'args': args}
     eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(len(args.layout_names))]
@@ -65,6 +65,7 @@ def combine_populations(args):  # , pop_names, new_name):
 
 
 ### EVALUATION AGENTS ###
+# TEAMMATE and POP(TODO): implement a similar function, called get_eval_teammates_collection
 def get_eval_teammates(args):
     sp = get_selfplay_agent(args, training_steps=1e7)
     bcs, human_proxies = get_bc_and_human_proxy(args)
@@ -93,6 +94,7 @@ def get_selfplay_agent(args, training_steps=1e7, tag=None):
 
 
 # BC and Human Proxy
+# TEAMMATE and POP(TODO): implement a similar function, which is called for get_bc__and_human_proxy_collection
 def get_bc_and_human_proxy(args, epochs=300):
     bcs, human_proxies = {}, {}
     # This is required because loading agents will overwrite args.layout_names
@@ -113,6 +115,7 @@ def get_bc_and_human_proxy(args, epochs=300):
 
 
 # BCP
+# TEAMMATE and POP(TODO): implement a similar function, which is called for get_multi_behavioral_cloning_play_agent
 def get_behavioral_cloning_play_agent(args, seed=100, training_steps=1e7):
     name = f'bcp_{seed}'
     try:

@@ -182,6 +182,16 @@ class OvercookedGymEnv(Env):
             else:
                 obs['visual_obs'], _ = self.stackedobs[p_idx].update(obs['visual_obs'], np.array([done]), [{}])
             obs['visual_obs'] = obs['visual_obs'].squeeze()
+        
+        # TEAMMATE and POP(TODO): uncomment and complete the following instructions
+        # if self.return_completed_subtasks:
+        #     obs['subtask_mask'] = self.action_masks(p_idx)
+        
+        # if self.teammates is not None:
+        #     # TEAMMATE and POP(TODO): tm = Get_a_teammate_by_id(p_idx)
+        #     # TEAMMATE and POP(TODO):   check if 'subtask_mask' in self.teammate.policy.observation_space.keys()
+        #     #                               if yes: obs['subtask_mask'] = self.action_masks(p_idx)
+
         if (self.return_completed_subtasks or
                 (self.teammate is not None and p_idx == self.t_idx and 'subtask_mask' in self.teammate.policy.observation_space.keys())):
             obs['subtask_mask'] = self.action_masks(p_idx)
@@ -195,6 +205,7 @@ class OvercookedGymEnv(Env):
         return obs
     
     def get_teammate_from_idx(self, idx):
+        # p_idx(TODO): bring back the randomized id system and adapt it to be in multi-teammates systems.
         return self.teammates[idx-1]
 
     def step(self, action):
@@ -237,7 +248,17 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = p_idx
 
     def reset(self, p_idx=None):
-        self.p_idx = 0
+        # p_idx(TODO): bring back the randomized id system shown as below and adapt it to be in multi-teammates systems.
+        # if p_idx is not None:
+        #     self.p_idx = p_idx
+        # elif self.reset_p_idx is not None:
+        #     self.p_idx = self.reset_p_idx
+        # else:
+        #     self.p_idx = np.random.randint(2)
+        # self.t_idx = 1 - self.p_idx
+        # self.stack_frames_need_reset = [True, True]
+        # self.p_idx = 0
+        # self.env.reset()
         
         
         self.t_idxes = [_ for _ in range(1, self.mdp.num_players)]
