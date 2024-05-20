@@ -158,6 +158,7 @@ class OvercookedGymEnv(Env):
         return False
 
     def setup_visualization(self):
+        print("SETUP_VISUALIZATION")
         self.visualization_enabled = True
         pygame.init()
         surface = StateVisualizer().render_state(self.state, grid=self.env.mdp.terrain_mtx)
@@ -170,6 +171,7 @@ class OvercookedGymEnv(Env):
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
 
     def get_obs(self, p_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
+        print("GET_OBS")
         enc_fn = enc_fn or self.encoding_fn
         obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=p_idx,
                      goal_objects=goal_objects)
@@ -183,25 +185,37 @@ class OvercookedGymEnv(Env):
                 obs['visual_obs'], _ = self.stackedobs[p_idx].update(obs['visual_obs'], np.array([done]), [{}])
             obs['visual_obs'] = obs['visual_obs'].squeeze()
         
-        # TEAMMATE and POP(TODO): uncomment and complete the following instructions
+        # TEAMMATE and POP(DONE): 
+        # REPLACE
+        # if (self.return_completed_subtasks or
+        #         (self.teammate is not None and p_idx == self.t_idx and 'subtask_mask' in self.teammate.policy.observation_space.keys())):
+        #     obs['subtask_mask'] = self.action_masks(p_idx)
+        # BY
         # if self.return_completed_subtasks:
         #     obs['subtask_mask'] = self.action_masks(p_idx)
-        
         # if self.teammates is not None:
-        #     # TEAMMATE and POP(TODO): tm = Get_a_teammate_by_id(p_idx)
-        #     # TEAMMATE and POP(TODO):   check if 'subtask_mask' in self.teammate.policy.observation_space.keys()
-        #     #                               if yes: obs['subtask_mask'] = self.action_masks(p_idx)
-
-        if (self.return_completed_subtasks or
-                (self.teammate is not None and p_idx == self.t_idx and 'subtask_mask' in self.teammate.policy.observation_space.keys())):
+        #     for t_idx in self.t_idxes:
+        #         if p_idx == t_idx:
+        #             teammate = self.get_teammate_from_idx(p_idx)    
+        #             if 'subtask_mask' in teammate.policy.observation_space.keys():
+        #                 obs['subtask_mask'] = self.action_masks(p_idx)
+        #                 break
+        if self.return_completed_subtasks:
             obs['subtask_mask'] = self.action_masks(p_idx)
-
+        elif self.teammates is not None:
+            for t_idx in self.t_idxes:
+                if p_idx == t_idx:
+                    teammate = self.get_teammate_from_idx(p_idx)    
+                    if 'subtask_mask' in teammate.policy.observation_space.keys():
+                        obs['subtask_mask'] = self.action_masks(p_idx)
+                        break
         
         for t_idx in self.t_idxes:
             if p_idx == t_idx:
                 teammate = self.get_teammate_from_idx(t_idx)
                 obs = {k: v for k, v in obs.items() if k in teammate.policy.observation_space.keys()}
                 break
+
         return obs
     
     def get_teammate_from_idx(self, idx):
@@ -209,6 +223,7 @@ class OvercookedGymEnv(Env):
         return self.teammates[idx-1]
 
     def step(self, action):
+        print("STEP")
         if len(self.teammates) == 0:
             raise ValueError('set_teammate must be set called before starting game.')
         joint_action = [None for _ in range(self.mdp.num_players)]

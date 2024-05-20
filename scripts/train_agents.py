@@ -94,7 +94,7 @@ def get_selfplay_agent(args, training_steps=1e7, tag=None):
 
 
 # BC and Human Proxy
-# TEAMMATE and POP(TODO): implement a similar function, which is called for get_bc__and_human_proxy_collection
+# TEAMMATE and POP(TODO): implement a similar function, which is called for get_bc_and_human_proxy_collection
 def get_bc_and_human_proxy(args, epochs=300):
     bcs, human_proxies = {}, {}
     # This is required because loading agents will overwrite args.layout_names
@@ -190,8 +190,10 @@ def get_fcp_population(args, training_steps=2e7):
 
 def get_fcp_agent(args, seed=100, training_steps=1e7):
     name = f'fcp_{seed}'
-    teammates = get_fcp_population(args, training_steps)
-    fcp_trainer = RLAgentTrainer(teammates, args, name=name, use_subtask_counts=False, use_policy_clone=False,
+    # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+    teammates_collection = get_fcp_population(args, training_steps)
+    # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+    fcp_trainer = RLAgentTrainer(teammates_collection, args, name=name, use_subtask_counts=False, use_policy_clone=False,
                                  seed=2602, deterministic=False)
     fcp_trainer.train_agents(train_timesteps=training_steps)
     return fcp_trainer.get_agents()[0]
@@ -206,11 +208,14 @@ def get_hrl_worker(args, teammate_type='fcp', seed=100, training_steps=1e7):
         # eval_tms = get_eval_teammates(args)
 
         if teammate_type == 'bcp':
-            teammates, _ = get_bc_and_human_proxy(args)
+            # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+            teammates_collection, _ = get_bc_and_human_proxy(args)
         elif teammate_type == 'fcp':
-            teammates = get_fcp_population(args, training_steps)
+            # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+            teammates_collection = get_fcp_population(args, training_steps)
 
-        #teammates = get_fcp_population(args, 1e7)
+        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+        # teammates_collection = get_fcp_population(args, 1e7)
         # Create subtask worker
         env_kwargs = {'stack_frames': False, 'full_init': False, 'args': args}
         env = make_vec_env(OvercookedSubtaskGymEnv, n_envs=args.n_envs, env_kwargs=env_kwargs,
@@ -218,7 +223,8 @@ def get_hrl_worker(args, teammate_type='fcp', seed=100, training_steps=1e7):
         env_kwargs['full_init'] = True
         eval_envs = [OvercookedSubtaskGymEnv(**{'env_index': n, 'is_eval_env': True, **env_kwargs})
                      for n in range(len(args.layout_names))]
-        worker_trainer = RLAgentTrainer(teammates, args, name=name, env=env, eval_envs=eval_envs,
+        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+        worker_trainer = RLAgentTrainer(teammates_collection, args, name=name, env=env, eval_envs=eval_envs,
                                         use_subtask_eval=True)
         worker_trainer.train_agents(train_timesteps=training_steps)
         worker = worker_trainer.get_agents()[0]
@@ -236,12 +242,15 @@ def get_hrl_agent(args, teammate_types=('bcp', 'bcp'), training_steps=1e7, seed=
     worker = get_hrl_worker(args, teammate_types[0], seed=seed)#, training_steps=15e6)
     # Get teammates
     if teammate_types[1] == 'bcp':
-        teammates, _ = get_bc_and_human_proxy(args)
+        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+        teammates_collection, _ = get_bc_and_human_proxy(args)
     elif teammate_types[1] == 'fcp':
-        teammates = get_fcp_population(args, training_steps)
+        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+        teammates_collection = get_fcp_population(args, training_steps)
 
     # Create manager and manager env
-    manager_trainer = RLManagerTrainer(worker, teammates, args, use_subtask_counts=False,
+    # TEAMMATE and POP(DONE): replace teammates by teammates_collection
+    manager_trainer = RLManagerTrainer(worker, teammates_collection, args, use_subtask_counts=False,
                                        name=f'manager_{teammate_types}', inc_sp=False, use_policy_clone=False, seed=2602)
 
     # Iteratively train worker and manager
