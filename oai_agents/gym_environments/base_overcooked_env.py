@@ -143,6 +143,7 @@ class OvercookedGymEnv(Env):
     def set_teammates(self, teammates):
         # TODO set multiple teammates
         # TODO Ava/Chihui assert has attribute observation space
+        assert isinstance( teammates, list)
         self.teammates = teammates
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
 
@@ -158,7 +159,6 @@ class OvercookedGymEnv(Env):
         return False
 
     def setup_visualization(self):
-        print("SETUP_VISUALIZATION")
         self.visualization_enabled = True
         pygame.init()
         surface = StateVisualizer().render_state(self.state, grid=self.env.mdp.terrain_mtx)
@@ -171,7 +171,6 @@ class OvercookedGymEnv(Env):
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
 
     def get_obs(self, p_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
-        print("GET_OBS")
         enc_fn = enc_fn or self.encoding_fn
         obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=p_idx,
                      goal_objects=goal_objects)
@@ -223,7 +222,6 @@ class OvercookedGymEnv(Env):
         return self.teammates[idx-1]
 
     def step(self, action):
-        print("STEP")
         if len(self.teammates) == 0:
             raise ValueError('set_teammate must be set called before starting game.')
         joint_action = [None for _ in range(self.mdp.num_players)]
@@ -275,7 +273,7 @@ class OvercookedGymEnv(Env):
         # self.p_idx = 0
         # self.env.reset()
         
-        
+        self.p_idx = 0
         self.t_idxes = [_ for _ in range(1, self.mdp.num_players)]
         
 

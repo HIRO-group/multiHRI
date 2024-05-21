@@ -420,6 +420,8 @@ class OAITrainer(ABC):
             # BY
             # teammates = teammates_collection[np.random.randint(len(teammates_collection))]
             teammates = teammates_collection[np.random.randint(len(teammates_collection))]
+            if not isinstance(teammates, list):
+                teammates = [teammates]
             # TEAMMATE and POPULATION(DONE): replace set_teammate with set_teammates
             self.env.env_method('set_teammates', teammates, indices=i)
 
