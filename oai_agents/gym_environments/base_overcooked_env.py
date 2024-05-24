@@ -16,6 +16,7 @@ from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import torch as th
+import random
 
 # DEPRECATED NOTE: For counter circuit, trained workers with 8, but trained manager with 4. Only 4 spots are useful add
 # more during subtask worker training for robustness
@@ -218,8 +219,10 @@ class OvercookedGymEnv(Env):
         return obs
     
     def get_teammate_from_idx(self, idx):
-        # p_idx(TODO): bring back the randomized id system and adapt it to be in multi-teammates systems.
-        return self.teammates[idx-1]
+        # p_idx(DONE): bring back the randomized id system and adapt it to be in multi-teammates systems.
+        assert idx in self.t_idxes
+        id = self.t_idxes.index(idx)
+        return self.teammates[id]
 
     def step(self, action):
         if len(self.teammates) == 0:
@@ -261,22 +264,32 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = p_idx
 
     def reset(self, p_idx=None):
-        # p_idx(TODO): bring back the randomized id system shown as below and adapt it to be in multi-teammates systems.
+        # p_idx(DONE): bring back the randomized id system shown as below and adapt it to be in multi-teammates systems.
         # if p_idx is not None:
         #     self.p_idx = p_idx
         # elif self.reset_p_idx is not None:
         #     self.p_idx = self.reset_p_idx
         # else:
-        #     self.p_idx = np.random.randint(2)
+        #     self.p_idx = np.random.randint(self.mdp.num_players)
         # self.t_idx = 1 - self.p_idx
         # self.stack_frames_need_reset = [True, True]
-        # self.p_idx = 0
-        # self.env.reset()
-        
-        self.p_idx = 0
-        self.t_idxes = [_ for _ in range(1, self.mdp.num_players)]
-        
 
+        # self.p_idx = 0
+        # self.t_idxes = [_ for _ in range(1, self.mdp.num_players)]
+
+        # Step 1: Assign a list by starting from 0 to self.mdp.num_players - 1
+        teammate_list = list(range(self.mdp.num_players))
+        
+        # Step 2: Get a random number from 0 to self.mdp.num_players - 1, and assign it to self.p_idx
+        self.p_idx = random.randint(0, self.mdp.num_players - 1)
+        
+        # Step 3: Remove self.p_idx from the list
+        teammate_list.remove(self.p_idx)
+        
+        # Step 4: Shuffle the list and assign it to self.t_idexes
+        random.shuffle(teammate_list)
+        self.t_idxes = teammate_list
+        
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
 
         self.env.reset()
