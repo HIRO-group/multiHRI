@@ -190,9 +190,7 @@ def get_fcp_population(args, training_steps=2e7):
 
 def get_fcp_agent(args, seed=100, training_steps=1e7):
     name = f'fcp_{seed}'
-    # TEAMMATE and POP(DONE): replace teammates by teammates_collection
     teammates_collection = get_fcp_population(args, training_steps)
-    # TEAMMATE and POP(DONE): replace teammates by teammates_collection
     fcp_trainer = RLAgentTrainer(teammates_collection, args, name=name, use_subtask_counts=False, use_policy_clone=False,
                                  seed=2602, deterministic=False)
     fcp_trainer.train_agents(train_timesteps=training_steps)
@@ -208,13 +206,10 @@ def get_hrl_worker(args, teammate_type='fcp', seed=100, training_steps=1e7):
         # eval_tms = get_eval_teammates(args)
 
         if teammate_type == 'bcp':
-            # TEAMMATE and POP(DONE): replace teammates by teammates_collection
             teammates_collection, _ = get_bc_and_human_proxy(args)
         elif teammate_type == 'fcp':
-            # TEAMMATE and POP(DONE): replace teammates by teammates_collection
             teammates_collection = get_fcp_population(args, training_steps)
 
-        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
         # teammates_collection = get_fcp_population(args, 1e7)
         # Create subtask worker
         env_kwargs = {'stack_frames': False, 'full_init': False, 'args': args}
@@ -223,7 +218,6 @@ def get_hrl_worker(args, teammate_type='fcp', seed=100, training_steps=1e7):
         env_kwargs['full_init'] = True
         eval_envs = [OvercookedSubtaskGymEnv(**{'env_index': n, 'is_eval_env': True, **env_kwargs})
                      for n in range(len(args.layout_names))]
-        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
         worker_trainer = RLAgentTrainer(teammates_collection, args, name=name, env=env, eval_envs=eval_envs,
                                         use_subtask_eval=True)
         worker_trainer.train_agents(train_timesteps=training_steps)
@@ -242,14 +236,11 @@ def get_hrl_agent(args, teammate_types=('bcp', 'bcp'), training_steps=1e7, seed=
     worker = get_hrl_worker(args, teammate_types[0], seed=seed)#, training_steps=15e6)
     # Get teammates
     if teammate_types[1] == 'bcp':
-        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
         teammates_collection, _ = get_bc_and_human_proxy(args)
     elif teammate_types[1] == 'fcp':
-        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
         teammates_collection = get_fcp_population(args, training_steps)
 
     # Create manager and manager env
-    # TEAMMATE and POP(DONE): replace teammates by teammates_collection
     manager_trainer = RLManagerTrainer(worker, teammates_collection, args, use_subtask_counts=False,
                                        name=f'manager_{teammate_types}', inc_sp=False, use_policy_clone=False, seed=2602)
 

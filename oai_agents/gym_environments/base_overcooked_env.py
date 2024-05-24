@@ -185,21 +185,6 @@ class OvercookedGymEnv(Env):
                 obs['visual_obs'], _ = self.stackedobs[p_idx].update(obs['visual_obs'], np.array([done]), [{}])
             obs['visual_obs'] = obs['visual_obs'].squeeze()
         
-        # TEAMMATE and POP(DONE): 
-        # REPLACE
-        # if (self.return_completed_subtasks or
-        #         (self.teammate is not None and p_idx == self.t_idx and 'subtask_mask' in self.teammate.policy.observation_space.keys())):
-        #     obs['subtask_mask'] = self.action_masks(p_idx)
-        # BY
-        # if self.return_completed_subtasks:
-        #     obs['subtask_mask'] = self.action_masks(p_idx)
-        # if self.teammates is not None:
-        #     for t_idx in self.t_idxes:
-        #         if p_idx == t_idx:
-        #             teammate = self.get_teammate_from_idx(p_idx)    
-        #             if 'subtask_mask' in teammate.policy.observation_space.keys():
-        #                 obs['subtask_mask'] = self.action_masks(p_idx)
-        #                 break
         if self.return_completed_subtasks:
             obs['subtask_mask'] = self.action_masks(p_idx)
         elif self.teammates is not None:

@@ -15,14 +15,12 @@ VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a provided agent '''
-    # TEAMMATE and POP(DONE): replace teammates by teammates_collection
     def __init__(self, teammates_collection, args, selfplay=False, name=None, env=None, eval_envs=None,
                  use_cnn=False, use_lstm=False, use_frame_stack=False, taper_layers=False, use_subtask_counts=False,
                  use_policy_clone=False, num_layers=2, hidden_dim=256, use_subtask_eval=False, use_hrl=False,
                  fcp_ck_rate=None, deterministic=False, seed=None):
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
-        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
         if not teammates_collection and not selfplay:
             raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
         self.args = args
@@ -85,16 +83,9 @@ class RLAgentTrainer(OAITrainer):
         #                           The length of the list is the number of teammate agents,required by the env.
         self.agents = [self.learning_agent]
 
-        # TEAMMATE and POP(DONE): replace teammates by teammates_collection
         self.teammates_collection = teammates_collection if teammates_collection else []
         if selfplay:
-            # TEAMMATE and POP(DONE): replace teammates by teammates_collection
             self.teammates_collection += self.agents
-        # TEAMMATE and POP(DONE): 
-        # REPLACE
-        # self.eval_teammates = self.teammates
-        # BY
-        # self.eval_teammates = self.teammates_collection
         self.eval_teammates_collection = self.teammates_collection
         self.epoch, self.total_game_steps = 0, 0
         self.best_score, self.best_succ_rate, self.best_training_rew = -1, 0, float('-inf')
@@ -155,21 +146,11 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.use_subtask_eval:
                     env_success = []
-                    # TEAMMATE and POP(DONE): replace eval_teammates by eval_teammates_collection
                     use_layout_specific_tms = type(self.eval_teammates_collection) == dict
                     avg_succ_rate = []
                     for env in self.eval_envs:
-                        # TEAMMATE and POP(DONE): replace eval_teammates by eval_teammates_collection
-                        # TEAMMATE and POP(DONE): replace tms by tms_c
                         tms_c = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
-                        # TEAMMATE and POP(DONE): 
-                        # REPLACE
-                        # for tm in tms:
-                        # BY
-                        # for tms in tms_c:
                         for tms in tms_c:
-                            # TEAMMATE and POP(DONE): replace tm by tms
-                            # TEAMMATE and POP(DONE): replace set_teammate by set_teammates
                             env.set_teammates(tms)
                             asr = env.evaluate(self.learning_agent)
                             avg_succ_rate.append(asr)

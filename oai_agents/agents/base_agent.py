@@ -342,9 +342,8 @@ class OAITrainer(ABC):
         if seed is not None:
             th.manual_seed(seed)
             np.random.seed(seed)
-        # TEAMMATE and POP(DONE): replace eval_teammates with eval_teammates_collection
+        
         self.eval_teammates_collection = None
-        # TEAMMATE and POP(DONE): Add self.teammates_collection
         self.teammates_collection = None
 
         # For environment splits while training
@@ -376,16 +375,13 @@ class OAITrainer(ABC):
                  deterministic=False):
         tot_mean_reward = []
         rew_per_layout = {}
-        # TEAMMATE and POPULATION(DONE): replace eval_teammates with eval_teammates_collection
         use_layout_specific_tms = type(self.eval_teammates_collection) == dict
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
         # TODO: Assert self.eval_envs is not none
         for i, env in enumerate(self.eval_envs):
-            # TEAMMATE and POPULATION(DONE): replace eval_teammates with eval_teammates_collection
             tms_c = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
             rew_per_layout[env.layout_name] = []
             for tms in tms_c[:3]:
-                # TEAMMATE and POPULATION(DONE): replace set_teammate with set_teammates
                 env.set_teammates(tms)
                 for p_idx in [0, 1]:
                     env.set_reset_p_idx(p_idx)
@@ -407,22 +403,14 @@ class OAITrainer(ABC):
         # TODO Ava/Chihui adapt to multiple teammates
         for i in range(self.args.n_envs):
             # each layout has different potential teammates
-            # TEAMMATE and POPULATION(DONE): replace teammates by teammates_collection
             if type(self.teammates_collection) == dict:
                 layout_name = self.env.env_method('get_layout_name', indices=i)[0]
-                # TEAMMATE and POPULATION(DONE): replace teammates by teammates_collection
                 teammates_collection = self.teammates_collection[layout_name]
             else: # all layouts share teammates
-                # TEAMMATE and POPULATION(DONE): replace teammates by teammates_collection
                 teammates_collection = self.teammates_collection
-            # TEAMMATE and POPULATION(DONE): replace 
-            # teammate = teammates[np.random.randint(len(teammates))]
-            # BY
-            # teammates = teammates_collection[np.random.randint(len(teammates_collection))]
             teammates = teammates_collection[np.random.randint(len(teammates_collection))]
             if not isinstance(teammates, list):
                 teammates = [teammates]
-            # TEAMMATE and POPULATION(DONE): replace set_teammate with set_teammates
             self.env.env_method('set_teammates', teammates, indices=i)
 
     def get_agents(self) -> List[OAIAgent]:
