@@ -79,15 +79,17 @@ def get_eval_teammates(args):
 ### BASELINES ###
 
 # SP
-def get_selfplay_agent(args, training_steps=1e7, tag=None):
+def get_selfplay_agent(args, training_steps=1e7, tag=None, force_training=False):
     name = 'sp_det'
     try:
+        if force_training:
+            raise FileNotFoundError
         tag = tag or 'best'
         agents = RLAgentTrainer.load_agents(args, name=name, tag=tag)
     except FileNotFoundError as e:
         print(f'Could not find saved selfplay agent, creating them from scratch...\nFull Error: {e}')
         selfplay_trainer = RLAgentTrainer([], args, selfplay=True, name=name, seed=678, use_frame_stack=False,
-                                          use_lstm=False, use_cnn=False, deterministic=False)
+                                          use_lstm=False, use_cnn=False, deterministic=False, epoch_timesteps=args.epoch_timesteps)
         selfplay_trainer.train_agents(train_timesteps=training_steps)
         agents = selfplay_trainer.get_agents()
     return agents
@@ -191,8 +193,9 @@ def get_fcp_population(args, training_steps=2e7):
 def get_fcp_agent(args, seed=100, training_steps=1e7):
     name = f'fcp_{seed}'
     teammates_collection = get_fcp_population(args, training_steps)
+
     fcp_trainer = RLAgentTrainer(teammates_collection, args, name=name, use_subtask_counts=False, use_policy_clone=False,
-                                 seed=2602, deterministic=False)
+                                 seed=2602, deterministic=False, epoch_timesteps=args.epoch_timesteps)
     fcp_trainer.train_agents(train_timesteps=training_steps)
     return fcp_trainer.get_agents()[0]
 
@@ -271,8 +274,18 @@ def get_all_agents(args, training_steps=1e7, agents_to_train='all'):
 
 if __name__ == '__main__':
     args = get_arguments()
-    # get_selfplay_agent(args, training_steps=2e8)
-    get_selfplay_agent(args, training_steps=1)
+    args.layout_names = ['cramped_room']
+    args.n_envs = 1
+    args.epoch_timesteps = 1
+    args.teammates_len = 1
+
+    get_selfplay_agent(args, training_steps=20, force_training=True)
+
+
+    # get_fcp_agent(args, training_steps=1)
+    
+
+
     # print('GOT SP', flush=True)
     # get_bc_and_human_proxy(args, epochs=2)
     # print('GOT BC&HP', flush=True)

@@ -34,6 +34,9 @@ def get_arguments(additional_args=[]):
                         help='Wandb mode. One of ["online", "offline", "disabled"')
     parser.add_argument('--wandb-ent', type=str,
                         help='Wandb entity to log to.')
+    
+    parser.add_argument('--epoch-timesteps', type=int, default=1e6)
+    parser.add_argument('--teammates-len',  type=int, default=1)
 
     parser.add_argument('-c', type=str, default='', help='for stupid reasons, but dont delete')
     parser.add_argument('args', nargs='?', type=str, default='', help='')

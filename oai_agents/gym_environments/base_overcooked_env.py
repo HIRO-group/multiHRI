@@ -61,6 +61,7 @@ class OvercookedGymEnv(Env):
         else:
             self.obs_dict['visual_obs'] = spaces.Box(0, 20, (self.num_enc_channels, *self.grid_shape), dtype=int)
             # Stacked obs for players
+            # num_envs, num_stack: 3, observation_space, :param channels_order: If "first", stack on first image dimension.
             self.stackedobs = [StackedObservations(1, args.num_stack, self.obs_dict['visual_obs'], 'first'),
                                StackedObservations(1, args.num_stack, self.obs_dict['visual_obs'], 'first')]
         if stack_frames:
@@ -75,16 +76,15 @@ class OvercookedGymEnv(Env):
         # Default stack frames to false since we don't currently know who is playing what - properly set in reset
         self.main_agent_stack_frames = stack_frames
         self.stack_frames_need_reset = [True, True]
-        # Set up Action Space
         self.action_space = spaces.Discrete(len(Action.ALL_ACTIONS))
 
         self.shape_rewards = shape_rewards
         self.visualization_enabled = False
         self.step_count = 0
         self.reset_p_idx = None
-        # TODO Ava/Chihui adapt all teammate refs to teammates (plural)
-        self.teammates = []
+
         self.p_idx = None
+        self.teammates = []
         self.joint_action = []
         self.deterministic = deterministic
         if full_init:
@@ -101,6 +101,7 @@ class OvercookedGymEnv(Env):
         :param horizon: horizon for environment. Will default to args.horizon if not provided
         '''
         assert env_index is not None or layout_name is not None or base_env is not None
+
 
         if base_env is None:
             self.env_idx = env_index
@@ -142,17 +143,18 @@ class OvercookedGymEnv(Env):
         return self.joint_action
 
     def set_teammates(self, teammates):
-        # TODO set multiple teammates
-        # TODO Ava/Chihui assert has attribute observation space
-        assert isinstance( teammates, list)
+        assert isinstance(teammates, list)
         self.teammates = teammates
+
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
+
 
     def stack_frames(self, p_idx):
         if p_idx == self.p_idx:
             return self.main_agent_stack_frames
+        
         elif len(self.teammates) != 0:
-            # TODO Get rid of magic numbers
+            
             for t_idx in self.t_idxes:
                 if p_idx == t_idx:
                     teammate = self.get_teammate_from_idx(t_idx)
@@ -171,38 +173,40 @@ class OvercookedGymEnv(Env):
         return get_doable_subtasks(self.state, self.prev_subtask[p_idx], self.layout_name, self.terrain, p_idx,
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
 
-    def get_obs(self, p_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
+    def get_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
+        
         enc_fn = enc_fn or self.encoding_fn
-        obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=p_idx,
+        obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=c_idx,
                      goal_objects=goal_objects)
 
-        if self.stack_frames(p_idx):
+        if self.stack_frames(c_idx):
             obs['visual_obs'] = np.expand_dims(obs['visual_obs'], 0)
-            if self.stack_frames_need_reset[p_idx]:  # On reset
-                obs['visual_obs'] = self.stackedobs[p_idx].reset(obs['visual_obs'])
-                self.stack_frames_need_reset[p_idx] = False
+            if self.stack_frames_need_reset[c_idx]:  # On reset
+                obs['visual_obs'] = self.stackedobs[c_idx].reset(obs['visual_obs'])
+                self.stack_frames_need_reset[c_idx] = False
             else:
-                obs['visual_obs'], _ = self.stackedobs[p_idx].update(obs['visual_obs'], np.array([done]), [{}])
+                obs['visual_obs'], _ = self.stackedobs[c_idx].update(obs['visual_obs'], np.array([done]), [{}])
             obs['visual_obs'] = obs['visual_obs'].squeeze()
-        
+
         if self.return_completed_subtasks:
-            obs['subtask_mask'] = self.action_masks(p_idx)
+            obs['subtask_mask'] = self.action_masks(c_idx)
+
         elif self.teammates is not None:
             for t_idx in self.t_idxes:
-                if p_idx == t_idx:
-                    teammate = self.get_teammate_from_idx(p_idx)    
+                if c_idx == t_idx:
+                    teammate = self.get_teammate_from_idx(c_idx)    
                     if 'subtask_mask' in teammate.policy.observation_space.keys():
-                        obs['subtask_mask'] = self.action_masks(p_idx)
+                        obs['subtask_mask'] = self.action_masks(c_idx)
                         break
-        
+
         for t_idx in self.t_idxes:
-            if p_idx == t_idx:
+            if c_idx == t_idx:
                 teammate = self.get_teammate_from_idx(t_idx)
                 obs = {k: v for k, v in obs.items() if k in teammate.policy.observation_space.keys()}
                 break
 
         return obs
-    
+
     def get_teammate_from_idx(self, idx):
         # p_idx(DONE): bring back the randomized id system and adapt it to be in multi-teammates systems.
         assert idx in self.t_idxes
@@ -211,14 +215,14 @@ class OvercookedGymEnv(Env):
 
     def step(self, action):
         if len(self.teammates) == 0:
-            raise ValueError('set_teammate must be set called before starting game.')
+            raise ValueError('set_teammates must be set called before starting game.')
+
         joint_action = [None for _ in range(self.mdp.num_players)]
         joint_action[self.p_idx] = action
         with th.no_grad():
-            # TODO Ava/Chihui Get actions from all teammates
             for t_idx in self.t_idxes:
                 teammate = self.get_teammate_from_idx(t_idx)
-                tm_obs = self.get_obs(p_idx=t_idx, enc_fn=teammate.encoding_fn)
+                tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
                 joint_action[t_idx] = teammate.predict(tm_obs, deterministic=self.deterministic)[0]
 
         joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
@@ -249,37 +253,23 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = p_idx
 
     def reset(self, p_idx=None):
-        # p_idx(DONE): bring back the randomized id system shown as below and adapt it to be in multi-teammates systems.
-        # if p_idx is not None:
-        #     self.p_idx = p_idx
-        # elif self.reset_p_idx is not None:
-        #     self.p_idx = self.reset_p_idx
-        # else:
-        #     self.p_idx = np.random.randint(self.mdp.num_players)
-        # self.t_idx = 1 - self.p_idx
-        # self.stack_frames_need_reset = [True, True]
+        if p_idx is not None:
+            self.p_idx = p_idx
+        elif self.reset_p_idx is not None:
+            self.p_idx = self.reset_p_idx
+        else:
+            self.p_idx = random.randint(0, self.mdp.num_players - 1)
 
-        # self.p_idx = 0
-        # self.t_idxes = [_ for _ in range(1, self.mdp.num_players)]
-
-        # Step 1: Assign a list by starting from 0 to self.mdp.num_players - 1
-        teammate_list = list(range(self.mdp.num_players))
-        
-        # Step 2: Get a random number from 0 to self.mdp.num_players - 1, and assign it to self.p_idx
-        self.p_idx = random.randint(0, self.mdp.num_players - 1)
-        
-        # Step 3: Remove self.p_idx from the list
-        teammate_list.remove(self.p_idx)
-        
-        # Step 4: Shuffle the list and assign it to self.t_idexes
-        random.shuffle(teammate_list)
-        self.t_idxes = teammate_list
-        
+        teammates_ids = list(range(self.mdp.num_players))
+        teammates_ids.remove(self.p_idx)
+        random.shuffle(teammates_ids)
+        self.t_idxes = teammates_ids
+   
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
-
         self.env.reset()
         self.prev_state = None
         self.state = self.env.state
+
         # Reset subtask counts
         self.completed_tasks = [np.zeros(Subtasks.NUM_SUBTASKS), np.zeros(Subtasks.NUM_SUBTASKS)]
         return self.get_obs(self.p_idx, on_reset=True)

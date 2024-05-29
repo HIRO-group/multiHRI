@@ -21,6 +21,10 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import wandb
 
+import random
+
+
+MAX_TEAMMATES_FOR_EVALUATE = 3 
 
 class OAIAgent(nn.Module, ABC):
     """
@@ -371,47 +375,62 @@ class OAITrainer(ABC):
             return lr
         return linear_anneal
 
+
     def evaluate(self, eval_agent, num_eps_per_layout_per_tm=5, visualize=False, timestep=None, log_wandb=True,
                  deterministic=False):
         tot_mean_reward = []
         rew_per_layout = {}
         use_layout_specific_tms = type(self.eval_teammates_collection) == dict
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
-        # TODO: Assert self.eval_envs is not none
-        for i, env in enumerate(self.eval_envs):
-            tms_c = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
+        
+        for _, env in enumerate(self.eval_envs):
             rew_per_layout[env.layout_name] = []
-            for tms in tms_c[:3]:
-                env.set_teammates(tms)
-                for p_idx in [0, 1]:
+            all_teammates = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
+            # all_teammates = [[1, 2, 3]] OR 
+            # all_teammates = [[1,2,3], [3,5,6]] in case of population training
+            
+            for teammates in all_teammates[:MAX_TEAMMATES_FOR_EVALUATE]:
+                env.set_teammates(teammates)
+
+
+                t_idxs = [i for i in range(env.mdp.num_players) if i != env.p_idx]
+                random_t_idx = random.choice(t_idxs)
+                for p_idx in [env.p_idx, random_t_idx]:
+
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
                                                               deterministic=deterministic, warn=False, render=visualize)
                     tot_mean_reward.append(mean_reward)
                     rew_per_layout[env.layout_name].append(mean_reward)
-                    print(f'Eval at timestep {timestep} for layout {env.layout_name} at p{p_idx+1} with tm {tm.name}: {mean_reward}')
+
+                    tm_names = [tm.name for tm in teammates]
+                    print(f'Eval at timestep {timestep} for layout {env.layout_name} at p{p_idx+1} with teammates {tm_names}: {mean_reward}')
+
             rew_per_layout[env.layout_name] = np.mean(rew_per_layout[env.layout_name])
             if log_wandb:
-                wandb.log({f'eval_mean_reward_{env.layout_name}': rew_per_layout[env.layout_name], 'timestep': timestep})
+                wandb.log({f'eval_mean_reward_{env.layout_name}evaluate_policy': rew_per_layout[env.layout_name], 'timestep': timestep})
 
         print(f'Eval at timestep {timestep}: {np.mean(tot_mean_reward)}')
         if log_wandb:
             wandb.log({f'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
         return np.mean(tot_mean_reward), rew_per_layout
 
+
     def set_new_teammates(self):
-        # TODO Ava/Chihui adapt to multiple teammates
         for i in range(self.args.n_envs):
-            # each layout has different potential teammates
             if type(self.teammates_collection) == dict:
                 layout_name = self.env.env_method('get_layout_name', indices=i)[0]
-                teammates_collection = self.teammates_collection[layout_name]
-            else: # all layouts share teammates
-                teammates_collection = self.teammates_collection
-            teammates = teammates_collection[np.random.randint(len(teammates_collection))]
-            if not isinstance(teammates, list):
-                teammates = [teammates]
+                all_teammates = self.teammates_collection[layout_name]
+            else: # If all layouts have similar teammates
+                all_teammates = self.teammates_collection
+
+            # all_teammates = [[1, 2, 3]] OR 
+            # all_teammates = [[1,2,3], [3,5,6]] in case of population training
+
+            teammates = all_teammates[np.random.randint(len(all_teammates))]
+            assert type(teammates) == list
             self.env.env_method('set_teammates', teammates, indices=i)
+
 
     def get_agents(self) -> List[OAIAgent]:
         """
