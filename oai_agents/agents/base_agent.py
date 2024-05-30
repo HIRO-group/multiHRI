@@ -426,10 +426,12 @@ class OAITrainer(ABC):
 
             # population = [[1, 2, 3]] OR 
             # population = [[1,2,3], [3,5,6]] in case of population training
-        
+
             teammates = population[np.random.randint(len(population))]
+
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
+
             self.env.env_method('set_teammates', teammates, indices=i)
 
 

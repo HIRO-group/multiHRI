@@ -197,6 +197,7 @@ def get_fcp_population(args, training_steps=2e7, force_training=False):
     teammates_collection = generate_teammates_collection(fcp_pop, args)
     return teammates_collection
 
+
 def generate_teammates_collection(fcp_pop, args):
     len_teammates = args.teammates_len
     max_population = args.max_population_count
@@ -299,16 +300,16 @@ def get_all_agents(args, training_steps=1e7, agents_to_train='all'):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.layout_names = ['cramped_room', 'coordination_ring']
-    args.n_envs = 1
-    args.epoch_timesteps = 1
-    args.teammates_len = 1
-    args.max_population_count = 1
-    args.sb_verbose = 0
+    args.layout_names = ['3_players_clustered_kitchen'] # 3 players = 2 teammates + 1 agent
+    args.n_envs = 2
+    args.epoch_timesteps = 10
+    args.teammates_len = 2
+    args.max_population_count = 3 # used only for FCP population
+    args.sb_verbose = 1
     args.wandb_mode = 'disabled'
 
-    # get_selfplay_agent(args, training_steps=1, force_training=True)
-    get_fcp_agent(args, training_steps=2000, force_training=True)
+    get_selfplay_agent(args, training_steps=2000, force_training=True)
+    # get_fcp_agent(args, training_steps=2000, force_training=True)
 
 
 

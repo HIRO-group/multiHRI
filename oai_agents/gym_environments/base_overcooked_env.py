@@ -107,6 +107,7 @@ class OvercookedGymEnv(Env):
             self.env_idx = env_index
             self.layout_name = layout_name or self.args.layout_names[env_index]
             self.mdp = OvercookedGridworld.from_layout_name(self.layout_name)
+            print("num players in base_env", self.mdp.num_players)
             all_counters = self.mdp.get_counter_locations()
             COUNTERS_PARAMS = {
                 'start_orientations': False,
@@ -126,6 +127,8 @@ class OvercookedGymEnv(Env):
             self.env_idx = self.args.layout_names.index(self.layout_name)
 
         self.terrain = self.mdp.terrain_mtx
+
+
         self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'] for _ in range(self.mdp.num_players)]
         self.env.reset()
         self.valid_counters = [self.env.mdp.find_free_counters_valid_for_player(self.env.state, self.mlam, i) for i in
@@ -146,6 +149,7 @@ class OvercookedGymEnv(Env):
         assert isinstance(teammates, list)
         self.teammates = teammates
 
+        assert self.mdp.num_players == len(self.teammates) + 1 # teammates + main agent
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
 
 

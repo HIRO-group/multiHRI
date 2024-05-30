@@ -93,7 +93,8 @@ class RLAgentTrainer(OAITrainer):
         self.teammates_collection = teammates_collection if teammates_collection else []
         
         if selfplay:
-            self.teammates_collection += [self.agents for _ in range(self.teammates_len)]
+
+            self.teammates_collection = [[self.agents[0] for _ in range(self.teammates_len)]]
         
         self.check_teammates_collection_structure()
 
@@ -184,6 +185,7 @@ class RLAgentTrainer(OAITrainer):
             mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
             self.best_training_rew *= 0.98
 
+            # if True:
             if (self.epoch + 1) % 5 == 0 or (mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6) or \
                 (self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)):
                 if mean_training_rew >= self.best_training_rew:
