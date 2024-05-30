@@ -24,7 +24,7 @@ import wandb
 import random
 
 
-MAX_TEAMMATES_FOR_EVALUATE = 3 
+MAX_TEAMMATES_FOR_EVALUATION = 3 
 
 class OAIAgent(nn.Module, ABC):
     """
@@ -385,11 +385,11 @@ class OAITrainer(ABC):
         
         for _, env in enumerate(self.eval_envs):
             rew_per_layout[env.layout_name] = []
-            all_teammates = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
-            # all_teammates = [[1, 2, 3]] OR 
-            # all_teammates = [[1,2,3], [3,5,6]] in case of population training
+            population = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
+            # population = [[1, 2, 3]] OR 
+            # population = [[1,2,3], [3,5,6]] in case of population training
             
-            for teammates in all_teammates[:MAX_TEAMMATES_FOR_EVALUATE]:
+            for teammates in population[:MAX_TEAMMATES_FOR_EVALUATION]:
                 env.set_teammates(teammates)
 
 
@@ -420,14 +420,15 @@ class OAITrainer(ABC):
         for i in range(self.args.n_envs):
             if type(self.teammates_collection) == dict:
                 layout_name = self.env.env_method('get_layout_name', indices=i)[0]
-                all_teammates = self.teammates_collection[layout_name]
+                population = self.teammates_collection[layout_name]
             else: # If all layouts have similar teammates
-                all_teammates = self.teammates_collection
+                population = self.teammates_collection
 
-            # all_teammates = [[1, 2, 3]] OR 
-            # all_teammates = [[1,2,3], [3,5,6]] in case of population training
-
-            teammates = all_teammates[np.random.randint(len(all_teammates))]
+            # population = [[1, 2, 3]] OR 
+            # population = [[1,2,3], [3,5,6]] in case of population training
+        
+            teammates = population[np.random.randint(len(population))]
+            assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
             self.env.env_method('set_teammates', teammates, indices=i)
 

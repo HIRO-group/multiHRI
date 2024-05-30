@@ -5,6 +5,7 @@ from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
+import random
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
@@ -18,7 +19,7 @@ class RLAgentTrainer(OAITrainer):
     def __init__(self, teammates_collection, args, selfplay=False, name=None, env=None, eval_envs=None,
                  use_cnn=False, use_lstm=False, use_frame_stack=False, taper_layers=False, use_subtask_counts=False,
                  use_policy_clone=False, num_layers=2, hidden_dim=256, use_subtask_eval=False, use_hrl=False,
-                 fcp_ck_rate=None, deterministic=False, seed=None, epoch_timesteps=1e6, teammates_len=1):
+                 fcp_ck_rate=None, deterministic=False, seed=None, epoch_timesteps=1e6):
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
 
@@ -77,7 +78,7 @@ class RLAgentTrainer(OAITrainer):
 
 
         else:
-            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, verbose=1, n_steps=500,
+            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, verbose=args.sb_verbose, n_steps=500,
                             n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
                             gamma=0.99, gae_lambda=0.95)
             agent_name = f'{name}'
@@ -88,8 +89,9 @@ class RLAgentTrainer(OAITrainer):
         #                           The length of the list is the number of teammate agents,required by the env.
 
         self.agents = [self.learning_agent]
-        self.teammates_len = teammates_len
+        self.teammates_len = args.teammates_len
         self.teammates_collection = teammates_collection if teammates_collection else []
+        
         if selfplay:
             self.teammates_collection += [self.agents for _ in range(self.teammates_len)]
         
@@ -99,6 +101,7 @@ class RLAgentTrainer(OAITrainer):
 
         self.epoch, self.total_game_steps = 0, 0
         self.best_score, self.best_succ_rate, self.best_training_rew = -1, 0, float('-inf')
+
 
     
     def check_teammates_collection_structure(self):
@@ -151,7 +154,6 @@ class RLAgentTrainer(OAITrainer):
             self.ck_list = []
             path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
-    
 
         best_path, best_tag = None, None
         self.best_succ_rate, self.best_training_rew = 0, float('-inf')
@@ -160,7 +162,6 @@ class RLAgentTrainer(OAITrainer):
         prev_timesteps = self.learning_agent.num_timesteps
 
         while curr_timesteps < train_timesteps:
-
             self.set_new_teammates()
             self.learning_agent.learn(total_timesteps=self.epoch_timesteps)
 
@@ -183,7 +184,6 @@ class RLAgentTrainer(OAITrainer):
             mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
             self.best_training_rew *= 0.98
 
-            
             if (self.epoch + 1) % 5 == 0 or (mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6) or \
                 (self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)):
                 if mean_training_rew >= self.best_training_rew:
@@ -228,6 +228,7 @@ class RLAgentTrainer(OAITrainer):
         run.finish()
 
     def get_fcp_agents(self, layout_name):
+        print("Length of ck_list: ", len(self.ck_list))
         if len(self.ck_list) < 3:
             raise ValueError('Must have at least 3 checkpoints saved. Increase fcp_ck_rate or training length')
         agents = []

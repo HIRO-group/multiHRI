@@ -174,7 +174,6 @@ class OvercookedGymEnv(Env):
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
 
     def get_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
-        
         enc_fn = enc_fn or self.encoding_fn
         obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=c_idx,
                      goal_objects=goal_objects)
