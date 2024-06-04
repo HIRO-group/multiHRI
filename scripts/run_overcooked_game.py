@@ -25,7 +25,7 @@ if __name__ == "__main__":
     args = get_arguments(additional_args)
 
     # args.layout = 'counter_circuit_o_1order'
-    args.layout = 'n_players'
+    args.layout = '3_players_clustered_kitchen'
     args.p_idx = 0
 
     # bc, human_proxy = BehavioralCloningTrainer.load_bc_and_human_proxy(args, name=f'bc_{args.layout}')
@@ -37,10 +37,10 @@ if __name__ == "__main__":
 
 
     # tm1 = load_agent(Path('/home/ava/Downloads/HAHA_fcp_219'), args)
-    tm1 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
-    tm2 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
-    tm3 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
-    teammates = [tm1, tm2, tm3]
+    tm1 = load_agent(Path('/home/ava/Research/Codes/MHRI/multiHRI/agent_models/sp_det'), args)
+    tm2 = load_agent(Path('/home/ava/Research/Codes/MHRI/multiHRI/agent_models/sp_det'), args)
+    # tm3 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
+    teammates = [tm1, tm2]
     agent = 'human'
 
     dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,

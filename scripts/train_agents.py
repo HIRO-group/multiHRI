@@ -11,6 +11,8 @@ from copy import deepcopy
 from gym import Env, spaces
 import numpy as np
 from pathlib import Path
+import random
+
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_util import make_vec_env
 
@@ -79,15 +81,17 @@ def get_eval_teammates(args):
 ### BASELINES ###
 
 # SP
-def get_selfplay_agent(args, training_steps=1e7, tag=None):
+def get_selfplay_agent(args, training_steps=1e7, tag=None, force_training=False):
     name = 'sp_det'
     try:
+        if force_training:
+            raise FileNotFoundError
         tag = tag or 'best'
         agents = RLAgentTrainer.load_agents(args, name=name, tag=tag)
     except FileNotFoundError as e:
         print(f'Could not find saved selfplay agent, creating them from scratch...\nFull Error: {e}')
         selfplay_trainer = RLAgentTrainer([], args, selfplay=True, name=name, seed=678, use_frame_stack=False,
-                                          use_lstm=False, use_cnn=False, deterministic=False)
+                                          use_lstm=False, use_cnn=False, deterministic=False, epoch_timesteps=args.epoch_timesteps)
         selfplay_trainer.train_agents(train_timesteps=training_steps)
         agents = selfplay_trainer.get_agents()
     return agents
@@ -151,8 +155,10 @@ def get_test_fcp_pop(args):
 
 
 # FCP
-def get_fcp_population(args, training_steps=2e7):
+def get_fcp_population(args, training_steps=2e7, force_training=False):
     try:
+        if force_training:
+            raise FileNotFoundError
         fcp_pop = {}
         for layout_name in args.layout_names:
             fcp_pop[layout_name] = RLAgentTrainer.load_agents(args, name=f'fcp_pop_{layout_name}', tag='aamas24')
@@ -164,7 +170,9 @@ def get_fcp_population(args, training_steps=2e7):
         num_layers = 2
         for use_fs in [True]:#[False, True]:
             for seed, h_dim in [(2907, 64), (2907, 256)]:  #(105, 64), (105, 256),# [8,16], [32, 64], [128, 256], [512, 1024]
+
                 ck_rate = training_steps // 10
+                
                 # name = f'cnn_{num_layers}l_' if use_cnn else f'eval_{num_layers}l_'
                 name = 'fcp_sp'
                 # name += 'pc_' if use_policy_clone else ''
@@ -174,7 +182,7 @@ def get_fcp_population(args, training_steps=2e7):
                 name += f'seed{seed}'
                 print(f'Starting training for: {name}')
                 rlat = RLAgentTrainer([], args, selfplay=True, name=name, hidden_dim=h_dim, use_frame_stack=use_fs,
-                                      fcp_ck_rate=ck_rate, seed=seed, num_layers=num_layers)
+                                      fcp_ck_rate=ck_rate, seed=seed, num_layers=num_layers, epoch_timesteps=args.epoch_timesteps)
                 rlat.train_agents(train_timesteps=training_steps)
 
                 for layout_name in args.layout_names:
@@ -185,14 +193,35 @@ def get_fcp_population(args, training_steps=2e7):
             pop = RLAgentTrainer([], args, selfplay=True, name=f'fcp_pop_{layout_name}')
             pop.agents = fcp_pop[layout_name]
             pop.save_agents(tag='aamas24')
-    return fcp_pop
+    
+    teammates_collection = generate_teammates_collection(fcp_pop, args)
+    return teammates_collection
 
 
-def get_fcp_agent(args, seed=100, training_steps=1e7):
+def generate_teammates_collection(fcp_pop, args):
+    len_teammates = args.teammates_len
+    max_population = args.max_population_count
+    teammates_collection = {layout_name: [] for layout_name in args.layout_names}
+
+    for layout_name in args.layout_names:
+        for _ in range(max_population):
+            if len(fcp_pop[layout_name]) >= len_teammates:
+                teammates = random.sample(fcp_pop[layout_name], len_teammates)
+                teammates_collection[layout_name].append(teammates)
+            else:
+                raise ValueError(f"Not enough agents in fcp_pop to form a team of {len_teammates} members for layout {layout_name}")
+    return teammates_collection
+
+
+def get_fcp_agent(args, seed=100, training_steps=1e7, force_training=False):
     name = f'fcp_{seed}'
-    teammates_collection = get_fcp_population(args, training_steps)
+    teammates_collection = get_fcp_population(args, training_steps, force_training)
+    # print the len of teammates in each layout
+    for layout_name in args.layout_names:
+        print(f'Loaded fcp_pop with {len(teammates_collection[layout_name])} agents.')
+
     fcp_trainer = RLAgentTrainer(teammates_collection, args, name=name, use_subtask_counts=False, use_policy_clone=False,
-                                 seed=2602, deterministic=False)
+                                 seed=2602, deterministic=False, epoch_timesteps=args.epoch_timesteps)
     fcp_trainer.train_agents(train_timesteps=training_steps)
     return fcp_trainer.get_agents()[0]
 
@@ -271,8 +300,19 @@ def get_all_agents(args, training_steps=1e7, agents_to_train='all'):
 
 if __name__ == '__main__':
     args = get_arguments()
-    # get_selfplay_agent(args, training_steps=2e8)
-    get_selfplay_agent(args, training_steps=1)
+    args.layout_names = ['3_players_clustered_kitchen'] # 3 players = 2 teammates + 1 agent
+    args.n_envs = 2
+    args.epoch_timesteps = 10
+    args.teammates_len = 2
+    args.max_population_count = 3 # used only for FCP population
+    args.sb_verbose = 1
+    args.wandb_mode = 'disabled'
+
+    get_selfplay_agent(args, training_steps=2000, force_training=True)
+    # get_fcp_agent(args, training_steps=2000, force_training=True)
+
+
+
     # print('GOT SP', flush=True)
     # get_bc_and_human_proxy(args, epochs=2)
     # print('GOT BC&HP', flush=True)
