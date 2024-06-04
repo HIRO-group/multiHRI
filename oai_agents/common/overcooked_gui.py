@@ -222,6 +222,7 @@ class OvercookedGUI:
             "dimension": (self.x, self.y, self.surface_size, self.tile_size, self.grid_shape, self.hud_size),
             "Unix_timestamp": time.time(),
             "LSL_timestamp": local_clock(),
+            # TEAMMATE and POP(TODO): uncommment it and replace teammate_name by teammate_names
             # "agent": self.teammate_name,
             "p_idx": self.p_idx,
             "collision": collision,
