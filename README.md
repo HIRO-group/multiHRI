@@ -18,7 +18,8 @@ Code for [Hierarchical Reinforcement Learning for Ad Hoc Teaming](https://www.so
 ***Note***: The above repo is a modified version of the original [overcooked ai repo](https://github.com/HumanCompatibleAI/overcooked_ai)
 5. Clone modified overcooked-ai repo: `git clone https://github.com/StephAO/HAHA.git'   
 6. Move to repo dir: `cd HAHA`
-7. Install this package: `pip install -e .` -->
+7. Install this package: `pip install -e .`
+8. If step 7 did not work, try commenting liblsl in the setup.py file --> 
 
 ## General Structure
 - `oai_agents`: Main directory
