@@ -392,7 +392,6 @@ class OAITrainer(ABC):
             for teammates in population[:MAX_TEAMMATES_FOR_EVALUATION]:
                 env.set_teammates(teammates)
 
-
                 t_idxs = [i for i in range(env.mdp.num_players) if i != env.p_idx]
                 random_t_idx = random.choice(t_idxs)
                 for p_idx in [env.p_idx, random_t_idx]:
