@@ -62,8 +62,8 @@ class OvercookedGymEnv(Env):
             self.obs_dict['visual_obs'] = spaces.Box(0, 20, (self.num_enc_channels, *self.grid_shape), dtype=int)
             # Stacked obs for players
             # num_envs, num_stack: 3, observation_space, :param channels_order: If "first", stack on first image dimension.
-            self.stackedobs = [StackedObservations(1, args.num_stack, self.obs_dict['visual_obs'], 'first'),
-                               StackedObservations(1, args.num_stack, self.obs_dict['visual_obs'], 'first')]
+            self.stackedobs = [StackedObservations(1, args.num_stack, self.obs_dict['visual_obs'], 'first') \
+                               for _ in range(self.args.num_players)]
         if stack_frames:
             self.obs_dict['visual_obs'] = self.stackedobs[0].stack_observation_space(self.obs_dict['visual_obs'])
 
@@ -153,14 +153,13 @@ class OvercookedGymEnv(Env):
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
 
 
-    def stack_frames(self, p_idx):
-        if p_idx == self.p_idx:
+    def stack_frames(self, c_idx):
+        if c_idx == self.p_idx:
             return self.main_agent_stack_frames
         
         elif len(self.teammates) != 0:
-            
             for t_idx in self.t_idxes:
-                if p_idx == t_idx:
+                if c_idx == t_idx:
                     teammate = self.get_teammate_from_idx(t_idx)
                     return teammate.policy.observation_space['visual_obs'].shape[0] == (27 * self.args.num_stack)
         return False

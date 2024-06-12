@@ -298,21 +298,25 @@ def get_all_agents(args, training_steps=1e7, agents_to_train='all'):
         agents['hrl'] = get_hrl_agent(args, training_steps)
 
 
+
+
 if __name__ == '__main__':
     args = get_arguments()
     args.layout_names = ['3_players_clustered_kitchen'] # 3 players = 2 teammates + 1 agent
-    args.n_envs = 2
-    args.epoch_timesteps = 10
+    args.n_envs = 1
     args.teammates_len = 2
+    args.num_players = args.teammates_len + 1
     args.max_population_count = 3 # used only for FCP population
-    args.sb_verbose = 1
-    args.wandb_mode = 'disabled'
 
-    get_selfplay_agent(args, training_steps=2000, force_training=True)
-    # get_fcp_agent(args, training_steps=2000, force_training=True)
+    # args.epoch_timesteps = 10
+    # args.sb_verbose = 1
+    # args.wandb_mode = 'disabled'
+
+    
+    get_fcp_agent(args, force_training=True)
 
 
-
+    # get_selfplay_agent(args, training_steps=2000, force_training=True)
     # print('GOT SP', flush=True)
     # get_bc_and_human_proxy(args, epochs=2)
     # print('GOT BC&HP', flush=True)
