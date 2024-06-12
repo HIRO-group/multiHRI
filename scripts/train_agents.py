@@ -189,24 +189,71 @@ def get_fcp_population(args, training_steps=2e7, force_training=False):
                     agents = rlat.get_fcp_agents(layout_name)
                     fcp_pop[layout_name] += agents
 
+        # FCP_POP is [(agent, score), ...]
         for layout_name in args.layout_names:
             pop = RLAgentTrainer([], args, selfplay=True, name=f'fcp_pop_{layout_name}')
-            pop.agents = fcp_pop[layout_name]
+            pop.agents = [a[0] for a in fcp_pop[layout_name]]
             pop.save_agents(tag='aamas24')
     
     teammates_collection = generate_teammates_collection(fcp_pop, args)
     return teammates_collection
 
+def get_random_agents(pop_score_agent, len_teammates):
+    population = [a[0] for a in pop_score_agent]
+    return random.sample(population, len_teammates)
+
+def get_high_score_agents_80(pop_score_agent, len_teammates):
+    sorted_agents = sorted(pop_score_agent, key=lambda x: x[1], reverse=True)
+    print(sorted_agents)
+    high_probability = 0.8
+    low_probability = 0.2
+    probabilities = [high_probability if i < len(sorted_agents) // 2 else low_probability for i in range(len(sorted_agents))]
+    normalized_probabilities = [p / sum(probabilities) for p in probabilities]
+    selected_agents = random.choices([a[0] for a in sorted_agents], weights=normalized_probabilities, k=len_teammates)
+    return selected_agents
+
+def get_low_score_agents_80(pop_score_agent, len_teammates):
+    sorted_agents = sorted(pop_score_agent, key=lambda x: x[1])
+    low_probability = 0.8
+    high_probability = 0.2
+    probabilities = [low_probability if i < len(sorted_agents) // 2 else high_probability for i in range(len(sorted_agents))]
+    normalized_probabilities = [p / sum(probabilities) for p in probabilities]
+    selected_agents = random.choices([a[0] for a in sorted_agents], weights=normalized_probabilities, k=len_teammates)
+    return selected_agents
+
+def get_high_50_low_50_agents(pop_score_agent, len_teammates):
+    sorted_agents = sorted(pop_score_agent, key=lambda x: x[1], reverse=True)
+    mid_index = len(sorted_agents) // 2
+    high_agents = [a[0] for a in sorted_agents[:mid_index]]
+    low_agents = [a[0] for a in sorted_agents[mid_index:]]
+    num_from_each_group = len_teammates // 2
+    
+    selected_agents = random.sample(high_agents, num_from_each_group) + \
+                      random.sample(low_agents, len_teammates - num_from_each_group)
+    random.shuffle(selected_agents)
+    return selected_agents
+
 
 def generate_teammates_collection(fcp_pop, args):
+    assert args.max_population_count == len(args.population_dist)
+
     len_teammates = args.teammates_len
     max_population = args.max_population_count
     teammates_collection = {layout_name: [] for layout_name in args.layout_names}
-
     for layout_name in args.layout_names:
-        for _ in range(max_population):
+        for i in range(max_population):
             if len(fcp_pop[layout_name]) >= len_teammates:
-                teammates = random.sample(fcp_pop[layout_name], len_teammates)
+
+                if args.population_dist[i] == 'random':       
+                    teammates = get_random_agents(fcp_pop[layout_name], len_teammates)
+                elif args.population_dist[i] == 'high_80':
+                    teammates = get_high_score_agents_80(fcp_pop[layout_name], len_teammates)
+                elif args.population_dist[i] == 'low_80':
+                    teammates = get_low_score_agents_80(fcp_pop[layout_name], len_teammates)
+                elif args.population_dist[i] == 'high_50_low_50':
+                    teammates = get_high_50_low_50_agents(fcp_pop[layout_name], len_teammates)
+                else:
+                    raise ValueError(f"Invalid population distribution: {args.population_dist[i]}")
                 teammates_collection[layout_name].append(teammates)
             else:
                 raise ValueError(f"Not enough agents in fcp_pop to form a team of {len_teammates} members for layout {layout_name}")
@@ -298,22 +345,21 @@ def get_all_agents(args, training_steps=1e7, agents_to_train='all'):
         agents['hrl'] = get_hrl_agent(args, training_steps)
 
 
-
-
 if __name__ == '__main__':
     args = get_arguments()
-    args.layout_names = ['3_players_clustered_kitchen'] # 3 players = 2 teammates + 1 agent
+    args.layout_names = ['3_players_small_kitchen'] # 3 players = 2 teammates + 1 agent
     args.n_envs = 1
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1
-    args.max_population_count = 3 # used only for FCP population
-
-    # args.epoch_timesteps = 10
-    # args.sb_verbose = 1
-    # args.wandb_mode = 'disabled'
+    args.max_population_count = 4 # used only for FCP population
+    args.population_dist = ['random', 'high_80', 'low_80', 'high_50_low_50']
+    
+    args.epoch_timesteps = 2
+    args.sb_verbose = 1
+    args.wandb_mode = 'disabled'
 
     
-    get_fcp_agent(args, force_training=True)
+    get_fcp_agent(args, training_steps=2000, force_training=True)
 
 
     # get_selfplay_agent(args, training_steps=2000, force_training=True)

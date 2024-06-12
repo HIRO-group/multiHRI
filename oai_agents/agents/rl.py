@@ -126,7 +126,7 @@ class RLAgentTrainer(OAITrainer):
             assert len(self.teammates_collection[0]) == self.teammates_len
         elif type(self.teammates_collection) == dict:
             for k in self.teammates_collection:
-                assert len(self.teammates_collection[k]) == self.teammates_len
+                assert len(self.teammates_collection[k][0]) == self.teammates_len
 
 
     def _get_constructor_parameters(self):
@@ -233,7 +233,7 @@ class RLAgentTrainer(OAITrainer):
         print("Length of ck_list: ", len(self.ck_list))
         if len(self.ck_list) < 3:
             raise ValueError('Must have at least 3 checkpoints saved. Increase fcp_ck_rate or training length')
-        agents = []
+        agents = [] # agents = is [(agent, score), ...]
         # Best agent for this layout
         self.best_score = -1
         best_path, best_tag = None, None
@@ -243,12 +243,19 @@ class RLAgentTrainer(OAITrainer):
                 self.best_score = score
                 best_path, best_tag = path, tag
         best = RLAgentTrainer.load_agents(self.args, path=best_path, tag=best_tag)
-        agents.extend(best)
+        # agents.extend(best)
+        for a in best:
+            agents.append((a, self.best_score))
+
+
         del best
         # Worst agent for this layout
         _, worst_path, worst_tag = self.ck_list[0]
         worst = RLAgentTrainer.load_agents(self.args, path=worst_path, tag=worst_tag)
-        agents.extend(worst)
+        # agents.extend(worst)
+        for a in worst:
+            agents.append((a, 0))
+
         del worst
         # Middle agent for this layout
         closest_to_mid_score = float('inf')
@@ -259,6 +266,9 @@ class RLAgentTrainer(OAITrainer):
                 closest_to_mid_score = score
                 mid_path, mid_tag = path, tag
         mid = RLAgentTrainer.load_agents(self.args, path=mid_path, tag=mid_tag)
-        agents.extend(mid)
+        # agents.extend(mid)
+        for a in mid:
+            agents.append((a, closest_to_mid_score))
+
         del mid
         return agents
