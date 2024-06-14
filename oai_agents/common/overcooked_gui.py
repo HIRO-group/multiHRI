@@ -241,9 +241,10 @@ class OvercookedGUI:
                                                                          grid=self.env.env.mdp.terrain_mtx,
                                                                          hud_data={"timestep": self.curr_tick,
                                                                                    "score": self.score})
-        self.window = pygame.display.set_mode(surface.get_size(), HWSURFACE | DOUBLEBUF | RESIZABLE)
+        # self.window = pygame.display.set_mode(surface.get_size(), HWSURFACE | DOUBLEBUF | RESIZABLE)
         self.window.blit(surface, (0, 0))
         pygame.display.flip()
+
         # Save screenshot
         pygame.image.save(self.window, f"screenshots/{self.gif_name}/{self.curr_tick}.png")
 
