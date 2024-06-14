@@ -16,96 +16,113 @@ VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a provided agent '''
-    def __init__(self, teammates_collection, args, selfplay=False, name=None, env=None, eval_envs=None,
-                 use_cnn=False, use_lstm=False, use_frame_stack=False, taper_layers=False, use_subtask_counts=False,
-                 use_policy_clone=False, num_layers=2, hidden_dim=256, use_subtask_eval=False, use_hrl=False,
-                 fcp_ck_rate=None, deterministic=False, seed=None, epoch_timesteps=1e6):
+    def __init__(self, teammates_collection, selfplay, args, 
+                epoch_timesteps, n_envs,
+                seed, num_layers=2, hidden_dim=256, 
+                fcp_ck_rate=None, name=None, env=None, eval_envs=None,
+                use_cnn=False, use_lstm=False, use_frame_stack=False,
+                taper_layers=False, use_policy_clone=False, deterministic=False):
+        
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
-
-        if not teammates_collection and not selfplay:
-            raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
         
         self.args = args
         self.device = args.device
-        self.use_lstm = use_lstm
-        self.use_frame_stack = use_frame_stack
-        self.use_subtask_eval = use_subtask_eval
-        self.using_hrl = use_hrl
-        self.use_policy_clone = use_policy_clone
+        self.teammates_len = self.args.teammates_len
+        self.num_players = self.args.num_players
+        
+        self.epoch_timesteps = epoch_timesteps
+        self.n_envs = n_envs
+
         self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        
         self.seed = seed
         self.fcp_ck_rate = fcp_ck_rate
         self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
-        self.run_id = None
-        if env is None:
-            env_kwargs = {'shape_rewards': True, 'ret_completed_subtasks': use_subtask_counts, 'full_init': False,
-                          'stack_frames': use_frame_stack, 'deterministic': deterministic,'args': args}
-            self.env = make_vec_env(OvercookedGymEnv, n_envs=args.n_envs, seed=seed,
+
+        self.use_lstm = use_lstm
+        self.use_cnn = use_cnn
+        self.taper_layers = taper_layers
+        self.use_frame_stack = use_frame_stack
+        self.use_policy_clone = use_policy_clone
+
+        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
+        
+        self.learning_agent, self.agents = self.get_learning_agent()
+        self.teammates_collection, self.eval_teammates_collection = self.get_teammate_collection(teammates_collection, selfplay, self.learning_agent)
+
+        self.best_score, self.best_training_rew = -1, float('-inf')
+
+
+    def get_learning_agent(self):
+        sb3_agent, agent_name = self.get_sb3_agent()
+        learning_agent = self.wrap_agent(sb3_agent, agent_name)
+        agents = [learning_agent]
+        return learning_agent, agents
+
+    def get_teammate_collection(self, teammates_collection, selfplay, learning_agent):
+        if not teammates_collection and not selfplay:
+            raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
+
+        teammates_collection = teammates_collection if teammates_collection else []
+        if selfplay:
+            teammates_collection = [[learning_agent for _ in range(self.teammates_len)]]
+        self.check_teammates_collection_structure(teammates_collection)
+        eval_teammates_collection = self.teammates_collection
+        return teammates_collection, eval_teammates_collection
+
+
+    def get_envs(self, _env, _eval_envs, deterministic):
+        if _env is None:
+            env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
+                        'deterministic': deterministic,'args': self.args}
+            env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
                                     vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
-
-            eval_envs_kwargs = {'is_eval_env': True, 'ret_completed_subtasks': use_subtask_counts, 'horizon': 400,
-                                'stack_frames': use_frame_stack, 'deterministic': deterministic, 'args': args}
-            self.eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
+            eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
+                                 'deterministic': deterministic, 'args': self.args}
+            eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
         else:
-            self.env = env
-            self.eval_envs = eval_envs
-           
-        for i in range(self.args.n_envs):
-            self.env.env_method('set_env_layout', indices=i, env_index=i % self.n_layouts)
+            env = _env
+            eval_envs = _eval_envs
+        for i in range(self.n_envs):
+            env.env_method('set_env_layout', indices=i, env_index=i % self.n_layouts)
+        return env, eval_envs
 
-        layers = [hidden_dim // (2**i) for i in range(num_layers)] if taper_layers else [hidden_dim] * num_layers
+
+    def get_sb3_agent(self):
+        layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers        
         policy_kwargs = dict(net_arch=[dict(pi=layers, vf=layers)])
-        if use_cnn:
-            print('USING CNN')
+
+        if self.use_cnn:
             policy_kwargs.update(
                 features_extractor_class=OAISinglePlayerFeatureExtractor,
-                features_extractor_kwargs=dict(hidden_dim=hidden_dim)
-            )
-
-        self.epoch_timesteps = epoch_timesteps
-        if use_lstm:
+                features_extractor_kwargs=dict(hidden_dim=self.hidden_dim))
+        if self.use_lstm:
             policy_kwargs['n_lstm_layers'] = 2
-            policy_kwargs['lstm_hidden_size'] = hidden_dim
+            policy_kwargs['lstm_hidden_size'] = self.hidden_dim
             sb3_agent = RecurrentPPO('MultiInputLstmPolicy', self.env, policy_kwargs=policy_kwargs, verbose=1,
                                      n_steps=500, n_epochs=4, batch_size=500)
-            agent_name = f'{name}_lstm'
-        elif use_hrl:
-            sb3_agent = MaskablePPO('MultiInputPolicy', self.env, policy_kwargs=policy_kwargs, verbose=1, n_steps=500,
-                                    n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
-                                    gamma=0.99, gae_lambda=0.95)
-            agent_name = f'{name}'
-
+            agent_name = f'{self.name}_lstm'
 
         else:
-            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, verbose=args.sb_verbose, n_steps=500,
+            '''
+            n_steps = n_steps is the number of experiences collected from a single environment
+            number of updates = total_timesteps // (n_steps * n_envs)
+            a batch for PPO is actually n_steps * n_envs BUT
+            batch_size = minibatch size where you take some subset of your buffer (batch) with random shuffling.
+            https://stackoverflow.com/a/76198343/9102696
+            n_epochs = Number of epoch when optimizing the surrogate loss
+            '''
+
+            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, verbose=self.args.sb_verbose, n_steps=500,
                             n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
                             gamma=0.99, gae_lambda=0.95)
-            agent_name = f'{name}'
-
-        self.learning_agent = self.wrap_agent(sb3_agent, agent_name)
-        # TEAMMATE and POP(TODO):   measure the number of teammates required in the env, 
-        #                           and then define self.agents as a list of a couple self.learning_agent.
-        #                           The length of the list is the number of teammate agents,required by the env.
-
-        self.agents = [self.learning_agent]
-        self.teammates_len = args.teammates_len
-        self.teammates_collection = teammates_collection if teammates_collection else []
-        
-        if selfplay:
-
-            self.teammates_collection = [[self.agents[0] for _ in range(self.teammates_len)]]
-        
-        self.check_teammates_collection_structure()
-
-        self.eval_teammates_collection = self.teammates_collection
-
-        self.epoch, self.total_game_steps = 0, 0
-        self.best_score, self.best_succ_rate, self.best_training_rew = -1, 0, float('-inf')
-
-
+            agent_name = f'{self.name}'
+        return sb3_agent, agent_name
     
-    def check_teammates_collection_structure(self):
+
+    def check_teammates_collection_structure(self, teammates_collection):
         '''
         IF self.teammates_len = 3 then: 
         
@@ -121,12 +138,11 @@ class RLAgentTrainer(OAITrainer):
         But IF we use FCP:
         teammates_collection = [[a11, a12, a13], [a12, a13, a11]]
         '''
-
-        if type(self.teammates_collection) == list:
-            assert len(self.teammates_collection[0]) == self.teammates_len
-        elif type(self.teammates_collection) == dict:
-            for k in self.teammates_collection:
-                assert len(self.teammates_collection[k]) == self.teammates_len
+        if type(teammates_collection) == list:
+            assert len(teammates_collection[0]) == self.teammates_len
+        elif type(teammates_collection) == dict:
+            for k in teammates_collection:
+                assert len(teammates_collection[k]) == self.teammates_len
 
 
     def _get_constructor_parameters(self):
@@ -141,90 +157,57 @@ class RLAgentTrainer(OAITrainer):
         return agent
 
 
+    def should_evaluate_agent(self):
+        pass
 
-    def train_agents(self, train_timesteps=2e6, exp_name=None):
+
+    def train_agents(self, total_train_timesteps, exp_name=None):
         exp_name = exp_name or self.args.exp_name
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
-                         reinit=True, name=exp_name + '_' + self.name, mode=self.args.wandb_mode, id=self.run_id,
+                         reinit=True, name=exp_name + '_' + self.name, mode=self.args.wandb_mode,
                          resume="allow")
-
-        if self.run_id is None:
-            self.run_id = run.id
 
         if self.fcp_ck_rate is not None:
             self.ck_list = []
             path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
-
         best_path, best_tag = None, None
-        self.best_succ_rate, self.best_training_rew = 0, float('-inf')
-
+        
+        steps = 0
         curr_timesteps = 0
         prev_timesteps = self.learning_agent.num_timesteps
 
-        while curr_timesteps < train_timesteps:
+        while curr_timesteps < total_train_timesteps:
             self.set_new_teammates()
-            self.learning_agent.learn(total_timesteps=self.epoch_timesteps)
+            self.learning_agent.learn(self.epoch_timesteps)
 
-            curr_timesteps += (self.learning_agent.num_timesteps - prev_timesteps)
+            # Learning_agent.num_timesteps = n_steps * n_envs
+            curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
-
-            if self.use_policy_clone:
-                self.update_pc(self.epoch)
-            if self.using_hrl:
-                failure_dicts = self.env.env_method('get_worker_failures')
-                tot_failure_dict = {ln: {k: 0 for k in failure_dicts[0][1].keys()} for ln in self.args.layout_names}
-                for ln, fd in failure_dicts:
-                    for k in tot_failure_dict[ln]:
-                        tot_failure_dict[ln][k] += fd[k]
-                for ln in self.args.layout_names:
-                    wandb.log({f'num_worker_failures_{ln}': sum(tot_failure_dict[ln].values()), 'timestep': self.learning_agent.num_timesteps})
-                    print(f'Number of worker failures on {ln}: {tot_failure_dict[ln]}')
 
             # Evaluate
             mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
             self.best_training_rew *= 0.98
-
-            # if True:
-            if (self.epoch + 1) % 5 == 0 or (mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6) or \
+            
+            if (steps + 1) % 5 == 0 or (mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6) or \
                 (self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)):
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew
+                mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
 
-                if self.use_subtask_eval:
-                    env_success = []
-                    use_layout_specific_tms = type(self.eval_teammates_collection) == dict
-                    avg_succ_rate = []
-                    for env in self.eval_envs:
-                        tms_c = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
-                        for tms in tms_c:
-                            env.set_teammates(tms)
-                            asr = env.evaluate(self.learning_agent)
-                            avg_succ_rate.append(asr)
-                            env_success.append(asr == 1)
-                    avg_succ_rate = np.mean(avg_succ_rate)
-                    wandb.log({f'num_tm_layout_successes': np.sum(env_success), 'avg_succ_rate': avg_succ_rate,
-                               'timestep': self.learning_agent.num_timesteps})
-                    if avg_succ_rate >= self.best_succ_rate:
-                        best_path, best_tag = self.save_agents(tag='best')
-                        self.best_succ_rate = avg_succ_rate
-                        print(f'New best success rate of {self.best_succ_rate} reached, model saved to {best_path}/{best_tag}')
-                    if all(env_success):
-                        break
-                else:
-                    mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
+                # FCP pop checkpointing
+                if self.fcp_ck_rate:
+                    if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
+                        path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
+                        self.ck_list.append((rew_per_layout, path, tag))
+                # Save best model
+                if mean_reward >= self.best_score:
+                    best_path, best_tag = self.save_agents(tag='best')
+                    print(f'New best score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
+                    self.best_score = mean_reward
 
-                    # FCP pop checkpointing
-                    if self.fcp_ck_rate:
-                        if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
-                            path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
-                            self.ck_list.append((rew_per_layout, path, tag))
-                    # Save best model
-                    if mean_reward >= self.best_score:
-                        best_path, best_tag = self.save_agents(tag='best')
-                        print(f'New best score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
-                        self.best_score = mean_reward
-            self.epoch += 1
+            steps += 1
+
         self.save_agents()
         self.agents = RLAgentTrainer.load_agents(self.args, self.name, best_path, best_tag)
         run.finish()

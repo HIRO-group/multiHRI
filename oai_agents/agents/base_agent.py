@@ -211,8 +211,8 @@ class SB3Wrapper(OAIAgent):
                 dist = self.policy.get_distribution(obs)
         return dist
 
-    def learn(self, total_timesteps):
-        self.agent.learn(total_timesteps=total_timesteps, reset_num_timesteps=False)
+    def learn(self, epoch_timesteps):
+        self.agent.learn(total_timesteps=epoch_timesteps, reset_num_timesteps=False)
         self.num_timesteps = self.agent.num_timesteps
 
     def save(self, path: Path) -> None:
