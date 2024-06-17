@@ -385,6 +385,7 @@ class OAITrainer(ABC):
         
         for _, env in enumerate(self.eval_envs):
             rew_per_layout[env.layout_name] = []
+
             population = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
             # population = [[1, 2, 3]] OR 
             # population = [[1,2,3], [3,5,6]] in case of population training

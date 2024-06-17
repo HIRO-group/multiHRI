@@ -107,7 +107,7 @@ class OvercookedGymEnv(Env):
             self.env_idx = env_index
             self.layout_name = layout_name or self.args.layout_names[env_index]
             self.mdp = OvercookedGridworld.from_layout_name(self.layout_name)
-            print("num players in base_env", self.mdp.num_players)
+            # print("num players in base_env", self.mdp.num_players)
             all_counters = self.mdp.get_counter_locations()
             COUNTERS_PARAMS = {
                 'start_orientations': False,

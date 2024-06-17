@@ -15,7 +15,7 @@ import wandb
 VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
-    ''' Train an RL agent to play with a provided agent '''
+    ''' Train an RL agent to play with a teammates_collection of agents.'''
     def __init__(self, teammates_collection, selfplay, args, 
                 epoch_timesteps, n_envs,
                 seed, num_layers=2, hidden_dim=256, 
@@ -51,7 +51,7 @@ class RLAgentTrainer(OAITrainer):
         
         self.learning_agent, self.agents = self.get_learning_agent()
         self.teammates_collection, self.eval_teammates_collection = self.get_teammate_collection(teammates_collection, selfplay, self.learning_agent)
-
+        
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
@@ -61,6 +61,7 @@ class RLAgentTrainer(OAITrainer):
         agents = [learning_agent]
         return learning_agent, agents
 
+
     def get_teammate_collection(self, teammates_collection, selfplay, learning_agent):
         if not teammates_collection and not selfplay:
             raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
@@ -69,7 +70,8 @@ class RLAgentTrainer(OAITrainer):
         if selfplay:
             teammates_collection = [[learning_agent for _ in range(self.teammates_len)]]
         self.check_teammates_collection_structure(teammates_collection)
-        eval_teammates_collection = self.teammates_collection
+        
+        eval_teammates_collection = teammates_collection
         return teammates_collection, eval_teammates_collection
 
 
@@ -114,7 +116,6 @@ class RLAgentTrainer(OAITrainer):
             https://stackoverflow.com/a/76198343/9102696
             n_epochs = Number of epoch when optimizing the surrogate loss
             '''
-
             sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, verbose=self.args.sb_verbose, n_steps=500,
                             n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
                             gamma=0.99, gae_lambda=0.95)
@@ -141,9 +142,10 @@ class RLAgentTrainer(OAITrainer):
         if type(teammates_collection) == list:
             assert len(teammates_collection[0]) == self.teammates_len
         elif type(teammates_collection) == dict:
-            for k in teammates_collection:
-                assert len(teammates_collection[k]) == self.teammates_len
-
+            for k in teammates_collection: 
+                assert len(teammates_collection[k]) <= self.args.groups_num_in_population
+                for group in teammates_collection[k]:
+                    assert len(group) == self.teammates_len
 
     def _get_constructor_parameters(self):
         return dict(args=self.args, name=self.name, use_lstm=self.use_lstm, use_frame_stack=self.use_frame_stack,
@@ -162,15 +164,17 @@ class RLAgentTrainer(OAITrainer):
 
 
     def train_agents(self, total_train_timesteps, exp_name=None):
-        exp_name = exp_name or self.args.exp_name
+        print("Training agent: "+self.name)
+
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
-                         reinit=True, name=exp_name + '_' + self.name, mode=self.args.wandb_mode,
+                         reinit=True, name= exp_name or self.args.exp_name + '_' + self.name, mode=self.args.wandb_mode,
                          resume="allow")
 
         if self.fcp_ck_rate is not None:
             self.ck_list = []
             path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+        
         best_path, best_tag = None, None
         
         steps = 0
