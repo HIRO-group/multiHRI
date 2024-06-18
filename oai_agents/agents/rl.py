@@ -217,10 +217,13 @@ class RLAgentTrainer(OAITrainer):
         run.finish()
 
     def get_fcp_agents(self, layout_name):
-        print("Length of ck_list: ", len(self.ck_list))
-        if len(self.ck_list) < 3:
-            raise ValueError('Must have at least 3 checkpoints saved. Increase fcp_ck_rate or training length')
-        agents = []
+        if len(self.ck_list) < self.teammates_len * self.args.groups_num_in_population:
+            raise ValueError(f'Must have at least 
+                             {self.teammates_len} x {self.args.groups_num_in_population} checkpoints saved. 
+                             Increase fcp_ck_rate or training length')
+        
+        agents = [] # agents = is [(agent, score), ...]
+
         # Best agent for this layout
         self.best_score = -1
         best_path, best_tag = None, None

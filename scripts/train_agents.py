@@ -7,12 +7,10 @@ def get_selfplay_agent(args, tag=None, force_training=False):
     name = 'sp'
     if not force_training:
         try:
-            agents = RLAgentTrainer.load_agents(
-                args, name=name, tag=tag or 'best')
+            agents = RLAgentTrainer.load_agents(args, name=name, tag=tag or 'best')
             return agents
         except FileNotFoundError as e:
-            print(
-                f'Could not find saved selfplay agent, creating them from scratch...\nFull Error: {e}')
+            print(f'Could not find saved selfplay agent, creating them from scratch...\nFull Error: {e}')
 
     selfplay_trainer = RLAgentTrainer(
         name=name,
@@ -29,10 +27,10 @@ def get_selfplay_agent(args, tag=None, force_training=False):
     return selfplay_trainer.get_agents()
 
 
-def get_fcp_agent(args, force_training=False):
+def get_fcp_agent(args, force_training=False, parallel=True):
     teammates_collection = get_fcp_population(args,
                                               force_training=force_training,
-                                              parallel=False)
+                                              parallel=parallel)
     fcp_trainer = RLAgentTrainer(
         name='fcp',
         args=args,
@@ -42,6 +40,7 @@ def get_fcp_agent(args, force_training=False):
         n_envs=args.n_envs,
         seed=2602,
     )
+
     fcp_trainer.train_agents(
         total_train_timesteps=args.total_training_timesteps)
     return fcp_trainer.get_agents()[0]
@@ -62,4 +61,4 @@ if __name__ == '__main__':
     # get_selfplay_agent(args, force_training=True)
 
     args.groups_num_in_population = 3
-    get_fcp_agent(args, force_training=True)
+    get_fcp_agent(args, force_training=True, parallel=True)

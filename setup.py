@@ -41,6 +41,7 @@ setup(name='oai_agents',
         'tqdm',
         'wandb',
         'pygame',
+        'dill',
       ],
       tests_require=['pytest']
     )
