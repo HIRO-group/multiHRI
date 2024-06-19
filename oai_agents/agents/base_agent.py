@@ -175,6 +175,7 @@ class OAIAgent(nn.Module, ABC):
 
 
 class SB3Wrapper(OAIAgent):
+    
     def __init__(self, agent, name, args):
         super(SB3Wrapper, self).__init__(name, args)
         self.agent = agent

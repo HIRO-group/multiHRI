@@ -22,13 +22,13 @@ def get_selfplay_agent(args, tag=None, force_training=False):
         seed=678,
     )
 
-    selfplay_trainer.train_agents(
-        total_train_timesteps=args.total_training_timesteps)
+    selfplay_trainer.train_agents(total_train_timesteps=args.total_training_timesteps)
     return selfplay_trainer.get_agents()
 
 
 def get_fcp_agent(args, force_training=False, parallel=True):
     teammates_collection = get_fcp_population(args,
+                                              ck_rate = args.total_training_timesteps // 5,
                                               force_training=force_training,
                                               parallel=parallel)
     fcp_trainer = RLAgentTrainer(
@@ -41,8 +41,7 @@ def get_fcp_agent(args, force_training=False, parallel=True):
         seed=2602,
     )
 
-    fcp_trainer.train_agents(
-        total_train_timesteps=args.total_training_timesteps)
+    fcp_trainer.train_agents(total_train_timesteps=args.total_training_timesteps)
     return fcp_trainer.get_agents()[0]
 
 
@@ -57,8 +56,8 @@ if __name__ == '__main__':
 
     args.n_envs = 1
     args.epoch_timesteps = 2
-    args.total_training_timesteps = 1500
+    args.total_training_timesteps = 2500
     # get_selfplay_agent(args, force_training=True)
 
     args.groups_num_in_population = 3
-    get_fcp_agent(args, force_training=True, parallel=True)
+    get_fcp_agent(args, force_training=False, parallel=False)
