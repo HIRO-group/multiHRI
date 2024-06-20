@@ -195,10 +195,6 @@ class RLAgentTrainer(OAITrainer):
         return agent
 
 
-    def should_evaluate_agent(self):
-        pass
-
-
     def train_agents(self, total_train_timesteps, exp_name=None):
         print("Training agent: "+self.name)
 
