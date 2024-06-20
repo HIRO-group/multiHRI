@@ -7,6 +7,8 @@ class AgentPerformance:
     MEDIUM = 'M'
     MEDIUM_LOW = 'ML'
     LOW = 'L'
+    
+    NOTSET = 'NS'
 
     ALL = [HIGH, HIGH_MEDIUM, MEDIUM, MEDIUM_LOW, LOW]
 

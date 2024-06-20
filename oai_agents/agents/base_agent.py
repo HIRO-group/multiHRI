@@ -2,6 +2,7 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_args_to_save, set_args_from_load, get_arguments
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
+from oai_agents.common.population_tags import AgentPerformance, TeamType
 from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
@@ -48,6 +49,13 @@ class OAIAgent(nn.Module, ABC):
         self.prev_subtask = Subtasks.SUBTASKS_TO_IDS['unknown']
         self.use_hrl_obs = False
         self.on_reset = True
+        
+        self.layout_scores = {
+            layout_name: -1 for layout_name in args.layout_names
+        }
+        self.layout_performance_tags = {
+            layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
+        }
 
     @abstractmethod
     def predict(self, obs: th.Tensor, state=None, episode_start=None, deterministic: bool = False) -> Tuple[
@@ -181,6 +189,7 @@ class SB3Wrapper(OAIAgent):
         self.agent = agent
         self.policy = self.agent.policy
         self.num_timesteps = 0
+
 
     def predict(self, obs, state=None, episode_start=None, deterministic=False):
         # Based on https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/policies.py#L305

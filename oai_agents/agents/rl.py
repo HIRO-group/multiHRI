@@ -52,7 +52,6 @@ class RLAgentTrainer(OAITrainer):
         
         self.learning_agent, self.agents = self.get_learning_agent()
         self.teammates_collection, self.eval_teammates_collection = self.get_teammate_collection(teammates_collection, selfplay, self.learning_agent)
-        
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
@@ -245,10 +244,13 @@ class RLAgentTrainer(OAITrainer):
                 closest_score_path_tag = (score, path, tag)
         return closest_score_path_tag
     
-    def get_agent_with_perf_tag(self, scores_path_tag, performance_tag):
+    def get_agents_and_set_score_and_perftag(self, layout_name, scores_path_tag, performance_tag):
         score, path, tag = scores_path_tag
         all_agents = RLAgentTrainer.load_agents(self.args, path=path, tag=tag)
-        return [(agent, performance_tag, score) for agent in all_agents]
+        for agent in all_agents:
+            agent.layout_scores[layout_name] = score
+            agent.layout_performance_tags[layout_name] = performance_tag        
+        return all_agents
 
 
     def get_fcp_agents(self, layout_name):
@@ -258,8 +260,11 @@ class RLAgentTrainer(OAITrainer):
             AgentPerformance.HIGH_MEDIUM
             AgentPerformance.MEDIUM
             AgentPerformance.MEDIUM_LOW
-            AgentPerformance.LOW
-        returns all_agents = [(agent, performance_tag, score), ...]
+            AgentPerformance.LOW    
+        It categorizes by setting their score and performance tag:
+            OAIAgent.layout_scores
+            OAIAgent.layout_performance_tags
+        returns all_agents = [agent1, agent2, ...]
         '''
         if len(self.ck_list) < len(AgentPerformance.ALL):
             raise ValueError(f'Must have at least {len(AgentPerformance.ALL)} checkpoints saved. \
@@ -276,17 +281,17 @@ class RLAgentTrainer(OAITrainer):
         high_middle_score = (highest_score + middle_score) //2
         middle_low_score = (middle_score + lowest_score) // 2
         
-        high_path_tag = all_score_path_tag_sorted[0]
-        high_medium_path_tag = self.find_closest_score_path_tag(high_middle_score, all_score_path_tag_sorted)
-        medium_path_tag = self.find_closest_score_path_tag(middle_score, all_score_path_tag_sorted)
-        medium_low_path_tag = self.find_closest_score_path_tag(middle_low_score, all_score_path_tag_sorted)
-        low_path_tag = all_score_path_tag_sorted[-1]
+        high_score_path_tag = all_score_path_tag_sorted[0]
+        high_score_medium_path_tag = self.find_closest_score_path_tag(high_middle_score, all_score_path_tag_sorted)
+        medium_score_path_tag = self.find_closest_score_path_tag(middle_score, all_score_path_tag_sorted)
+        medium_score_low_path_tag = self.find_closest_score_path_tag(middle_low_score, all_score_path_tag_sorted)
+        low_score_path_tag = all_score_path_tag_sorted[-1]
 
-        H_agents = self.get_agent_with_perf_tag(high_path_tag, AgentPerformance.HIGH)
-        HM_agents = self.get_agent_with_perf_tag(high_medium_path_tag, AgentPerformance.HIGH_MEDIUM)
-        M_agents = self.get_agent_with_perf_tag(medium_path_tag, AgentPerformance.MEDIUM)
-        ML_agents = self.get_agent_with_perf_tag(medium_low_path_tag, AgentPerformance.MEDIUM_LOW)
-        L_agents = self.get_agent_with_perf_tag(low_path_tag, AgentPerformance.LOW)
+        H_agents = self.get_agents_and_set_score_and_perftag(layout_name, high_score_path_tag, AgentPerformance.HIGH)
+        HM_agents = self.get_agents_and_set_score_and_perftag(layout_name, high_score_medium_path_tag, AgentPerformance.HIGH_MEDIUM)
+        M_agents = self.get_agents_and_set_score_and_perftag(layout_name, medium_score_path_tag, AgentPerformance.MEDIUM)
+        ML_agents = self.get_agents_and_set_score_and_perftag(layout_name, medium_score_low_path_tag, AgentPerformance.MEDIUM_LOW)
+        L_agents = self.get_agents_and_set_score_and_perftag(layout_name, low_score_path_tag, AgentPerformance.LOW)
 
         all_agents = H_agents + HM_agents + M_agents + ML_agents + L_agents
         return all_agents
