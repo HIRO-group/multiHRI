@@ -303,12 +303,15 @@ def get_all_agents(args, training_steps=1e7, agents_to_train='all'):
 if __name__ == '__main__':
     args = get_arguments()
     args.layout_names = ['3_players_clustered_kitchen'] # 3 players = 2 teammates + 1 agent
-    args.n_envs = 1
+
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1
     args.max_population_count = 3 # used only for FCP population
 
-    # args.epoch_timesteps = 10
+    args.n_envs = 50
+    args.epoch_timesteps = 1e5
+    args.total_training_steps = 5e6
+    args.groups_num_in_population = 2
     # args.sb_verbose = 1
     # args.wandb_mode = 'disabled'
 

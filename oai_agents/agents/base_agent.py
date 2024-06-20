@@ -392,9 +392,10 @@ class OAITrainer(ABC):
             for teammates in population[:MAX_TEAMMATES_FOR_EVALUATION]:
                 env.set_teammates(teammates)
 
-                t_idxs = [i for i in range(env.mdp.num_players) if i != env.p_idx]
-                random_t_idx = random.choice(t_idxs)
-                for p_idx in [env.p_idx, random_t_idx]:
+                # t_idxs = [i for i in range(env.mdp.num_players) if i != env.p_idx]
+                # random_t_idx = random.choice(t_idxs)
+                # for p_idx in [env.p_idx, random_t_idx]:
+                for p_idx in range(env.mdp.num_players):
 
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
