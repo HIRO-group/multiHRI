@@ -24,9 +24,6 @@ import wandb
 
 import random
 
-
-MAX_TEAMMATES_FOR_EVALUATION = 3 
-
 class OAIAgent(nn.Module, ABC):
     """
     A smaller version of stable baselines Base algorithm with some small changes for my new agents
@@ -388,40 +385,53 @@ class OAITrainer(ABC):
 
     def evaluate(self, eval_agent, num_eps_per_layout_per_tm=5, visualize=False, timestep=None, log_wandb=True,
                  deterministic=False):
-        tot_mean_reward = []
-        rew_per_layout = {}
-        use_layout_specific_tms = type(self.eval_teammates_collection) == dict
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
-        
-        for _, env in enumerate(self.eval_envs):
-            rew_per_layout[env.layout_name] = []
 
-            population = self.eval_teammates_collection[env.get_layout_name()] if use_layout_specific_tms else self.eval_teammates_collection
-            # population = [[1, 2, 3]] OR 
-            # population = [[1,2,3], [3,5,6]] in case of population training
+        use_specific_tm_layout = False if 'all_layouts' in self.eval_teammates_collection else True
+
+        tot_mean_reward = []
+        rew_per_layout_per_teamtype = {}
+        '''
+            dict 
+            teammates_collection = {
+                'layout_name': {
+                    'high': [agent1, agent2],
+                    'medium': [agent3, agent4],
+                    'low': [agent5, agent6],
+                    'random': [agent7, agent8],
+                },
+            }
+        '''
+        for _, env in enumerate(self.eval_envs):
             
-            for teammates in population[:MAX_TEAMMATES_FOR_EVALUATION]:
+            tc_index = env.layout_name if use_specific_tm_layout else 'all_layouts'
+
+            rew_per_layout_per_teamtype[env.layout_name] = {
+                teamtype: [] for teamtype in self.eval_teammates_collection[tc_index]
+            }
+
+            teamtypes_population = self.eval_teammates_collection[tc_index]
+
+            for teamtype in teamtypes_population:
+                teammates = teamtypes_population[teamtype]
                 env.set_teammates(teammates)
 
-                # t_idxs = [i for i in range(env.mdp.num_players) if i != env.p_idx]
-                # random_t_idx = random.choice(t_idxs)
-                # for p_idx in [env.p_idx, random_t_idx]:
                 for p_idx in range(env.mdp.num_players):
-
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
                                                               deterministic=deterministic, warn=False, render=visualize)
                     tot_mean_reward.append(mean_reward)
-                    rew_per_layout[env.layout_name].append(mean_reward)
+                    rew_per_layout_per_teamtype[env.layout_name][teamtype].append(mean_reward)
+                    
+            
+            rew_per_layout_per_teamtype[env.layout_name] = {teamtype: np.mean(rew_per_layout_per_teamtype[env.layout_name][teamtype]) for teamtype in rew_per_layout_per_teamtype[env.layout_name]}
+            rew_per_layout = np.mean([rew_per_layout_per_teamtype[env.layout_name][teamtype] for teamtype in rew_per_layout_per_teamtype[env.layout_name]])
 
-                    tm_names = [tm.name for tm in teammates]
-                    print(f'Eval at timestep {timestep} for layout {env.layout_name} at p{p_idx+1} with teammates {tm_names}: {mean_reward}')
-
-            rew_per_layout[env.layout_name] = np.mean(rew_per_layout[env.layout_name])
             if log_wandb:
-                wandb.log({f'eval_mean_reward_{env.layout_name}evaluate_policy': rew_per_layout[env.layout_name], 'timestep': timestep})
-
-        print(f'Eval at timestep {timestep}: {np.mean(tot_mean_reward)}')
+                wandb.log({f'eval_mean_reward_{env.layout_name}': rew_per_layout, 'timestep': timestep})
+                for teamtype in rew_per_layout_per_teamtype[env.layout_name]:
+                    wandb.log({f'eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype], 'timestep': timestep})
+                
         if log_wandb:
             wandb.log({f'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
         return np.mean(tot_mean_reward), rew_per_layout
@@ -429,14 +439,20 @@ class OAITrainer(ABC):
 
     def set_new_teammates(self):
         for i in range(self.args.n_envs):
-            if type(self.teammates_collection) == dict:
-                layout_name = self.env.env_method('get_layout_name', indices=i)[0]
-                population = self.teammates_collection[layout_name]
-            else: # If all layouts have similar teammates
-                population = self.teammates_collection
+            if 'all_layouts' in self.teammates_collection.keys():
+                pop_teamtypes = self.teammates_collection['all_layouts']
 
-            # population = [[1, 2, 3]] OR 
-            # population = [[1,2,3], [3,5,6]] in case of population training
+            else:
+                layout_name = self.env.env_method('get_layout_name', indices=i)[0]
+                pop_teamtypes = self.teammates_collection[layout_name]
+
+            population = [pop_teamtypes[t] for t in pop_teamtypes.keys()]
+            
+            '''
+            population = [[agent1, agent2, agent3]]
+            OR if population training:
+            population = [[agent1, agent2, agent3], [agent3, agent5, agent6], ...]
+            '''
 
             teammates = population[np.random.randint(len(population))]
 

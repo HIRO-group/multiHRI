@@ -114,7 +114,7 @@ def generate_teammates_collection(population, args):
                                 agent.layout_performance_tags[layout_name], 
                                 agent.layout_scores[layout_name])
                                 for agent in layout_population]
-        for tag in TeamType.ALL:
+        for tag in [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_LOW_RANDOM]:
             if tag == TeamType.HIGH_FIRST:
                 tms_prftg_scr = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True)[:args.teammates_len]
                 teammates_collection[layout_name][TeamType.HIGH_FIRST] = [tm[0] for tm in tms_prftg_scr]
@@ -130,6 +130,14 @@ def generate_teammates_collection(population, args):
             elif tag == TeamType.RANDOM:
                 tms_prftg_scr = random.sample(agents_perftag_score, args.teammates_len)
                 teammates_collection[layout_name][TeamType.RANDOM] = [tm[0] for tm in tms_prftg_scr]
+            
+            elif tag == TeamType.HIGH_LOW_RANDOM:
+                if args.teammates_len >= 2:
+                    all = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True) 
+                    high, low = all[0], all[-1]
+                    rand = random.sample(agents_perftag_score, args.teammates_len - 2)
+                    tms_prftg_scr = [high, low] + rand
+                    teammates_collection[layout_name][TeamType.HIGH_LOW_RANDOM] = [tm[0] for tm in tms_prftg_scr]
     
     # print_teammates_collection(teammates_collection)
     return teammates_collection

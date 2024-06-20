@@ -1,3 +1,8 @@
+import multiprocessing as mp
+mp.set_start_method('spawn', force=True) # should be called before any other module imports
+
+import torch as th
+
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from scripts.utils import get_fcp_population
@@ -47,17 +52,22 @@ def get_fcp_agent(args, force_training=False, parallel=True):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.sb_verbose = 0
-    args.wandb_mode = 'disabled'
+    # args.sb_verbose = 0
+    # args.wandb_mode = 'disabled'
 
     args.layout_names = ['3_players_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
 
-    args.n_envs = 1
-    args.epoch_timesteps = 2
-    args.total_training_timesteps = 2500
+    # args.n_envs = 1
+    # args.epoch_timesteps = 2
+    # args.total_training_timesteps = 2500
+
+    args.device = th.device('cuda:1')
+    args.n_envs = 50
+    args.epoch_timesteps = 1e5
+    args.total_training_timesteps = 5e6
+
     # get_selfplay_agent(args, force_training=True)
 
-    args.groups_num_in_population = 3
-    get_fcp_agent(args, force_training=False, parallel=False)
+    get_fcp_agent(args, force_training=False, parallel=True)

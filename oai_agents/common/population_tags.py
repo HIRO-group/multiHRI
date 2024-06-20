@@ -7,9 +7,7 @@ class AgentPerformance:
     MEDIUM = 'M'
     MEDIUM_LOW = 'ML'
     LOW = 'L'
-    
     NOTSET = 'NS'
-
     ALL = [HIGH, HIGH_MEDIUM, MEDIUM, MEDIUM_LOW, LOW]
 
 class TeamType:
@@ -23,4 +21,5 @@ class TeamType:
     MEDIUM_FIRST = 'M'
     LOW_FIRST = 'L'
     RANDOM = 'R'
-    ALL = [HIGH_FIRST, MEDIUM_FIRST, LOW_FIRST, RANDOM]
+    HIGH_LOW_RANDOM = 'HLR'
+    SELF_PLAY = 'SP'

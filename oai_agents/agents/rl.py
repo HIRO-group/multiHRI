@@ -51,7 +51,7 @@ class RLAgentTrainer(OAITrainer):
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
         
         self.learning_agent, self.agents = self.get_learning_agent()
-        self.teammates_collection, self.eval_teammates_collection = self.get_teammate_collection(teammates_collection, selfplay, self.learning_agent)
+        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(teammates_collection, selfplay, self.learning_agent)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
@@ -62,30 +62,43 @@ class RLAgentTrainer(OAITrainer):
         return learning_agent, agents
 
 
-    def get_teammate_collection(self, teammates_collection, selfplay, learning_agent):
-        if not teammates_collection and not selfplay:
+    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent):
+        if not _tms_clctn and not selfplay:
             raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
 
-        teammates_collection = teammates_collection if teammates_collection else []
         if selfplay:
-            teammates_collection = [[learning_agent for _ in range(self.teammates_len)]]
+            '''
+            list
+            teammates_collection = 
+            {
+                'all_layouts': {
+                    TeamType.SELF_PLAY: [agent1, agent1]
+                }
+            }
+            '''
+            teammates_collection = {}
+            teammates_collection['all_layouts'] = {
+                TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]
+            }
         else:
-            # teammates_collection = {
-            #     'layout_name': [
-            #         'high': [agent1, agent2],
-            #         'medium': [agent3, agent4],
-            #         'low': [agent5, agent6],
-            #         'random': [agent7, agent8],
-            #     ],
-            # }
-            # select a high, medium, low agent to form the teammates collection
-            
-            tc = {}
+            '''
+            dict 
+            teammates_collection = {
+                'layout_name': {
+                    'high': [agent1, agent2],
+                    'medium': [agent3, agent4],
+                    'low': [agent5, agent6],
+                    'random': [agent7, agent8],
+                },
+            }
+            '''
+            teammates_collection = {}
             for layout in self.args.layout_names:
-                tc[layout] = [teammates_collection[layout][TeamType.HIGH_FIRST],
-                              teammates_collection[layout][TeamType.MEDIUM_FIRST],
-                              teammates_collection[layout][TeamType.LOW_FIRST]]
-            teammates_collection = tc
+                teammates_collection[layout] = {
+                            TeamType.HIGH_FIRST: _tms_clctn[layout][TeamType.HIGH_FIRST],
+                            TeamType.LOW_FIRST: _tms_clctn[layout][TeamType.LOW_FIRST],
+                            TeamType.HIGH_LOW_RANDOM: _tms_clctn[layout][TeamType.HIGH_LOW_RANDOM]
+                            }
 
         self.check_teammates_collection_structure(teammates_collection)
         
@@ -142,28 +155,33 @@ class RLAgentTrainer(OAITrainer):
     
 
     def check_teammates_collection_structure(self, teammates_collection):
-        '''
-        IF self.teammates_len = 3 then: 
-        
+        '''    
+        IF we use FCP:
         teammates_collection = {
-            'layout1': [[a1, a2, a3], [a2, a3, a5]],
-            'layout2': ...} 
-        
-        OR if all layouts have the same teammates:
-        teammates_collection = [[a1, a2, a3], [a2, a3, a5]]
-        
-        IF we use SP, (assuming we have the same teammates in all layout):
-        teammates_collection = [[a1, a1, a1]]
-        But IF we use FCP:
-        teammates_collection = [[a11, a12, a13], [a12, a13, a11]]
+                'layout_name': {
+                    'high': [agent1, agent2],
+                    'medium': [agent3, agent4],
+                    'low': [agent5, agent6],
+                    'random': [agent7, agent8],
+                },
+            }
+
+        IF we use SP:
+        teammates_collection = 
+            {
+                'all_layouts': {
+                    TeamType.SELF_PLAY: [agent1, agent1]
+                }
+            }
         '''
-        if type(teammates_collection) == list:
-            assert len(teammates_collection[0]) == self.teammates_len
-        elif type(teammates_collection) == dict:
-            for k in teammates_collection: 
-                assert len(teammates_collection[k]) <= self.args.groups_num_in_population
-                for group in teammates_collection[k]:
-                    assert len(group) == self.teammates_len
+ 
+        if type(teammates_collection) == dict:
+            for layout in teammates_collection: 
+                for team_type in teammates_collection[layout]:
+                    assert len(teammates_collection[layout][team_type]) == self.teammates_len
+        else:
+            raise ValueError('teammates_collection must be a dict with layout names as keys and a list of agents as values')
+
 
     def _get_constructor_parameters(self):
         return dict(args=self.args, name=self.name, use_lstm=self.use_lstm, use_frame_stack=self.use_frame_stack,
