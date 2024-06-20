@@ -7,8 +7,12 @@ import dill
 
 
 def train_a_agent_with_checkpoints(args, ck_rate, seed, h_dim, serialize):
+    '''
+    Returns agnts_prftg_scr_per_lyt = [(agent, performance_tag, score), ...] 
+    either serialized or not based on serialize flag
+    '''
     name = f'fcp_hd{h_dim}_seed{seed}'
-    fcp_pop_perftag = {layout_name: [] for layout_name in args.layout_names}
+    agnts_prftg_scr_per_lyt = {layout_name: [] for layout_name in args.layout_names}
 
     rlat = RLAgentTrainer(
         name=name,
@@ -23,20 +27,21 @@ def train_a_agent_with_checkpoints(args, ck_rate, seed, h_dim, serialize):
     )
     rlat.train_agents(total_train_timesteps=args.total_training_timesteps)
     for layout_name in args.layout_names:
-        fcp_pop_perftag[layout_name] = rlat.get_fcp_agents(layout_name)
+        agnts_prftg_scr_per_lyt[layout_name] = rlat.get_fcp_agents(layout_name)
     if serialize:
-        return dill.dumps(fcp_pop_perftag)
-    return fcp_pop_perftag
+        return dill.dumps(agnts_prftg_scr_per_lyt)
+    return agnts_prftg_scr_per_lyt
 
 
 def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
-    fcp_pop_perftag = {layout_name: [] for layout_name in args.layout_names} # = [(agent, score, tag), ...]
+    agnts_prftg_scr_per_lyt = {layout_name: [] for layout_name in args.layout_names} # = [(agent, score, tag), ...]
     try:
         if force_training:
             raise FileNotFoundError
         for layout_name in args.layout_names:
-            fcp_pop_perftag[layout_name] = RLAgentTrainer.load_agents(args, name=f'fcp_pop_{layout_name}', tag='aamas25')
-            print(f'Loaded fcp_pop with {len(fcp_pop_perftag[layout_name])} agents.')
+            # TODO
+            agnts_prftg_scr_per_lyt[layout_name] = RLAgentTrainer.load_agents(args, name=f'fcp_pop_{layout_name}', tag='aamas25')
+            print(f'Loaded fcp_pop with {len(agnts_prftg_scr_per_lyt[layout_name])} agents.')
 
     except FileNotFoundError as e:
         print(
@@ -51,7 +56,7 @@ def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
             for dilled_res in dilled_results:
                 res = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
-                    fcp_pop_perftag[layout_name].extend(res[layout_name])
+                    agnts_prftg_scr_per_lyt[layout_name].extend(res[layout_name])
         else:
             for inp in inputs:
                 res = train_a_agent_with_checkpoints(args=inp[0],
@@ -60,13 +65,13 @@ def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
                                                      h_dim=inp[3],
                                                      serialize=False)
                 for layout_name in args.layout_names:
-                    fcp_pop_perftag[layout_name].extend(res[layout_name])
+                    agnts_prftg_scr_per_lyt[layout_name].extend(res[layout_name])
 
-        save_fcp_pop(args, fcp_pop_perftag)
-    return generate_teammates_collection(fcp_pop_perftag, args)
+        save_fcp_pop(args, agnts_prftg_scr_per_lyt)
+    return generate_teammates_collection(agnts_prftg_scr_per_lyt, args)
 
 
-def save_fcp_pop(args, fcp_pop):
+def save_fcp_pop(args, agnts_prftg_scr_per_lyt):
     for layout_name in args.layout_names:
         rt = RLAgentTrainer(
             name=f'fcp_pop_{layout_name}',
@@ -77,39 +82,61 @@ def save_fcp_pop(args, fcp_pop):
             n_envs=args.n_envs,
             seed=None,
         )
-        rt.agents = fcp_pop[layout_name]
+        agnts_prftg_scr = agnts_prftg_scr_per_lyt[layout_name]
+        rt.agents = [agent_perf_score[0] for agent_perf_score in agnts_prftg_scr]
         rt.save_agents(tag='aamas25')
 
 
-def generate_teammates_collection(fcp_pop_perftag, args):
+def generate_teammates_collection(agnts_prftg_scr_per_lyt, args):
     '''
     AgentPerformance 
-    fcp_pop_perftag = {layout_name: [(agent, agent_perftag, score), ...]}
+    agnts_prftg_scr_per_lyt = {layout_name: [(agent, perftag, score), ...]}
     
     TeamType
     returns teammates_collection = {
-                'layout_name': [
+                'layout_name': {
                     'high': [agent1, agent2],
                     'medium': [agent3, agent4],
                     'low': [agent5, agent6],
                     'random': [agent7, agent8],
-                ],
+                },
             }
     '''
-    # print("3_players_clustered_kitchen: ", len(fcp_pop_perftag[args.layout_names[0]][0]))
-    teammates_collection = {layout_name: [] for layout_name in args.layout_names}
+    teammates_collection = \
+        {layout_name: {
+            TeamType.HIGH_FIRST: [],
+            TeamType.MEDIUM_FIRST: [],
+            TeamType.LOW_FIRST: [],
+            TeamType.RANDOM: [],
+                                } for layout_name in args.layout_names}
+
     for layout_name in args.layout_names:
         for tag in TeamType.ALL:
             if tag == TeamType.HIGH_FIRST:
-                teammates = sorted(fcp_pop_perftag[layout_name], key=lambda x: x[1], reverse=True)[:args.teammates_len]
-                teammates_collection[layout_name].append({TeamType.HIGH_FIRST : teammates})
+                tms_prftg_scr = sorted(agnts_prftg_scr_per_lyt[layout_name], key=lambda x: x[2], reverse=True)[:args.teammates_len]
+                teammates_collection[layout_name][TeamType.HIGH_FIRST] = [tm[0] for tm in tms_prftg_scr]
+
             elif tag == TeamType.MEDIUM_FIRST:
-                teammates = sorted(fcp_pop_perftag[layout_name], key=lambda x: x[1], reverse=True)[args.teammates_len: 2*args.teammates_len]
-                teammates_collection[layout_name].append({TeamType.MEDIUM_FIRST : teammates})
+                tms_prftg_scr = sorted(agnts_prftg_scr_per_lyt[layout_name], key=lambda x: x[2], reverse=True)[args.teammates_len: 2*args.teammates_len]
+                teammates_collection[layout_name][TeamType.MEDIUM_FIRST] = [tm[0] for tm in tms_prftg_scr]
+
             elif tag == TeamType.LOW_FIRST:
-                teammates = sorted(fcp_pop_perftag[layout_name], key=lambda x: x[1])[:args.teammates_len]
-                teammates_collection[layout_name].append({TeamType.LOW_FIRST : teammates})
+                tms_prftg_scr = sorted(agnts_prftg_scr_per_lyt[layout_name], key=lambda x: x[2])[:args.teammates_len]
+                teammates_collection[layout_name][TeamType.LOW_FIRST] = [tm[0] for tm in tms_prftg_scr]
+
             elif tag == TeamType.RANDOM:
-                teammates = random.sample(fcp_pop_perftag[layout_name], args.teammates_len)
-                teammates_collection[layout_name].append({TeamType.RANDOM : teammates})
+                tms_prftg_scr = random.sample(agnts_prftg_scr_per_lyt[layout_name], args.teammates_len)
+                teammates_collection[layout_name][TeamType.RANDOM] = [tm[0] for tm in tms_prftg_scr]
     return teammates_collection
+
+
+def print_teammates_collection(teammates_collection):
+    for layout_name in teammates_collection:
+        print(f'Layout: {layout_name}')
+        for tag in teammates_collection[layout_name]:
+            print(f'\t{tag}:')
+            teammates = teammates_collection[layout_name][tag]
+            for agent in teammates:
+                print(f'\t{agent.name}')
+            print('\n')
+        print('\n')

@@ -80,6 +80,7 @@ class RLAgentTrainer(OAITrainer):
             #     ],
             # }
             # select a high, medium, low agent to form the teammates collection
+            
             tc = {}
             for layout in self.args.layout_names:
                 tc[layout] = [teammates_collection[layout][TeamType.HIGH_FIRST],
@@ -237,12 +238,12 @@ class RLAgentTrainer(OAITrainer):
 
     def find_closest_score_path_tag(self, target_score, all_score_path_tag):
         closest_score = float('inf')
-        closest_path_tag = None
+        closest_score_path_tag = None
         for score, path, tag in all_score_path_tag:
             if abs(score - target_score) < closest_score:
                 closest_score = abs(score - target_score)
-                closest_path_tag = (path, tag)
-        return closest_path_tag
+                closest_score_path_tag = (score, path, tag)
+        return closest_score_path_tag
     
     def get_agent_with_perf_tag(self, scores_path_tag, performance_tag):
         score, path, tag = scores_path_tag
@@ -258,7 +259,6 @@ class RLAgentTrainer(OAITrainer):
             AgentPerformance.MEDIUM
             AgentPerformance.MEDIUM_LOW
             AgentPerformance.LOW
-
         returns all_agents = [(agent, performance_tag, score), ...]
         '''
         if len(self.ck_list) < len(AgentPerformance.ALL):

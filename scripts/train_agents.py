@@ -60,4 +60,4 @@ if __name__ == '__main__':
     # get_selfplay_agent(args, force_training=True)
 
     args.groups_num_in_population = 3
-    get_fcp_agent(args, force_training=False, parallel=False)
+    get_fcp_agent(args, force_training=True, parallel=False)
