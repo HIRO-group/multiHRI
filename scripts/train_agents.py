@@ -50,7 +50,7 @@ if __name__ == '__main__':
     args.sb_verbose = 0
     args.wandb_mode = 'disabled'
 
-    args.layout_names = ['3_players_clustered_kitchen']
+    args.layout_names = ['3_players_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
 
