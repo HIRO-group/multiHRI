@@ -107,7 +107,7 @@ class RLAgentTrainer(OAITrainer):
     
     def check_teammates_collection_structure(self):
         '''
-        IF self.teammates_len = 3 then: 
+        IF self.teammates_len = 2 then: 
         
         teammates_collection = {
             'layout1': [[a1, a2, a3], [a2, a3, a5]],
@@ -125,8 +125,9 @@ class RLAgentTrainer(OAITrainer):
         if type(self.teammates_collection) == list:
             assert len(self.teammates_collection[0]) == self.teammates_len
         elif type(self.teammates_collection) == dict:
-            for k in self.teammates_collection:
-                assert len(self.teammates_collection[k]) == self.teammates_len
+            for layout in self.teammates_collection:
+                for teammates in self.teammates_collection[layout]:
+                    assert len(teammates) == self.teammates_len
 
 
     def _get_constructor_parameters(self):
