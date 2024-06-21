@@ -97,8 +97,9 @@ class RLAgentTrainer(OAITrainer):
                 teammates_collection[layout] = {
                             TeamType.HIGH_FIRST: _tms_clctn[layout][TeamType.HIGH_FIRST],
                             TeamType.LOW_FIRST: _tms_clctn[layout][TeamType.LOW_FIRST],
-                            TeamType.HIGH_LOW_RANDOM: _tms_clctn[layout][TeamType.HIGH_LOW_RANDOM]
                             }
+                if self.teammates_len >= 2:
+                    teammates_collection[layout][TeamType.HIGH_LOW_RANDOM] = _tms_clctn[layout][TeamType.HIGH_LOW_RANDOM]
 
         self.check_teammates_collection_structure(teammates_collection)
         
@@ -118,6 +119,7 @@ class RLAgentTrainer(OAITrainer):
         else:
             env = _env
             eval_envs = _eval_envs
+
         for i in range(self.n_envs):
             env.env_method('set_env_layout', indices=i, env_index=i % self.n_layouts)
         return env, eval_envs
@@ -206,7 +208,7 @@ class RLAgentTrainer(OAITrainer):
             self.ck_list = []
             path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
-        
+
         best_path, best_tag = None, None
         
         steps = 0
@@ -224,9 +226,10 @@ class RLAgentTrainer(OAITrainer):
             # Evaluate
             mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
             self.best_training_rew *= 0.98
-            
+
             if (steps + 1) % 5 == 0 or (mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6) or \
                 (self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)):
+                
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
@@ -236,10 +239,10 @@ class RLAgentTrainer(OAITrainer):
                     if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
                         path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
                         self.ck_list.append((rew_per_layout, path, tag))
+                
                 # Save best model
                 if mean_reward >= self.best_score:
                     best_path, best_tag = self.save_agents(tag='best')
-                    print(f'New best score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
 
             steps += 1

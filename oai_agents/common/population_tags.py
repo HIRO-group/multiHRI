@@ -10,6 +10,7 @@ class AgentPerformance:
     NOTSET = 'NS'
     ALL = [HIGH, HIGH_MEDIUM, MEDIUM, MEDIUM_LOW, LOW]
 
+
 class TeamType:
     '''
     Team type refers to the type of agents in a team

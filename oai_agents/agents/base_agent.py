@@ -415,7 +415,7 @@ class OAITrainer(ABC):
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype]
                 env.set_teammates(teammates)
-
+                
                 for p_idx in range(env.mdp.num_players):
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
@@ -425,10 +425,10 @@ class OAITrainer(ABC):
                     
             
             rew_per_layout_per_teamtype[env.layout_name] = {teamtype: np.mean(rew_per_layout_per_teamtype[env.layout_name][teamtype]) for teamtype in rew_per_layout_per_teamtype[env.layout_name]}
-            rew_per_layout = np.mean([rew_per_layout_per_teamtype[env.layout_name][teamtype] for teamtype in rew_per_layout_per_teamtype[env.layout_name]])
+            rew_per_layout = {env.layout_name: np.mean([rew_per_layout_per_teamtype[env.layout_name][teamtype] for teamtype in rew_per_layout_per_teamtype[env.layout_name]])}
 
             if log_wandb:
-                wandb.log({f'eval_mean_reward_{env.layout_name}': rew_per_layout, 'timestep': timestep})
+                wandb.log({f'eval_mean_reward_{env.layout_name}': rew_per_layout[env.layout_name], 'timestep': timestep})
                 for teamtype in rew_per_layout_per_teamtype[env.layout_name]:
                     wandb.log({f'eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype], 'timestep': timestep})
                 
