@@ -242,8 +242,8 @@ class RLAgentTrainer(OAITrainer):
                 
                 # Save best model
                 if mean_reward >= self.best_score:
-                    print(f'New best score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     best_path, best_tag = self.save_agents(tag='best')
+                    print(f'New best score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
 
             steps += 1
