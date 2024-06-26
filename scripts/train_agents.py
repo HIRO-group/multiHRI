@@ -59,11 +59,6 @@ if __name__ == '__main__':
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
 
-    # args.n_envs = 1
-    # args.epoch_timesteps = 2
-    # args.total_training_timesteps = 2500
-
-    args.device = th.device('cuda:1')
     args.n_envs = 50
     args.epoch_timesteps = 1e5
     args.total_training_timesteps = 5e6

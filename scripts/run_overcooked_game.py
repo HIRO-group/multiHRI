@@ -38,8 +38,8 @@ if __name__ == "__main__":
 
 
     # tm1 = load_agent(Path('/home/ava/Downloads/HAHA_fcp_219'), args)
-    tm1 = load_agent(Path('/home/ava/Desktop/sp_det'), args)
-    tm2 = load_agent(Path('/home/ava/Desktop/sp_det'), args)
+    tm1 = load_agent(Path('agent_models/sp_det'), args)
+    tm2 = load_agent(Path('agent_models/sp_det'), args)
     # tm3 = load_agent(Path('oai_agents/data/agent_models_ICML/HAHA_fcp_219'), args)
     teammates = [tm1, tm2]
     # agent = load_agent(Path('/home/ava/Desktop/sp_det'), args)
