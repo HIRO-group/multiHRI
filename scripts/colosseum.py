@@ -86,7 +86,7 @@ def load_agents_population(filepaths, args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    base_dir = args.base_dir / 'agent_models_ICML'# / 'ent_aamas24'
+    base_dir = args.base_dir / 'agent_models_ICML'# / 'ent_aamas25'
     main_agents_names = ['HAHA_fcp']#,'HAHA_fcp',  'HAHA_bcp', 'bcp']#, "HAHA_fcp_fcp"]# "FCP", "BCP"]#, "HAHA+tuned", "HAHA_new36+tuned"]#"HAHA+tuned", "HAHA", "FCP"] #"FCP", "fcp/last_hope/agents_dir/agent_0", "bcp/last_hope/agents_dir/agent_0", "selfplay/best/agents_dir/agent_0"]
     seeds = ['61', '102', '219', '1811', '4573']
 
