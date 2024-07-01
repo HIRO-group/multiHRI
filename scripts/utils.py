@@ -121,7 +121,7 @@ def generate_teammates_collection(population, args):
             elif tag == TeamType.MEDIUM_FIRST:
                 l = len(sorted_agents_perftag_score)
                 l_div_2 = math.floor(l/2)
-                floor_tim_l_div_2 = math.floor(args.teammates_len/2) 
+                floor_tim_l_div_2 = math.floor(args.teammate s_len/2) 
                 ceil_tim_l_div_2 = math.ceil(args.teammates_len/2)
                 lower_medium_id = l_div_2-floor_tim_l_div_2
                 higher_medium_id = l_div_2+ceil_tim_l_div_2
@@ -131,7 +131,7 @@ def generate_teammates_collection(population, args):
                 teammates_collection[layout_name][TeamType.MEDIUM_FIRST] = [tm[0] for tm in tms_prftg_scr]
 
             elif tag == TeamType.LOW_FIRST:
-                tms_prftg_scr = sorted(agents_perftag_score, key=lambda x: x[2])[:args.teammates_len]
+                tms_prftg_scr = sorted_agents_perftag_score[-args.teammates_len:]
                 teammates_collection[layout_name][TeamType.LOW_FIRST] = [tm[0] for tm in tms_prftg_scr]
 
             elif tag == TeamType.RANDOM:
