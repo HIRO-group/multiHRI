@@ -62,7 +62,7 @@ class RLAgentTrainer(OAITrainer):
         return learning_agent, agents
 
 
-    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent):
+    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent, train_types=[], eval_types=[]):
         if not _tms_clctn and not selfplay:
             raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
 
@@ -85,10 +85,10 @@ class RLAgentTrainer(OAITrainer):
             dict 
             teammates_collection = {
                 'layout_name': {
-                    'high': [agent1, agent2],
-                    'medium': [agent3, agent4],
-                    'low': [agent5, agent6],
-                    'random': [agent7, agent8],
+                    'TeamType.HIGH_FIRST': [agent1, agent2],
+                    'TeamType.MEDIUM_FIRST': [agent3, agent4],
+                    'TeamType.LOW_FIRST': [agent5, agent6],
+                    'TeamType.RANDOM': [agent7, agent8],
                 },
             }
             '''

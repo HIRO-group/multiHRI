@@ -392,15 +392,15 @@ class OAITrainer(ABC):
         tot_mean_reward = []
         rew_per_layout_per_teamtype = {}
         '''
-            dict 
-            teammates_collection = {
-                'layout_name': {
-                    'high': [agent1, agent2],
-                    'medium': [agent3, agent4],
-                    'low': [agent5, agent6],
-                    'random': [agent7, agent8],
-                },
-            }
+        dict 
+        teammates_collection = {
+            'layout_name': {
+                'TeamType.HIGH_FIRST': [agent1, agent2],
+                'TeamType.MEDIUM_FIRST': [agent3, agent4],
+                'TeamType.LOW_FIRST': [agent5, agent6],
+                'TeamType.RANDOM': [agent7, agent8],
+            },
+        }
         '''
         for _, env in enumerate(self.eval_envs):
             
