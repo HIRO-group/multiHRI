@@ -98,18 +98,23 @@ def generate_teammates_collection(population, args):
         },
     }
     '''
-    teammates_collection = \
-        {layout_name: {
-            TeamType.HIGH_FIRST: [],
-            TeamType.MEDIUM_FIRST: [],
-            TeamType.MIDDLE_FIRST: [],
-            TeamType.LOW_FIRST: [],
-            TeamType.RANDOM: [],
-            TeamType.RANDOM_HIGH_MEDIUM: [],
-            TeamType.RANDOM_HIGH_LOW: [],
-            TeamType.RANDOM_MEDIUM_LOW: [],
-            TeamType.HIGH_LOW_RANDOM: [],
-                                } for layout_name in args.layout_names}
+    # teammates_collection = \
+    #     {layout_name: {
+    #         TeamType.HIGH_FIRST: [],
+    #         TeamType.MEDIUM_FIRST: [],
+    #         TeamType.MIDDLE_FIRST: [],
+    #         TeamType.LOW_FIRST: [],
+    #         TeamType.RANDOM: [],
+    #         TeamType.RANDOM_HIGH_MEDIUM: [],
+    #         TeamType.RANDOM_HIGH_LOW: [],
+    #         TeamType.RANDOM_MEDIUM_LOW: [],
+    #         TeamType.HIGH_LOW_RANDOM: [],
+    #                             } for layout_name in args.layout_names}
+    teammates_collection = {
+        layout_name: {tag: [] for key, tag in vars(TeamType).items() if not key.startswith('__') and tag != TeamType.SELF_PLAY}
+        for layout_name in args.layout_names
+    }
+    
 
     for layout_name in args.layout_names:
         layout_population = population[layout_name]
@@ -117,7 +122,7 @@ def generate_teammates_collection(population, args):
                                 agent.layout_performance_tags[layout_name], 
                                 agent.layout_scores[layout_name])
                                 for agent in layout_population]
-        non_sp_tags = [value for key, value in vars(TeamType).items() if value != TeamType.SELF_PLAY]
+        non_sp_tags = [tag for key, tag in vars(TeamType).items() if not key.startswith('__') and tag != TeamType.SELF_PLAY]
         sorted_agents_perftag_score = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True)
         t_len = args.teammates_len
         half_floor = math.floor(t_len/2) 
@@ -157,7 +162,6 @@ def generate_teammates_collection(population, args):
                     first_half = random.sample(teammates_collection[layout_name][TeamType.MEDIUM_FIRST], half_floor)
                     second_half = random.sample(teammates_collection[layout_name][TeamType.HIGH_FIRST], half_ceil)
                     teammates_collection[layout_name][tag] = first_half+second_half
-                    assert len(teammates_collection[layout_name][tag]) == t_len
                     random.shuffle(teammates_collection[layout_name][tag])
 
             elif tag == TeamType.RANDOM_HIGH_LOW:
@@ -165,7 +169,6 @@ def generate_teammates_collection(population, args):
                     first_half = random.sample(teammates_collection[layout_name][TeamType.LOW_FIRST], half_floor)
                     second_half = random.sample(teammates_collection[layout_name][TeamType.HIGH_FIRST], half_ceil)
                     teammates_collection[layout_name][tag] = first_half+second_half
-                    assert len(teammates_collection[layout_name][tag]) == t_len
                     random.shuffle(teammates_collection[layout_name][tag])
 
             elif tag == TeamType.RANDOM_MEDIUM_LOW:
@@ -173,7 +176,6 @@ def generate_teammates_collection(population, args):
                     first_half = random.sample(teammates_collection[layout_name][TeamType.LOW_FIRST], half_floor)
                     second_half = random.sample(teammates_collection[layout_name][TeamType.MEDIUM_FIRST], half_ceil)
                     teammates_collection[layout_name][tag] = first_half+second_half
-                    assert len(teammates_collection[layout_name][tag]) == t_len
                     random.shuffle(teammates_collection[layout_name][tag])
             
             elif tag == TeamType.HIGH_LOW_RANDOM:
