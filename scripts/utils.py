@@ -102,8 +102,13 @@ def generate_teammates_collection(population, args):
         {layout_name: {
             TeamType.HIGH_FIRST: [],
             TeamType.MEDIUM_FIRST: [],
+            TeamType.MIDDLE_FIRST: [],
             TeamType.LOW_FIRST: [],
             TeamType.RANDOM: [],
+            TeamType.RANDOM_HIGH_MEDIUM: [],
+            TeamType.RANDOM_HIGH_LOW: [],
+            TeamType.RANDOM_MEDIUM_LOW: [],
+            TeamType.HIGH_LOW_RANDOM: [],
                                 } for layout_name in args.layout_names}
 
     for layout_name in args.layout_names:
@@ -112,41 +117,73 @@ def generate_teammates_collection(population, args):
                                 agent.layout_performance_tags[layout_name], 
                                 agent.layout_scores[layout_name])
                                 for agent in layout_population]
-        for tag in [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_LOW_RANDOM]:
-            sorted_agents_perftag_score = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True)
+        non_sp_tags = [value for key, value in vars(TeamType).items() if value != TeamType.SELF_PLAY]
+        sorted_agents_perftag_score = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True)
+        t_len = args.teammates_len
+        half_floor = math.floor(t_len/2) 
+        half_ceil =math.ceil(t_len/2) 
+        for tag in non_sp_tags:
             if tag == TeamType.HIGH_FIRST:
-                tms_prftg_scr = sorted_agents_perftag_score[:args.teammates_len]
-                teammates_collection[layout_name][TeamType.HIGH_FIRST] = [tm[0] for tm in tms_prftg_scr]
-
+                tms_prftg_scr = sorted_agents_perftag_score[:t_len]
+                teammates_collection[layout_name][tag] = [tm[0] for tm in tms_prftg_scr]
+            
             elif tag == TeamType.MEDIUM_FIRST:
+                mean_score = (sorted_agents_perftag_score[0]+sorted_agents_perftag_score[-1])/2
+                # Sort scores by their distance to the mean_score
+                sorted_by_closeness = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))
+                # Select the top num_teammates scores closest to the mean
+                teammates_collection[layout_name][tag] = sorted_by_closeness[:t_len]
+
+            elif tag == TeamType.MIDDLE_FIRST:
                 l = len(sorted_agents_perftag_score)
                 l_div_2 = math.floor(l/2)
-                floor_tim_l_div_2 = math.floor(args.teammate s_len/2) 
-                ceil_tim_l_div_2 = math.ceil(args.teammates_len/2)
-                lower_medium_id = l_div_2-floor_tim_l_div_2
-                higher_medium_id = l_div_2+ceil_tim_l_div_2
-                assert lower_medium_id >= 0
-                assert higher_medium_id < l
-                tms_prftg_scr = sorted_agents_perftag_score[lower_medium_id:higher_medium_id+1]
-                teammates_collection[layout_name][TeamType.MEDIUM_FIRST] = [tm[0] for tm in tms_prftg_scr]
+                lower_mid_id = l_div_2-half_floor
+                higher_mid_id = l_div_2+half_ceil-1
+                assert lower_mid_id >= 0
+                assert higher_mid_id < l
+                tms_prftg_scr = sorted_agents_perftag_score[lower_mid_id:higher_mid_id+1]
+                teammates_collection[layout_name][tag] = [tm[0] for tm in tms_prftg_scr]
 
             elif tag == TeamType.LOW_FIRST:
-                tms_prftg_scr = sorted_agents_perftag_score[-args.teammates_len:]
-                teammates_collection[layout_name][TeamType.LOW_FIRST] = [tm[0] for tm in tms_prftg_scr]
+                tms_prftg_scr = sorted_agents_perftag_score[-t_len:]
+                teammates_collection[layout_name][tag] = [tm[0] for tm in tms_prftg_scr]
 
             elif tag == TeamType.RANDOM:
-                tms_prftg_scr = random.sample(agents_perftag_score, args.teammates_len)
-                teammates_collection[layout_name][TeamType.RANDOM] = [tm[0] for tm in tms_prftg_scr]
+                tms_prftg_scr = random.sample(agents_perftag_score, t_len)
+                teammates_collection[layout_name][tag] = [tm[0] for tm in tms_prftg_scr]
+            
+            elif tag == TeamType.RANDOM_HIGH_MEDIUM:
+                if t_len >= 2:
+                    first_half = random.sample(teammates_collection[layout_name][TeamType.MEDIUM_FIRST], half_floor)
+                    second_half = random.sample(teammates_collection[layout_name][TeamType.HIGH_FIRST], half_ceil)
+                    teammates_collection[layout_name][tag] = first_half+second_half
+                    assert len(teammates_collection[layout_name][tag]) == t_len
+                    random.shuffle(teammates_collection[layout_name][tag])
+
+            elif tag == TeamType.RANDOM_HIGH_LOW:
+                if t_len >= 2:
+                    first_half = random.sample(teammates_collection[layout_name][TeamType.LOW_FIRST], half_floor)
+                    second_half = random.sample(teammates_collection[layout_name][TeamType.HIGH_FIRST], half_ceil)
+                    teammates_collection[layout_name][tag] = first_half+second_half
+                    assert len(teammates_collection[layout_name][tag]) == t_len
+                    random.shuffle(teammates_collection[layout_name][tag])
+
+            elif tag == TeamType.RANDOM_MEDIUM_LOW:
+                if t_len >= 2:
+                    first_half = random.sample(teammates_collection[layout_name][TeamType.LOW_FIRST], half_floor)
+                    second_half = random.sample(teammates_collection[layout_name][TeamType.MEDIUM_FIRST], half_ceil)
+                    teammates_collection[layout_name][tag] = first_half+second_half
+                    assert len(teammates_collection[layout_name][tag]) == t_len
+                    random.shuffle(teammates_collection[layout_name][tag])
             
             elif tag == TeamType.HIGH_LOW_RANDOM:
-                if args.teammates_len >= 2:
-                    all = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True) 
-                    high, low = all[0], all[-1]
-                    rand = random.sample(agents_perftag_score, args.teammates_len - 2)
+                if t_len >= 2:
+                    high, low = sorted_agents_perftag_score[0], sorted_agents_perftag_score[-1]
+                    rand = random.sample(agents_perftag_score, t_len - 2)
                     tms_prftg_scr = [high, low] + rand
                     teammates_collection[layout_name][TeamType.HIGH_LOW_RANDOM] = [tm[0] for tm in tms_prftg_scr]
     
-    print_teammates_collection(teammates_collection)
+    print(teammates_collection)
     return teammates_collection
 
 
