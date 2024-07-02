@@ -76,8 +76,8 @@ class RLAgentTrainer(OAITrainer):
                 }
             }
             '''
-            teammates_collection = {}
-            teammates_collection['all_layouts'] = {
+            train_teammates_collection = {}
+            train_teammates_collection['all_layouts'] = {
                 TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]
             }
         else:
@@ -92,19 +92,20 @@ class RLAgentTrainer(OAITrainer):
                 },
             }
             '''
-            teammates_collection = {}
-            for layout in self.args.layout_names:
-                teammates_collection[layout] = {
-                            TeamType.HIGH_FIRST: _tms_clctn[layout][TeamType.HIGH_FIRST],
-                            TeamType.LOW_FIRST: _tms_clctn[layout][TeamType.LOW_FIRST],
-                            }
-                if self.teammates_len >= 2:
-                    teammates_collection[layout][TeamType.HIGH_LOW_RANDOM] = _tms_clctn[layout][TeamType.HIGH_LOW_RANDOM]
-
-        self.check_teammates_collection_structure(teammates_collection)
-        
-        eval_teammates_collection = teammates_collection
-        return teammates_collection, eval_teammates_collection
+            if train_types == []:
+                train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
+            train_teammates_collection = {
+                layout_name: {tag: _tms_clctn[layout_name][tag] for tag in train_types}
+                for layout_name in self.args.layout_names
+            }
+        if eval_types == []:
+            eval_types = [tag for key, tag in vars(TeamType).items() if not key.startswith('__') and tag!=TeamType.SELF_PLAY]
+        eval_teammates_collection = {
+            layout_name: {tag: _tms_clctn[layout_name][tag] for tag in eval_types}
+            for layout_name in self.args.layout_names
+        }
+        self.check_teammates_collection_structure(train_teammates_collection)
+        return train_teammates_collection, eval_teammates_collection
 
 
     def get_envs(self, _env, _eval_envs, deterministic):
