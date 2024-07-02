@@ -65,4 +65,17 @@ if __name__ == '__main__':
 
     # get_selfplay_agent(args, force_training=True)
 
+    args.train_types = ['H']
+    args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']
+    args.exp_name = 'train_H'
     get_fcp_agent(args, force_training=False, parallel=True)
+
+    args.train_types = ['H', 'M', 'L']
+    args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']
+    args.exp_name = 'train_HML'
+    get_fcp_agent(args, force_training=False, parallel=False)
+
+    args.train_types = ['H', 'M', 'L', 'RHM', 'RHL', 'RML']
+    args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']
+    args.exp_name = 'train_HML_RHM_RHL_RML'
+    get_fcp_agent(args, force_training=False, parallel=False)

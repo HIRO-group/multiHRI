@@ -51,7 +51,7 @@ class RLAgentTrainer(OAITrainer):
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
         
         self.learning_agent, self.agents = self.get_learning_agent()
-        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(teammates_collection, selfplay, self.learning_agent)
+        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(teammates_collection, selfplay, self.learning_agent, self.args.train_types, self.args.eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
@@ -80,6 +80,7 @@ class RLAgentTrainer(OAITrainer):
             train_teammates_collection['all_layouts'] = {
                 TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]
             }
+            eval_teammates_collection = train_teammates_collection
         else:
             '''
             dict 
@@ -98,13 +99,14 @@ class RLAgentTrainer(OAITrainer):
                 layout_name: {tag: _tms_clctn[layout_name][tag] for tag in train_types}
                 for layout_name in self.args.layout_names
             }
-        if eval_types == []:
-            eval_types = [tag for key, tag in vars(TeamType).items() if not key.startswith('__') and tag!=TeamType.SELF_PLAY]
-        eval_teammates_collection = {
-            layout_name: {tag: _tms_clctn[layout_name][tag] for tag in eval_types}
-            for layout_name in self.args.layout_names
-        }
+            if eval_types == []:
+                eval_types = [tag for key, tag in vars(TeamType).items() if not key.startswith('__') and tag!=TeamType.SELF_PLAY]
+            eval_teammates_collection = {
+                layout_name: {tag: _tms_clctn[layout_name][tag] for tag in eval_types}
+                for layout_name in self.args.layout_names
+            }
         self.check_teammates_collection_structure(train_teammates_collection)
+        self.check_teammates_collection_structure(eval_teammates_collection)
         return train_teammates_collection, eval_teammates_collection
 
 
