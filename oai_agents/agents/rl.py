@@ -51,7 +51,7 @@ class RLAgentTrainer(OAITrainer):
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
         
         self.learning_agent, self.agents = self.get_learning_agent()
-        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(teammates_collection, selfplay, self.learning_agent)
+        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(teammates_collection, selfplay, self.learning_agent, self.args.train_types, self.args.eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
@@ -62,7 +62,7 @@ class RLAgentTrainer(OAITrainer):
         return learning_agent, agents
 
 
-    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent):
+    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent, train_types=[], eval_types=[]):
         if not _tms_clctn and not selfplay:
             raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
 
@@ -76,35 +76,38 @@ class RLAgentTrainer(OAITrainer):
                 }
             }
             '''
-            teammates_collection = {}
-            teammates_collection['all_layouts'] = {
+            train_teammates_collection = {}
+            train_teammates_collection['all_layouts'] = {
                 TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]
             }
+            eval_teammates_collection = train_teammates_collection
         else:
             '''
             dict 
             teammates_collection = {
                 'layout_name': {
-                    'high': [agent1, agent2],
-                    'medium': [agent3, agent4],
-                    'low': [agent5, agent6],
-                    'random': [agent7, agent8],
+                    'TeamType.HIGH_FIRST': [agent1, agent2],
+                    'TeamType.MEDIUM_FIRST': [agent3, agent4],
+                    'TeamType.LOW_FIRST': [agent5, agent6],
+                    'TeamType.RANDOM': [agent7, agent8],
                 },
             }
             '''
-            teammates_collection = {}
-            for layout in self.args.layout_names:
-                teammates_collection[layout] = {
-                            TeamType.HIGH_FIRST: _tms_clctn[layout][TeamType.HIGH_FIRST],
-                            TeamType.LOW_FIRST: _tms_clctn[layout][TeamType.LOW_FIRST],
-                            }
-                if self.teammates_len >= 2:
-                    teammates_collection[layout][TeamType.HIGH_LOW_RANDOM] = _tms_clctn[layout][TeamType.HIGH_LOW_RANDOM]
-
-        self.check_teammates_collection_structure(teammates_collection)
-        
-        eval_teammates_collection = teammates_collection
-        return teammates_collection, eval_teammates_collection
+            if train_types == []:
+                train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
+            train_teammates_collection = {
+                layout_name: {tag: _tms_clctn[layout_name][tag] for tag in train_types}
+                for layout_name in self.args.layout_names
+            }
+            if eval_types == []:
+                eval_types = [tag for key, tag in vars(TeamType).items() if not key.startswith('__') and tag!=TeamType.SELF_PLAY]
+            eval_teammates_collection = {
+                layout_name: {tag: _tms_clctn[layout_name][tag] for tag in eval_types}
+                for layout_name in self.args.layout_names
+            }
+        self.check_teammates_collection_structure(train_teammates_collection)
+        self.check_teammates_collection_structure(eval_teammates_collection)
+        return train_teammates_collection, eval_teammates_collection
 
 
     def get_envs(self, _env, _eval_envs, deterministic):
