@@ -68,7 +68,7 @@ if __name__ == '__main__':
     args.train_types = ['H']
     args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']
     args.exp_name = 'train_H'
-    get_fcp_agent(args, force_training=True, parallel=True)
+    get_fcp_agent(args, force_training=False, parallel=True)
 
     args.train_types = ['H', 'M', 'L']
     args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']

@@ -135,9 +135,9 @@ def generate_teammates_collection(population, args):
             elif tag == TeamType.MEDIUM_FIRST:
                 mean_score = (sorted_agents_perftag_score[0][2]+sorted_agents_perftag_score[-1][2])/2
                 # Sort scores by their distance to the mean_score
-                sorted_by_closeness = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))
+                sorted_by_closeness = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))[:t_len]
                 # Select the top num_teammates scores closest to the mean
-                teammates_collection[layout_name][tag] = sorted_by_closeness[:t_len]
+                teammates_collection[layout_name][tag] = [tm[0] for tm in sorted_by_closeness]
 
             elif tag == TeamType.MIDDLE_FIRST:
                 l = len(sorted_agents_perftag_score)
