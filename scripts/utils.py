@@ -46,9 +46,13 @@ def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
     except FileNotFoundError as e:
         print(
             f'Could not find saved FCP population, creating them from scratch...\nFull Error: {e}')
+        
+        # TODO: Need to have more seeds and structures, ex: 20 seeds and structures...
         seed, h_dim = [2907, 2907], [64, 256]
         inputs = [(args, ck_rate, seed[0], h_dim[0], True), # serialize = True
                   (args, ck_rate, seed[1], h_dim[1], True)]
+        
+
 
         if parallel:
             with multiprocessing.Pool() as pool:
@@ -91,10 +95,15 @@ def generate_teammates_collection(population, args):
     dict 
     teammates_collection = {
         'layout_name': {
-            'TeamType.HIGH_FIRST': [agent1, agent2],
-            'TeamType.MEDIUM_FIRST': [agent3, agent4],
-            'TeamType.LOW_FIRST': [agent5, agent6],
-            'TeamType.RANDOM': [agent7, agent8],
+            'training': {
+                'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
+                'TeamType.MEDIUM_FIRST': [agent3, agent4],
+                'TeamType.LOW_FIRST': [agent5, agent6],
+                'TeamType.RANDOM': [agent7, agent8],
+            }
+            'eval': {
+            
+            }
         },
     }
     '''

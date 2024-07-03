@@ -50,7 +50,7 @@ from overcooked_ai_py.mdp.overcooked_mdp import Direction, Action, OvercookedSta
 # from overcooked_ai_py.planning.planners import MediumLevelPlanner
 from overcooked_ai_py.visualization.state_visualizer import StateVisualizer, roboto_path
 from overcooked_ai_py.planning.planners import MediumLevelActionManager
-from scripts.train_agents import get_bc_and_human_proxy
+# from scripts.train_agents import get_bc_and_human_proxy
 
 class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.

@@ -15,7 +15,7 @@ def load_agent(agent_path, args=None):
     try:
         load_dict = th.load(agent_path / 'agent_file', map_location=args.device)
     except FileNotFoundError:
-        agent_path = agent_path / 'best' / 'agents_dir' / 'agent_0'
+        agent_path = agent_path / 'agents_dir' / 'agent_0'
         load_dict = th.load(agent_path / 'agent_file', map_location=args.device)
     agent = load_dict['agent_type'].load(agent_path, args)
     return agent

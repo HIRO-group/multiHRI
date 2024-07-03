@@ -382,7 +382,7 @@ class OAITrainer(ABC):
             return lr
         return linear_anneal
 
-
+    # TODO: Need to add features for us to calculate the average performance of the tags.
     def evaluate(self, eval_agent, num_eps_per_layout_per_tm=5, visualize=False, timestep=None, log_wandb=True,
                  deterministic=False):
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
