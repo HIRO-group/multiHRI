@@ -133,7 +133,7 @@ def generate_teammates_collection(population, args):
                 teammates_collection[layout_name][tag] = [tm[0] for tm in tms_prftg_scr]
             
             elif tag == TeamType.MEDIUM_FIRST:
-                mean_score = (sorted_agents_perftag_score[0]+sorted_agents_perftag_score[-1])/2
+                mean_score = (sorted_agents_perftag_score[0][2]+sorted_agents_perftag_score[-1][2])/2
                 # Sort scores by their distance to the mean_score
                 sorted_by_closeness = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))
                 # Select the top num_teammates scores closest to the mean
