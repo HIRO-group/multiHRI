@@ -166,21 +166,21 @@ def generate_teammates_collection(population, args):
                 tms_prftg_scr = random.sample(agents_perftag_score, t_len)
                 teammates_collection[layout_name][tag] = [tm[0] for tm in tms_prftg_scr]
             
-            elif tag == TeamType.RANDOM_HIGH_MEDIUM:
+            elif tag == TeamType.HIGH_MEDIUM:
                 if t_len >= 2:
                     first_half = random.sample(teammates_collection[layout_name][TeamType.MEDIUM_FIRST], half_floor)
                     second_half = random.sample(teammates_collection[layout_name][TeamType.HIGH_FIRST], half_ceil)
                     teammates_collection[layout_name][tag] = first_half+second_half
                     random.shuffle(teammates_collection[layout_name][tag])
 
-            elif tag == TeamType.RANDOM_HIGH_LOW:
+            elif tag == TeamType.HIGH_LOW:
                 if t_len >= 2:
                     first_half = random.sample(teammates_collection[layout_name][TeamType.LOW_FIRST], half_floor)
                     second_half = random.sample(teammates_collection[layout_name][TeamType.HIGH_FIRST], half_ceil)
                     teammates_collection[layout_name][tag] = first_half+second_half
                     random.shuffle(teammates_collection[layout_name][tag])
 
-            elif tag == TeamType.RANDOM_MEDIUM_LOW:
+            elif tag == TeamType.MEDIUM_LOW:
                 if t_len >= 2:
                     first_half = random.sample(teammates_collection[layout_name][TeamType.LOW_FIRST], half_floor)
                     second_half = random.sample(teammates_collection[layout_name][TeamType.MEDIUM_FIRST], half_ceil)

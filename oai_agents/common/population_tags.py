@@ -23,8 +23,9 @@ class TeamType:
     MIDDLE_FIRST = 'MID'
     LOW_FIRST = 'L'
     RANDOM = 'R'
-    RANDOM_HIGH_MEDIUM = 'RHM'
-    RANDOM_HIGH_LOW = 'RHL'
-    RANDOM_MEDIUM_LOW = 'RML'
+    HIGH_MEDIUM = 'HM'
+    HIGH_LOW = 'HL'
+    MEDIUM_LOW = 'ML'
+    
     HIGH_LOW_RANDOM = 'HLR'
     SELF_PLAY = 'SP'

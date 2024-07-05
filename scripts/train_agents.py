@@ -5,6 +5,7 @@ import torch as th
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
+from oai_agents.common.population_tags import TeamType
 from scripts.utils import get_fcp_population
 
 
@@ -65,17 +66,17 @@ if __name__ == '__main__':
 
     # get_selfplay_agent(args, force_training=True)
 
-    args.train_types = ['H']
-    args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']
-    args.exp_name = 'train_H'
+    args.eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST, 
+                       TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM,
+                       TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM]
+
+
+    args.train_types = [TeamType.HIGH_FIRST]
     get_fcp_agent(args, force_training=False, parallel=True)
 
-    args.train_types = ['H', 'M', 'L']
-    args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']
-    args.exp_name = 'train_HML'
+    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
     get_fcp_agent(args, force_training=False, parallel=True)
 
-    args.train_types = ['H', 'M', 'L', 'RHM', 'RHL', 'RML']
-    args.eval_types = ['H', 'M', 'MID', 'L', 'R', 'RHM', 'RHL', 'RML', 'HLR']
-    args.exp_name = 'train_HML_RHM_RHL_RML'
+    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST,
+                        TeamType.HIGH_MEDIUM, TeamType.HIGH_LOW, TeamType.MEDIUM_LOW]
     get_fcp_agent(args, force_training=False, parallel=True)

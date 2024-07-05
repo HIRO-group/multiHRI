@@ -201,11 +201,12 @@ class RLAgentTrainer(OAITrainer):
 
 
     def train_agents(self, total_train_timesteps, exp_name=None):
-        print("Training agent: "+self.name)
-
+        exp_name = exp_name or 'train_' + '_'.join(self.args.train_types)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
-                         reinit=True, name= exp_name or self.args.exp_name + '_' + self.name, mode=self.args.wandb_mode,
+                         reinit=True, name= exp_name + '_' + self.name, mode=self.args.wandb_mode,
                          resume="allow")
+        
+        print("Training agent: "+self.name+ ", for experiment: "+exp_name)
 
         if self.fcp_ck_rate is not None:
             self.ck_list = []
