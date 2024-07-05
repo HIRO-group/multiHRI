@@ -4,8 +4,7 @@
 1. Follow setup instrcution for overcooked_ai from [here](https://github.com/HIRO-group/overcooked_ai)
 3. Clone this repository: `git clone git@github.com:HIRO-group/multiHRI.git`
 2. Activate conda env: `conda activate mhri`
-3. cd into the repo and run: `pip install -e .`
-4. If step 3 did not work, try commenting the liblsl in setup.py
+3. cd into the repo and run: `pip install -e .`. If step 3 did not work, try commenting the liblsl in setup.py and install liblsl either from conda or pip. 
 
 
 <!-- # Hierarchical Ad Hoc Agents (HAHA)
