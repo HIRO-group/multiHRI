@@ -22,7 +22,8 @@ def get_selfplay_agent(args, tag=None, force_training=False):
         name=name,
         args=args,
         selfplay=True,
-        teammates_collection=[],
+        teammates_collection={},
+        agent=None,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         seed=678,
@@ -47,24 +48,44 @@ def get_fcp_agent(args, force_training=False, parallel=True):
         seed=2602,
     )
 
-    fcp_trainer.train_agents(total_train_timesteps=args.total_training_timesteps)
+    agents = fcp_trainer.train_agents(total_train_timesteps=args.total_training_timesteps)
+    # agent = 
+
+    # selfplay_trainer = RLAgentTrainer(
+    #     name='fcp_selfplay',
+    #     args=args,
+    #     agent = agents[0],
+    #     teammates_collection=[],
+    #     epoch_timesteps=args.epoch_timesteps,
+    #     n_envs=args.n_envs,
+    #     seed=678,
+    # )
+
     return fcp_trainer.get_agents()[0]
+
+def set_input(args, use_gpu=True):
+    args.layout_names = ['3_chefs_small_kitchen']
+    args.teammates_len = 2
+    args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
+    
+    if use_gpu: 
+        args.n_envs = 100
+        args.epoch_timesteps = 1e5
+        args.total_training_timesteps = 5e6
+
+    else: # Used for doing quick tests
+        args.sb_verbose = 1
+        args.wandb_mode = 'disabled'
+        args.n_envs = 1
+        args.epoch_timesteps = 2
+        args.total_training_timesteps = 2500
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    # args.sb_verbose = 0
-    # args.wandb_mode = 'disabled'
 
-    args.layout_names = ['3_chefs_small_kitchen']
-    args.teammates_len = 2
-    args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
 
-    args.n_envs = 100
-    args.epoch_timesteps = 1e5
-    args.total_training_timesteps = 5e6
-
-    # get_selfplay_agent(args, force_training=True)
+    set_input(args, use_gpu=False)
 
     args.eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST, 
                        TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM,
@@ -72,11 +93,13 @@ if __name__ == '__main__':
 
 
     args.train_types = [TeamType.HIGH_FIRST]
-    get_fcp_agent(args, force_training=False, parallel=True)
 
-    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
-    get_fcp_agent(args, force_training=False, parallel=True)
+    get_selfplay_agent(args, force_training=True)
+    # get_fcp_agent(args, force_training=False, parallel=True)
 
-    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST,
-                        TeamType.HIGH_MEDIUM, TeamType.HIGH_LOW, TeamType.MEDIUM_LOW]
-    get_fcp_agent(args, force_training=False, parallel=True)
+    # args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
+    # get_fcp_agent(args, force_training=False, parallel=True)
+
+    # args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST,
+    #                     TeamType.HIGH_MEDIUM, TeamType.HIGH_LOW, TeamType.MEDIUM_LOW]
+    # get_fcp_agent(args, force_training=False, parallel=True)

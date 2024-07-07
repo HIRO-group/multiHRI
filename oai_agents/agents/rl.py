@@ -18,7 +18,7 @@ VEC_ENV_CLS = DummyVecEnv #
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
     def __init__(self, teammates_collection, selfplay, args, 
-                epoch_timesteps, n_envs,
+                agent, epoch_timesteps, n_envs,
                 seed, num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
@@ -50,39 +50,31 @@ class RLAgentTrainer(OAITrainer):
 
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
         
-        self.learning_agent, self.agents = self.get_learning_agent()
+        self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(teammates_collection, selfplay, self.learning_agent, self.args.train_types, self.args.eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
-    def get_learning_agent(self):
+    def get_learning_agent(self, agent):
+        if agent is not None:
+            learning_agent = agent
+            agents = [learning_agent]
+            return learning_agent, agents
+
         sb3_agent, agent_name = self.get_sb3_agent()
         learning_agent = self.wrap_agent(sb3_agent, agent_name)
         agents = [learning_agent]
         return learning_agent, agents
 
 
-    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent, train_types=[], eval_types=[]):
-        if not _tms_clctn and not selfplay:
-            raise ValueError('Either a teammates_collection with len > 0 must be passed in or selfplay must be true')
+    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent, 
+                                 train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
+                                 eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST,
+                                               TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM, 
+                                               TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM]):
 
-        if selfplay:
-            '''
-            list
-            teammates_collection = 
-            {
-                'all_layouts': {
-                    TeamType.SELF_PLAY: [agent1, agent1]
-                }
-            }
-            '''
-            train_teammates_collection = {}
-            train_teammates_collection['all_layouts'] = {
-                TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]
-            }
-            eval_teammates_collection = train_teammates_collection
-        else:
-            '''
+        '''
+        Returns a dictionary of teammates_collection for training and evaluation
             dict 
             teammates_collection = {
                 'layout_name': {
@@ -92,19 +84,28 @@ class RLAgentTrainer(OAITrainer):
                     'TeamType.RANDOM': [agent7, agent8],
                 },
             }
-            '''
-            if train_types == []:
-                train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
-            train_teammates_collection = {
-                layout_name: {tag: _tms_clctn[layout_name][tag] for tag in train_types}
+        '''
+        if _tms_clctn == {}:
+            assert selfplay is True
+            print("No teammates collection provided, using ALL_SELF_PLAY: teammates will be the agent itself")
+
+            _tms_clctn = {
+                layout_name: 
+                    {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
                 for layout_name in self.args.layout_names
             }
-            if eval_types == []:
-                eval_types = [tag for key, tag in vars(TeamType).items() if not key.startswith('__') and tag!=TeamType.SELF_PLAY]
-            eval_teammates_collection = {
-                layout_name: {tag: _tms_clctn[layout_name][tag] for tag in eval_types}
-                for layout_name in self.args.layout_names
-            }
+            train_types = [TeamType.SELF_PLAY]
+            eval_types = [TeamType.SELF_PLAY]
+
+        train_teammates_collection = {
+            layout_name: {tag: _tms_clctn[layout_name][tag] for tag in train_types}
+            for layout_name in self.args.layout_names
+        }
+        eval_teammates_collection = {
+            layout_name: {tag: _tms_clctn[layout_name][tag] for tag in eval_types}
+            for layout_name in self.args.layout_names
+        }
+
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
         return train_teammates_collection, eval_teammates_collection
@@ -169,14 +170,6 @@ class RLAgentTrainer(OAITrainer):
                     'low': [agent5, agent6],
                     'random': [agent7, agent8],
                 },
-            }
-
-        IF we use SP:
-        teammates_collection = 
-            {
-                'all_layouts': {
-                    TeamType.SELF_PLAY: [agent1, agent1]
-                }
             }
         '''
  
