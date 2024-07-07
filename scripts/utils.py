@@ -18,8 +18,8 @@ def train_a_agent_with_checkpoints(args, ck_rate, seed, h_dim, serialize):
     rlat = RLAgentTrainer(
         name=name,
         args=args,
-        selfplay=True,
-        teammates_collection=[],
+        teammates_collection={},
+        agent=None,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         hidden_dim=h_dim,
@@ -51,8 +51,6 @@ def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
         seed, h_dim = [2907, 2907], [64, 256]
         inputs = [(args, ck_rate, seed[0], h_dim[0], True), # serialize = True
                   (args, ck_rate, seed[1], h_dim[1], True)]
-        
-
 
         if parallel:
             with multiprocessing.Pool() as pool:
@@ -80,8 +78,8 @@ def save_fcp_pop(args, population):
         rt = RLAgentTrainer(
             name=f'fcp_pop_{layout_name}',
             args=args,
-            teammates_collection=[],
-            selfplay=True,
+            agent=None,
+            teammates_collection={},
             epoch_timesteps=args.epoch_timesteps,
             n_envs=args.n_envs,
             seed=None,
@@ -119,8 +117,15 @@ def generate_teammates_collection(population, args):
     #         TeamType.RANDOM_MEDIUM_LOW: [],
     #         TeamType.HIGH_LOW_RANDOM: [],
     #                             } for layout_name in args.layout_names}
+
+    non_sp_tags = [
+            TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST,
+            TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM,
+            TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM
+            ]
+    
     teammates_collection = {
-        layout_name: {tag: [] for key, tag in vars(TeamType).items() if not key.startswith('__') and tag != TeamType.SELF_PLAY}
+        layout_name: {tag: [] for tag in non_sp_tags}
         for layout_name in args.layout_names
     }
     
@@ -131,7 +136,7 @@ def generate_teammates_collection(population, args):
                                 agent.layout_performance_tags[layout_name], 
                                 agent.layout_scores[layout_name])
                                 for agent in layout_population]
-        non_sp_tags = [tag for key, tag in vars(TeamType).items() if not key.startswith('__') and tag != TeamType.SELF_PLAY]
+
         sorted_agents_perftag_score = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True)
         t_len = args.teammates_len
         half_floor = math.floor(t_len/2) 
@@ -194,16 +199,44 @@ def generate_teammates_collection(population, args):
                     tms_prftg_scr = [high, low] + rand
                     teammates_collection[layout_name][TeamType.HIGH_LOW_RANDOM] = [tm[0] for tm in tms_prftg_scr]
     
-    print(teammates_collection)
     return teammates_collection
+
+
+
+def update_tms_clction_with_selfplay_types(teammates_collection, agent, args):
+
+    for layout in args.layout_names:
+        high_p_agent = random.choice([a for a in teammates_collection[layout][TeamType.HIGH_FIRST]])
+        medium_p_agent = random.choice([a for a in teammates_collection[layout][TeamType.MEDIUM_FIRST]])
+        low_p_agent = random.choice([a for a in teammates_collection[layout][TeamType.LOW_FIRST]])
+
+        self_teammates = [agent for _ in range(args.teammates_len-1)]
+        teammates_collection[layout][TeamType.SELF_PLAY_HIGH] = self_teammates + [high_p_agent]
+        teammates_collection[layout][TeamType.SELF_PLAY_MEDIUM] = self_teammates + [medium_p_agent]
+        teammates_collection[layout][TeamType.SELF_PLAY_LOW] = self_teammates + [low_p_agent]
+
+    # print_teammates_collection(teammates_collection)
+    return teammates_collection
+
 
 
 def print_teammates_collection(teammates_collection):
     for layout_name in teammates_collection:
-        print(f'Layout: {layout_name}')
         for tag in teammates_collection[layout_name]:
             print(f'\t{tag}:')
             teammates = teammates_collection[layout_name][tag]
             for agent in teammates:
-                print(f'\t{agent.name}')
+                print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
             print('\n')
+
+
+def load_agents(args, name, tag, force_training=False):
+    if force_training:
+        return []
+    
+    try:
+        agents = RLAgentTrainer.load_agents(args, name=name, tag=tag or 'best')
+        return agents
+    except FileNotFoundError as e:
+        print(f'Could not find saved {name} agent \nFull Error: {e}')
+        return []

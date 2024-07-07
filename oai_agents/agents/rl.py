@@ -17,7 +17,7 @@ VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
-    def __init__(self, teammates_collection, selfplay, args, 
+    def __init__(self, teammates_collection, args, 
                 agent, epoch_timesteps, n_envs,
                 seed, num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
@@ -51,13 +51,19 @@ class RLAgentTrainer(OAITrainer):
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
         
         self.learning_agent, self.agents = self.get_learning_agent(agent)
-        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(teammates_collection, selfplay, self.learning_agent, self.args.train_types, self.args.eval_types)
+        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
+                                                                                                   learning_agent = self.learning_agent,
+                                                                                                    train_types = self.args.train_types, 
+                                                                                                    eval_types = self.args.eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
     def get_learning_agent(self, agent):
-        if agent is not None:
+        if agent:
             learning_agent = agent
+            learning_agent.agent.env = self.env
+            learning_agent.agent.env.reset()
+
             agents = [learning_agent]
             return learning_agent, agents
 
@@ -67,12 +73,11 @@ class RLAgentTrainer(OAITrainer):
         return learning_agent, agents
 
 
-    def get_teammates_collection(self, _tms_clctn, selfplay, learning_agent, 
+    def get_teammates_collection(self, _tms_clctn, learning_agent, 
                                  train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
                                  eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST,
                                                TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM, 
                                                TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM]):
-
         '''
         Returns a dictionary of teammates_collection for training and evaluation
             dict 
@@ -86,9 +91,7 @@ class RLAgentTrainer(OAITrainer):
             }
         '''
         if _tms_clctn == {}:
-            assert selfplay is True
-            print("No teammates collection provided, using ALL_SELF_PLAY: teammates will be the agent itself")
-
+            print("No teammates collection provided, using SELF_PLAY: teammates will be the agent itself.")
             _tms_clctn = {
                 layout_name: 
                     {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
@@ -182,19 +185,22 @@ class RLAgentTrainer(OAITrainer):
 
 
     def _get_constructor_parameters(self):
-        return dict(args=self.args, name=self.name, use_lstm=self.use_lstm, use_frame_stack=self.use_frame_stack,
+        return dict(args=self.args, name=self.name, use_lstm=self.use_lstm, 
+                    use_frame_stack=self.use_frame_stack,
                     hidden_dim=self.hidden_dim, seed=self.seed)
 
     def wrap_agent(self, sb3_agent, name):
         if self.use_lstm:
-            agent = SB3LSTMWrapper(sb3_agent, name, self.args)
-        else:
-            agent = SB3Wrapper(sb3_agent, name, self.args)
-        return agent
+            return SB3LSTMWrapper(sb3_agent, name, self.args)
+        return SB3Wrapper(sb3_agent, name, self.args)
+
+    def get_experiment_name(self, exp_name):
+        all_train_teamtypes = [tag for tags_dict in self.teammates_collection.values() for tag in tags_dict.keys()]
+        return exp_name or 'train_' + '_'.join(all_train_teamtypes)
 
 
     def train_agents(self, total_train_timesteps, exp_name=None):
-        exp_name = exp_name or 'train_' + '_'.join(self.args.train_types)
+        exp_name = self.get_experiment_name(exp_name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name= exp_name + '_' + self.name, mode=self.args.wandb_mode,
                          resume="allow")
