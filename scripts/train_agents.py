@@ -35,9 +35,6 @@ def get_fcp_agent_w_tms_clction(args, tag=None, force_training=False, parallel=T
                                               ck_rate = args.total_training_timesteps // 5,
                                               force_training=force_training,
                                               parallel=parallel)
-    print_teammates_collection(teammates_collection)
-    print(teammates_collection)
-
     name = 'fcp'    
     agents = load_agents(args, name=name, tag=tag, force_training=force_training)
     if agents:
@@ -66,6 +63,7 @@ def get_fcp_agent_trained_with_selfplay_types(args, fcp_agent, tms_clction, forc
     teammates_collection = update_tms_clction_with_selfplay_types(teammates_collection=tms_clction,
                                                                   agent=fcp_agent,
                                                                   args=args)
+    
     fcp_trainer = RLAgentTrainer(
         name=name,
         args=args,

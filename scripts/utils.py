@@ -204,7 +204,6 @@ def generate_teammates_collection(population, args):
 
 
 def update_tms_clction_with_selfplay_types(teammates_collection, agent, args):
-
     for layout in args.layout_names:
         high_p_agent = random.choice([a for a in teammates_collection[layout][TeamType.HIGH_FIRST]])
         medium_p_agent = random.choice([a for a in teammates_collection[layout][TeamType.MEDIUM_FIRST]])
@@ -214,8 +213,8 @@ def update_tms_clction_with_selfplay_types(teammates_collection, agent, args):
         teammates_collection[layout][TeamType.SELF_PLAY_HIGH] = self_teammates + [high_p_agent]
         teammates_collection[layout][TeamType.SELF_PLAY_MEDIUM] = self_teammates + [medium_p_agent]
         teammates_collection[layout][TeamType.SELF_PLAY_LOW] = self_teammates + [low_p_agent]
-
-    # print_teammates_collection(teammates_collection)
+    
+    print_teammates_collection(teammates_collection=teammates_collection)
     return teammates_collection
 
 
