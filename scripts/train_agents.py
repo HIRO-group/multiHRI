@@ -56,13 +56,13 @@ if __name__ == '__main__':
     # args.sb_verbose = 0
     # args.wandb_mode = 'disabled'
 
-    args.layout_names = ['3_chefs_small_kitchen']
+    args.layout_names = ['3_chefs_forced_coordination']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
 
     args.n_envs = 100
     args.epoch_timesteps = 1e5
-    args.total_training_timesteps = 5e6
+    args.total_training_timesteps = 2 * 5e6
 
     # get_selfplay_agent(args, force_training=True)
 
@@ -72,11 +72,11 @@ if __name__ == '__main__':
 
 
     args.train_types = [TeamType.HIGH_FIRST]
-    get_fcp_agent(args, force_training=False, parallel=True)
+    get_fcp_agent(args, force_training=True, parallel=True)
 
-    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
-    get_fcp_agent(args, force_training=False, parallel=True)
+    # args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
+    # get_fcp_agent(args, force_training=False, parallel=True)
 
-    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST,
-                        TeamType.HIGH_MEDIUM, TeamType.HIGH_LOW, TeamType.MEDIUM_LOW]
-    get_fcp_agent(args, force_training=False, parallel=True)
+    # args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST,
+    #                     TeamType.HIGH_MEDIUM, TeamType.HIGH_LOW, TeamType.MEDIUM_LOW]
+    # get_fcp_agent(args, force_training=False, parallel=True)
