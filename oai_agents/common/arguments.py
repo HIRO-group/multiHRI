@@ -40,21 +40,9 @@ def get_arguments(additional_args=[]):
     parser.add_argument('args', nargs='?', type=str, default='', help='')
 
     parser.add_argument('--epoch-timesteps', type=int)
-    parser.add_argument('--total-train-timesteps', type=int)
     parser.add_argument('--n-envs', type=int, help='Number of environments to use while training')
     parser.add_argument('--teammates-len',  type=int)
-    parser.add_argument('--groups-num-in-population', type=int, default=2, help="Number of groups in the FCP population. Each group is a list of teammates_len agents")
-    parser.add_argument(
-        '--train-types', type=str, nargs='*', default=[], 
-        choices=[v for k, v in vars(TeamType).items() if not k.startswith('__')],
-        help='Specify the train types to include, e.g., H M MID L R RHM RHL RML HLR SP'
-    )
-    parser.add_argument(
-        '--eval-types', type=str, nargs='*', default=[], 
-        choices=[v for k, v in vars(TeamType).items() if not k.startswith('__')],
-        help='Specify the evaluation types to include, e.g., H M MID L R RHM RHL RML HLR SP'
-    )
-
+    
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
 

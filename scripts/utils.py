@@ -7,7 +7,7 @@ import dill
 import math
 
 
-def train_a_agent_with_checkpoints(args, ck_rate, seed, h_dim, serialize):
+def train_a_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
         Returns population = {layout: [agent1,  agent2, ...] }
         either serialized or not based on serialize flag
@@ -18,15 +18,17 @@ def train_a_agent_with_checkpoints(args, ck_rate, seed, h_dim, serialize):
     rlat = RLAgentTrainer(
         name=name,
         args=args,
-        teammates_collection={},
         agent=None,
+        teammates_collection={},
+        train_types=[TeamType.SELF_PLAY],
+        eval_types=[TeamType.SELF_PLAY],
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         hidden_dim=h_dim,
         seed=seed,
         fcp_ck_rate=ck_rate,
     )
-    rlat.train_agents(total_train_timesteps=args.total_training_timesteps)
+    rlat.train_agents(total_train_timesteps=total_training_timesteps)
     for layout_name in args.layout_names:
         population[layout_name] = rlat.get_fcp_agents(layout_name)
     if serialize:
@@ -34,7 +36,7 @@ def train_a_agent_with_checkpoints(args, ck_rate, seed, h_dim, serialize):
     return population
 
 
-def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
+def get_fcp_population(args, ck_rate, total_training_timesteps, parallel=True, force_training=False):
     population = {layout_name: [] for layout_name in args.layout_names} # = [(agent, score, tag), ...]
     try:
         if force_training:
@@ -44,13 +46,11 @@ def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
             print(f'Loaded fcp_pop with {len(population[layout_name])} agents.')
 
     except FileNotFoundError as e:
-        print(
-            f'Could not find saved FCP population, creating them from scratch...\nFull Error: {e}')
+        print(f'Could not find saved FCP population, creating them from scratch...\nFull Error: {e}')
         
-        # TODO: Need to have more seeds and structures, ex: 20 seeds and structures...
         seed, h_dim = [2907, 2907], [64, 256]
-        inputs = [(args, ck_rate, seed[0], h_dim[0], True), # serialize = True
-                  (args, ck_rate, seed[1], h_dim[1], True)]
+        inputs = [(args, total_training_timesteps, ck_rate, seed[0], h_dim[0], True), # serialize = True
+                  (args, total_training_timesteps, ck_rate, seed[1], h_dim[1], True)]
 
         if parallel:
             with multiprocessing.Pool() as pool:
@@ -62,9 +62,10 @@ def get_fcp_population(args, ck_rate, parallel=True, force_training=False):
         else:
             for inp in inputs:
                 res = train_a_agent_with_checkpoints(args=inp[0],
-                                                     ck_rate=inp[1],
-                                                     seed=inp[2],
-                                                     h_dim=inp[3],
+                                                     total_training_timesteps = inp[1],
+                                                     ck_rate=inp[2],
+                                                     seed=inp[3],
+                                                     h_dim=inp[4],
                                                      serialize=False)
                 for layout_name in args.layout_names:
                     population[layout_name].extend(res[layout_name])
@@ -80,6 +81,8 @@ def save_fcp_pop(args, population):
             args=args,
             agent=None,
             teammates_collection={},
+            train_types=[TeamType.SELF_PLAY],
+            eval_types=[TeamType.SELF_PLAY],
             epoch_timesteps=args.epoch_timesteps,
             n_envs=args.n_envs,
             seed=None,

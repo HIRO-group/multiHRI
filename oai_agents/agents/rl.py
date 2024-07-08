@@ -19,7 +19,8 @@ class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
     def __init__(self, teammates_collection, args, 
                 agent, epoch_timesteps, n_envs,
-                seed, num_layers=2, hidden_dim=256, 
+                seed, train_types, eval_types,
+                num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
@@ -34,6 +35,9 @@ class RLAgentTrainer(OAITrainer):
         
         self.epoch_timesteps = epoch_timesteps
         self.n_envs = n_envs
+
+        self.train_types = train_types
+        self.eval_types = eval_types
 
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -53,8 +57,8 @@ class RLAgentTrainer(OAITrainer):
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
-                                                                                                    train_types = self.args.train_types, 
-                                                                                                    eval_types = self.args.eval_types)
+                                                                                                    train_types = self.train_types, 
+                                                                                                    eval_types = self.eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
@@ -97,8 +101,8 @@ class RLAgentTrainer(OAITrainer):
                     {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
                 for layout_name in self.args.layout_names
             }
-            train_types = [TeamType.SELF_PLAY]
-            eval_types = [TeamType.SELF_PLAY]
+            assert len(train_types) == 1 and len(eval_types) == 1
+            assert train_types[0] == TeamType.SELF_PLAY and eval_types[0] == TeamType.SELF_PLAY
 
         train_teammates_collection = {
             layout_name: {tag: _tms_clctn[layout_name][tag] for tag in train_types}
