@@ -45,21 +45,7 @@ def ensure_we_have_enough_train_and_eval_agents(teammates_len,
     total_population_len = len(AgentPerformance.ALL) * num_self_play_agents_to_train
     train_agents_len = len(train_types) * teammates_len
     eval_agents_len = len(eval_types) * teammates_len
-
     assert total_population_len > train_agents_len + eval_agents_len
-
-    '''If both train_type and eval_type are the same, then we need 
-        to make sure we have enough agents to form each specific teamtype'''
-    
-    required_num_agents = 0
-    for train_type in train_types:
-        for eval_type in eval_types:
-            if train_type == eval_type:
-                required_num_agents += 2 * teammates_len
-            else:
-                required_num_agents += teammates_len
-
-    assert total_population_len >= required_num_agents, f'Not enough agents to form teams of type {train_types} and {eval_types}'
 
 
 
@@ -96,7 +82,7 @@ def get_fcp_population(args,
 
         ensure_we_have_enough_train_and_eval_agents(teammates_len=args.teammates_len,
                                                     train_types=train_types,
-                                                    eval_type=eval_types_to_generate,
+                                                    eval_types=eval_types_to_generate,
                                                     num_self_play_agents_to_train=num_self_play_agents_to_train,
                                                     )
 
@@ -129,7 +115,7 @@ def get_fcp_population(args,
                                                        population=population,
                                                        train_types=train_types,
                                                        eval_types_to_generate=eval_types_to_generate,
-                                                       eval_types_to_load_from_file=eval_types_to_load_from_file)
+                                                       eval_types_to_read_from_file=eval_types_to_load_from_file)
 
 
 def save_fcp_pop(args, population):
@@ -158,86 +144,61 @@ def get_teammates_per_type_and_layout(agents_perftag_score, team_types, t_len):
     for ttype in team_types:
         if ttype == TeamType.HIGH_FIRST:
             tms_prftg_scr = sorted_agents_perftag_score[:t_len]
-            teammates_per_type[ttype] = [tm[0] for tm in tms_prftg_scr]
+            teammates_per_type[ttype].append([tm[0] for tm in tms_prftg_scr])
         
         elif ttype == TeamType.MEDIUM_FIRST:
             mean_score = (sorted_agents_perftag_score[0][2] + sorted_agents_perftag_score[-1][2])/2
-
             sorted_by_closeness = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))[:t_len]
-            teammates_per_type[ttype] = [tm[0] for tm in sorted_by_closeness]
+            teammates_per_type[ttype].append([tm[0] for tm in sorted_by_closeness])
 
         elif ttype == TeamType.MIDDLE_FIRST:
             middle_index = len(sorted_agents_perftag_score)//2
             start_index_for_mid = middle_index - t_len//2
             end_index_for_mid = start_index_for_mid + t_len
             tms_prftg_scr = sorted_agents_perftag_score[start_index_for_mid:end_index_for_mid+1]
-            teammates_per_type[ttype] = [tm[0] for tm in tms_prftg_scr]
+            teammates_per_type[ttype].append([tm[0] for tm in tms_prftg_scr])
 
         elif ttype == TeamType.LOW_FIRST:
             tms_prftg_scr = sorted_agents_perftag_score[-t_len:]
-            teammates_per_type[ttype] = [tm[0] for tm in tms_prftg_scr]
+            teammates_per_type[ttype].append([tm[0] for tm in tms_prftg_scr])
 
         elif ttype == TeamType.RANDOM:
             tms_prftg_scr = random.sample(agents_perftag_score, t_len)
-            teammates_per_type[ttype] = [tm[0] for tm in tms_prftg_scr]
+            teammates_per_type[ttype].append([tm[0] for tm in tms_prftg_scr])
 
         elif ttype == TeamType.HIGH_MEDIUM:
             if t_len >= 2:
                 first_half = random.sample(teammates_per_type[TeamType.MEDIUM_FIRST], t_len//2)
                 second_half = random.sample(teammates_per_type[TeamType.HIGH_FIRST],  t_len - t_len//2)
-                teammates_per_type[ttype] = first_half + second_half
-                random.shuffle(teammates_per_type[ttype])
+                teammates_per_type[ttype].append(first_half + second_half)
+                random.shuffle(teammates_per_type[ttype][0])
 
         elif ttype == TeamType.HIGH_LOW:
             if t_len >= 2:
                 first_half = random.sample(teammates_per_type[TeamType.LOW_FIRST], t_len//2)
                 second_half = random.sample(teammates_per_type[TeamType.HIGH_FIRST], t_len - t_len//2)
-                teammates_per_type[ttype] = first_half+second_half
-                random.shuffle(teammates_per_type[ttype])
+                teammates_per_type[ttype].append(first_half+second_half)
+                random.shuffle(teammates_per_type[ttype][0])
 
         elif ttype == TeamType.MEDIUM_LOW:
             if t_len >= 2:
                 first_half = random.sample(teammates_per_type[TeamType.LOW_FIRST], t_len//2)
                 second_half = random.sample(teammates_per_type[TeamType.MEDIUM_FIRST], t_len - t_len//2)
-                teammates_per_type[ttype] = first_half+second_half
-                random.shuffle(teammates_per_type[ttype])
+                teammates_per_type[ttype].append(first_half+second_half)
+                random.shuffle(teammates_per_type[ttype][0])
         
         elif ttype == TeamType.HIGH_LOW_RANDOM:
             if t_len >= 2:
                 high, low = sorted_agents_perftag_score[0], sorted_agents_perftag_score[-1]
                 rand = random.sample(agents_perftag_score, t_len - 2)
                 tms_prftg_scr = [high, low] + rand
-                teammates_per_type[TeamType.HIGH_LOW_RANDOM] = [tm[0] for tm in tms_prftg_scr]
+                teammates_per_type[ttype].append([tm[0] for tm in tms_prftg_scr])
     
     selected_agents = []
     for ttype in team_types:
         selected_agents.extend(teammates_per_type[ttype])
 
     return teammates_per_type, selected_agents
-
-
-
-def shuffle_between_eval_and_train(train_collection_pr_lyt, eval_collection_pr_lyt, train_types, eval_types):
-    for ttype in eval_types + train_types:
-        train_agents = train_collection_pr_lyt[ttype]
-        eval_agents = eval_collection_pr_lyt[ttype]
-        all_agents = train_agents + eval_agents
-        random.shuffle(all_agents)
-
-        new_train_agents, new_eval_agents = [], []
-        for agent in all_agents:
-            if agent not in train_agents and len(new_eval_agents) < len(eval_agents):
-                new_eval_agents.append(agent)
-            elif agent not in eval_agents and len(new_train_agents) < len(train_agents):
-                new_train_agents.append(agent)
-
-        if len(new_eval_agents) != len(eval_agents) or len(new_train_agents) != len(train_agents):
-            print("Unable to perform shuffle")
-        else: 
-            train_collection_pr_lyt[ttype] = new_train_agents
-            eval_collection_pr_lyt[ttype] = new_eval_agents
-        
-        return train_collection_pr_lyt, eval_collection_pr_lyt
 
 
 def generate_teammates_collection_w_NO_SP_types(args,
@@ -250,7 +211,7 @@ def generate_teammates_collection_w_NO_SP_types(args,
         population = [(Agent, Score, Tag), ...]
         train_types: [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, ...]
         eval_types_to_generate: [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, ...]
-        eval_types_to_read_from_file: [(TeamType.HIGH_FIRST, file_address), ...]
+        eval_types_to_read_from_file: [((TeamType.HIGH_FIRST, layout_name, name, tag),(TeamType.HIGH_FIRST, layout_name, name, tag), ), ...]
 
     Returns dict
         teammates_collection = {
@@ -267,8 +228,13 @@ def generate_teammates_collection_w_NO_SP_types(args,
         }
     '''
 
+    eval_types_from_file = []
+    for group in eval_types_to_read_from_file:
+        for eval_type, layout_name, name, tag in group:
+            eval_types_from_file.append(eval_type)
+
     eval_collection = {
-            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [eval_type for eval_type, _ in eval_types_to_read_from_file])}
+            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + eval_types_from_file)}
             for layout_name in args.layout_names
     }
     train_collection = {
@@ -294,23 +260,28 @@ def generate_teammates_collection_w_NO_SP_types(args,
                                                                                         )
 
         agents_perftag_score_eval = [agent for agent in agents_perftag_score_all if agent[0] not in train_agents]
-        eval_collection[layout_name], _ = get_teammates_per_type_and_layout(agents_perftag_score=agents_perftag_score_eval, 
+        eval_collection[layout_name], _eval_agents = get_teammates_per_type_and_layout(agents_perftag_score=agents_perftag_score_eval, 
                                                                                       team_types=eval_types_to_generate,
                                                                                       t_len=args.teammates_len)
+    
 
-        train_collection[layout_name], eval_collection[layout_name] = shuffle_between_eval_and_train(
-                                                                                    train_collection_pr_lyt=train_collection[layout_name], 
-                                                                                    eval_collection_pr_lyt=eval_collection[layout_name],
-                                                                                    train_types=train_types,
-                                                                                    eval_types=eval_types_to_generate)
+    for teammates in eval_types_to_read_from_file:
+        group = []
+        for eval_type, layout_name, name, tag in teammates:
+            agents = load_agents(args, name, tag)
+            if agents:
+                group.append(agents[0])
+        if len(group) == args.teammates_len:
+            eval_collection[layout_name][eval_type].append(group)
 
-        # TODO: implement reading from file
+    teammates_collection[TeammatesCollection.TRAIN] = train_collection
+    teammates_collection[TeammatesCollection.EVAL] = eval_collection
 
-        teammates_collection[TeammatesCollection.TRAIN][layout_name] = train_collection[layout_name]
-        teammates_collection[TeammatesCollection.EVAL][layout_name] = eval_collection[layout_name]
+    print_teammates_collection(teammates_collection[TeammatesCollection.TRAIN])
+    print("EVAL:")
+    print_teammates_collection(teammates_collection[TeammatesCollection.EVAL])
     
     return teammates_collection
-
 
 
 def update_tms_clction_with_selfplay_types(teammates_collection, agent, args):
@@ -326,21 +297,20 @@ def update_tms_clction_with_selfplay_types(teammates_collection, agent, args):
     return teammates_collection
 
 
-
 def print_teammates_collection(teammates_collection):
     for layout_name in teammates_collection:
         for tag in teammates_collection[layout_name]:
             print(f'\t{tag}:')
-            teammates = teammates_collection[layout_name][tag]
-            for agent in teammates:
-                print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
+            teammates_c = teammates_collection[layout_name][tag]
+            for teammates in teammates_c:
+                for agent in teammates:
+                    print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
             print('\n')
 
 
 def load_agents(args, name, tag, force_training=False):
     if force_training:
         return []
-    
     try:
         agents = RLAgentTrainer.load_agents(args, name=name, tag=tag or 'best')
         return agents

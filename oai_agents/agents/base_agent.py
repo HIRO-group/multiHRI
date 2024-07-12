@@ -444,22 +444,17 @@ class OAITrainer(ABC):
 
     def set_new_teammates(self):
         for i in range(self.args.n_envs):
-            if 'all_layouts' in self.teammates_collection.keys():
-                pop_teamtypes = self.teammates_collection['all_layouts']
-
-            else:
-                layout_name = self.env.env_method('get_layout_name', indices=i)[0]
-                pop_teamtypes = self.teammates_collection[layout_name]
+            layout_name = self.env.env_method('get_layout_name', indices=i)[0]
+            pop_teamtypes = self.teammates_collection[layout_name]
 
             population = [pop_teamtypes[t] for t in pop_teamtypes.keys()]
             
             '''
-            population = [[agent1, agent2, agent3]]
-            OR if population training:
-            population = [[agent1, agent2, agent3], [agent3, agent5, agent6], ...]
+            population = [[[agent1, agent2, agent3], ...], [[agent3, agent5, agent6], ...], ...]
             '''
 
-            teammates = population[np.random.randint(len(population))]
+            teammates_per_type = population[np.random.randint(len(population))]
+            teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
 
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list

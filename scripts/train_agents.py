@@ -39,11 +39,16 @@ def get_fcp_agent_w_tms_clction(args,
                                 fcp_eval_types,
                                 pop_force_training,
                                 fcp_force_training,
+                                num_self_play_agents_to_train=2,
                                 tag=None,
                                 parallel=True):
 
     teammates_collection = get_fcp_population(args,
                                               ck_rate=pop_total_training_timesteps // 5,
+                                              train_types = fcp_train_types,
+                                              eval_types_to_generate = fcp_eval_types['generate'],
+                                              eval_types_to_load_from_file = fcp_eval_types['load'],
+                                              num_self_play_agents_to_train=num_self_play_agents_to_train,
                                               total_training_timesteps = pop_total_training_timesteps,
                                               force_training=pop_force_training,
                                               parallel=parallel)
@@ -107,12 +112,16 @@ def train_fcp_and_fcp_w_selfplay(args,
                                  pop_force_training,
                                  fcp_force_training,
                                  fcp_w_sp_force_training,
+                                 num_self_play_agents_to_train=2,
                                  parallel=True):
 
     fcp_train_types = [TeamType.HIGH_FIRST]
-    fcp_eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST, 
-                       TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM,
-                       TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM]
+    fcp_eval_types = {
+                        'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST, 
+                                    TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM,
+                                    TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM],
+                        'load': [] # [(TeamType.HIGH_FIRST, name, tag)]
+                    }
     fcp_agent, teammates_collection = get_fcp_agent_w_tms_clction(args, 
                                                                   pop_total_training_timesteps=pop_total_training_timesteps,
                                                                   fcp_total_training_timesteps=fcp_total_training_timesteps,
@@ -120,11 +129,15 @@ def train_fcp_and_fcp_w_selfplay(args,
                                                                   fcp_eval_types=fcp_eval_types,
                                                                   pop_force_training=pop_force_training,
                                                                   fcp_force_training=fcp_force_training,
+                                                                  num_self_play_agents_to_train=num_self_play_agents_to_train,
                                                                   parallel=parallel)
 
 
     fcp_w_sp_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
-    fcp_w_sp_eval_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
+    fcp_w_sp_eval_types = {
+                            'generate': [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH],
+                            'load': []
+                        }
     get_fcp_agent_trained_with_selfplay_types(args,
                                               fcp_agent=fcp_agent, 
                                               tms_clction=teammates_collection,
@@ -170,19 +183,38 @@ if __name__ == '__main__':
     pop_total_training_timesteps, fcp_total_training_timesteps, fcp_w_sp_total_training_timesteps = get_input(args=args,
                                                                                                               use_gpu=use_gpu)
 
-    train_fcp_and_fcp_w_selfplay(args=args,
-                                 pop_total_training_timesteps=pop_total_training_timesteps,
-                                 fcp_total_training_timesteps=fcp_total_training_timesteps,
-                                 fcp_w_sp_total_training_timesteps=fcp_w_sp_total_training_timesteps,
-                                 pop_force_training=pop_force_training,
-                                 fcp_force_training=fcp_force_training,
-                                 fcp_w_sp_force_training=fcp_w_sp_force_training,
-                                 parallel=parallel)
+    # train_fcp_and_fcp_w_selfplay(args=args,
+    #                              pop_total_training_timesteps=pop_total_training_timesteps,
+    #                              fcp_total_training_timesteps=fcp_total_training_timesteps,
+    #                              fcp_w_sp_total_training_timesteps=fcp_w_sp_total_training_timesteps,
+    #                              pop_force_training=pop_force_training,
+    #                              fcp_force_training=fcp_force_training,
+    #                              fcp_w_sp_force_training=fcp_w_sp_force_training,
+    #                              parallel=parallel)
 
 
     # get_selfplay_agent(args, force_training=True, total_training_timesteps=3500)
     # args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
-    # get_fcp_agent(args, force_training=False, parallel=True)
+    
+    fcp_train_types = [TeamType.HIGH_FIRST]
+    fcp_eval_types = {
+                        'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST,TeamType.LOW_FIRST,],
+                        'load': [
+                                (
+                                (TeamType.HIGH_FIRST, '3_chefs_small_kitchen', 'fcp_hd256_seed2907', 'best'),
+                                (TeamType.HIGH_FIRST, '3_chefs_small_kitchen', 'fcp_hd256_seed2907', 'best')
+                                )
+                            ]
+                    }
+    fcp_agent, teammates_collection = get_fcp_agent_w_tms_clction(args, 
+                                                                  pop_total_training_timesteps=pop_total_training_timesteps,
+                                                                  fcp_total_training_timesteps=fcp_total_training_timesteps,
+                                                                  fcp_train_types=fcp_train_types,
+                                                                  fcp_eval_types=fcp_eval_types,
+                                                                  pop_force_training=pop_force_training,
+                                                                  fcp_force_training=fcp_force_training,
+                                                                  num_self_play_agents_to_train=2,
+                                                                  parallel=parallel)
 
     # args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST,
     #                     TeamType.HIGH_MEDIUM, TeamType.HIGH_LOW, TeamType.MEDIUM_LOW]

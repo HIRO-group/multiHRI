@@ -2,7 +2,7 @@ from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer,
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.population_tags import AgentPerformance, TeamType
+from oai_agents.common.population_tags import AgentPerformance, TeamType, TeammatesCollection
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
@@ -97,21 +97,22 @@ class RLAgentTrainer(OAITrainer):
         if _tms_clctn == {}:
             print("No teammates collection provided, using SELF_PLAY: teammates will be the agent itself.")
             _tms_clctn = {
-                layout_name: 
-                    {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
-                for layout_name in self.args.layout_names
+                TeammatesCollection.TRAIN: {
+                    layout_name: 
+                        {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
+                    for layout_name in self.args.layout_names
+                },
+                TeammatesCollection.EVAL: {
+                    layout_name: 
+                        {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
+                    for layout_name in self.args.layout_names
+                }
             }
             assert len(train_types) == 1 and len(eval_types) == 1
             assert train_types[0] == TeamType.SELF_PLAY and eval_types[0] == TeamType.SELF_PLAY
 
-        train_teammates_collection = {
-            layout_name: {tag: _tms_clctn[layout_name][tag] for tag in train_types}
-            for layout_name in self.args.layout_names
-        }
-        eval_teammates_collection = {
-            layout_name: {tag: _tms_clctn[layout_name][tag] for tag in eval_types}
-            for layout_name in self.args.layout_names
-        }
+        train_teammates_collection = _tms_clctn[TeammatesCollection.TRAIN]
+        eval_teammates_collection = _tms_clctn[TeammatesCollection.EVAL]
 
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
@@ -172,20 +173,19 @@ class RLAgentTrainer(OAITrainer):
         IF we use FCP:
         teammates_collection = {
                 'layout_name': {
-                    'high': [agent1, agent2],
-                    'medium': [agent3, agent4],
-                    'low': [agent5, agent6],
-                    'random': [agent7, agent8],
+                    'high_perf_first': [[agent1, agent2], ...],
+                    'medium_perf_..':[[agent3, agent4], ...],
+                    'low_...': [[agent5, agent6], ...],
+                    'random': [[agent7, agent8], ...],
                 },
             }
         '''
  
-        if type(teammates_collection) == dict:
-            for layout in teammates_collection: 
-                for team_type in teammates_collection[layout]:
-                    assert len(teammates_collection[layout][team_type]) == self.teammates_len
-        else:
-            raise ValueError('teammates_collection must be a dict with layout names as keys and a list of agents as values')
+        for layout in teammates_collection: 
+            for team_type in teammates_collection[layout]:
+                for teammates in teammates_collection[layout][team_type]:
+                    assert len(teammates) == self.teammates_len,\
+                          f"Teammates length in collection: {len(teammates)} must be equal to self.teammates_len: {self.teammates_len}"
 
 
     def _get_constructor_parameters(self):
