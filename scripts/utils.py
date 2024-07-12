@@ -216,8 +216,6 @@ def update_tms_clction_with_selfplay_types(teammates_collection, agent, args):
         teammates_collection[layout][TeamType.SELF_PLAY_HIGH] = self_teammates + [high_p_agent]
         teammates_collection[layout][TeamType.SELF_PLAY_MEDIUM] = self_teammates + [medium_p_agent]
         teammates_collection[layout][TeamType.SELF_PLAY_LOW] = self_teammates + [low_p_agent]
-    
-    print_teammates_collection(teammates_collection=teammates_collection)
     return teammates_collection
 
 

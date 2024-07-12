@@ -47,7 +47,7 @@ def get_fcp_agent_w_tms_clction(args,
                                               total_training_timesteps = pop_total_training_timesteps,
                                               force_training=pop_force_training,
                                               parallel=parallel)
-    name = 'fcp'    
+    name = 'fcp' 
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_force_training)
     if agents:
         return agents[0], teammates_collection
@@ -100,7 +100,15 @@ def get_fcp_agent_trained_with_selfplay_types(args,
     return fcp_trainer.get_agents()[0]
 
 
-def train_fcp_and_fcp_w_selfplay(args, pop_total_training_timesteps, fcp_total_training_timesteps, fcp_w_sp_total_training_timesteps, parallel=True):
+def train_fcp_and_fcp_w_selfplay(args,
+                                 pop_total_training_timesteps,
+                                 fcp_total_training_timesteps,
+                                 fcp_w_sp_total_training_timesteps,
+                                 pop_force_training,
+                                 fcp_force_training,
+                                 fcp_w_sp_force_training,
+                                 parallel=True):
+
     fcp_train_types = [TeamType.HIGH_FIRST]
     fcp_eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST, 
                        TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM,
@@ -154,16 +162,22 @@ def get_input(args, use_gpu=True):
 if __name__ == '__main__':
     args = get_arguments()
     use_gpu = False
-    parallel = False    
-    pop_force_training = True
-    fcp_force_training = True
-    fcp_w_sp_force_training = True
+    parallel = False
+    pop_force_training = False
+    fcp_force_training = False
+    fcp_w_sp_force_training = False
     
-    pop_total_training_timesteps, fcp_total_training_timesteps, \
-          fcp_w_sp_total_training_timesteps = get_input(args, use_gpu=use_gpu)
+    pop_total_training_timesteps, fcp_total_training_timesteps, fcp_w_sp_total_training_timesteps = get_input(args=args,
+                                                                                                              use_gpu=use_gpu)
 
-    train_fcp_and_fcp_w_selfplay(args, pop_total_training_timesteps, fcp_total_training_timesteps,\
-                                 fcp_w_sp_total_training_timesteps, parallel=parallel)
+    train_fcp_and_fcp_w_selfplay(args=args,
+                                 pop_total_training_timesteps=pop_total_training_timesteps,
+                                 fcp_total_training_timesteps=fcp_total_training_timesteps,
+                                 fcp_w_sp_total_training_timesteps=fcp_w_sp_total_training_timesteps,
+                                 pop_force_training=pop_force_training,
+                                 fcp_force_training=fcp_force_training,
+                                 fcp_w_sp_force_training=fcp_w_sp_force_training,
+                                 parallel=parallel)
 
 
     # get_selfplay_agent(args, force_training=True, total_training_timesteps=3500)
