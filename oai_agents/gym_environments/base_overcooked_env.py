@@ -148,8 +148,8 @@ class OvercookedGymEnv(Env):
     def set_teammates(self, teammates):
         assert isinstance(teammates, list)
         self.teammates = teammates
-
-        assert self.mdp.num_players == len(self.teammates) + 1 # teammates + main agent
+        assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
+                                                                    f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
 
 

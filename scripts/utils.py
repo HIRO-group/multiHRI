@@ -7,12 +7,16 @@ import dill
 import math
 
 
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
+def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, save_path_prefix=None):
     '''
         Returns population = {layout: [agent1,  agent2, ...] }
         either serialized or not based on serialize flag
     '''
+
     name = f'fcp_hd{h_dim}_seed{seed}'
+    if save_path_prefix:
+        name = f'{save_path_prefix}/{name}'
+
     population = {layout_name: [] for layout_name in args.layout_names}
 
     rlat = RLAgentTrainer(
@@ -20,8 +24,6 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         args=args,
         agent=None,
         teammates_collection={},
-        train_types=[TeamType.SELF_PLAY],
-        eval_types=[TeamType.SELF_PLAY],
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         hidden_dim=h_dim,
@@ -71,7 +73,9 @@ def get_fcp_population(args,
                        eval_types_to_load_from_file=[],
                        num_self_play_agents_to_train=2,
                        parallel=True,
-                       force_training=False):
+                       force_training=False,
+                       save_path_prefix=None,
+                       ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
 
@@ -88,12 +92,12 @@ def get_fcp_population(args,
                                                     train_types=train_types,
                                                     eval_types=eval_types_to_generate,
                                                     num_self_play_agents_to_train=num_self_play_agents_to_train,
-                                                    load_agents=eval_types_to_load_from_file,
+                                                    agents_to_load_for_eval=eval_types_to_load_from_file,
                                                     )
 
         seed, h_dim = generate_hdim_and_seed(num_self_play_agents_to_train)
         inputs = [
-            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_self_play_agents_to_train)
+            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True, save_path_prefix) for i in range(num_self_play_agents_to_train)
         ]
 
         if parallel:
@@ -110,11 +114,12 @@ def get_fcp_population(args,
                                                    ck_rate=inp[2],
                                                    seed=inp[3],
                                                    h_dim=inp[4],
-                                                   serialize=False)
+                                                   serialize=False,
+                                                   save_path_prefix=save_path_prefix)
                 for layout_name in args.layout_names:
                     population[layout_name].extend(res[layout_name])
 
-        save_fcp_pop(args, population)
+        save_fcp_pop(args=args, population=population, save_path_prefix=save_path_prefix)
 
     return generate_teammates_collection_w_NO_SP_types(args=args,
                                                        population=population,
@@ -123,10 +128,14 @@ def get_fcp_population(args,
                                                        eval_types_to_read_from_file=eval_types_to_load_from_file)
 
 
-def save_fcp_pop(args, population):
+def save_fcp_pop(args, population, save_path_prefix=None):
+    if save_path_prefix:
+        name_prefix = save_path_prefix+'/fcp_pop'
+    else:
+        name_prefix = 'fcp_pop'
     for layout_name in args.layout_names:
         rt = RLAgentTrainer(
-            name=f'fcp_pop_{layout_name}',
+            name=f'{name_prefix}_{layout_name}',
             args=args,
             agent=None,
             teammates_collection={},
@@ -160,7 +169,7 @@ def get_teammates_per_type_and_layout(agents_perftag_score, team_types, t_len):
             middle_index = len(sorted_agents_perftag_score)//2
             start_index_for_mid = middle_index - t_len//2
             end_index_for_mid = start_index_for_mid + t_len
-            tms_prftg_scr = sorted_agents_perftag_score[start_index_for_mid:end_index_for_mid+1]
+            tms_prftg_scr = sorted_agents_perftag_score[start_index_for_mid:end_index_for_mid]
             teammates_per_type[ttype].append([tm[0] for tm in tms_prftg_scr])
 
         elif ttype == TeamType.LOW_FIRST:
@@ -173,22 +182,23 @@ def get_teammates_per_type_and_layout(agents_perftag_score, team_types, t_len):
 
         elif ttype == TeamType.HIGH_MEDIUM:
             if t_len >= 2:
-                first_half = random.sample(teammates_per_type[TeamType.MEDIUM_FIRST], t_len//2)
-                second_half = random.sample(teammates_per_type[TeamType.HIGH_FIRST],  t_len - t_len//2)
+                first_half = random.sample(teammates_per_type[TeamType.MEDIUM_FIRST][0], t_len//2)
+                second_half = random.sample(teammates_per_type[TeamType.HIGH_FIRST][0],  t_len - t_len//2)
                 teammates_per_type[ttype].append(first_half + second_half)
                 random.shuffle(teammates_per_type[ttype][0])
 
+
         elif ttype == TeamType.HIGH_LOW:
             if t_len >= 2:
-                first_half = random.sample(teammates_per_type[TeamType.LOW_FIRST], t_len//2)
-                second_half = random.sample(teammates_per_type[TeamType.HIGH_FIRST], t_len - t_len//2)
+                first_half = random.sample(teammates_per_type[TeamType.LOW_FIRST][0], t_len//2)
+                second_half = random.sample(teammates_per_type[TeamType.HIGH_FIRST][0], t_len - t_len//2)
                 teammates_per_type[ttype].append(first_half+second_half)
                 random.shuffle(teammates_per_type[ttype][0])
 
         elif ttype == TeamType.MEDIUM_LOW:
             if t_len >= 2:
-                first_half = random.sample(teammates_per_type[TeamType.LOW_FIRST], t_len//2)
-                second_half = random.sample(teammates_per_type[TeamType.MEDIUM_FIRST], t_len - t_len//2)
+                first_half = random.sample(teammates_per_type[TeamType.LOW_FIRST][0], t_len//2)
+                second_half = random.sample(teammates_per_type[TeamType.MEDIUM_FIRST][0], t_len - t_len//2)
                 teammates_per_type[ttype].append(first_half+second_half)
                 random.shuffle(teammates_per_type[ttype][0])
         
@@ -298,7 +308,7 @@ def update_tms_clction_with_selfplay_types(teammates_collection, agent, args):
     return teammates_collection
 
 
-def print_teammates_collection(teammates_collection):
+def print_tc(teammates_collection):
     for layout_name in teammates_collection:
         for tag in teammates_collection[layout_name]:
             print(f'\t{tag}:')
@@ -307,6 +317,16 @@ def print_teammates_collection(teammates_collection):
                 for agent in teammates:
                     print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
             print('\n')
+
+def print_teammates_collection(teammates_collection):
+    if TeammatesCollection.TRAIN in teammates_collection:
+        print('Train: ')
+        print_tc(teammates_collection[TeammatesCollection.TRAIN])
+    if TeammatesCollection.EVAL in teammates_collection:
+        print('Eval: ')
+        print_tc(teammates_collection[TeammatesCollection.EVAL])
+    else:
+        print_tc(teammates_collection)
 
 
 def load_agents(args, name, tag, force_training=False):

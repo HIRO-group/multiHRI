@@ -392,24 +392,22 @@ class OAITrainer(ABC):
                  deterministic=False):
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
 
-        use_specific_tm_layout = False if 'all_layouts' in self.eval_teammates_collection else True
-
         tot_mean_reward = []
         rew_per_layout_per_teamtype = {}
         '''
         dict 
         teammates_collection = {
             'layout_name': {
-                'TeamType.HIGH_FIRST': [agent1, agent2],
-                'TeamType.MEDIUM_FIRST': [agent3, agent4],
-                'TeamType.LOW_FIRST': [agent5, agent6],
-                'TeamType.RANDOM': [agent7, agent8],
+                'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
+                'TeamType.MEDIUM_FIRST': [[agent3, agent4], ...],
+                'TeamType.LOW_FIRST': [[agent5, agent6], ...],
+                'TeamType.RANDOM': [[agent7, agent8], ...],
             },
         }
         '''
         for _, env in enumerate(self.eval_envs):
             
-            tc_index = env.layout_name if use_specific_tm_layout else 'all_layouts'
+            tc_index = env.layout_name
 
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in self.eval_teammates_collection[tc_index]
@@ -418,7 +416,8 @@ class OAITrainer(ABC):
             teamtypes_population = self.eval_teammates_collection[tc_index]
 
             for teamtype in teamtypes_population:
-                teammates = teamtypes_population[teamtype]
+                teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
+
                 env.set_teammates(teammates)
                 
                 for p_idx in range(env.mdp.num_players):
@@ -455,7 +454,7 @@ class OAITrainer(ABC):
 
             teammates_per_type = population[np.random.randint(len(population))]
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
-
+            
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
 

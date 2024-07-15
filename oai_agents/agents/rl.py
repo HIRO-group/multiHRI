@@ -19,8 +19,7 @@ class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
     def __init__(self, teammates_collection, args, 
                 agent, epoch_timesteps, n_envs,
-                seed, train_types, eval_types,
-                num_layers=2, hidden_dim=256, 
+                seed, train_types=[], eval_types=[], num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
@@ -35,9 +34,6 @@ class RLAgentTrainer(OAITrainer):
         
         self.epoch_timesteps = epoch_timesteps
         self.n_envs = n_envs
-
-        self.train_types = train_types
-        self.eval_types = eval_types
 
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -57,8 +53,8 @@ class RLAgentTrainer(OAITrainer):
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
-                                                                                                    train_types = self.train_types, 
-                                                                                                    eval_types = self.eval_types)
+                                                                                                   train_types = train_types,
+                                                                                                   eval_types = eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
 
@@ -77,20 +73,16 @@ class RLAgentTrainer(OAITrainer):
         return learning_agent, agents
 
 
-    def get_teammates_collection(self, _tms_clctn, learning_agent, 
-                                 train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
-                                 eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST,
-                                               TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM, 
-                                               TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM]):
+    def get_teammates_collection(self, _tms_clctn, learning_agent, train_types=[], eval_types=[]):
         '''
         Returns a dictionary of teammates_collection for training and evaluation
             dict 
             teammates_collection = {
                 'layout_name': {
-                    'TeamType.HIGH_FIRST': [agent1, agent2],
-                    'TeamType.MEDIUM_FIRST': [agent3, agent4],
-                    'TeamType.LOW_FIRST': [agent5, agent6],
-                    'TeamType.RANDOM': [agent7, agent8],
+                    'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
+                    'TeamType.MEDIUM_FIRST': [[agent3, agent4], ...],
+                    'TeamType.LOW_FIRST': [[agent5, agent6], ..],
+                    'TeamType.RANDOM': [[agent7, agent8], ...],
                 },
             }
         '''
@@ -99,20 +91,30 @@ class RLAgentTrainer(OAITrainer):
             _tms_clctn = {
                 TeammatesCollection.TRAIN: {
                     layout_name: 
-                        {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
+                        {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
                 },
                 TeammatesCollection.EVAL: {
                     layout_name: 
-                        {TeamType.SELF_PLAY: [learning_agent for _ in range(self.teammates_len)]}
+                        {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
                 }
             }
-            assert len(train_types) == 1 and len(eval_types) == 1
-            assert train_types[0] == TeamType.SELF_PLAY and eval_types[0] == TeamType.SELF_PLAY
 
         train_teammates_collection = _tms_clctn[TeammatesCollection.TRAIN]
         eval_teammates_collection = _tms_clctn[TeammatesCollection.EVAL]
+        
+        if train_types:
+            train_teammates_collection = {
+                layout: {team_type: train_teammates_collection[layout][team_type] for team_type in train_types}
+                for layout in train_teammates_collection
+            }
+        if eval_types:
+            eval_teammates_collection = {
+                layout: {team_type: eval_teammates_collection[layout][team_type] for team_type in eval_types}
+                for layout in eval_teammates_collection
+            }
+
 
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
@@ -139,7 +141,7 @@ class RLAgentTrainer(OAITrainer):
 
     def get_sb3_agent(self):
         layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers        
-        policy_kwargs = dict(net_arch=[dict(pi=layers, vf=layers)])
+        policy_kwargs = dict(net_arch=dict(pi=layers, vf=layers))
 
         if self.use_cnn:
             policy_kwargs.update(
@@ -203,7 +205,7 @@ class RLAgentTrainer(OAITrainer):
         return exp_name or 'train_' + '_'.join(all_train_teamtypes)
 
 
-    def train_agents(self, total_train_timesteps, exp_name=None):
+    def train_agents(self, total_train_timesteps, exp_name=None):       
         exp_name = self.get_experiment_name(exp_name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name= exp_name + '_' + self.name, mode=self.args.wandb_mode,
@@ -246,7 +248,7 @@ class RLAgentTrainer(OAITrainer):
                     if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
                         path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
                         self.ck_list.append((rew_per_layout, path, tag))
-                
+
                 # Save best model
                 if mean_reward >= self.best_score:
                     best_path, best_tag = self.save_agents(tag='best')
