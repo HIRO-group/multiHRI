@@ -200,10 +200,10 @@ if __name__ == '__main__':
     fcp_eval_types = {
                         'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST,TeamType.LOW_FIRST,],
                         'load': [
-                                (
-                                (TeamType.HIGH_FIRST, '3_chefs_small_kitchen', 'fcp_hd256_seed2907', 'best'),
+                                [
+                                (TeamType.HIGH_FIRST, '3_chefs_small_kitchen', 'fcp_hd256_seed2907', 'best'), 
                                 (TeamType.HIGH_FIRST, '3_chefs_small_kitchen', 'fcp_hd256_seed2907', 'best')
-                                )
+                                ]
                             ]
                     }
     fcp_agent, teammates_collection = get_fcp_agent_w_tms_clction(args, 

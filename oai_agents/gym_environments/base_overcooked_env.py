@@ -118,7 +118,7 @@ class OvercookedGymEnv(Env):
                 'same_motion_goals': True
             }
 
-            self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False)
+            self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False, info=self.args.overcooked_verbose)
             self.env = OvercookedEnv.from_mdp(self.mdp, horizon=(
                         horizon or self.args.horizon))  # , **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
         else:

@@ -42,6 +42,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--epoch-timesteps', type=int)
     parser.add_argument('--n-envs', type=int, help='Number of environments to use while training')
     parser.add_argument('--teammates-len',  type=int)
+    parser.add_argument('--overcooked-verbose', type=bool, default=False, help="Disables the overcooked game logs")
     
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
