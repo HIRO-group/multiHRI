@@ -103,7 +103,7 @@ class RLAgentTrainer(OAITrainer):
 
         train_teammates_collection = _tms_clctn[TeammatesCollection.TRAIN]
         eval_teammates_collection = _tms_clctn[TeammatesCollection.EVAL]
-        
+
         if train_types:
             train_teammates_collection = {
                 layout: {team_type: train_teammates_collection[layout][team_type] for team_type in train_types}
@@ -114,7 +114,6 @@ class RLAgentTrainer(OAITrainer):
                 layout: {team_type: eval_teammates_collection[layout][team_type] for team_type in eval_types}
                 for layout in eval_teammates_collection
             }
-
 
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
@@ -246,7 +245,7 @@ class RLAgentTrainer(OAITrainer):
                 # FCP pop checkpointing
                 if self.fcp_ck_rate:
                     if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
+                        path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 # Save best model

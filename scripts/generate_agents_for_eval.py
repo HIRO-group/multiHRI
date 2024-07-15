@@ -26,9 +26,9 @@ def train_FCP(args, name, teammates_collection, train_types):
 
 if __name__ == "__main__":
     args = get_arguments()
-    quick_test = True
-    parallel = False
-    pop_force_training = False
+    quick_test = False
+    parallel = True
+    pop_force_training = True
     fcp_force_training = True
     
     pop_total_training_timesteps, fcp_total_training_timesteps, fcp_w_sp_total_training_timesteps = get_input(args=args,
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     
     save_path_prefix = f'eval/{args.teammates_len}_chefs'
 
-    num_SP_agents_to_train = 1
+    num_SP_agents_to_train = 4
     all_FCP_train_types = [
         [TeamType.HIGH_FIRST],
         [TeamType.HIGH_FIRST, TeamType.MIDDLE_FIRST],
@@ -60,8 +60,9 @@ if __name__ == "__main__":
                                               parallel=parallel,
                                               save_path_prefix = save_path_prefix,
                                               )
-    # print_teammates_collection(teammates_collection[TeammatesCollection.TRAIN])
 
+    teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]
+    # TODO: run this in parallel
     for fcp_train_types in all_FCP_train_types:
         vb = '_'.join(fcp_train_types)
         train_FCP(args=args,
@@ -69,6 +70,3 @@ if __name__ == "__main__":
                   teammates_collection=teammates_collection,
                   train_types=fcp_train_types,
                   )
-    
-
-
