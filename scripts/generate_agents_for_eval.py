@@ -3,7 +3,7 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.population_tags import TeamType, TeammatesCollection
+from oai_agents.common.tags import TeamType, TeammatesCollection
 
 from scripts.utils import get_fcp_population, update_tms_clction_with_selfplay_types, load_agents, print_teammates_collection
 from scripts.train_agents import get_input
@@ -62,6 +62,7 @@ if __name__ == "__main__":
                                               )
 
     teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]
+    
     # TODO: run this in parallel
     for fcp_train_types in all_FCP_train_types:
         vb = '_'.join(fcp_train_types)

@@ -1,10 +1,11 @@
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.population_tags import AgentPerformance, TeamType, TeammatesCollection
+from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection
 
 import random
 import multiprocessing
 import dill
 import math
+
 
 
 def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, save_path_prefix=None):
@@ -42,17 +43,12 @@ def ensure_we_have_enough_train_and_eval_agents(teammates_len,
                                                 train_types,
                                                 eval_types,
                                                 num_self_play_agents_to_train,
-                                                agents_to_load_for_eval=[]):
+                                                ):
 
     total_population_len = len(AgentPerformance.ALL) * num_self_play_agents_to_train
     train_agents_len = len(train_types) * teammates_len
     eval_agents_len = len(eval_types) * teammates_len
     assert total_population_len > train_agents_len + eval_agents_len, "Not enough agents to train and evaluate. Should increase num_sp_agents_to_train"
-
-    for teammates in agents_to_load_for_eval:
-        assert len(teammates) == teammates_len, "Number of agents in each group of teammates to load should be equal to teammates_len"
-    
-
 
 
 def generate_hdim_and_seed(num_self_play_agents_to_train):
@@ -92,7 +88,6 @@ def get_fcp_population(args,
                                                     train_types=train_types,
                                                     eval_types=eval_types_to_generate,
                                                     num_self_play_agents_to_train=num_self_play_agents_to_train,
-                                                    agents_to_load_for_eval=eval_types_to_load_from_file,
                                                     )
 
         seed, h_dim = generate_hdim_and_seed(num_self_play_agents_to_train)
@@ -216,6 +211,38 @@ def get_teammates_per_type_and_layout(agents_perftag_score, team_types, t_len):
     return teammates_per_type, selected_agents
 
 
+def update_eval_collection_with_eval_types_from_file(args,
+                                                     eval_types,
+                                                     eval_collection):
+
+    for teammates in eval_types:
+        if teammates.team_type not in eval_collection[teammates.layout_name]:
+            eval_collection[teammates.layout_name][teammates.team_type] = []
+    
+        if teammates.load_from_pop_structure:
+            print(f'Loading {teammates.names[0]} agent for {teammates.layout_name} layout')
+            layout_population = RLAgentTrainer.load_agents(args, name=teammates.names[0], tag=teammates.tags[0])
+
+            agents_perftag_score_all = [(agent,
+                                         agent.layout_performance_tags[teammates.layout_name], 
+                                         agent.layout_scores[teammates.layout_name]) for agent in layout_population]
+            ec_ln, _ = get_teammates_per_type_and_layout(agents_perftag_score=agents_perftag_score_all,
+                                                         team_types=[teammates.team_type],
+                                                         t_len=args.teammates_len)
+            eval_collection[teammates.layout_name][teammates.team_type].append(ec_ln[teammates.team_type][0])
+        else:
+            group = []
+            for (name, tag) in zip(teammates.names, teammates.tags):
+                agents = load_agents(args, name, tag)
+                if agents:
+                    group.append(agents[0])
+            if len(group) == args.teammates_len:
+                eval_collection[teammates.layout_name][teammates.team_type].append(group)
+    
+    print_teammates_collection(eval_collection)
+
+
+
 def generate_teammates_collection_w_NO_SP_types(args,
                                                 population,
                                                 train_types,
@@ -226,7 +253,7 @@ def generate_teammates_collection_w_NO_SP_types(args,
         population = [(Agent, Score, Tag), ...]
         train_types: [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, ...]
         eval_types_to_generate: [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, ...]
-        eval_types_to_read_from_file: [[(TeamType.HIGH_FIRST, layout_name, name, tag),(TeamType.HIGH_FIRST, layout_name, name, tag), ], ...]
+        eval_types_to_read_from_file: [EvalMembersToBeLoaded, ...]
 
     Returns dict
         teammates_collection = {
@@ -242,16 +269,11 @@ def generate_teammates_collection_w_NO_SP_types(args,
             }
         }
     '''
-
-    eval_types_from_file = []
-    for group in eval_types_to_read_from_file:
-        for eval_type, _, _, _ in group:
-            eval_types_from_file.append(eval_type)
-
     eval_collection = {
-            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + eval_types_from_file)}
+            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
             for layout_name in args.layout_names
     }
+
     train_collection = {
         layout_name: {ttype: [] for ttype in train_types}
         for layout_name in args.layout_names
@@ -279,19 +301,13 @@ def generate_teammates_collection_w_NO_SP_types(args,
                                                                                       team_types=eval_types_to_generate,
                                                                                       t_len=args.teammates_len)
     
-    for teammates in eval_types_to_read_from_file:
-        group = []
-        for eval_type, layout_name, name, tag in teammates:
-            agents = load_agents(args, name, tag)
-            if agents:
-                group.append(agents[0])
-        if len(group) == args.teammates_len:
-            eval_collection[layout_name][eval_type].append(group)
-            print("Loaded agents from file for evaluation.")
+    update_eval_collection_with_eval_types_from_file(args=args,
+                                                     eval_types=eval_types_to_read_from_file,
+                                                     eval_collection=eval_collection)
 
     teammates_collection[TeammatesCollection.TRAIN] = train_collection
     teammates_collection[TeammatesCollection.EVAL] = eval_collection
-    
+
     return teammates_collection
 
 

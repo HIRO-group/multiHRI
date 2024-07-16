@@ -2,7 +2,7 @@ from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer,
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.population_tags import AgentPerformance, TeamType, TeammatesCollection
+from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np

@@ -3,7 +3,7 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.population_tags import TeamType
+from oai_agents.common.tags import TeamType, EvalMembersToBeLoaded
 from scripts.utils import get_fcp_population, update_tms_clction_with_selfplay_types, load_agents, print_teammates_collection
 
 
@@ -163,12 +163,38 @@ def get_input(args, quick_test=False):
     return pop_total_training_timesteps, fcp_total_training_timesteps, fcp_w_sp_total_training_timesteps
 
 
+
+def get_eval_types_to_load():
+    '''
+    If load_from_pop_structure is False, it means that we are reading independent agents from files.
+    '''
+    t1 = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/2_chefs/fcp_hd256_seed26', 'eval/2_chefs/fcp_hd256_seed39'],
+        team_type = TeamType.HIGH_FIRST,
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    '''
+    Pop structure holds the population of agent used for FCP training. 
+    '''
+    t2 = EvalMembersToBeLoaded(
+        load_from_pop_structure = True,
+        names = ['eval/2_chefs/fcp_pop_3_chefs_small_kitchen'],
+        team_type = TeamType.HIGH_FIRST,
+        tags = ['aamas25'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+    return [t1, t2]
+
+
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = True
     parallel = True
     pop_force_training = False
-    fcp_force_training = False
+    fcp_force_training = True
     fcp_w_sp_force_training = False
     
     pop_total_training_timesteps, fcp_total_training_timesteps, fcp_w_sp_total_training_timesteps = get_input(args=args,
@@ -189,13 +215,8 @@ if __name__ == '__main__':
     
     fcp_train_types = [TeamType.HIGH_FIRST]
     fcp_eval_types = {
-                        'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST,TeamType.LOW_FIRST,],
-                        'load': [
-                                    [
-                                    (TeamType.HIGH_FIRST, '3_chefs_small_kitchen', 'fcp_hd256_seed2907', 'best'), 
-                                    (TeamType.HIGH_FIRST, '3_chefs_small_kitchen', 'fcp_hd256_seed2907', 'best')
-                                    ]
-                            ]
+                        'generate' : [], # TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST,TeamType.LOW_FIRST,
+                        'load': get_eval_types_to_load()
                     }
     fcp_agent, teammates_collection = get_fcp_agent_w_tms_clction(args, 
                                                                   pop_total_training_timesteps=pop_total_training_timesteps,

@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 import torch as th
-from oai_agents.common.population_tags import TeamType
+from oai_agents.common.tags import TeamType
 
 ARGS_TO_SAVE_LOAD = ['encoding_fn']
 

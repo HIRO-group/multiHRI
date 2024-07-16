@@ -45,3 +45,18 @@ class TeamType:
 class TeammatesCollection:
     TRAIN = 't'
     EVAL = 'e'
+
+
+class EvalMembersToBeLoaded:
+    def __init__(self, load_from_pop_structure, names, team_type, tags, layout_name):
+        self.load_from_pop_structure = load_from_pop_structure
+        self.names = names
+        self.team_type = team_type
+        self.tags = tags
+        self.layout_name = layout_name
+
+        if load_from_pop_structure:
+            assert len(names) == 1, 'Only one name should be provided if reading from pop structure'
+            assert len(tags) == 1, 'Only one tag should be provided if reading from pop structure'
+        
+        assert len(names) == len(tags), 'Number of names and tags should be the same'
