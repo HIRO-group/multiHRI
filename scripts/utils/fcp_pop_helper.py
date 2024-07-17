@@ -24,7 +24,13 @@ def get_fcp_population(args,
         if force_training:
             raise FileNotFoundError
         for layout_name in args.layout_names:
-            population[layout_name] = RLAgentTrainer.load_agents(args, name=f'fcp_pop_{layout_name}', tag='aamas25')
+
+            if save_path_prefix:
+                name = f'{save_path_prefix}/fcp_pop_{layout_name}'
+            else:
+                name = f'fcp_pop_{layout_name}'
+
+            population[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag='aamas25')
             print(f'Loaded fcp_pop with {len(population[layout_name])} agents.')
     except FileNotFoundError as e:
         print(f'Could not find saved FCP population, creating them from scratch...\nFull Error: {e}')

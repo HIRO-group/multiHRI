@@ -1,3 +1,6 @@
+import multiprocessing as mp
+mp.set_start_method('spawn', force=True) # should be called before any other module imports
+
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType
 from utils import get_selfplay_agent, get_fcp_agent_w_tms_clction, get_eval_types_to_load, get_fcp_trained_w_selfplay_types
@@ -72,7 +75,7 @@ def set_input(args, quick_test=False):
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = True
-    parallel = False
+    parallel = True
     
     pop_force_training = False
     fcp_force_training = False
