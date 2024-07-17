@@ -20,7 +20,6 @@ def train_FCP(args, name, teammates_collection, train_types):
         train_types=train_types,
         seed=2602,
     )
-
     fcp_trainer.train_agents(total_train_timesteps=fcp_total_training_timesteps)
 
 
