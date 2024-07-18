@@ -230,8 +230,12 @@ class SB3Wrapper(OAIAgent):
         Path(path).mkdir(parents=True, exist_ok=True)
         save_path = path / 'agent_file'
         args = get_args_to_save(self.args)
-        th.save({'agent_type': type(self), 'sb3_model_type': type(self.agent),
-                 'const_params': self._get_constructor_parameters(), 'args': args}, save_path)
+        th.save({'agent_type': type(self),
+                 'sb3_model_type': type(self.agent),
+                 'const_params': self._get_constructor_parameters(),
+                 'args': args,
+                 'layout_scores': self.layout_scores
+                 }, save_path)
         self.agent.save(str(save_path) + '_sb3_agent')
 
     @classmethod
@@ -251,6 +255,7 @@ class SB3Wrapper(OAIAgent):
         agent = saved_variables['sb3_model_type'].load(str(load_path) + '_sb3_agent')
         # Create wrapper object
         model = cls(agent=agent, **saved_variables['const_params'], **kwargs)  # pytype: disable=not-instantiable
+        model.layout_scores = saved_variables['layout_scores']
         model.to(device)
         return model
 
