@@ -102,13 +102,14 @@ class RLAgentTrainer(OAITrainer):
                 }
             }
 
-        for layout in self.args.layout_names:
-            for tt in _tms_clctn[TC.TRAIN][layout]:
-                if tt == TeamType.SELF_PLAY:
-                    _tms_clctn[TC.TRAIN][layout][tt] = [[learning_agent for _ in range(self.teammates_len)]]
-            for tt in _tms_clctn[TC.EVAL][layout]:
-                if tt == TeamType.SELF_PLAY:
-                    _tms_clctn[TC.EVAL][layout][tt] = [[learning_agent for _ in range(self.teammates_len)]]
+        else: 
+            for layout in self.args.layout_names:
+                for tt in _tms_clctn[TC.TRAIN][layout]:
+                    if tt == TeamType.SELF_PLAY:
+                        _tms_clctn[TC.TRAIN][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
+                for tt in _tms_clctn[TC.EVAL][layout]:
+                    if tt == TeamType.SELF_PLAY:
+                        _tms_clctn[TC.EVAL][layout][tt] = [[learning_agent for _ in range(self.teammates_len)]]
 
         train_teammates_collection = _tms_clctn[TC.TRAIN]
         eval_teammates_collection = _tms_clctn[TC.EVAL]

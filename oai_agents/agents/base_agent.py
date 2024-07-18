@@ -413,6 +413,7 @@ class OAITrainer(ABC):
 
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
+
                 env.set_teammates(teammates)
                 for p_idx in range(env.mdp.num_players):
                     env.set_reset_p_idx(p_idx)
