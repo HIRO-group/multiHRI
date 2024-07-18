@@ -405,21 +405,15 @@ class OAITrainer(ABC):
             },
         }
         '''
-        for _, env in enumerate(self.eval_envs):
-            
-            tc_index = env.layout_name
-
+        for _, env in enumerate(self.eval_envs): 
             rew_per_layout_per_teamtype[env.layout_name] = {
-                teamtype: [] for teamtype in self.eval_teammates_collection[tc_index]
+                teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
             }
-
-            teamtypes_population = self.eval_teammates_collection[tc_index]
+            teamtypes_population = self.eval_teammates_collection[env.layout_name]
 
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
-
                 env.set_teammates(teammates)
-                
                 for p_idx in range(env.mdp.num_players):
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,

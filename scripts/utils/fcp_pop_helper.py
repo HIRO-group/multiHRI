@@ -1,4 +1,4 @@
-from .categorization import generate_teammates_collection_w_NO_SP_types, get_teammates_per_type_and_layout, print_teammates_collection
+from .tc_helper import generate_TC_for_FCP_w_NO_SP_types, get_teammates_per_type_and_layout, print_teammates_collection
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, TeamType
@@ -67,7 +67,7 @@ def get_fcp_population(args,
 
         save_fcp_pop(args=args, population=population, save_path_prefix=save_path_prefix)
 
-    return generate_teammates_collection_w_NO_SP_types(args=args,
+    return generate_TC_for_FCP_w_NO_SP_types(args=args,
                                                        population=population,
                                                        train_types=train_types,
                                                        eval_types_to_generate=eval_types_to_generate,

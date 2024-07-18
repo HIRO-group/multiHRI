@@ -7,9 +7,17 @@ from utils import get_selfplay_agent, get_fcp_agent_w_tms_clction, get_eval_type
 
 
 def SP(args, pop_force_training):
+    args.sp_train_types = [TeamType.SELF_PLAY]
+    args.sp_eval_types = {
+        'generate': [TeamType.SELF_PLAY],
+        'load': get_eval_types_to_load()
+    }
     get_selfplay_agent(args=args,
-                    total_training_timesteps=args.pop_total_training_timesteps,
-                    force_training=pop_force_training)
+                       train_types=args.sp_train_types,
+                       eval_types=args.sp_eval_types,
+                       total_training_timesteps=args.pop_total_training_timesteps,
+                       force_training=pop_force_training,
+                        )
 
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
@@ -74,29 +82,29 @@ def set_input(args, quick_test=False):
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = True
+    quick_test = False
     parallel = True
     
-    pop_force_training = False
-    fcp_force_training = False
+    pop_force_training = True
+    fcp_force_training = True
     fcp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
 
-    
     SP(args=args,
        pop_force_training=pop_force_training)
+    
 
-    FCP(args=args,
-        pop_force_training=pop_force_training,
-        fcp_force_training=fcp_force_training,
-        parallel=parallel)
+    # FCP(args=args,
+    #     pop_force_training=pop_force_training,
+    #     fcp_force_training=fcp_force_training,
+    #     parallel=parallel)
 
-    FCP_w_SP_TYPES(args=args,
-                   pop_force_training=pop_force_training,
-                   fcp_force_training=fcp_force_training,
-                   fcp_w_sp_force_training=fcp_w_sp_force_training,
-                   parallel=parallel)
+    # FCP_w_SP_TYPES(args=args,
+    #                pop_force_training=pop_force_training,
+    #                fcp_force_training=fcp_force_training,
+    #                fcp_w_sp_force_training=fcp_w_sp_force_training,
+    #                parallel=parallel)
 
 
 
