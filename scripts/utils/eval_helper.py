@@ -17,8 +17,9 @@ class EvalMembersToBeLoaded:
 
 def get_eval_types_to_load():
     '''
-    If load_from_pop_structure is False, it means that we are reading independent agents from files.
-    '''
+    Instructions:
+
+    If load_from_pop_structure is False, it means that we are reading independent agents from files.    
     t1 = EvalMembersToBeLoaded(
         load_from_pop_structure = False,
         names = ['eval/2_chefs/fcp_hd256_seed26', 'eval/2_chefs/fcp_hd256_seed39'],
@@ -26,10 +27,8 @@ def get_eval_types_to_load():
         tags = ['best', 'best'],
         layout_name = '3_chefs_small_kitchen',
     )
-
-    '''
+    
     Pop structure holds the population of agent used for FCP training. 
-    '''
     t2 = EvalMembersToBeLoaded(
         load_from_pop_structure = True,
         names = ['eval/2_chefs/fcp_pop_3_chefs_small_kitchen'],
@@ -37,6 +36,89 @@ def get_eval_types_to_load():
         tags = ['aamas25'],
         layout_name = '3_chefs_small_kitchen',
     )
-    return [t1, t2]
+    '''
+
+    t_pop_h = EvalMembersToBeLoaded(
+            load_from_pop_structure = True,
+            names = ['eval/2_chefs/fcp_pop_3_chefs_small_kitchen'],
+            team_type = TeamType.HIGH_FIRST,
+            tags = ['aamas25'],
+            layout_name = '3_chefs_small_kitchen',
+        )
+
+    t_pop_l = EvalMembersToBeLoaded(
+        load_from_pop_structure = True,
+        names = ['eval/2_chefs/fcp_pop_3_chefs_small_kitchen'],
+        team_type = TeamType.LOW_FIRST,
+        tags = ['aamas25'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    t_pop_m = EvalMembersToBeLoaded(
+        load_from_pop_structure = True,
+        names = ['eval/2_chefs/fcp_pop_3_chefs_small_kitchen'],
+        team_type = TeamType.MEDIUM_FIRST,
+        tags = ['aamas25'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    t_pop_hm = EvalMembersToBeLoaded(
+        load_from_pop_structure = True,
+        names = ['eval/2_chefs/fcp_pop_3_chefs_small_kitchen'],
+        team_type = TeamType.HIGH_MEDIUM,
+        tags = ['aamas25'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    t_pop_hl = EvalMembersToBeLoaded(
+        load_from_pop_structure = True,
+        names = ['eval/2_chefs/fcp_pop_3_chefs_small_kitchen'],
+        team_type = TeamType.HIGH_LOW,
+        tags = ['aamas25'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+
+    t_fcp_h = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/2_chefs/fcp_H', 'eval/2_chefs/fcp_H'],
+        team_type = "FCP_HH", # We can choose arbitrary name here for wandb plots purposes
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    t_fcp_hl = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/2_chefs/fcp_HL', 'eval/2_chefs/fcp_HL'],
+        team_type = "FCP_HL",
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    t_fcp_hm = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/2_chefs/fcp_HM', 'eval/2_chefs/fcp_HM'],
+        team_type = "FCP_HM",
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    t_fcp_h_l = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/2_chefs/fcp_H_L', 'eval/2_chefs/fcp_H_L'],
+        team_type = "FCP_H_L",
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    t_fcp_h_mid = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/2_chefs/fcp_H_MID', 'eval/2_chefs/fcp_H_MID'],
+        team_type = "FCP_H_MID",
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+
+    return [t_pop_h, t_pop_l, t_pop_hm, t_fcp_h, t_fcp_hl, t_fcp_h_mid]
 
 

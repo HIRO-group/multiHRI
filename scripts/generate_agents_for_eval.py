@@ -45,7 +45,7 @@ def set_input(args, quick_test=False):
 
 if __name__ == "__main__":
     args = get_arguments()
-    quick_test = True
+    quick_test = False
     parallel = False
     pop_force_training = True
     fcp_force_training = False

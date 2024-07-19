@@ -2,20 +2,25 @@ from oai_agents.agents.rl import RLAgentTrainer
 
 from .common import load_agents
 from .fcp_pop_helper import get_fcp_population
-from .categorization import update_tms_clction_with_selfplay_types
+from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP
 
 
-def get_selfplay_agent(args, total_training_timesteps, tag=None, force_training=False):
+def get_selfplay_agent(args, total_training_timesteps, train_types, eval_types, tag=None, force_training=False):
     name = 'sp'
     agents = load_agents(args, name=name, tag=tag, force_training=force_training)
     if agents:
         return agents[0]
 
+    tc = generate_TC_for_SP(args=args,
+                            train_types=train_types,
+                            eval_types_to_generate=eval_types['generate'],
+                            eval_types_to_read_from_file=eval_types['load'])
+    
     selfplay_trainer = RLAgentTrainer(
         name=name,
         args=args,
         agent=None,
-        teammates_collection={},
+        teammates_collection=tc,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         seed=678,
@@ -90,7 +95,7 @@ def get_fcp_trained_w_selfplay_types(args,
     if agents:
         return agents[0]
 
-    teammates_collection = update_tms_clction_with_selfplay_types(args=args,
+    teammates_collection = generate_TC_for_FCP_w_SP_types(args=args,
                                                                   teammates_collection=fcp_teammates_collection,
                                                                   agent=fcp_agent,
                                                                   train_types=fcp_w_sp_train_types,

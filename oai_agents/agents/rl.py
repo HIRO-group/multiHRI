@@ -19,7 +19,8 @@ class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
     def __init__(self, teammates_collection, args, 
                 agent, epoch_timesteps, n_envs,
-                seed, train_types=[], eval_types=[], num_layers=2, hidden_dim=256, 
+                seed, train_types=[], eval_types=[],
+                num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
@@ -101,6 +102,15 @@ class RLAgentTrainer(OAITrainer):
                 }
             }
 
+        else: 
+            for layout in self.args.layout_names:
+                for tt in _tms_clctn[TeammatesCollection.TRAIN][layout]:
+                    if tt == TeamType.SELF_PLAY:
+                        _tms_clctn[TeammatesCollection.TRAIN][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
+                for tt in _tms_clctn[TeammatesCollection.EVAL][layout]:
+                    if tt == TeamType.SELF_PLAY:
+                        _tms_clctn[TeammatesCollection.EVAL][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
+
         train_teammates_collection = _tms_clctn[TeammatesCollection.TRAIN]
         eval_teammates_collection = _tms_clctn[TeammatesCollection.EVAL]
 
@@ -115,9 +125,25 @@ class RLAgentTrainer(OAITrainer):
                 for layout in eval_teammates_collection
             }
 
+        
+        self.print_tc_helper(train_teammates_collection, "Train TC")
+        self.print_tc_helper(eval_teammates_collection, "Eval TC")
+
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
         return train_teammates_collection, eval_teammates_collection
+
+
+    def print_tc_helper(self, teammates_collection, message=None):
+        if message:
+            print(message)
+        for layout_name in teammates_collection:
+            for tag in teammates_collection[layout_name]:
+                print(f'\t{tag}:')
+                teammates_c = teammates_collection[layout_name][tag]
+                for teammates in teammates_c:
+                    for agent in teammates:
+                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
 
 
     def get_envs(self, _env, _eval_envs, deterministic):
@@ -171,7 +197,6 @@ class RLAgentTrainer(OAITrainer):
 
     def check_teammates_collection_structure(self, teammates_collection):
         '''    
-        IF we use FCP:
         teammates_collection = {
                 'layout_name': {
                     'high_perf_first': [[agent1, agent2], ...],
@@ -181,12 +206,13 @@ class RLAgentTrainer(OAITrainer):
                 },
             }
         '''
- 
         for layout in teammates_collection: 
             for team_type in teammates_collection[layout]:
                 for teammates in teammates_collection[layout][team_type]:
                     assert len(teammates) == self.teammates_len,\
-                          f"Teammates length in collection: {len(teammates)} must be equal to self.teammates_len: {self.teammates_len}"
+                            f"Teammates length in collection: {len(teammates)} must be equal to self.teammates_len: {self.teammates_len}"
+                    for teammate in teammates:
+                        assert type(teammate) == SB3Wrapper, f"All teammates must be of type SB3Wrapper, but got: {type(teammate)}"
 
 
     def _get_constructor_parameters(self):
@@ -203,6 +229,17 @@ class RLAgentTrainer(OAITrainer):
         all_train_teamtypes = [tag for tags_dict in self.teammates_collection.values() for tag in tags_dict.keys()]
         return exp_name or 'train_' + '_'.join(all_train_teamtypes)
 
+
+    def should_evaluate(self, steps):
+        mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
+        self.best_training_rew *= 0.98
+
+        steps_divisable_by_5 = (steps + 1) % 5 == 0
+        mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
+        fcp_ck_rate_reached = self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)
+    
+        return steps_divisable_by_5 or mean_rew_greater_than_best or fcp_ck_rate_reached
+    
 
     def train_agents(self, total_train_timesteps, exp_name=None):       
         exp_name = self.get_experiment_name(exp_name)
@@ -227,28 +264,20 @@ class RLAgentTrainer(OAITrainer):
             self.set_new_teammates()
             self.learning_agent.learn(self.epoch_timesteps)
 
-            # Learning_agent.num_timesteps = n_steps * n_envs
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
 
-            # Evaluate
-            mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
-            self.best_training_rew *= 0.98
-
-            if (steps + 1) % 5 == 0 or (mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6) or \
-                (self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)):
-                
+            if self.should_evaluate(steps=steps):
+                mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])                
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
 
-                # FCP pop checkpointing
                 if self.fcp_ck_rate:
                     if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
                         path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
                         self.ck_list.append((rew_per_layout, path, tag))
 
-                # Save best model
                 if mean_reward >= self.best_score:
                     best_path, best_tag = self.save_agents(tag='best')
                     print(f'New best score of {mean_reward} reached, model saved to {best_path}/{best_tag}')

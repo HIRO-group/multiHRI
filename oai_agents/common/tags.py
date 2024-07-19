@@ -43,6 +43,6 @@ class TeamType:
     SELF_PLAY_HIGH = 'SPH'
 
 class TeammatesCollection:
-    TRAIN = 't'
-    EVAL = 'e'
+    TRAIN = 'train'
+    EVAL = 'eval'
 
