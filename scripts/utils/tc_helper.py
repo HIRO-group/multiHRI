@@ -1,5 +1,5 @@
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import TeamType, TC
+from oai_agents.common.tags import TeamType, TeammatesCollection
 from .common import load_agents
 import random
 
@@ -31,8 +31,8 @@ def generate_TC_for_SP(args,
                                                      eval_types=eval_types_to_read_from_file,
                                                      eval_collection=eval_collection)
     teammates_collection = {
-        TC.TRAIN: train_collection,
-        TC.EVAL: eval_collection
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
     }
     return teammates_collection
 
@@ -52,14 +52,14 @@ def generate_TC_for_FCP_w_NO_SP_types(args,
 
     Returns dict
         teammates_collection = {
-            TC.Train: {
+            TeammatesCollection.Train: {
                 'layout_name': {
                         'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
                         'TeamType.RANDOM': [[agent7, agent8],...]
                         ....
                     }
                 },
-            TC.Eval: {
+            TeammatesCollection.Eval: {
                     ...
             }
         }
@@ -97,8 +97,8 @@ def generate_TC_for_FCP_w_NO_SP_types(args,
                                                      eval_collection=eval_collection)
 
     teammates_collection = {
-        TC.TRAIN: train_collection,
-        TC.EVAL: eval_collection
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
     }
 
     return teammates_collection
@@ -180,8 +180,8 @@ def get_teammates_per_type_and_layout(agents_perftag_score, team_types, t_len):
 # TODO: clean this function
 def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_types, eval_types):
     for layout in args.layout_names:
-        train_collection = teammates_collection[TC.TRAIN][layout]
-        eval_collection = teammates_collection[TC.EVAL][layout]
+        train_collection = teammates_collection[TeammatesCollection.TRAIN][layout]
+        eval_collection = teammates_collection[TeammatesCollection.EVAL][layout]
         self_teammates = [agent for _ in range(args.teammates_len-1)]
         
         tr_teammates = []
@@ -196,7 +196,7 @@ def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_type
                 low_p_agent_tr = random.choice([a for a in train_collection[TeamType.LOW_FIRST][0]])
                 tr_teammates = [low_p_agent_tr] + self_teammates
             if tr_teammates:
-                teammates_collection[TC.TRAIN][layout][train_type] = [tr_teammates]
+                teammates_collection[TeammatesCollection.TRAIN][layout][train_type] = [tr_teammates]
 
         e_teammates = []
         for eval_type in eval_types:
@@ -212,7 +212,7 @@ def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_type
                 low_p_agent_ev = random.choice([a for a in eval_collection[TeamType.LOW_FIRST][0]])
                 e_teammates = [low_p_agent_ev] + self_teammates
             if e_teammates:
-                teammates_collection[TC.EVAL][layout][eval_type] = [e_teammates]
+                teammates_collection[TeammatesCollection.EVAL][layout][eval_type] = [e_teammates]
     return teammates_collection
 
 
@@ -245,12 +245,12 @@ def update_eval_collection_with_eval_types_from_file(args, eval_types, eval_coll
 
 
 def print_teammates_collection(teammates_collection):
-    if TC.TRAIN in teammates_collection:
+    if TeammatesCollection.TRAIN in teammates_collection:
         print('Train: ')
-        print_tc_helper(teammates_collection[TC.TRAIN])
-    if TC.EVAL in teammates_collection:
+        print_tc_helper(teammates_collection[TeammatesCollection.TRAIN])
+    if TeammatesCollection.EVAL in teammates_collection:
         print('Eval: ')
-        print_tc_helper(teammates_collection[TC.EVAL])
+        print_tc_helper(teammates_collection[TeammatesCollection.EVAL])
     else:
         print_tc_helper(teammates_collection)
 

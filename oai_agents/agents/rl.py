@@ -2,7 +2,7 @@ from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer,
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.tags import AgentPerformance, TeamType, TC
+from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
@@ -90,12 +90,12 @@ class RLAgentTrainer(OAITrainer):
         if _tms_clctn == {}:
             print("No teammates collection provided, using SELF_PLAY: teammates will be the agent itself.")
             _tms_clctn = {
-                TC.TRAIN: {
+                TeammatesCollection.TRAIN: {
                     layout_name: 
                         {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
                 },
-                TC.EVAL: {
+                TeammatesCollection.EVAL: {
                     layout_name: 
                         {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
@@ -104,15 +104,15 @@ class RLAgentTrainer(OAITrainer):
 
         else: 
             for layout in self.args.layout_names:
-                for tt in _tms_clctn[TC.TRAIN][layout]:
+                for tt in _tms_clctn[TeammatesCollection.TRAIN][layout]:
                     if tt == TeamType.SELF_PLAY:
-                        _tms_clctn[TC.TRAIN][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
-                for tt in _tms_clctn[TC.EVAL][layout]:
+                        _tms_clctn[TeammatesCollection.TRAIN][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
+                for tt in _tms_clctn[TeammatesCollection.EVAL][layout]:
                     if tt == TeamType.SELF_PLAY:
-                        _tms_clctn[TC.EVAL][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
+                        _tms_clctn[TeammatesCollection.EVAL][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
 
-        train_teammates_collection = _tms_clctn[TC.TRAIN]
-        eval_teammates_collection = _tms_clctn[TC.EVAL]
+        train_teammates_collection = _tms_clctn[TeammatesCollection.TRAIN]
+        eval_teammates_collection = _tms_clctn[TeammatesCollection.EVAL]
 
         if train_types:
             train_teammates_collection = {

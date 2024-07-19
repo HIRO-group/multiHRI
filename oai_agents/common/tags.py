@@ -42,7 +42,7 @@ class TeamType:
     SELF_PLAY_MEDIUM = 'SPM'
     SELF_PLAY_HIGH = 'SPH'
 
-class TC: # Teammates Collection
+class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'
 
