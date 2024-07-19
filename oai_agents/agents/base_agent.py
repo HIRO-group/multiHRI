@@ -2,7 +2,7 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_args_to_save, set_args_from_load, get_arguments
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
-from oai_agents.common.population_tags import AgentPerformance, TeamType
+from oai_agents.common.tags import AgentPerformance, TeamType
 from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
@@ -359,8 +359,8 @@ class OAITrainer(ABC):
             th.manual_seed(seed)
             np.random.seed(seed)
         
-        self.eval_teammates_collection = None
-        self.teammates_collection = None
+        self.eval_teammates_collection = {}
+        self.teammates_collection = {}
 
         # For environment splits while training
         self.n_layouts = len(self.args.layout_names)
@@ -387,41 +387,35 @@ class OAITrainer(ABC):
             return lr
         return linear_anneal
 
-    # TODO: Need to add features for us to calculate the average performance of the tags.
+
     def evaluate(self, eval_agent, num_eps_per_layout_per_tm=5, visualize=False, timestep=None, log_wandb=True,
                  deterministic=False):
+        
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
-
-        use_specific_tm_layout = False if 'all_layouts' in self.eval_teammates_collection else True
-
         tot_mean_reward = []
         rew_per_layout_per_teamtype = {}
         '''
         dict 
         teammates_collection = {
             'layout_name': {
-                'TeamType.HIGH_FIRST': [agent1, agent2],
-                'TeamType.MEDIUM_FIRST': [agent3, agent4],
-                'TeamType.LOW_FIRST': [agent5, agent6],
-                'TeamType.RANDOM': [agent7, agent8],
+                'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
+                'TeamType.MEDIUM_FIRST': [[agent3, agent4], ...],
+                'TeamType.LOW_FIRST': [[agent5, agent6], ...],
+                'TeamType.RANDOM': [[agent7, agent8], ...],
             },
         }
         '''
-        for _, env in enumerate(self.eval_envs):
-            
-            tc_index = env.layout_name if use_specific_tm_layout else 'all_layouts'
-
+        for _, env in enumerate(self.eval_envs): 
             rew_per_layout_per_teamtype[env.layout_name] = {
-                teamtype: [] for teamtype in self.eval_teammates_collection[tc_index]
+                teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
             }
-
-            teamtypes_population = self.eval_teammates_collection[tc_index]
-
+            teamtypes_population = self.eval_teammates_collection[env.layout_name]
             for teamtype in teamtypes_population:
-                teammates = teamtypes_population[teamtype]
+                teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
+
                 env.set_teammates(teammates)
-                
                 for p_idx in range(env.mdp.num_players):
+
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
                                                               deterministic=deterministic, warn=False, render=visualize)
@@ -444,26 +438,24 @@ class OAITrainer(ABC):
 
     def set_new_teammates(self):
         for i in range(self.args.n_envs):
-            if 'all_layouts' in self.teammates_collection.keys():
-                pop_teamtypes = self.teammates_collection['all_layouts']
-
-            else:
-                layout_name = self.env.env_method('get_layout_name', indices=i)[0]
-                pop_teamtypes = self.teammates_collection[layout_name]
-
+            layout_name = self.env.env_method('get_layout_name', indices=i)[0]
+            
+            pop_teamtypes = self.teammates_collection[layout_name]
             population = [pop_teamtypes[t] for t in pop_teamtypes.keys()]
             
             '''
-            population = [[agent1, agent2, agent3]]
-            OR if population training:
-            population = [[agent1, agent2, agent3], [agent3, agent5, agent6], ...]
+            population = [[[agent1, agent2, agent3], ...], [[agent3, agent5, agent6], ...], ...]
             '''
 
-            teammates = population[np.random.randint(len(population))]
-
+            teammates_per_type = population[np.random.randint(len(population))]
+            teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
+            
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
 
+            for teammate in teammates:
+                assert isinstance(teammate, SB3Wrapper)
+            
             self.env.env_method('set_teammates', teammates, indices=i)
 
 

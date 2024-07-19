@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 import torch as th
-from oai_agents.common.population_tags import TeamType
+from oai_agents.common.tags import TeamType
 
 ARGS_TO_SAVE_LOAD = ['encoding_fn']
 
@@ -42,7 +42,16 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--epoch-timesteps', type=int)
     parser.add_argument('--n-envs', type=int, help='Number of environments to use while training')
     parser.add_argument('--teammates-len',  type=int)
+    parser.add_argument('--overcooked-verbose', type=bool, default=False, help="Disables the overcooked game logs")
     
+    parser.add_argument('--pop-total-training-timesteps', type=int)
+    parser.add_argument('--fcp-total-training-timesteps', type=int)
+    parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
+    
+    parser.add_argument('--fcp-train-types', nargs='+', type=str)
+    parser.add_argument('--fcp-eval-types', type=dict)
+
+
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
 

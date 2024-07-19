@@ -35,7 +35,14 @@ class TeamType:
     MEDIUM_LOW = 'ML'
     HIGH_LOW_RANDOM = 'HLR'
 
+    ALL_TYPES_BESIDES_SP = [HIGH_FIRST, MEDIUM_FIRST, MIDDLE_FIRST, LOW_FIRST, RANDOM, HIGH_MEDIUM, HIGH_LOW, MEDIUM_LOW, HIGH_LOW_RANDOM]
+
     SELF_PLAY = 'SP'
     SELF_PLAY_LOW = 'SPL'
     SELF_PLAY_MEDIUM = 'SPM'
     SELF_PLAY_HIGH = 'SPH'
+
+class TeammatesCollection:
+    TRAIN = 'train'
+    EVAL = 'eval'
+
