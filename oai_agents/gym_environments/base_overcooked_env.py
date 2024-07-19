@@ -118,7 +118,7 @@ class OvercookedGymEnv(Env):
                 'same_motion_goals': True
             }
 
-            self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False)
+            self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False, info=self.args.overcooked_verbose)
             self.env = OvercookedEnv.from_mdp(self.mdp, horizon=(
                         horizon or self.args.horizon))  # , **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
         else:
@@ -148,8 +148,8 @@ class OvercookedGymEnv(Env):
     def set_teammates(self, teammates):
         assert isinstance(teammates, list)
         self.teammates = teammates
-
-        assert self.mdp.num_players == len(self.teammates) + 1 # teammates + main agent
+        assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
+                                                                    f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
 
 

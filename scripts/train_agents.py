@@ -1,82 +1,108 @@
 import multiprocessing as mp
 mp.set_start_method('spawn', force=True) # should be called before any other module imports
 
-import torch as th
-
-from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.population_tags import TeamType
-from scripts.utils import get_fcp_population
+from oai_agents.common.tags import TeamType
+from utils import get_selfplay_agent, get_fcp_agent_w_tms_clction, get_eval_types_to_load, get_fcp_trained_w_selfplay_types
 
 
-def get_selfplay_agent(args, tag=None, force_training=False):
-    name = 'sp'
-    if not force_training:
-        try:
-            agents = RLAgentTrainer.load_agents(args, name=name, tag=tag or 'best')
-            return agents
-        except FileNotFoundError as e:
-            print(f'Could not find saved selfplay agent, creating them from scratch...\nFull Error: {e}')
-
-    selfplay_trainer = RLAgentTrainer(
-        name=name,
-        args=args,
-        selfplay=True,
-        teammates_collection=[],
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        seed=678,
-    )
-
-    selfplay_trainer.train_agents(total_train_timesteps=args.total_training_timesteps)
-    return selfplay_trainer.get_agents()
+def SP(args, pop_force_training):
+    args.sp_train_types = [TeamType.SELF_PLAY]
+    args.sp_eval_types = {
+        'generate': [TeamType.SELF_PLAY],
+        'load': get_eval_types_to_load()
+    }
+    get_selfplay_agent(args=args,
+                       train_types=args.sp_train_types,
+                       eval_types=args.sp_eval_types,
+                       total_training_timesteps=args.pop_total_training_timesteps,
+                       force_training=pop_force_training,
+                        )
 
 
-def get_fcp_agent(args, force_training=False, parallel=True):
-    teammates_collection = get_fcp_population(args,
-                                              ck_rate = args.total_training_timesteps // 5,
-                                              force_training=force_training,
-                                              parallel=parallel)
-    fcp_trainer = RLAgentTrainer(
-        name='fcp',
-        args=args,
-        selfplay=False,
-        teammates_collection=teammates_collection,
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        seed=2602,
-    )
-
-    fcp_trainer.train_agents(total_train_timesteps=args.total_training_timesteps)
-    return fcp_trainer.get_agents()[0]
+def FCP(args, pop_force_training, fcp_force_training, parallel):
+    args.fcp_train_types = [TeamType.HIGH_FIRST]
+    args.fcp_eval_types = {'generate' : [],
+                            'load': get_eval_types_to_load()}
+    _, _ = get_fcp_agent_w_tms_clction(args,
+                                        pop_total_training_timesteps=args.pop_total_training_timesteps,
+                                        fcp_total_training_timesteps=args.fcp_total_training_timesteps,
+                                        fcp_train_types=args.fcp_train_types,
+                                        fcp_eval_types=args.fcp_eval_types,
+                                        pop_force_training=pop_force_training,
+                                        fcp_force_training=fcp_force_training,
+                                        num_self_play_agents_to_train=args.num_sp_agents_to_train,
+                                        parallel=parallel)
 
 
-if __name__ == '__main__':
-    args = get_arguments()
-    # args.sb_verbose = 0
-    # args.wandb_mode = 'disabled'
+def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_training, parallel):
+    args.fcp_train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
+    args.fcp_eval_types = {'generate' : [],
+                           'load': get_eval_types_to_load()}
+    args.fcp_w_sp_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
+    args.fcp_w_sp_eval_types = {'generate': [],
+                                'load': get_eval_types_to_load()}
+    get_fcp_trained_w_selfplay_types(args=args,
+                                    pop_total_training_timesteps=args.pop_total_training_timesteps,
+                                    fcp_total_training_timesteps=args.fcp_total_training_timesteps,
+                                    fcp_w_sp_total_training_timesteps=args.fcp_w_sp_total_training_timesteps,
+                                    fcp_train_types=args.fcp_train_types,
+                                    fcp_eval_types=args.fcp_eval_types,
+                                    fcp_w_sp_train_types=args.fcp_w_sp_train_types,
+                                    fcp_w_sp_eval_types=args.fcp_w_sp_eval_types,
+                                    pop_force_training=pop_force_training,
+                                    fcp_force_training=fcp_force_training,
+                                    fcp_w_sp_force_training=fcp_w_sp_force_training,
+                                    parallel=parallel)
 
+
+def set_input(args, quick_test=False):
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
+    
+    if not quick_test: 
+        args.n_envs = 50
+        args.epoch_timesteps = 1e5
+        args.pop_total_training_timesteps = 5e6
+        args.fcp_total_training_timesteps = 5e6
+        args.fcp_w_sp_total_training_timesteps = 2 * 5e6
+        args.num_sp_agents_to_train = 2
 
-    args.n_envs = 100
-    args.epoch_timesteps = 1e5
-    args.total_training_timesteps = 5e6
+    else: # Used for doing quick tests
+        args.sb_verbose = 1
+        args.wandb_mode = 'disabled'
+        args.n_envs = 2
+        args.epoch_timesteps = 2
+        args.pop_total_training_timesteps = 3500
+        args.fcp_total_training_timesteps = 3500
+        args.fcp_w_sp_total_training_timesteps = 3500 * 2
+        args.num_sp_agents_to_train = 2
+    
 
-    # get_selfplay_agent(args, force_training=True)
+if __name__ == '__main__':
+    args = get_arguments()
+    quick_test = False
+    parallel = True
+    
+    pop_force_training = True
+    fcp_force_training = True
+    fcp_w_sp_force_training = True
+    
+    set_input(args=args, quick_test=quick_test)
 
-    args.eval_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.MIDDLE_FIRST, 
-                       TeamType.LOW_FIRST, TeamType.RANDOM, TeamType.HIGH_MEDIUM,
-                       TeamType.HIGH_LOW, TeamType.MEDIUM_LOW, TeamType.HIGH_LOW_RANDOM]
+    SP(args=args,
+       pop_force_training=pop_force_training)
 
 
-    args.train_types = [TeamType.HIGH_FIRST]
-    get_fcp_agent(args, force_training=False, parallel=True)
+    # FCP(args=args,
+    #     pop_force_training=pop_force_training,
+    #     fcp_force_training=fcp_force_training,
+    #     parallel=parallel)
 
-    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
-    get_fcp_agent(args, force_training=False, parallel=True)
 
-    args.train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST,
-                        TeamType.HIGH_MEDIUM, TeamType.HIGH_LOW, TeamType.MEDIUM_LOW]
-    get_fcp_agent(args, force_training=False, parallel=True)
+    # FCP_w_SP_TYPES(args=args,
+    #                pop_force_training=pop_force_training,
+    #                fcp_force_training=fcp_force_training,
+    #                fcp_w_sp_force_training=fcp_w_sp_force_training,
+    #                parallel=parallel)
