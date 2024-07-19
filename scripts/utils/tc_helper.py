@@ -263,4 +263,3 @@ def print_tc_helper(teammates_collection):
             for teammates in teammates_c:
                 for agent in teammates:
                     print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
-            print('\n')

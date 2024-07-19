@@ -359,8 +359,8 @@ class OAITrainer(ABC):
             th.manual_seed(seed)
             np.random.seed(seed)
         
-        self.eval_teammates_collection = None
-        self.teammates_collection = None
+        self.eval_teammates_collection = {}
+        self.teammates_collection = {}
 
         # For environment splits while training
         self.n_layouts = len(self.args.layout_names)
@@ -387,11 +387,11 @@ class OAITrainer(ABC):
             return lr
         return linear_anneal
 
-    # TODO: Need to add features for us to calculate the average performance of the tags.
+
     def evaluate(self, eval_agent, num_eps_per_layout_per_tm=5, visualize=False, timestep=None, log_wandb=True,
                  deterministic=False):
+        
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
-
         tot_mean_reward = []
         rew_per_layout_per_teamtype = {}
         '''
@@ -410,12 +410,12 @@ class OAITrainer(ABC):
                 teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
             }
             teamtypes_population = self.eval_teammates_collection[env.layout_name]
-
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
 
                 env.set_teammates(teammates)
                 for p_idx in range(env.mdp.num_players):
+
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
                                                               deterministic=deterministic, warn=False, render=visualize)
@@ -439,8 +439,8 @@ class OAITrainer(ABC):
     def set_new_teammates(self):
         for i in range(self.args.n_envs):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
+            
             pop_teamtypes = self.teammates_collection[layout_name]
-
             population = [pop_teamtypes[t] for t in pop_teamtypes.keys()]
             
             '''
@@ -453,6 +453,9 @@ class OAITrainer(ABC):
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
 
+            for teammate in teammates:
+                assert isinstance(teammate, SB3Wrapper)
+            
             self.env.env_method('set_teammates', teammates, indices=i)
 
 

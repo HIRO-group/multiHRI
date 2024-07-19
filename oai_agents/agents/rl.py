@@ -109,7 +109,7 @@ class RLAgentTrainer(OAITrainer):
                         _tms_clctn[TC.TRAIN][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
                 for tt in _tms_clctn[TC.EVAL][layout]:
                     if tt == TeamType.SELF_PLAY:
-                        _tms_clctn[TC.EVAL][layout][tt] = [[learning_agent for _ in range(self.teammates_len)]]
+                        _tms_clctn[TC.EVAL][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
 
         train_teammates_collection = _tms_clctn[TC.TRAIN]
         eval_teammates_collection = _tms_clctn[TC.EVAL]
@@ -125,12 +125,25 @@ class RLAgentTrainer(OAITrainer):
                 for layout in eval_teammates_collection
             }
 
-        print("Training TeamTypes: ", train_teammates_collection[self.args.layout_names[0]].keys())
-        print("Evaluation TeamTypes: ", eval_teammates_collection[self.args.layout_names[0]].keys())
+        
+        self.print_tc_helper(train_teammates_collection, "Train TC")
+        self.print_tc_helper(eval_teammates_collection, "Eval TC")
 
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
         return train_teammates_collection, eval_teammates_collection
+
+
+    def print_tc_helper(self, teammates_collection, message=None):
+        if message:
+            print(message)
+        for layout_name in teammates_collection:
+            for tag in teammates_collection[layout_name]:
+                print(f'\t{tag}:')
+                teammates_c = teammates_collection[layout_name][tag]
+                for teammates in teammates_c:
+                    for agent in teammates:
+                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
 
 
     def get_envs(self, _env, _eval_envs, deterministic):
@@ -198,6 +211,8 @@ class RLAgentTrainer(OAITrainer):
                 for teammates in teammates_collection[layout][team_type]:
                     assert len(teammates) == self.teammates_len,\
                             f"Teammates length in collection: {len(teammates)} must be equal to self.teammates_len: {self.teammates_len}"
+                    for teammate in teammates:
+                        assert type(teammate) == SB3Wrapper, f"All teammates must be of type SB3Wrapper, but got: {type(teammate)}"
 
 
     def _get_constructor_parameters(self):
@@ -256,7 +271,6 @@ class RLAgentTrainer(OAITrainer):
                 mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])                
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew
-
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
 
                 if self.fcp_ck_rate:

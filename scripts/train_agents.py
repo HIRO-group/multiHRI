@@ -10,7 +10,7 @@ def SP(args, pop_force_training):
     args.sp_train_types = [TeamType.SELF_PLAY]
     args.sp_eval_types = {
         'generate': [TeamType.SELF_PLAY],
-        'load': []
+        'load': get_eval_types_to_load()
     }
     get_selfplay_agent(args=args,
                        train_types=args.sp_train_types,
@@ -71,7 +71,7 @@ def set_input(args, quick_test=False):
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
-        # args.wandb_mode = 'disabled'
+        args.wandb_mode = 'disabled'
         args.n_envs = 2
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 3500
@@ -82,7 +82,7 @@ def set_input(args, quick_test=False):
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = True
+    quick_test = False
     parallel = True
     
     pop_force_training = True
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     SP(args=args,
        pop_force_training=pop_force_training)
-    
+
 
     # FCP(args=args,
     #     pop_force_training=pop_force_training,
@@ -106,9 +106,3 @@ if __name__ == '__main__':
     #                fcp_force_training=fcp_force_training,
     #                fcp_w_sp_force_training=fcp_w_sp_force_training,
     #                parallel=parallel)
-
-
-
-
-
-    
