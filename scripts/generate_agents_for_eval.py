@@ -46,9 +46,9 @@ def set_input(args, quick_test=False):
 if __name__ == "__main__":
     args = get_arguments()
     quick_test = False
-    parallel = False
+    parallel = True
     pop_force_training = True
-    fcp_force_training = False
+    fcp_force_training = True
     set_input(args=args, quick_test=quick_test)
 
     SAVE_PATH_PREFIX = f'eval/{args.teammates_len}_chefs'
