@@ -91,14 +91,14 @@ if __name__ == '__main__':
     
     set_input(args=args, quick_test=quick_test)
 
-    SP(args=args,
-       pop_force_training=pop_force_training)
+    # SP(args=args,
+    #    pop_force_training=pop_force_training)
 
 
-    # FCP(args=args,
-    #     pop_force_training=pop_force_training,
-    #     fcp_force_training=fcp_force_training,
-    #     parallel=parallel)
+    FCP(args=args,
+        pop_force_training=pop_force_training,
+        fcp_force_training=fcp_force_training,
+        parallel=parallel)
 
 
     # FCP_w_SP_TYPES(args=args,

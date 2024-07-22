@@ -51,7 +51,7 @@ if __name__ == "__main__":
     fcp_force_training = True
     set_input(args=args, quick_test=quick_test)
 
-    SAVE_PATH_PREFIX = f'eval/{args.teammates_len}_chefs'
+    SAVE_PATH_PREFIX = f'eval/{args.teammates_len+1}_chefs'
 
     all_FCP_train_types = [
         [TeamType.HIGH_FIRST],
