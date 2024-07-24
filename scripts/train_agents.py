@@ -21,9 +21,9 @@ def SP(args, pop_force_training):
 
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
-    args.fcp_train_types = [TeamType.HIGH_FIRST]
-    args.fcp_eval_types = {'generate' : [],
-                            'load': get_eval_types_to_load()}
+    args.fcp_train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
+    args.fcp_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST],
+                            'load': []}
     _, _ = get_fcp_agent_w_tms_clction(args,
                                         pop_total_training_timesteps=args.pop_total_training_timesteps,
                                         fcp_total_training_timesteps=args.fcp_total_training_timesteps,
@@ -57,15 +57,15 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
 
 
 def set_input(args, quick_test=False):
-    args.layout_names = ['3_chefs_small_kitchen']
-    args.teammates_len = 2
+    args.layout_names = ['asymmetric_advantages']
+    args.teammates_len = 1
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
     
     if not quick_test: 
         args.n_envs = 50
         args.epoch_timesteps = 1e5
-        args.pop_total_training_timesteps = 5e6
-        args.fcp_total_training_timesteps = 5e6
+        args.pop_total_training_timesteps = int(2/3 * 5e6)
+        args.fcp_total_training_timesteps = 2 * 5e6
         args.fcp_w_sp_total_training_timesteps = 2 * 5e6
         args.num_sp_agents_to_train = 2
 
