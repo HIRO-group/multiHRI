@@ -248,6 +248,8 @@ class RLAgentTrainer(OAITrainer):
                          resume="allow")
         
         print("Training agent: "+self.name+ ", for experiment: "+exp_name)
+        self.print_tc_helper(self.teammates_collection, "Train TC")
+        self.print_tc_helper(self.eval_teammates_collection, "Eval TC")
 
         if self.fcp_ck_rate is not None:
             self.ck_list = []
