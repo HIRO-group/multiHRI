@@ -15,7 +15,7 @@ class EvalMembersToBeLoaded:
         assert len(names) == len(tags), 'Number of names and tags should be the same'
 
 
-def get_eval_types_to_load():
+def get_eval_types_to_load(num=None):
     '''
     Instructions:
 

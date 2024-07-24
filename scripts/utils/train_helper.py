@@ -36,7 +36,7 @@ def get_fcp_agent_w_tms_clction(args,
                                 fcp_train_types,
                                 fcp_eval_types,
                                 pop_force_training, fcp_force_training,
-                                num_self_play_agents_to_train=2, tag=None, parallel=True):
+                                num_self_play_agents_to_train=2, tag=None, parallel=True, name='fcp', save_path_prefix=None):
     teammates_collection = get_fcp_population(args,
                                               ck_rate = pop_total_training_timesteps // 5,
                                               train_types = fcp_train_types,
@@ -45,8 +45,9 @@ def get_fcp_agent_w_tms_clction(args,
                                               num_self_play_agents_to_train= num_self_play_agents_to_train,
                                               total_training_timesteps = pop_total_training_timesteps,
                                               force_training=pop_force_training,
-                                              parallel=parallel)
-    name = 'fcp'
+                                              parallel=parallel,
+                                              save_path_prefix=save_path_prefix
+                                              )
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_force_training)
     if agents:
         return agents[0], teammates_collection
@@ -89,7 +90,10 @@ def get_fcp_trained_w_selfplay_types(args,
                                                                   pop_force_training=pop_force_training,
                                                                   fcp_force_training=fcp_force_training,
                                                                   num_self_play_agents_to_train=num_self_play_agents_to_train,
-                                                                  parallel=parallel)
+                                                                  parallel=parallel,
+                                                                  name ='fcp_b4_sp_types',
+                                                                  save_path_prefix='experiment'
+                                                                  )
     name = 'fcp_w_selfplay_types'
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_w_sp_force_training)
     if agents:

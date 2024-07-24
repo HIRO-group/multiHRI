@@ -36,12 +36,12 @@ def FCP(args, pop_force_training, fcp_force_training, parallel):
 
 
 def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_training, parallel):
-    args.fcp_train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
-    args.fcp_eval_types = {'generate' : [],
-                           'load': get_eval_types_to_load()}
-    args.fcp_w_sp_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
+    args.fcp_train_types = [TeamType.LOW_FIRST]
+    args.fcp_eval_types = {'generate' : [TeamType.LOW_FIRST, TeamType.HIGH_FIRST],
+                           'load': get_eval_types_to_load(1)}
+    args.fcp_w_sp_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_HIGH]
     args.fcp_w_sp_eval_types = {'generate': [],
-                                'load': get_eval_types_to_load()}
+                                'load': get_eval_types_to_load(2)}
     get_fcp_trained_w_selfplay_types(args=args,
                                     pop_total_training_timesteps=args.pop_total_training_timesteps,
                                     fcp_total_training_timesteps=args.fcp_total_training_timesteps,
@@ -57,17 +57,17 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
 
 
 def set_input(args, quick_test=False):
-    args.layout_names = ['asymmetric_advantages']
-    args.teammates_len = 1
+    args.layout_names = ['3_chefs_small_kitchen']
+    args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
     
     if not quick_test: 
         args.n_envs = 50
         args.epoch_timesteps = 1e5
-        args.pop_total_training_timesteps = int(2/3 * 5e6)
+        args.pop_total_training_timesteps = int(1.5 * 5e6)
         args.fcp_total_training_timesteps = 2 * 5e6
-        args.fcp_w_sp_total_training_timesteps = 2 * 5e6
-        args.num_sp_agents_to_train = 2
+        args.fcp_w_sp_total_training_timesteps = 4 * 5e6
+        args.num_sp_agents_to_train = 3
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -95,14 +95,14 @@ if __name__ == '__main__':
     #    pop_force_training=pop_force_training)
 
 
-    FCP(args=args,
-        pop_force_training=pop_force_training,
-        fcp_force_training=fcp_force_training,
-        parallel=parallel)
+    # FCP(args=args,
+    #    pop_force_training=pop_force_training,
+    #    fcp_force_training=fcp_force_training,
+    #    parallel=parallel)
 
 
-    # FCP_w_SP_TYPES(args=args,
-    #                pop_force_training=pop_force_training,
-    #                fcp_force_training=fcp_force_training,
-    #                fcp_w_sp_force_training=fcp_w_sp_force_training,
-    #                parallel=parallel)
+    FCP_w_SP_TYPES(args=args,
+                    pop_force_training=pop_force_training,
+                    fcp_force_training=fcp_force_training,
+                    fcp_w_sp_force_training=fcp_w_sp_force_training,
+                    parallel=parallel)
