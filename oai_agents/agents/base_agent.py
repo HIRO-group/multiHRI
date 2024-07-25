@@ -195,17 +195,36 @@ class SB3Wrapper(OAIAgent):
         self.policy.set_training_mode(False)
         obs, vectorized_env = self.policy.obs_to_tensor(obs)
         with th.no_grad():
-            if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.agent.action_space.n):
-                dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
-            else:
-                dist = self.policy.get_distribution(obs)
+            # print("self.policy", self.policy)
+            # actions = self.policy.quantile_net._predict(obs, deterministic=deterministic)
+            actions, _ = self.policy.predict(obs, state, episode_start, deterministic)
+        #     print("actions", actions, "state", state)
+        # return actions, state
+        #     # print
+            # if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.agent.action_space.n):
+            #     dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
+            # else:
+            #     dist = self.policy.get_distribution(obs)
 
-            actions = dist.get_actions(deterministic=deterministic)
+            # actions = dist.get_actions(deterministic=deterministic)
+
         # Convert to numpy, and reshape to the original action shape
-        actions = actions.cpu().numpy().reshape((-1,) + self.agent.action_space.shape)
+        # actions = actions.cpu().numpy().reshape((-1,) + self.agent.action_space.shape)
         # Remove batch dimension if needed
-        if not vectorized_env:
-            actions = actions.squeeze(axis=0)
+        # if not vectorized_env:
+        #     actions = actions.squeeze(axis=0)
+        
+
+        # if not vectorized_env:
+        actions = actions.reshape(self.agent.action_space.shape)
+        # else:
+        # actions = actions.reshape((-1,) + self.agent.action_space.shape)        
+        print("actions", actions)
+        # print("state", state)
+        print("type(actions)", type(actions))
+        # print("shape: ", actions.shape)
+        
+
         return actions, state
 
     def get_distribution(self, obs: th.Tensor):

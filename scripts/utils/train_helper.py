@@ -5,8 +5,8 @@ from .fcp_pop_helper import get_fcp_population
 from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP
 
 
-def get_selfplay_agent(args, total_training_timesteps, train_types, eval_types, tag=None, force_training=False):
-    name = 'sp'
+def get_selfplay_agent(args, total_training_timesteps, train_types, 
+                       eval_types, name='sp', tag=None, force_training=False):
     agents = load_agents(args, name=name, tag=tag, force_training=force_training)
     if agents:
         return agents[0]
@@ -24,6 +24,7 @@ def get_selfplay_agent(args, total_training_timesteps, train_types, eval_types, 
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         seed=678,
+        use_qrdqn=True,
     )
 
     selfplay_trainer.train_agents(total_train_timesteps=total_training_timesteps)

@@ -10,7 +10,7 @@ import random
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-from sb3_contrib import RecurrentPPO, MaskablePPO
+from sb3_contrib import RecurrentPPO, MaskablePPO,  QRDQN
 import wandb
 
 VEC_ENV_CLS = DummyVecEnv #
@@ -22,7 +22,7 @@ class RLAgentTrainer(OAITrainer):
                 seed, train_types=[], eval_types=[],
                 num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
-                use_cnn=False, use_lstm=False, use_frame_stack=False,
+                use_cnn=False, use_lstm=False, use_qrdqn=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
         
         name = name or 'rl_agent'
@@ -45,6 +45,7 @@ class RLAgentTrainer(OAITrainer):
 
         self.use_lstm = use_lstm
         self.use_cnn = use_cnn
+        self.use_qrdqn = use_qrdqn
         self.taper_layers = taper_layers
         self.use_frame_stack = use_frame_stack
         self.use_policy_clone = use_policy_clone
@@ -165,9 +166,8 @@ class RLAgentTrainer(OAITrainer):
 
 
     def get_sb3_agent(self):
-        layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers        
+        layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers
         policy_kwargs = dict(net_arch=dict(pi=layers, vf=layers))
-
         if self.use_cnn:
             policy_kwargs.update(
                 features_extractor_class=OAISinglePlayerFeatureExtractor,
@@ -178,6 +178,11 @@ class RLAgentTrainer(OAITrainer):
             sb3_agent = RecurrentPPO('MultiInputLstmPolicy', self.env, policy_kwargs=policy_kwargs, verbose=1,
                                      n_steps=500, n_epochs=4, batch_size=500)
             agent_name = f'{self.name}_lstm'
+        
+        if self.use_qrdqn:
+            policy_kwargs = dict(n_quantiles=50, net_arch=[256, 256])
+            sb3_agent = QRDQN("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, verbose=self.args.sb_verbose)
+            agent_name = f'{self.name}_qrdqn'
 
         else:
             '''

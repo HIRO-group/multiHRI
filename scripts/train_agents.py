@@ -10,14 +10,15 @@ def SP(args, pop_force_training):
     args.sp_train_types = [TeamType.SELF_PLAY]
     args.sp_eval_types = {
         'generate': [TeamType.SELF_PLAY],
-        'load': get_eval_types_to_load()
+        'load': []
     }
     get_selfplay_agent(args=args,
                        train_types=args.sp_train_types,
                        eval_types=args.sp_eval_types,
                        total_training_timesteps=args.pop_total_training_timesteps,
                        force_training=pop_force_training,
-                        )
+                       name="sp_qrdqn",
+                    )
 
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
@@ -82,7 +83,7 @@ def set_input(args, quick_test=False):
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = False
+    quick_test = True
     parallel = True
     
     pop_force_training = True
@@ -91,14 +92,14 @@ if __name__ == '__main__':
     
     set_input(args=args, quick_test=quick_test)
 
-    # SP(args=args,
-    #    pop_force_training=pop_force_training)
+    SP(args=args,
+       pop_force_training=pop_force_training)
 
 
-    FCP(args=args,
-        pop_force_training=pop_force_training,
-        fcp_force_training=fcp_force_training,
-        parallel=parallel)
+    # FCP(args=args,
+    #     pop_force_training=pop_force_training,
+    #     fcp_force_training=fcp_force_training,
+    #     parallel=parallel)
 
 
     # FCP_w_SP_TYPES(args=args,
