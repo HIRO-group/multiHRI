@@ -394,6 +394,8 @@ class OAITrainer(ABC):
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
         tot_mean_reward = []
         rew_per_layout_per_teamtype = {}
+        rew_per_layout = {}
+
         '''
         dict 
         teammates_collection = {
@@ -409,6 +411,8 @@ class OAITrainer(ABC):
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
             }
+            rew_per_layout[env.layout_name] = 0
+
             teamtypes_population = self.eval_teammates_collection[env.layout_name]
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
@@ -424,7 +428,7 @@ class OAITrainer(ABC):
                     
             
             rew_per_layout_per_teamtype[env.layout_name] = {teamtype: np.mean(rew_per_layout_per_teamtype[env.layout_name][teamtype]) for teamtype in rew_per_layout_per_teamtype[env.layout_name]}
-            rew_per_layout = {env.layout_name: np.mean([rew_per_layout_per_teamtype[env.layout_name][teamtype] for teamtype in rew_per_layout_per_teamtype[env.layout_name]])}
+            rew_per_layout[env.layout_name] = np.mean([rew_per_layout_per_teamtype[env.layout_name][teamtype] for teamtype in rew_per_layout_per_teamtype[env.layout_name]])
 
             if log_wandb:
                 wandb.log({f'eval_mean_reward_{env.layout_name}': rew_per_layout[env.layout_name], 'timestep': timestep})
