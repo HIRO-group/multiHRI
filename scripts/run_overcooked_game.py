@@ -27,11 +27,13 @@ if __name__ == "__main__":
     args.layout = '3_chefs_small_kitchen'
     args.p_idx = 0
 
-    tm1 = load_agent(Path('agent_models/fcp/train_H'), args)
-    tm2 = load_agent(Path('agent_models/fcp_hd256_seed2907/best'), args)
+    tm1 = load_agent(Path('/home/ava/Desktop/agent_models/eval/3_chefs/fcp_hd64_seed0/ck_2_rew_0.0'), args)
+    tm2 = load_agent(Path('/home/ava/Desktop/agent_models/eval/3_chefs/fcp_hd64_seed0/ck_2_rew_0.0'), args)
     teammates = [tm1, tm2]
 
-    agent = 'human'
+
+    # agent = load_agent(Path('/home/ava/Desktop/agent_models/eval/3_chefs/fcp_H_L/best'), args)
+    agent = load_agent(Path('/home/ava/Desktop/agent_models/eval/3_chefs/fcp_hd64_seed0/ck_2_rew_0.0'), args)
 
     dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
                        horizon=200)

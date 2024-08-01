@@ -21,9 +21,20 @@ def SP(args, pop_force_training):
 
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
-    args.fcp_train_types = [TeamType.HIGH_FIRST]
+    args.fcp_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
     args.fcp_eval_types = {'generate' : [],
                             'load': get_eval_types_to_load()}
+    # epsilon_greedy_lf = 1
+    # epislon_greedy_mf = 0
+    # epsilon_greedy_hf = 0
+    # epsilon = epsilon_greedy_lf + epislon_greedy_mf + epsilon_greedy_hf
+    # epsilon_decay_rate = 
+    # curriculum = {
+    #     TeamType.LOW_FIRST:  epsilon_greedy_lf,
+    #     TeamType.MEDIUM_FIRST: epislon_greedy_mf,
+    #     TeamType.HIGH_FIRST: epsilon_greedy_hf,
+    # }
+
     _, _ = get_fcp_agent_w_tms_clction(args,
                                         pop_total_training_timesteps=args.pop_total_training_timesteps,
                                         fcp_total_training_timesteps=args.fcp_total_training_timesteps,
@@ -90,15 +101,16 @@ if __name__ == '__main__':
     fcp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
+    args.wandb_mode = 'disabled'
+    
+    SP(args=args,
+       pop_force_training=pop_force_training)
 
-    # SP(args=args,
-    #    pop_force_training=pop_force_training)
 
-
-    FCP(args=args,
-        pop_force_training=pop_force_training,
-        fcp_force_training=fcp_force_training,
-        parallel=parallel)
+    # FCP(args=args,
+    #     pop_force_training=pop_force_training,
+    #     fcp_force_training=fcp_force_training,
+    #     parallel=parallel)
 
 
     # FCP_w_SP_TYPES(args=args,
