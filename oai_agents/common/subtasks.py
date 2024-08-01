@@ -150,13 +150,13 @@ def get_doable_subtasks(state, prev_subtask, layout_name, terrain, p_idx, valid_
 
         # The following subtasks are only possible on some configurations for some players (this filters useless tasks)
         # These are only possible if the respective objects exist on a counter somewhere
-        for obj in loose_objects:
-            if obj.name == 'onion' and prev_subtask != 'put_onion_closer' and obj.position in valid_counters[p_idx]:
-                subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_onion_from_counter']] = 1
-            elif obj.name == 'dish' and prev_subtask != 'put_plate_closer' and obj.position in valid_counters[p_idx]:
-                subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_plate_from_counter']] = 1
-            elif obj.name == 'soup' and prev_subtask != 'put_soup_closer' and obj.position in valid_counters[p_idx]:
-                subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_soup_from_counter']] = 1
+        # for obj in loose_objects:
+        #     if obj.name == 'onion' and prev_subtask != 'put_onion_closer' and obj.position in valid_counters[p_idx]:
+        #         subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_onion_from_counter']] = 1
+        #     elif obj.name == 'dish' and prev_subtask != 'put_plate_closer' and obj.position in valid_counters[p_idx]:
+        #         subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_plate_from_counter']] = 1
+        #     elif obj.name == 'soup' and prev_subtask != 'put_soup_closer' and obj.position in valid_counters[p_idx]:
+        #         subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_soup_from_counter']] = 1
     # The player is holding an onion, so it can only accomplish tasks that involve putting the onion somewhere
     elif state.players[p_idx].held_object.name == 'onion':
         # There must be an empty pot to put an onion into

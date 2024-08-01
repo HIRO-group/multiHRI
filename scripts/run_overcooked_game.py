@@ -24,14 +24,18 @@ if __name__ == "__main__":
 
     args = get_arguments(additional_args)
     args.num_players = 3
-    args.layout = '3_chefs_small_kitchen'
+    args.layout = '3_chefs_forced_coordination_one_low_pot'
     args.p_idx = 0
 
-    tm1 = load_agent(Path('agent_models/fcp/train_H'), args)
-    tm2 = load_agent(Path('agent_models/fcp_hd256_seed2907/best'), args)
+    # agent_models/fcp_hd64_seed0/best
+    # agent_models/Backup/fcp_pop_3_chefs_forced_coordination/agent_dir/agent_0
+    # agent_models/fcp_hd64_seed0/best
+    tm1 = load_agent(Path('agent_models/fcp_hd64_seed0/best'), args)
+    tm2 = load_agent(Path('agent_models/fcp_hd64_seed0/best'), args)
     teammates = [tm1, tm2]
 
-    agent = 'human'
+    agent = load_agent(Path('agent_models/fcp_hd64_seed0/best'), args)
+    # agent = 'human'
 
     dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
                        horizon=200)

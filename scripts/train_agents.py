@@ -63,20 +63,20 @@ def set_input(args, quick_test=False):
     
     if not quick_test: 
         args.n_envs = 50
-        args.epoch_timesteps = 1e5
-        args.pop_total_training_timesteps = 5e6
-        args.fcp_total_training_timesteps = 5e6
-        args.fcp_w_sp_total_training_timesteps = 2 * 5e6
+        args.epoch_timesteps = 2e5
+        args.pop_total_training_timesteps = 1e7
+        args.fcp_total_training_timesteps = 1e7
+        args.fcp_w_sp_total_training_timesteps = 2 * 1e7
         args.num_sp_agents_to_train = 2
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
         args.n_envs = 2
-        args.epoch_timesteps = 2
-        args.pop_total_training_timesteps = 3500
-        args.fcp_total_training_timesteps = 3500
-        args.fcp_w_sp_total_training_timesteps = 3500 * 2
+        args.epoch_timesteps = 10
+        args.pop_total_training_timesteps = 10000
+        args.fcp_total_training_timesteps = 10000
+        args.fcp_w_sp_total_training_timesteps = 10000 * 2
         args.num_sp_agents_to_train = 2
     
 
@@ -94,15 +94,16 @@ if __name__ == '__main__':
     # SP(args=args,
     #    pop_force_training=pop_force_training)
 
+    # FCP(args=args,
+    #     pop_force_training=pop_force_training,
+    #     fcp_force_training=fcp_force_training,
+    #     parallel=parallel)
 
-    FCP(args=args,
-        pop_force_training=pop_force_training,
-        fcp_force_training=fcp_force_training,
-        parallel=parallel)
-
-
-    # FCP_w_SP_TYPES(args=args,
-    #                pop_force_training=pop_force_training,
-    #                fcp_force_training=fcp_force_training,
-    #                fcp_w_sp_force_training=fcp_w_sp_force_training,
-    #                parallel=parallel)
+    args.layout_names = ['3_chefs_forced_coordination_one_high_pot', '3_chefs_forced_coordination_one_med_pot', '3_chefs_forced_coordination_one_low_pot', '3_chefs_forced_coordination_one_high_pot_one_low_pot', '3_chefs_forced_coordination_one_med_pot_one_low_pot', '3_chefs_forced_coordination_three_pots', '3_chefs_forced_coordination']
+    args.n_envs = 200
+    args.exp_name = 'multi_fc_layouts'
+    FCP_w_SP_TYPES(args=args,
+                   pop_force_training=pop_force_training,
+                   fcp_force_training=fcp_force_training,
+                   fcp_w_sp_force_training=fcp_w_sp_force_training,
+                   parallel=parallel)
