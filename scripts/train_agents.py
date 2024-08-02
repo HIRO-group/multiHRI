@@ -46,7 +46,7 @@ def SP_w_SP_Types(args, pop_force_training:bool) -> None:
                                                 pop_total_training_timesteps=args.pop_total_training_timesteps,
                                                 sp_train_types=args.sp_train_types,
                                                 sp_eval_types=args.sp_eval_types,
-                                                sp_w_sp_total_training_timesteps=args.sp_w_sp_train_types,
+                                                sp_w_sp_total_training_timesteps=args.sp_w_sp_total_training_timesteps,
                                                 sp_w_sp_train_types=args.sp_w_sp_train_types,
                                                 sp_w_sp_eval_types=args.sp_w_sp_eval_types,
                                                 force_training=pop_force_training)
@@ -98,6 +98,7 @@ def set_input(args, quick_test=False):
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6
         args.fcp_total_training_timesteps = 5e6
+        args.sp_w_sp_total_training_timesteps = 5e6
         args.fcp_w_sp_total_training_timesteps = 2 * 5e6
         args.num_sp_agents_to_train = 2
 
@@ -108,6 +109,7 @@ def set_input(args, quick_test=False):
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 3500
         args.fcp_total_training_timesteps = 3500
+        args.sp_w_sp_total_training_timesteps = 3500
         args.fcp_w_sp_total_training_timesteps = 3500 * 2
         args.num_sp_agents_to_train = 2
     
