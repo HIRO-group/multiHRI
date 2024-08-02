@@ -35,6 +35,7 @@ def get_fcp_agent_w_tms_clction(args,
                                 fcp_total_training_timesteps,
                                 fcp_train_types,
                                 fcp_eval_types,
+                                curriculum,
                                 pop_force_training, fcp_force_training,
                                 num_self_play_agents_to_train=2, tag=None, parallel=True):
     teammates_collection = get_fcp_population(args,
@@ -59,6 +60,7 @@ def get_fcp_agent_w_tms_clction(args,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         seed=2602,
+        curriculum=curriculum,
     )
 
     fcp_trainer.train_agents(total_train_timesteps=fcp_total_training_timesteps)

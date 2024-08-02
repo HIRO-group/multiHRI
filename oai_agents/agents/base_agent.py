@@ -440,7 +440,7 @@ class OAITrainer(ABC):
         return np.mean(tot_mean_reward), rew_per_layout
 
 
-    def set_new_teammates(self):
+    def set_new_teammates(self, curriculum=None):
         for i in range(self.args.n_envs):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
             
