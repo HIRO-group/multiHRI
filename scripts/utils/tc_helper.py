@@ -104,7 +104,16 @@ def generate_TC_for_FCP_w_NO_SP_types(args,
     return teammates_collection
 
 
-def get_teammates_per_type_and_layout(agents_perftag_score, team_types, t_len):
+def get_teammates_per_type_and_layout(agents_perftag_score:list, team_types:list, t_len:int):
+    '''
+    Sort through a list of agents, scores, tags to form different "teams" of different types.
+    Each team will be of lenght t_len and type team_type
+
+    :param agents_perftag_score: List of tuples, [(agent, performance tag, score), (...), ...]
+    :param team_types: List of TeamTypes to use for defining each team
+    :param t_len: Number of agents in each team
+    :returns: Dictionary mapping Each team_type to a list of teammates (agents) and a list of all agents in all teams
+    '''
     all_teammates_per_type = {
         ttype: [] for ttype in TeamType.ALL_TYPES_BESIDES_SP
     }
