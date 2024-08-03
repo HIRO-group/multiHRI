@@ -443,16 +443,9 @@ class OAITrainer(ABC):
     def set_new_teammates(self, curriculum=None):
         for i in range(self.args.n_envs):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
-            
-            pop_teamtypes = self.teammates_collection[layout_name]
-            population = [pop_teamtypes[t] for t in pop_teamtypes.keys()]
-            
-            '''
-            population = [[[agent1, agent2, agent3], ...], [[agent3, agent5, agent6], ...], ...]
-            '''
+            population_teamtypes = self.teammates_collection[layout_name]
 
-            teammates_per_type = population[np.random.randint(len(population))]
-            teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
+            teammates = self.curriculum.select_teammates(population_teamtypes=population_teamtypes)
             
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list

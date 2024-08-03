@@ -262,7 +262,9 @@ class RLAgentTrainer(OAITrainer):
         prev_timesteps = self.learning_agent.num_timesteps
 
         while curr_timesteps < total_train_timesteps:
+            self.curriculum.update(current_step=steps)
             self.set_new_teammates(curriculum=self.curriculum)
+
             # In each iteration the agent collects n_envs * n_steps experiences
             # This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)

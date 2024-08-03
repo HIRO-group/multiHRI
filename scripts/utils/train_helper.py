@@ -5,7 +5,7 @@ from .fcp_pop_helper import get_fcp_population
 from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP
 
 
-def get_selfplay_agent(args, total_training_timesteps, train_types, eval_types, tag=None, force_training=False):
+def get_selfplay_agent(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
     name = 'sp'
     agents = load_agents(args, name=name, tag=tag, force_training=force_training)
     if agents:
@@ -23,6 +23,7 @@ def get_selfplay_agent(args, total_training_timesteps, train_types, eval_types, 
         teammates_collection=tc,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
+        curriculum=curriculum,
         seed=678,
     )
 
@@ -35,7 +36,7 @@ def get_fcp_agent_w_tms_clction(args,
                                 fcp_total_training_timesteps,
                                 fcp_train_types,
                                 fcp_eval_types,
-                                curriculum,
+                                fcp_curriculum,
                                 pop_force_training, fcp_force_training,
                                 num_self_play_agents_to_train=2, tag=None, parallel=True):
     teammates_collection = get_fcp_population(args,
@@ -60,7 +61,7 @@ def get_fcp_agent_w_tms_clction(args,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         seed=2602,
-        curriculum=curriculum,
+        curriculum=fcp_curriculum,
     )
 
     fcp_trainer.train_agents(total_train_timesteps=fcp_total_training_timesteps)

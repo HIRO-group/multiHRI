@@ -42,6 +42,24 @@ class TeamType:
     SELF_PLAY_MEDIUM = 'SPM'
     SELF_PLAY_HIGH = 'SPH'
 
+    def map_to_index(teamtype):
+        tt_map = {
+            TeamType.LOW_FIRST: 0,
+            TeamType.MIDDLE_FIRST: 1,
+            TeamType.MEDIUM_FIRST: 2,
+            TeamType.HIGH_FIRST: 3,
+            TeamType.RANDOM: 4,
+            TeamType.HIGH_MEDIUM: 5,
+            TeamType.HIGH_LOW: 6,
+            TeamType.MEDIUM_LOW: 7,
+            TeamType.HIGH_LOW_RANDOM: 8,
+            TeamType.SELF_PLAY: 9,
+            TeamType.SELF_PLAY_LOW: 10,
+            TeamType.SELF_PLAY_MEDIUM: 11,
+            TeamType.SELF_PLAY_HIGH: 12
+        }
+        return tt_map[teamtype]
+
 class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'

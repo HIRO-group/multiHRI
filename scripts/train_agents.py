@@ -3,7 +3,7 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType
-from utils import get_selfplay_agent, get_fcp_agent_w_tms_clction, get_eval_types_to_load, get_fcp_trained_w_selfplay_types, get_curriculum
+from utils import get_selfplay_agent, get_fcp_agent_w_tms_clction, get_eval_types_to_load, get_fcp_trained_w_selfplay_types, Curriculum
 
 
 def SP(args, pop_force_training):
@@ -12,12 +12,15 @@ def SP(args, pop_force_training):
         'generate': [TeamType.SELF_PLAY],
         'load': get_eval_types_to_load()
     }
+    curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
+
     get_selfplay_agent(args=args,
                        train_types=args.sp_train_types,
                        eval_types=args.sp_eval_types,
                        total_training_timesteps=args.pop_total_training_timesteps,
                        force_training=pop_force_training,
-                        )
+                       curriculum=curriculum,
+                    )
 
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
@@ -25,7 +28,9 @@ def FCP(args, pop_force_training, fcp_force_training, parallel):
     args.fcp_eval_types = {'generate' : [],
                             'load': get_eval_types_to_load()}
 
-    curriculum = get_curriculum(train_types = args.train_types,
+    fcp_curriculum = Curriculum(train_types = args.fcp_train_types,
+                                is_random=False,
+                                total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
                                 training_phases_durations_in_order={
                                     TeamType.LOW_FIRST: 0.5,
                                     TeamType.MEDIUM_FIRST: 0.125,
@@ -36,7 +41,8 @@ def FCP(args, pop_force_training, fcp_force_training, parallel):
                                     TeamType.MEDIUM_FIRST: 0.3, 
                                     TeamType.HIGH_FIRST: 0.3,
                                 },
-                                probabilities_decay_over_time=0)
+                                probabilities_decay_over_time=0
+                            )
 
     _, _ = get_fcp_agent_w_tms_clction(args,
                                         pop_total_training_timesteps=args.pop_total_training_timesteps,
@@ -45,7 +51,7 @@ def FCP(args, pop_force_training, fcp_force_training, parallel):
                                         fcp_eval_types=args.fcp_eval_types,
                                         pop_force_training=pop_force_training,
                                         fcp_force_training=fcp_force_training,
-                                        curriculum=curriculum,
+                                        fcp_curriculum=fcp_curriculum,
                                         num_self_play_agents_to_train=args.num_sp_agents_to_train,
                                         parallel=parallel
                                         )
@@ -82,8 +88,8 @@ def set_input(args, quick_test=False):
         args.n_envs = 50
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6
-        args.fcp_total_training_timesteps = 5e6
-        args.fcp_w_sp_total_training_timesteps = 2 * 5e6
+        args.fcp_total_training_timesteps = 2 * 5e6
+        args.fcp_w_sp_total_training_timesteps = 4 * 5e6
         args.num_sp_agents_to_train = 2
 
     else: # Used for doing quick tests
@@ -107,7 +113,6 @@ if __name__ == '__main__':
     fcp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
-    args.wandb_mode = 'disabled'
     
     # SP(args=args,
     #    pop_force_training=pop_force_training)

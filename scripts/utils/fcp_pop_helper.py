@@ -2,6 +2,7 @@ from .tc_helper import generate_TC_for_FCP_w_NO_SP_types, get_teammates_per_type
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, TeamType
+from .curriculum import Curriculum
 
 import multiprocessing
 import dill
@@ -96,6 +97,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         hidden_dim=h_dim,
         seed=seed,
         fcp_ck_rate=ck_rate,
+        curriculum=Curriculum(train_types=args.fcp_train_types, is_random=True)
     )
     rlat.train_agents(total_train_timesteps=total_training_timesteps)
     for layout_name in args.layout_names:
