@@ -3,7 +3,11 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType
-from utils import get_selfplay_agent_w_tms_collection, get_fcp_agent_w_tms_clction, get_eval_types_to_load, get_fcp_trained_w_selfplay_types, get_selfplay_agent_trained_w_selfplay_types
+from utils import (get_selfplay_agent_w_tms_collection, 
+                get_fcp_agent_w_tms_clction, 
+                get_eval_types_to_load, 
+                get_fcp_trained_w_selfplay_types, 
+                get_selfplay_agent_trained_w_selfplay_types)
 
 
 def SP(args, pop_force_training):
@@ -19,37 +23,43 @@ def SP(args, pop_force_training):
                                             force_training=pop_force_training)
 
 
-def SP_w_SP_Types(args, pop_force_training:bool) -> None:
+def SP_w_SP_Types(args, pop_force_training:bool, parallel:bool) -> None:
     '''
     Set up and run the training for self-play with self-play types
-    Similar to FCP_w_SP_TYPES, this function will first train a SP agent and then let that
-    agent train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
+    Similar to FCP_w_SP_TYPES, this function will first train a population of SP agents, organize them into a teammates_collection
+    based on TeamType, and then select agents from th the teams to SP with a randomly initialized SP agent
+    So the randomly initialized agent will train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
     
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
+    :param parallel: Boolean indicating if parallel envs should be used for training or not
     '''
 
-    # Set the train and eval types for the initial SP agent(s)
-    args.sp_train_types = [TeamType.SELF_PLAY]
+    # Set the train and eval types that will be used to organize the first "FCP-like" population
+    # NOTE: When in order to use SELF_PLAY_X later, we need X_FIRST here
+    args.sp_train_types = [TeamType.HIGH_FIRST]
     args.sp_eval_types = {
-        'generate': [TeamType.SELF_PLAY],  # TODO: what should this be?
-        'load': []}
-        # 'load': get_eval_types_to_load()}
+        'generate': [TeamType.HIGH_FIRST],
+        'load': []
+        }
 
-    # Set the train and eval types for the teammates
+    # Set the train and eval types for the teammates that will be used to play with the SP agent
     args.sp_w_sp_train_types = [TeamType.SELF_PLAY_HIGH]
-    args.sp_w_sp_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH],  # TODO: what should this be?
-                                'load': []}
-                                # 'load': get_eval_types_to_load()}
+    args.sp_w_sp_eval_types = {
+                            'generate': [TeamType.SELF_PLAY_HIGH],
+                            'load': get_eval_types_to_load()
+                            }
 
-
-    get_selfplay_agent_trained_w_selfplay_types(args,
-                                                pop_total_training_timesteps=args.pop_total_training_timesteps,
-                                                sp_train_types=args.sp_train_types,
-                                                sp_eval_types=args.sp_eval_types,
-                                                sp_w_sp_total_training_timesteps=args.sp_w_sp_total_training_timesteps,
-                                                sp_w_sp_train_types=args.sp_w_sp_train_types,
-                                                sp_w_sp_eval_types=args.sp_w_sp_eval_types,
-                                                force_training=pop_force_training)
+    get_selfplay_agent_trained_w_selfplay_types(
+        args,
+        pop_total_training_timesteps=args.pop_total_training_timesteps,
+        sp_train_types=args.sp_train_types,
+        sp_eval_types=args.sp_eval_types,
+        num_self_play_agents_to_train=args.num_sp_agents_to_train,
+        sp_w_sp_total_training_timesteps=args.sp_w_sp_total_training_timesteps,
+        sp_w_sp_train_types=args.sp_w_sp_train_types,
+        sp_w_sp_eval_types=args.sp_w_sp_eval_types,
+        force_training=pop_force_training,
+        parallel=parallel)
 
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
@@ -129,7 +139,8 @@ if __name__ == '__main__':
     #    pop_force_training=pop_force_training)
 
     SP_w_SP_Types(args=args,
-                  pop_force_training=pop_force_training)
+                  pop_force_training=pop_force_training,
+                  parallel=parallel)
 
 
     # FCP(args=args,

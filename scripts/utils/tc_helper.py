@@ -107,7 +107,7 @@ def generate_TC_for_FCP_w_NO_SP_types(args,
 def get_teammates_per_type_and_layout(agents_perftag_score:list, team_types:list, t_len:int):
     '''
     Sort through a list of agents, scores, tags to form different "teams" of different types.
-    Each team will be of lenght t_len and type team_type
+    Each team will be of length t_len and type team_type
 
     :param agents_perftag_score: List of tuples, [(agent, performance tag, score), (...), ...]
     :param team_types: List of TeamTypes to use for defining each team
@@ -191,6 +191,8 @@ def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_type
     for layout in args.layout_names:
         train_collection = teammates_collection[TeammatesCollection.TRAIN][layout]
         eval_collection = teammates_collection[TeammatesCollection.EVAL][layout]
+
+        # The TC used for FCP_w_SP_types consists of the original TC and copies of the learning agent itself
         self_teammates = [agent for _ in range(args.teammates_len-1)]
         
         tr_teammates = []
