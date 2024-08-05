@@ -440,12 +440,12 @@ class OAITrainer(ABC):
         return np.mean(tot_mean_reward), rew_per_layout
 
 
-    def set_new_teammates(self, curriculum=None):
+    def set_new_teammates(self, curriculum):
         for i in range(self.args.n_envs):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
             population_teamtypes = self.teammates_collection[layout_name]
 
-            teammates = self.curriculum.select_teammates(population_teamtypes=population_teamtypes)
+            teammates = curriculum.select_teammates(population_teamtypes=population_teamtypes)
             
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list

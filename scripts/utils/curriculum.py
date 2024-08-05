@@ -27,6 +27,10 @@ class Curriculum:
         TeamType.MEDIUM_FIRST: 0.3 + (0.1/2), 
         TeamType.HIGH_FIRST: 0.3 + (0.1/2),
     
+    
+    WHENEVER we don't care about the order of the training types, we can set is_random=True.
+    and we can just call Curriculum(train_types=sp_train_types, is_random=True) and ignore
+    the rest of teh parameters.
     '''
     def __init__(self, train_types, is_random, total_steps=None, training_phases_durations_in_order=None, 
                  rest_of_the_training_probabilities=None, probabilities_decay_over_time=None):

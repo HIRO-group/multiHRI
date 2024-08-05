@@ -105,7 +105,7 @@ def set_input(args, quick_test=False):
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = False
+    quick_test = True
     parallel = True
     
     pop_force_training = True
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     fcp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
-    
+
     # SP(args=args,
     #    pop_force_training=pop_force_training)
 
