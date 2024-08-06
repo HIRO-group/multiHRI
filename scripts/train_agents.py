@@ -23,7 +23,10 @@ def SP(args, pop_force_training):
                                             force_training=pop_force_training)
 
 
-def SP_w_SP_Types(args, pop_force_training:bool, parallel:bool) -> None:
+def SP_w_SP_Types(args, 
+                  pop_force_training:bool,
+                  sp_w_sp_force_training:bool,
+                  parallel:bool) -> None:
     '''
     Set up and run the training for self-play with self-play types
     Similar to FCP_w_SP_TYPES, this function will first train a population of SP agents, organize them into a teammates_collection
@@ -31,18 +34,10 @@ def SP_w_SP_Types(args, pop_force_training:bool, parallel:bool) -> None:
     So the randomly initialized agent will train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
     
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
+    :param sp_w_sp_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file
     :param parallel: Boolean indicating if parallel envs should be used for training or not
     '''
 
-    # Set the train and eval types that will be used to organize the first "FCP-like" population
-    # NOTE: When in order to use SELF_PLAY_X later, we need X_FIRST here
-    args.sp_train_types = [TeamType.HIGH_FIRST]
-    args.sp_eval_types = {
-        'generate': [TeamType.HIGH_FIRST],
-        'load': []
-        }
-
-    # Set the train and eval types for the teammates that will be used to play with the SP agent
     args.sp_w_sp_train_types = [TeamType.SELF_PLAY_HIGH]
     args.sp_w_sp_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH],
@@ -52,13 +47,11 @@ def SP_w_SP_Types(args, pop_force_training:bool, parallel:bool) -> None:
     get_selfplay_agent_trained_w_selfplay_types(
         args,
         pop_total_training_timesteps=args.pop_total_training_timesteps,
-        sp_train_types=args.sp_train_types,
-        sp_eval_types=args.sp_eval_types,
-        num_self_play_agents_to_train=args.num_sp_agents_to_train,
         sp_w_sp_total_training_timesteps=args.sp_w_sp_total_training_timesteps,
         sp_w_sp_train_types=args.sp_w_sp_train_types,
         sp_w_sp_eval_types=args.sp_w_sp_eval_types,
-        force_training=pop_force_training,
+        pop_force_training=pop_force_training,
+        sp_w_sp_force_training=sp_w_sp_force_training,
         parallel=parallel)
 
 
@@ -126,12 +119,13 @@ def set_input(args, quick_test=False):
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = False
+    quick_test = True
     parallel = True
     
     pop_force_training = True
     fcp_force_training = True
     fcp_w_sp_force_training = True
+    sp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
 
@@ -140,6 +134,7 @@ if __name__ == '__main__':
 
     SP_w_SP_Types(args=args,
                   pop_force_training=pop_force_training,
+                  sp_w_sp_force_training=sp_w_sp_force_training,
                   parallel=parallel)
 
 
