@@ -60,12 +60,14 @@ class RLAgentTrainer(OAITrainer):
 
     @classmethod
     def generate_randomly_initialized_SP_agent(cls,
-                                               args) -> OAIAgent:
+                                               args,
+                                               seed:int=8080) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
         This function does not perform any learning
 
         :param args: Parsed args object
+        :param seed: Random seed
         :returns: An untrained, randomly inititalized RL agent
         '''
 
@@ -74,10 +76,10 @@ class RLAgentTrainer(OAITrainer):
         sp_trainer = cls(name=name,
                         args=args,
                         agent=None,
-                        teammates_collection=None,
+                        teammates_collection={},
                         epoch_timesteps=args.epoch_timesteps,
                         n_envs=args.n_envs,
-                        seed=8080)
+                        seed=seed)
 
         return sp_trainer.get_agents()[0]
 
