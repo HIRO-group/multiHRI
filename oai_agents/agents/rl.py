@@ -1,4 +1,4 @@
-from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer, PolicyClone
+from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer, PolicyClone, OAIAgent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
@@ -59,6 +59,30 @@ class RLAgentTrainer(OAITrainer):
                                                                                                    eval_types = eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
 
+    @classmethod
+    def generate_randomly_initialized_SP_agent(cls,
+                                               args,
+                                               seed:int=8080) -> OAIAgent:
+        '''
+        Generate a randomly initialized learning agent using the RLAgentTrainer class
+        This function does not perform any learning
+
+        :param args: Parsed args object
+        :param seed: Random seed
+        :returns: An untrained, randomly inititalized RL agent
+        '''
+
+        name = 'randomized_agent'
+
+        sp_trainer = cls(name=name,
+                        args=args,
+                        agent=None,
+                        teammates_collection={},
+                        epoch_timesteps=args.epoch_timesteps,
+                        n_envs=args.n_envs,
+                        seed=seed)
+
+        return sp_trainer.get_agents()[0]
 
     def get_learning_agent(self, agent):
         if agent:
