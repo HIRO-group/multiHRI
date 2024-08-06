@@ -20,7 +20,7 @@ class RLAgentTrainer(OAITrainer):
     def __init__(self, teammates_collection, args, 
                 agent, epoch_timesteps, n_envs,
                 seed, train_types=[], eval_types=[],
-                num_layers=2, hidden_dim=256, 
+                curriculum=None, num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
@@ -32,6 +32,7 @@ class RLAgentTrainer(OAITrainer):
         self.device = args.device
         self.teammates_len = self.args.teammates_len
         self.num_players = self.args.num_players
+        self.curriculum = curriculum
         
         self.epoch_timesteps = epoch_timesteps
         self.n_envs = n_envs
@@ -285,9 +286,14 @@ class RLAgentTrainer(OAITrainer):
         prev_timesteps = self.learning_agent.num_timesteps
 
         while curr_timesteps < total_train_timesteps:
-            self.set_new_teammates()
-            self.learning_agent.learn(self.epoch_timesteps)
+            self.curriculum.update(current_step=steps)
+            self.set_new_teammates(curriculum=self.curriculum)
 
+            # In each iteration the agent collects n_envs * n_steps experiences
+            # This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
+            self.learning_agent.learn(self.epoch_timesteps)
+            
+            
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
 

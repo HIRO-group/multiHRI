@@ -2,6 +2,7 @@ from .tc_helper import generate_TC_for_FCP_w_NO_SP_types, get_teammates_per_type
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, TeamType
+from .curriculum import Curriculum
 
 import multiprocessing
 import dill
@@ -96,7 +97,13 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         hidden_dim=h_dim,
         seed=seed,
         fcp_ck_rate=ck_rate,
+        curriculum=Curriculum(train_types=args.fcp_train_types, is_random=True)
     )
+    '''
+    Whenever we don't care about the order of the training types, we can set is_random=True.
+    For SP agents, they only are trained with themselves so the order doesn't matter.
+    '''
+    
     rlat.train_agents(total_train_timesteps=total_training_timesteps)
     for layout_name in args.layout_names:
         population[layout_name] = rlat.get_fcp_agents(layout_name)
