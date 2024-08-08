@@ -150,10 +150,6 @@ class RLAgentTrainer(OAITrainer):
                 for layout in eval_teammates_collection
             }
 
-        
-        self.print_tc_helper(train_teammates_collection, "Train TC")
-        self.print_tc_helper(eval_teammates_collection, "Eval TC")
-
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
         return train_teammates_collection, eval_teammates_collection
@@ -272,7 +268,10 @@ class RLAgentTrainer(OAITrainer):
                          reinit=True, name= exp_name + '_' + self.name, mode=self.args.wandb_mode,
                          resume="allow")
         
-        print("Training agent: "+self.name+ ", for experiment: "+exp_name)
+        print("Training agent: " + self.name + ", for experiment: "+exp_name)
+
+        self.print_tc_helper(self.teammates_collection, "Train TC")
+        self.print_tc_helper(self.eval_teammates_collection, "Eval TC")
 
         if self.fcp_ck_rate is not None:
             self.ck_list = []
