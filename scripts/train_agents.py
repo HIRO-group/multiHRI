@@ -140,7 +140,7 @@ def set_input(args, quick_test=False):
         args.sp_w_sp_total_training_timesteps = 5e6
         args.fcp_w_sp_total_training_timesteps = 4 * 5e6
         args.num_sp_agents_to_train = 2
-        
+
 
     else: # Used for doing quick tests
         args.sb_verbose = 1

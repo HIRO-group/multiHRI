@@ -100,3 +100,15 @@ class Curriculum:
         wandb.log({"team_type_index": TeamType.map_to_index(team_type)})
         teammates_per_type = population_teamtypes[team_type]
         return random.choice(teammates_per_type)
+    
+    def print_curriculum(self):
+        print("----------------")
+        print("Curriculum:")
+        if self.is_random:
+            print("Random curriculum")
+        else:
+            print("Total steps:", self.total_steps)
+            print("Training phases durations in order:", self.training_phases_durations_in_order)
+            print("Rest of the training probabilities:", self.rest_of_the_training_probabilities)
+            print("Probabilities decay over time:", self.probabilities_decay_over_time)
+        print("---------------")
