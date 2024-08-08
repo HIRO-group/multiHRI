@@ -51,7 +51,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--fcp-train-types', nargs='+', type=str)
     parser.add_argument('--fcp-eval-types', type=dict)
 
-    parser.add_argument('--exp-dir', type=str, help='Name of experiment. Used to tag save files.')
+    parser.add_argument('--exp-dir', type=str, help='Folder to save/load experiment result')
 
 
     for parser_arg, parser_kwargs in additional_args:
