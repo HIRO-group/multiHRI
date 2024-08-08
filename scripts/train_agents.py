@@ -157,18 +157,18 @@ def set_input(args, quick_test=False):
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = True
+    quick_test = False
     parallel = True
     
-    pop_force_training = False
-    fcp_force_training = False
-    fcp_w_sp_force_training = False
-    sp_w_sp_force_training = False
+    pop_force_training = True
+    fcp_force_training = True
+    fcp_w_sp_force_training = True
+    sp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
 
-    SP(args=args,
-       pop_force_training=pop_force_training)
+    # SP(args=args,
+    #    pop_force_training=pop_force_training)
 
 
     FCP(args=args,
@@ -177,14 +177,14 @@ if __name__ == '__main__':
         parallel=parallel)
     
 
-    SP_w_SP_Types(args=args,
-                    pop_force_training=pop_force_training,
-                    sp_w_sp_force_training=sp_w_sp_force_training,
-                    parallel=parallel)
+    # SP_w_SP_Types(args=args,
+    #                 pop_force_training=pop_force_training,
+    #                 sp_w_sp_force_training=sp_w_sp_force_training,
+    #                 parallel=parallel)
 
 
-    FCP_w_SP_TYPES(args=args,
-                   pop_force_training=pop_force_training,
-                   fcp_force_training=fcp_force_training,
-                   fcp_w_sp_force_training=fcp_w_sp_force_training,
-                   parallel=parallel)
+    # FCP_w_SP_TYPES(args=args,
+    #                pop_force_training=pop_force_training,
+    #                fcp_force_training=fcp_force_training,
+    #                fcp_w_sp_force_training=fcp_w_sp_force_training,
+    #                parallel=parallel)
