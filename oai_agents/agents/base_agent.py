@@ -469,7 +469,12 @@ class OAITrainer(ABC):
 
     def save_agents(self, path: Union[Path, None] = None, tag: Union[str, None] = None):
         ''' Saves each agent that the trainer is training '''
-        path = path or self.args.base_dir / 'agent_models' / self.name
+        if not path:
+            if self.args.exp_dir:
+                path = self.args.base_dir / 'agent_models' / self.args.exp_dir / self.name
+            else:
+                path = self.args.base_dir / 'agent_models'/ self.name
+        
         tag = tag or self.args.exp_name
         save_path = path / tag / 'trainer_file'
         agent_path = path / tag / 'agents_dir'
@@ -485,7 +490,12 @@ class OAITrainer(ABC):
     @staticmethod
     def load_agents(args, name: str=None, path: Union[Path, None] = None, tag: Union[str, None] = None):
         ''' Loads each agent that the trainer is training '''
-        path = path or args.base_dir / 'agent_models' / name
+        if not path:
+            if args.exp_dir:
+                path = args.base_dir / 'agent_models' / args.exp_dir / name
+            else:
+                path = args.base_dir / 'agent_models'/ name
+
         tag = tag or args.exp_name
         load_path = path / tag / 'trainer_file'
         agent_path = path / tag / 'agents_dir'

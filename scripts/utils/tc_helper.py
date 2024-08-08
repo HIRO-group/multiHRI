@@ -1,8 +1,9 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType, TeammatesCollection
 from .common import load_agents
-import random
 
+import random
+from pathlib import Path
 
 def generate_TC_for_SP(args,
                        train_types,
@@ -232,9 +233,9 @@ def update_eval_collection_with_eval_types_from_file(args, eval_types, eval_coll
     for teammates in eval_types:
         if teammates.team_type not in eval_collection[teammates.layout_name]:
             eval_collection[teammates.layout_name][teammates.team_type] = []
-    
+        tms_path = Path.cwd() / 'agent_models' / teammates.names[0] 
         if teammates.load_from_pop_structure:
-            layout_population = RLAgentTrainer.load_agents(args, name=teammates.names[0], tag=teammates.tags[0])
+            layout_population = RLAgentTrainer.load_agents(args, path=tms_path, tag=teammates.tags[0])
             agents_perftag_score_all = [(agent,
                                          agent.layout_performance_tags[teammates.layout_name], 
                                          agent.layout_scores[teammates.layout_name]) for agent in layout_population]
@@ -247,7 +248,7 @@ def update_eval_collection_with_eval_types_from_file(args, eval_types, eval_coll
         else:
             group = []
             for (name, tag) in zip(teammates.names, teammates.tags):
-                agents = load_agents(args, name, tag)
+                agents = load_agents(args, name=name, path=tms_path, tag=tag)
                 if agents:
                     group.append(agents[0])
             if len(group) == args.teammates_len:

@@ -125,7 +125,30 @@ def get_eval_types_to_load():
         team_type = "SP_H",
         tags = ['best', 'best'],
         layout_name = '3_chefs_small_kitchen')
+    
+    t_fcp_hl_hm = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/3_chefs/fcp_HL_HM', 'eval/3_chefs/fcp_HL_HM'],
+        team_type = "FCP_HL_HM",
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+    
+    t_fcp_h_mid_l = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/3_chefs/fcp_H_MID_L', 'eval/3_chefs/fcp_H_MID_L'],
+        team_type = "FCP_H_MID_L",
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+    t_fcp_ml = EvalMembersToBeLoaded(
+        load_from_pop_structure = False,
+        names = ['eval/3_chefs/fcp_ML', 'eval/3_chefs/fcp_ML'],
+        team_type = "FCP_ML",
+        tags = ['best', 'best'],
+        layout_name = '3_chefs_small_kitchen',
+    )
+    return [t_sp_h, t_pop_m, t_fcp_h, t_fcp_h_mid, t_fcp_h_l, t_fcp_hl, t_fcp_hl_hm, t_fcp_h_mid_l, t_fcp_ml]
 
-    return [t_sp_h, t_pop_m,  t_fcp_h, t_fcp_h_mid]
 
 

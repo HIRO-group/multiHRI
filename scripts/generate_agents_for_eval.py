@@ -25,6 +25,7 @@ def set_input(args, quick_test=False):
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
+    args.exp_dir = f'eval/{args.teammates_len+1}_chefs'
     
     if not quick_test: 
         args.n_envs = 50
@@ -51,8 +52,6 @@ if __name__ == "__main__":
     fcp_force_training = True
     set_input(args=args, quick_test=quick_test)
 
-    SAVE_PATH_PREFIX = f'eval/{args.teammates_len+1}_chefs'
-
     all_FCP_train_types = [
         [TeamType.HIGH_FIRST],
         [TeamType.HIGH_FIRST, TeamType.MIDDLE_FIRST],
@@ -74,7 +73,6 @@ if __name__ == "__main__":
                                               total_training_timesteps = args.pop_total_training_timesteps,
                                               force_training=pop_force_training,
                                               parallel=parallel,
-                                              save_path_prefix = SAVE_PATH_PREFIX,
                                               )
 
     teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]
@@ -83,7 +81,7 @@ if __name__ == "__main__":
     for fcp_train_types in all_FCP_train_types:
         vb = '_'.join(fcp_train_types)
         train_FCP(args=args,
-                  name=f"{SAVE_PATH_PREFIX}/fcp_{vb}" if SAVE_PATH_PREFIX else f'fcp_{vb}',
+                  name='fcp_{vb}',
                   teammates_collection=teammates_collection,
                   train_types=fcp_train_types,
                   total_training_timesteps=args.fcp_total_training_timesteps,
