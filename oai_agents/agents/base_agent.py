@@ -358,6 +358,10 @@ class OAITrainer(ABC):
         if seed is not None:
             th.manual_seed(seed)
             np.random.seed(seed)
+            random.seed(seed)
+            if th.cuda.is_available():
+                th.cuda.manual_seed_all(seed)
+            th.backends.cudnn.deterministic = True
         
         self.eval_teammates_collection = {}
         self.teammates_collection = {}
