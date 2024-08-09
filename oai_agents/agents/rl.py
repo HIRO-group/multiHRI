@@ -198,7 +198,7 @@ class RLAgentTrainer(OAITrainer):
         if self.use_lstm:
             policy_kwargs['n_lstm_layers'] = 2
             policy_kwargs['lstm_hidden_size'] = self.hidden_dim
-            sb3_agent = RecurrentPPO('MultiInputLstmPolicy', self.env, policy_kwargs=policy_kwargs, verbose=1,
+            sb3_agent = RecurrentPPO('MultiInputLstmPolicy', self.env, seed=self.seed, policy_kwargs=policy_kwargs, verbose=1,
                                      n_steps=500, n_epochs=4, batch_size=500)
             agent_name = f'{self.name}_lstm'
 
@@ -211,7 +211,7 @@ class RLAgentTrainer(OAITrainer):
             https://stackoverflow.com/a/76198343/9102696
             n_epochs = Number of epoch when optimizing the surrogate loss
             '''
-            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, verbose=self.args.sb_verbose, n_steps=500,
+            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
                             n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
                             gamma=0.99, gae_lambda=0.95)
             agent_name = f'{self.name}'

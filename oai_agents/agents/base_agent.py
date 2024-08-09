@@ -21,7 +21,7 @@ import stable_baselines3.common.distributions as sb3_distributions
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import wandb
-
+import os
 import random
 
 class OAIAgent(nn.Module, ABC):
@@ -356,6 +356,7 @@ class OAITrainer(ABC):
         self.args = args
         self.ck_list = []
         if seed is not None:
+            os.environ['PYTHONASHSEED'] = str(seed)
             th.manual_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
