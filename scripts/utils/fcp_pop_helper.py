@@ -16,7 +16,6 @@ def get_fcp_population(args,
                        num_self_play_agents_to_train=2,
                        parallel=True,
                        force_training=False,
-                       save_path_prefix=None,
                        ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
@@ -25,12 +24,7 @@ def get_fcp_population(args,
         if force_training:
             raise FileNotFoundError
         for layout_name in args.layout_names:
-
-            if save_path_prefix:
-                name = f'{save_path_prefix}/fcp_pop_{layout_name}'
-            else:
-                name = f'fcp_pop_{layout_name}'
-
+            name = f'fcp_pop_{layout_name}'
             population[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag='aamas25')
             print(f'Loaded fcp_pop with {len(population[layout_name])} agents.')
     except FileNotFoundError as e:
@@ -44,7 +38,7 @@ def get_fcp_population(args,
 
         seed, h_dim = generate_hdim_and_seed(num_self_play_agents_to_train)
         inputs = [
-            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True, save_path_prefix) for i in range(num_self_play_agents_to_train)
+            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_self_play_agents_to_train)
         ]
 
         if parallel:
@@ -61,12 +55,11 @@ def get_fcp_population(args,
                                                    ck_rate=inp[2],
                                                    seed=inp[3],
                                                    h_dim=inp[4],
-                                                   serialize=False,
-                                                   save_path_prefix=save_path_prefix)
+                                                   serialize=False)
                 for layout_name in args.layout_names:
                     population[layout_name].extend(res[layout_name])
 
-        save_fcp_pop(args=args, population=population, save_path_prefix=save_path_prefix)
+        save_fcp_pop(args=args, population=population)
 
     return generate_TC_for_FCP_w_NO_SP_types(args=args,
                                                        population=population,
@@ -75,15 +68,13 @@ def get_fcp_population(args,
                                                        eval_types_to_read_from_file=eval_types_to_load_from_file)
 
 
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, save_path_prefix=None):
+def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
         Returns population = {layout: [agent1,  agent2, ...] }
         either serialized or not based on serialize flag
     '''
 
     name = f'fcp_hd{h_dim}_seed{seed}'
-    if save_path_prefix:
-        name = f'{save_path_prefix}/{name}'
 
     population = {layout_name: [] for layout_name in args.layout_names}
 
@@ -135,11 +126,8 @@ def generate_hdim_and_seed(num_self_play_agents_to_train):
 
 
 
-def save_fcp_pop(args, population, save_path_prefix=None):
-    if save_path_prefix:
-        name_prefix = save_path_prefix+'/fcp_pop'
-    else:
-        name_prefix = 'fcp_pop'
+def save_fcp_pop(args, population):
+    name_prefix = 'fcp_pop'
     for layout_name in args.layout_names:
         rt = RLAgentTrainer(
             name=f'{name_prefix}_{layout_name}',

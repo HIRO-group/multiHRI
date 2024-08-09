@@ -66,7 +66,7 @@ def SP_w_SP_Types(args,
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
     args.fcp_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
-    args.fcp_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST],
+    args.fcp_eval_types = {'generate' : [],
                             'load': get_eval_types_to_load()}
 
     fcp_curriculum = Curriculum(train_types = args.fcp_train_types,
@@ -100,7 +100,7 @@ def FCP(args, pop_force_training, fcp_force_training, parallel):
 
 def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_training, parallel):
     args.fcp_train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
-    args.fcp_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST],
+    args.fcp_eval_types = {'generate' : [],
                            'load': get_eval_types_to_load()}
     args.fcp_w_sp_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
     args.fcp_w_sp_eval_types = {'generate': [],
@@ -141,6 +141,7 @@ def set_input(args, quick_test=False):
         args.fcp_w_sp_total_training_timesteps = 4 * 5e6
         args.num_sp_agents_to_train = 2
 
+
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
@@ -151,6 +152,7 @@ def set_input(args, quick_test=False):
         args.sp_w_sp_total_training_timesteps = 3500
         args.fcp_w_sp_total_training_timesteps = 3500 * 2
         args.num_sp_agents_to_train = 2
+        args.exp_dir = 'test'
     
 
 if __name__ == '__main__':

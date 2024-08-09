@@ -150,16 +150,13 @@ class RLAgentTrainer(OAITrainer):
                 for layout in eval_teammates_collection
             }
 
-        
-        self.print_tc_helper(train_teammates_collection, "Train TC")
-        self.print_tc_helper(eval_teammates_collection, "Eval TC")
-
         self.check_teammates_collection_structure(train_teammates_collection)
         self.check_teammates_collection_structure(eval_teammates_collection)
         return train_teammates_collection, eval_teammates_collection
 
 
     def print_tc_helper(self, teammates_collection, message=None):
+        print("-------------------")
         if message:
             print(message)
         for layout_name in teammates_collection:
@@ -169,6 +166,7 @@ class RLAgentTrainer(OAITrainer):
                 for teammates in teammates_c:
                     for agent in teammates:
                         print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
+        print("-------------------")
 
 
     def get_envs(self, _env, _eval_envs, deterministic):
@@ -251,8 +249,7 @@ class RLAgentTrainer(OAITrainer):
         return SB3Wrapper(sb3_agent, name, self.args)
 
     def get_experiment_name(self, exp_name):
-        all_train_teamtypes = [tag for tags_dict in self.teammates_collection.values() for tag in tags_dict.keys()]
-        return exp_name or 'train_' + '_'.join(all_train_teamtypes)
+        return exp_name or str(self.args.exp_dir) + '/' + self.name
 
 
     def should_evaluate(self, steps):
@@ -264,15 +261,19 @@ class RLAgentTrainer(OAITrainer):
         fcp_ck_rate_reached = self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)
     
         return steps_divisable_by_5 or mean_rew_greater_than_best or fcp_ck_rate_reached
-    
 
-    def train_agents(self, total_train_timesteps, exp_name=None):       
-        exp_name = self.get_experiment_name(exp_name)
+
+    def train_agents(self, total_train_timesteps, exp_name=None):
+        experiment_name = self.get_experiment_name(exp_name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
-                         reinit=True, name= exp_name + '_' + self.name, mode=self.args.wandb_mode,
+                         reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")
-        
-        print("Training agent: "+self.name+ ", for experiment: "+exp_name)
+
+        print("Training agent: " + self.name + ", for experiment: " + experiment_name)
+
+        self.print_tc_helper(self.teammates_collection, "Train TC")
+        self.print_tc_helper(self.eval_teammates_collection, "Eval TC")
+        self.curriculum.print_curriculum()
 
         if self.fcp_ck_rate is not None:
             self.ck_list = []
