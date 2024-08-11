@@ -103,7 +103,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                                                                      teammates_collection=population_of_all_train_types,
                                                                                      agent=randomly_init_sp_agent,
                                                                                      train_types=sp_w_sp_train_types,
-                                                                                     eval_types=sp_w_sp_eval_types)
+                                                                                     eval_types=sp_w_sp_eval_types['generate'])
 
     sp_w_sp_types_trainer = RLAgentTrainer(name=name,
                                            args=args,
@@ -198,7 +198,7 @@ def get_fcp_trained_w_selfplay_types(args,
                                                         teammates_collection=fcp_teammates_collection,
                                                         agent=fcp_agent,
                                                         train_types=fcp_w_sp_train_types,
-                                                        eval_types=fcp_w_sp_eval_types,
+                                                        eval_types=fcp_w_sp_eval_types['generate'],
                                                         )
     seed, h_dim = 2602, 256
     name = generate_name(args, 
