@@ -24,18 +24,21 @@ if __name__ == "__main__":
 
     args = get_arguments(additional_args)
     args.num_players = 3
-    args.layout = '3_chefs_forced_coordination_one_low_pot'
+    args.layout = '3_chefs_forced_coordination_three_pots'
+    # args.layout = '3_chefs_forced_coordination'
     args.p_idx = 0
 
     # agent_models/fcp_hd64_seed0/best
-    # agent_models/Backup/fcp_pop_3_chefs_forced_coordination/agent_dir/agent_0
+    # agent_models/fcp_pop_3_chefs_forced_coordination_three_pots/aamas25
+    # agent_models/multi_fc_fcp_hm/fcp_hd256_seed13/best
     # agent_models/fcp_hd64_seed0/best
-    tm1 = load_agent(Path('agent_models/fcp_hd64_seed0/best'), args)
-    tm2 = load_agent(Path('agent_models/fcp_hd64_seed0/best'), args)
+    # gent_models/multi_fc_fcp_hml/fcp/best
+    tm1 = load_agent(Path('agent_models/fcp/best'), args)
+    tm2 = load_agent(Path('agent_models/fcp/best'), args)
     teammates = [tm1, tm2]
 
-    agent = load_agent(Path('agent_models/fcp_hd64_seed0/best'), args)
-    # agent = 'human'
+    agent = load_agent(Path('agent_models/fcp/best'), args)
+    agent = 'human'
 
     dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
                        horizon=200)

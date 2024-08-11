@@ -110,11 +110,17 @@ def ensure_we_have_enough_train_and_eval_agents(teammates_len,
                                                 eval_types,
                                                 num_self_play_agents_to_train,
                                                 ):
+    # This function aims for checking whether the number of agents in our population is greater than the number of agents, we want to train or evaluate with.
+    # We need to check it to ensure the population is large enough for us to have different teammates for training and evaluation.
 
-    total_population_len = len(AgentPerformance.ALL) * num_self_play_agents_to_train
-    train_agents_len = len(train_types) * teammates_len
-    eval_agents_len = len(eval_types) * teammates_len
+    total_population_len = len(AgentPerformance.ALL) * num_self_play_agents_to_train # 5 x 2 = 10
+    train_agents_len = len(train_types) * teammates_len # 2 x 3 = 6
+    eval_agents_len = len(eval_types) * teammates_len # 
     assert total_population_len > train_agents_len + eval_agents_len, "Not enough agents to train and evaluate. Should increase num_sp_agents_to_train"
+    # If the code does not run through the assertion, you may want to either:
+    # 1. Set a larger value for the argument parameter, num_sp_agents_to_train.
+    # 2. Decrease the number of types, you want to train or evaluate with.
+
 
 
 def generate_hdim_and_seed(num_self_play_agents_to_train):
