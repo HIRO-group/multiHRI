@@ -116,6 +116,12 @@ def ensure_we_have_enough_train_and_eval_agents(teammates_len,
 
 
 def generate_hdim_and_seed(num_self_play_agents_to_train):
+    '''
+    (hidden_dim, seed) = reward of selfplay
+    (256, 68)=362, (64, 14)=318
+    (256, 13)=248, (64, 0)=230
+    (256, 48)=20, (64, 30)=0
+    '''
     # Tested in 3-chefs-small-kitchen:
     good_seeds = [68, 14, 13, 0]
     good_hdims = [256, 64, 256, 64]

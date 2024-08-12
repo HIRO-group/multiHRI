@@ -27,8 +27,11 @@ if __name__ == "__main__":
     args.layout = '3_chefs_small_kitchen'
     args.p_idx = 0
 
-    tm1 = load_agent(Path('agent_models/fcp/train_H'), args)
-    tm2 = load_agent(Path('agent_models/fcp_hd256_seed2907/best'), args)
+    tm1_path = 'agent_models/eval/3_chefs/fcp_hd256_seed52/best'
+    tm2_path = 'agent_models/eval/3_chefs/fcp_hd256_seed52/best'
+
+    tm1 = load_agent(Path(tm1_path), args)
+    tm2 = load_agent(Path(tm2_path), args)
     teammates = [tm1, tm2]
 
     agent = 'human'
