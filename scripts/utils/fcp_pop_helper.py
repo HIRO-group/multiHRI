@@ -116,14 +116,20 @@ def ensure_we_have_enough_train_and_eval_agents(teammates_len,
 
 
 def generate_hdim_and_seed(num_self_play_agents_to_train):
-    '''
-    Returns seed = [13, 2 * 13, 3 * 13, ...] and h_dim = [64, 64, 256, 256, ...]
-    '''
-    seed = [i*13 for i in range(num_self_play_agents_to_train)]
-    h_dim = [64 for _ in range(num_self_play_agents_to_train//2)] 
-    h_dim += [256 for _ in range(num_self_play_agents_to_train-len(h_dim))]
-    return seed, h_dim
+    # Tested in 3-chefs-small-kitchen:
+    good_seeds = [68, 14, 13, 0]
+    good_hdims = [256, 64, 256, 64]
 
+    # Not tested: 
+    other_seeds_copied_from_HAHA = [2907, 2907, 105, 105, 8, 32, 128, 512]
+    other_hdims_copied_from_HAHA = [64, 256, 64, 256, 16, 64, 256, 1024]
+
+    all_seeds = good_seeds + other_seeds_copied_from_HAHA
+    all_hdims = good_hdims + other_hdims_copied_from_HAHA
+    
+    selected_seeds = all_seeds[:num_self_play_agents_to_train]
+    selected_hdims = all_hdims[:num_self_play_agents_to_train]
+    return selected_seeds, selected_hdims
 
 
 def save_fcp_pop(args, population):

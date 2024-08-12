@@ -170,6 +170,7 @@ if __name__ == '__main__':
     # SP(args=args,
     #    pop_force_training=pop_force_training)
 
+    # args.exp_dir = 'experiment-1' 
 
     FCP(args=args,
         pop_force_training=pop_force_training,
