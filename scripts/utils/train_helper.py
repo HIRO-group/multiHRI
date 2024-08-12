@@ -205,7 +205,7 @@ def get_fcp_trained_w_selfplay_types(args,
                          prefix='fcpWsp',
                          seed=seed,
                          h_dim=h_dim, 
-                         train_types=fcp_train_types,
+                         train_types=fcp_w_sp_train_types,
                          has_curriculum = not fcp_curriculum.is_random)
 
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_w_sp_force_training)
