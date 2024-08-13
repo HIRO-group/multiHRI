@@ -250,6 +250,12 @@ class OvercookedGymEnv(Env):
         curr_objs = [self.env.state.players[i].held_object.name if self.env.state.players[i].held_object else None for i in range(self.mdp.num_players)]
         completed_tasks = [calculate_completed_subtask(prev_objs[i], curr_objs[i], tile_in_fronts[i]) for i in range(self.mdp.num_players)]
         
+        variance_array = np.array([1/12 if completed_tasks[i] else 1/24 for i in range(self.mdp.num_players)])
+        variance = np.var(variance_array)
+        # variance at most is 1/2304, so we multiply it by 1500 to make it more significant
+        variance *= 1500
+
+        
         '''
         if 3 players complete subtasks, fairness = 1/12 * 1/12 * 1/12 * 24 * 24 * 24 = 8
         if 2 players complete subtasks, fairness = 1/12 * 1/12 * 1/24 * 24 * 24 * 24 = 4
@@ -263,7 +269,8 @@ class OvercookedGymEnv(Env):
                 fairness *= 1/12
             else:
                 fairness *= 1/24
-        
+    
+
         if fairness == 1/24 * 1/24 * 1/24: # no player completed a subtask
             fairness = 0
         else:
@@ -272,13 +279,13 @@ class OvercookedGymEnv(Env):
 
         if self.shape_rewards and not self.is_eval_env:
             ratio = 1 - min(self.step_count * self.args.n_envs / 1e7, 1) # ratio keeps decreasing
-            A, B, C = ratio, 1 - ratio/2, 1 - ratio/2
+            A, B, C, D = ratio, 1 - ratio/2, 1 - ratio/2, 1 - ratio/2
 
             shaped_r = info['shaped_r_by_agent'][self.p_idx]
             sparse_r = info['sparse_r_by_agent'][self.p_idx]
             
             # As time goes by, shaped_r will be less important and sparse_r and fairness will be more important
-            reward = A * shaped_r + B * sparse_r + C * fairness
+            reward = A * shaped_r + B * sparse_r + C * fairness - D * variance
 
         
         self.step_count += 1
