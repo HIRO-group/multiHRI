@@ -243,11 +243,14 @@ class OvercookedGymEnv(Env):
 
         self.state, reward, done, info = self.env.step(joint_action)
         if self.shape_rewards and not self.is_eval_env:
-            ratio = min(self.step_count * self.args.n_envs / 1e7, 1)
+            ratio = min(self.step_count * self.args.n_envs / 1e7, 0.5)
             sparse_r = sum(info['sparse_r_by_agent'])
-            shaped_r = info['shaped_r_by_agent'][self.p_idx] if self.p_idx else sum(info['shaped_r_by_agent'])
-            reward = sparse_r * ratio + shaped_r * (1 - ratio)
-
+            shaped_r = info['shaped_r_by_agent'][self.p_idx] if self.p_idx is not None else sum(info['shaped_r_by_agent'])
+            weight_p_idx = 1
+            weight_group = 2
+            p_reward = sparse_r * ratio + shaped_r * (1 - ratio)
+            group_reward = sparse_r * ratio + (1/self.mdp.num_players)*sum(info['shaped_r_by_agent'])*(1 - ratio)
+            reward = weight_p_idx*p_reward + weight_group*group_reward
         self.step_count += 1
         return self.get_obs(self.p_idx, done=done), reward, done, info
 
