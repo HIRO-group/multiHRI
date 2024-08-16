@@ -51,6 +51,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                                 tag:str=None,
                                                 pop_force_training:bool=True,
                                                 sp_w_sp_force_training:bool=True,
+                                                num_self_play_agents_to_train=2,
                                                 parallel:bool=True) -> tuple:
     '''
     Train a SP agent using SP train types. This function will first train a SP agent and then let that
@@ -77,7 +78,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                             train_types=[TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
                                             eval_types_to_generate=[TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
                                             eval_types_to_load_from_file=[],
-                                            num_self_play_agents_to_train=2,
+                                            num_self_play_agents_to_train=num_self_play_agents_to_train,
                                             force_training=pop_force_training,
                                             parallel=parallel)
 

@@ -60,7 +60,8 @@ def SP_w_SP_Types(args,
         pop_force_training=pop_force_training,
         sp_w_sp_force_training=sp_w_sp_force_training,
         parallel=parallel,
-        curriculum=curriculum
+        curriculum=curriculum,
+        num_self_play_agents_to_train=args.num_sp_agents_to_train
         )
 
 
@@ -172,16 +173,16 @@ if __name__ == '__main__':
 
     # args.exp_dir = 'experiment-1' 
 
-    FCP(args=args,
-        pop_force_training=pop_force_training,
-        fcp_force_training=fcp_force_training,
-        parallel=parallel)
+    # FCP(args=args,
+    #     pop_force_training=pop_force_training,
+    #     fcp_force_training=fcp_force_training,
+    #     parallel=parallel)
     
 
-    # SP_w_SP_Types(args=args,
-    #                 pop_force_training=pop_force_training,
-    #                 sp_w_sp_force_training=sp_w_sp_force_training,
-    #                 parallel=parallel)
+    SP_w_SP_Types(args=args,
+                    pop_force_training=pop_force_training,
+                    sp_w_sp_force_training=sp_w_sp_force_training,
+                    parallel=parallel)
 
 
     # FCP_w_SP_TYPES(args=args,
