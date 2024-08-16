@@ -45,19 +45,21 @@ def get_fcp_population(args,
             with multiprocessing.Pool() as pool:
                 dilled_results = pool.starmap(train_agent_with_checkpoints, inputs)
             for dilled_res in dilled_results:
-                res = dill.loads(dilled_res)
+                checkpoints_list = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
-                    population[layout_name].extend(res[layout_name])
+                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
+                    population[layout_name].extend(layout_pop)
         else:
             for inp in inputs:
-                res = train_agent_with_checkpoints(args=inp[0],
+                checkpoints_list = train_agent_with_checkpoints(args=inp[0],
                                                    total_training_timesteps = inp[1],
                                                    ck_rate=inp[2],
                                                    seed=inp[3],
                                                    h_dim=inp[4],
                                                    serialize=False)
                 for layout_name in args.layout_names:
-                    population[layout_name].extend(res[layout_name])
+                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
+                    population[layout_name].extend(layout_pop)
 
         save_fcp_pop(args=args, population=population)
 
@@ -70,13 +72,11 @@ def get_fcp_population(args,
 
 def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
-        Returns population = {layout: [agent1,  agent2, ...] }
+        Returns ckeckpoints_list
         either serialized or not based on serialize flag
     '''
 
     name = f'fcp_hd{h_dim}_seed{seed}'
-
-    population = {layout_name: [] for layout_name in args.layout_names}
 
     rlat = RLAgentTrainer(
         name=name,
@@ -91,16 +91,16 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         curriculum=Curriculum(train_types=args.fcp_train_types, is_random=True)
     )
     '''
-    Whenever we don't care about the order of the training types, we can set is_random=True.
+    For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
     
     rlat.train_agents(total_train_timesteps=total_training_timesteps)
-    for layout_name in args.layout_names:
-        population[layout_name] = rlat.get_fcp_agents(layout_name)
+    checkpoints_list = rlat.ck_list
+
     if serialize:
-        return dill.dumps(population)
-    return population
+        return dill.dumps(checkpoints_list)
+    return checkpoints_list
 
 
 def ensure_we_have_enough_train_and_eval_agents(teammates_len,
