@@ -20,6 +20,8 @@ def get_arguments(additional_args=[]):
     
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate used in imitation learning. lr for rl is defined in rl.py')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size used in imitation learning. bs for rl is defined in rl.py')
+    parser.add_argument('--seed', type=int, default=48, help='seed used to define self-play neural network')
+    parser.add_argument('--h-dim', type=int, default=256, help='hidden dimension used to define self-play neural network')
 
     parser.add_argument('--exp-name', type=str, default='aamas25',
                         help='Name of experiment. Used to tag save files.')
@@ -47,6 +49,8 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--pop-total-training-timesteps', type=int)
     parser.add_argument('--fcp-total-training-timesteps', type=int)
     parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
+
+    parser.add_argument('--learner-type', type=str, default='soloworker')
     
     parser.add_argument('--fcp-train-types', nargs='+', type=str)
     parser.add_argument('--fcp-eval-types', type=dict)

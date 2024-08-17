@@ -9,7 +9,12 @@ from .curriculum import Curriculum
 
 
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
-    seed, h_dim = 678, 256
+    # seed, h_dim = 678, 256
+    # seed, h_dim = 48, 256
+    # seed, h_dim = 13, 256
+    # seed, h_dim = 68, 256
+    seed = args.seed
+    h_dim = args.h_dim
     name = generate_name(args, 
                          prefix='sp',
                          seed=seed,

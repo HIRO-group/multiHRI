@@ -2,7 +2,7 @@ import multiprocessing as mp
 mp.set_start_method('spawn', force=True) # should be called before any other module imports
 
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.tags import TeamType
+from oai_agents.common.tags import TeamType, LearnerType
 from utils import (get_selfplay_agent_w_tms_collection, 
                 get_fcp_agent_w_tms_clction, 
                 get_eval_types_to_load, 
@@ -16,7 +16,7 @@ def SP(args, pop_force_training):
     args.sp_train_types = [TeamType.SELF_PLAY]
     args.sp_eval_types = {
         'generate': [TeamType.SELF_PLAY],
-        'load': get_eval_types_to_load()
+        'load': []
     }
     curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
 
@@ -128,17 +128,19 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
 
 
 def set_input(args, quick_test=False):
-    args.layout_names = ['3_chefs_small_kitchen']
+    args.layout_names = ['3_chefs_forced_coordination']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
     
     if not quick_test: 
         args.n_envs = 50
-        args.epoch_timesteps = 1e5
-        args.pop_total_training_timesteps = 5e6
-        args.fcp_total_training_timesteps = 2 * 5e6
-        args.sp_w_sp_total_training_timesteps = 5e6
-        args.fcp_w_sp_total_training_timesteps = 4 * 5e6
+        args.learner_type = LearnerType.HELPER
+        how_long = 1.0
+        args.epoch_timesteps = 1e5 * 1
+        args.pop_total_training_timesteps = 5e6 * how_long
+        args.fcp_total_training_timesteps = 2 * 5e6 * how_long
+        args.sp_w_sp_total_training_timesteps = 5e6 * how_long
+        args.fcp_w_sp_total_training_timesteps = 4 * 5e6 * how_long
         args.num_sp_agents_to_train = 2
 
 
@@ -166,15 +168,42 @@ if __name__ == '__main__':
     sp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
+    '''
+    Suggested 3-Chefs Layouts are '3_chefs_small_kitchen_two_resources', 
+    '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages', 
+    '3_chefs_forced_coordination_3OP2S1D'.
+    '''
+    args.layout_names = ['3_chefs_small_kitchen']
+    args.n_envs = 50
+    args.learner_type = LearnerType.HELPER
 
-    # SP(args=args,
-    #    pop_force_training=pop_force_training)
+    args.h_dim = 256
+    args.seed = 68
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.seed = 13
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.seed = 48
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.seed = 27
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.seed = 6
+    SP(args=args,
+       pop_force_training=pop_force_training)
 
 
-    FCP(args=args,
-        pop_force_training=pop_force_training,
-        fcp_force_training=fcp_force_training,
-        parallel=parallel)
+
+    # FCP(args=args,
+    #     pop_force_training=pop_force_training,
+    #     fcp_force_training=fcp_force_training,
+    #     parallel=parallel)
     
 
     # SP_w_SP_Types(args=args,

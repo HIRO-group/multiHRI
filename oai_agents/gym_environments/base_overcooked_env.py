@@ -1,5 +1,7 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
+from oai_agents.common.tags import LearnerType
+from oai_agents.common.learner import Learner, Saboteur, Selfisher, SoloWorker, Collaborator, Helper
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -17,6 +19,7 @@ from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import torch as th
 import random
+
 
 # DEPRECATED NOTE: For counter circuit, trained workers with 8, but trained manager with 4. Only 4 spots are useful add
 # more during subtask worker training for robustness
@@ -82,6 +85,9 @@ class OvercookedGymEnv(Env):
         self.visualization_enabled = False
         self.step_count = 0
         self.reset_p_idx = None
+
+        # set up the learner. Different typese of learner would receive different rewards.
+        self.learner = self._get_learner_instance(args.learner_type)
 
         self.p_idx = None
         self.teammates = []
@@ -244,13 +250,13 @@ class OvercookedGymEnv(Env):
         self.state, reward, done, info = self.env.step(joint_action)
         if self.shape_rewards and not self.is_eval_env:
             ratio = min(self.step_count * self.args.n_envs / 1e7, 0.5)
-            sparse_r = sum(info['sparse_r_by_agent'])
-            shaped_r = info['shaped_r_by_agent'][self.p_idx] if self.p_idx is not None else sum(info['shaped_r_by_agent'])
-            weight_p_idx = 1
-            weight_group = 2
-            p_reward = sparse_r * ratio + shaped_r * (1 - ratio)
-            group_reward = sparse_r * ratio + (1/self.mdp.num_players)*sum(info['shaped_r_by_agent'])*(1 - ratio)
-            reward = weight_p_idx*p_reward + weight_group*group_reward
+            group_sparse_r = sum(info['sparse_r_by_agent'])
+            group_shaped_r = sum(info['shaped_r_by_agent'])               
+            sparse_r = info['sparse_r_by_agent'][self.p_idx] if self.p_idx is not None else group_sparse_r
+            shaped_r = info['shaped_r_by_agent'][self.p_idx] if self.p_idx is not None else group_shaped_r
+            p_reward = group_sparse_r * ratio + shaped_r * (1 - ratio)
+            group_reward = (1/self.mdp.num_players) * (self.mdp.num_players * group_sparse_r * ratio + group_shaped_r * (1 - ratio))
+            reward = self.learner.calculate_reward(individual_reward=p_reward, group_reward=group_reward)
         self.step_count += 1
         return self.get_obs(self.p_idx, done=done), reward, done, info
 
@@ -278,7 +284,21 @@ class OvercookedGymEnv(Env):
         # Reset subtask counts
         self.completed_tasks = [np.zeros(Subtasks.NUM_SUBTASKS), np.zeros(Subtasks.NUM_SUBTASKS)]
         return self.get_obs(self.p_idx, on_reset=True)
+    
+    def _get_learner_instance(self, learner_type_str=LearnerType.HELPER) -> Learner:
+        learner_classes = {
+            LearnerType.SABOTEUR: Saboteur(),
+            LearnerType.SELFISHER: Selfisher(),
+            LearnerType.SOLOWORKER: SoloWorker(),
+            LearnerType.COLLABORATOR: Collaborator(),
+            LearnerType.HELPER: Helper(),
+        }
 
+        if learner_type_str not in learner_classes:
+            raise ValueError("Invalid learner type")
+
+        return learner_classes[learner_type_str]
+    
     def render(self, mode='human', close=False):
         if self.visualization_enabled:
             surface = StateVisualizer().render_state(self.state, grid=self.env.mdp.terrain_mtx)
