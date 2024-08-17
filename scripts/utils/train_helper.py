@@ -48,6 +48,8 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                                 sp_w_sp_train_types:list,
                                                 sp_w_sp_eval_types:list,
                                                 curriculum:Curriculum,
+                                                pop_train_types:list=[TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
+                                                pop_eval_types:list=[TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
                                                 tag:str=None,
                                                 pop_force_training:bool=True,
                                                 sp_w_sp_force_training:bool=True,
@@ -75,8 +77,8 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     population_of_all_train_types = get_fcp_population(args=args,
                                             ck_rate = pop_total_training_timesteps // 5,
                                             total_training_timesteps=pop_total_training_timesteps,
-                                            train_types=[TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
-                                            eval_types_to_generate=[TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
+                                            train_types=pop_train_types,
+                                            eval_types_to_generate=pop_eval_types,
                                             eval_types_to_load_from_file=[],
                                             num_self_play_agents_to_train=num_self_play_agents_to_train,
                                             force_training=pop_force_training,
@@ -93,8 +95,6 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     
     agents = load_agents(args, name=name, tag=tag, force_training=sp_w_sp_force_training)
     if agents:
-
-        # If agents were loaded, we already trained them and don't need to continue to the training step
         return agents[0], population_of_all_train_types
 
     # Generate a randomly initialized SP agent
