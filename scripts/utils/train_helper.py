@@ -9,10 +9,6 @@ from .curriculum import Curriculum
 
 
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
-    # seed, h_dim = 678, 256
-    # seed, h_dim = 48, 256
-    # seed, h_dim = 13, 256
-    # seed, h_dim = 68, 256
     seed = args.seed
     h_dim = args.h_dim
     name = generate_name(args, 
@@ -86,7 +82,9 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                             force_training=pop_force_training,
                                             parallel=parallel)
 
-    seed, h_dim = 1010, 256
+    # seed, h_dim = 1010, 256
+    seed = args.seed
+    h_dim = args.h_dim
     name = generate_name(args, 
                          prefix='spWsp',
                          seed=seed,
@@ -142,7 +140,9 @@ def get_fcp_agent_w_tms_clction(args,
                                               total_training_timesteps = pop_total_training_timesteps,
                                               force_training=pop_force_training,
                                               parallel=parallel)
-    seed, h_dim = 2020, 256
+    # seed, h_dim = 2020, 256
+    seed = args.seed
+    h_dim = args.h_dim
     name = generate_name(args, 
                          prefix='fcp',
                          seed=seed,
@@ -205,7 +205,9 @@ def get_fcp_trained_w_selfplay_types(args,
                                                         train_types=fcp_w_sp_train_types,
                                                         eval_types=fcp_w_sp_eval_types['generate'],
                                                         )
-    seed, h_dim = 2602, 256
+    # seed, h_dim = 2602, 256
+    seed = args.seed
+    h_dim = args.h_dim
     name = generate_name(args, 
                          prefix='fcpWsp',
                          seed=seed,
