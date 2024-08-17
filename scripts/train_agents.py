@@ -128,7 +128,7 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
 
 
 def set_input(args, quick_test=False):
-    args.layout_names = ['3_chefs_forced_coordination']
+    args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
     
@@ -136,7 +136,7 @@ def set_input(args, quick_test=False):
         args.n_envs = 50
         args.learner_type = LearnerType.HELPER
         how_long = 1.0
-        args.epoch_timesteps = 1e5 * 1
+        args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6 * how_long
         args.fcp_total_training_timesteps = 2 * 5e6 * how_long
         args.sp_w_sp_total_training_timesteps = 5e6 * how_long
@@ -173,7 +173,6 @@ if __name__ == '__main__':
     '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages', 
     '3_chefs_forced_coordination_3OP2S1D'.
     '''
-    args.layout_names = ['3_chefs_small_kitchen']
     args.n_envs = 50
     args.learner_type = LearnerType.HELPER
 
