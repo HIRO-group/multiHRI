@@ -177,10 +177,28 @@ if __name__ == '__main__':
     args.n_envs = 50
     args.learner_type = LearnerType.HELPER
 
-    args.trainhelper_h_dim = 256
-    args.trainhelper_seed = 68
+    args.h_dim = 256
+    args.seed = 68
     SP(args=args,
        pop_force_training=pop_force_training)
+    
+    args.seed = 13
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.seed = 48
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.seed = 27
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.seed = 6
+    SP(args=args,
+       pop_force_training=pop_force_training)
+
+
 
     # FCP(args=args,
     #     pop_force_training=pop_force_training,

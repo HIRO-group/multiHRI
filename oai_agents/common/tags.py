@@ -67,21 +67,3 @@ class TeamType:
 class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'
-
-
-class LearnerType:
-    '''
-    Different learners would receive differnt rewards from the base_overcooked_env.py.
-    The primary difference between learners are on the weights of personal and group reward.
-    Saboteur and Selfisher weight personal reward positively and group reward negatively.
-    Soloworker, weight individual reward positively, and group reward with a zero.
-    Collaborator, and Helper weight both rewards positively.
-    If we grade how much they care about group: 
-    Helper > Collaborator > Soloworker >> Selfisher > Saboteur.
-    If more details are desired, learner.py define these learners.
-    '''
-    SABOTEUR = "saboteur"
-    SELFISHER = "selfisher"
-    SOLOWORKER = "soloworker"
-    COLLABORATOR = "collaborator"
-    HELPER = "helper"

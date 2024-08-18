@@ -27,7 +27,7 @@ if __name__ == "__main__":
     args.layout = '3_chefs_small_kitchen'
     args.p_idx = 0
 
-    tm1 = load_agent(Path('agent_models/sp_s68_h256_tr(SP)_ran/best'), args) 
+    tm1 = load_agent(Path('agent_models/sp_s68_h256_tr(SP)_ran/best'), args)
     tm2 = load_agent(Path('agent_models/sp_s68_h256_tr(SP)_ran/best'), args)
     teammates = [tm1, tm2]
 
