@@ -114,20 +114,14 @@ class Curriculum:
         print("---------------")
 
 
-def curriculum_has_sp_types(curriculum:Curriculum) -> bool:
-    '''
-    Function to check that a curriculum contains SP_X TeamType
-    '''
+    def validate_curriculum_types(self, expected_types:list, unallowed_types:list) -> None:
+        # Ensure at least one expected type is present in train_types
+        assert any(et in self.train_types for et in expected_types), \
+            "Error: None of the expected types are present in train_types."
 
-    if (TeamType.SELF_PLAY_HIGH in curriculum.train_types
-        or 
-        TeamType.SELF_PLAY_MEDIUM in curriculum.train_types
-        or 
-        TeamType.SELF_PLAY_LOW in curriculum.train_types):
-        
-        return True
-    else:
-        return False
+        # Ensure no unallowed types are present in train_types
+        assert not any(ut in self.train_types for ut in unallowed_types), \
+            "Error: One or more unallowed types are present in train_types."
     
 
     

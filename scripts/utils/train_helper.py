@@ -5,7 +5,7 @@ from oai_agents.common.tags import TeamType
 from .common import load_agents, generate_name
 from .fcp_pop_helper import get_fcp_population
 from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP
-from .curriculum import Curriculum, curriculum_has_sp_types
+from .curriculum import Curriculum
 
 
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
@@ -67,9 +67,9 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     :returns: Trained self-play agent and the teammates collection used to generate it
     '''
 
-    # To use SP-types, the curriculum needs to contain SP types
-    if not curriculum_has_sp_types(curriculum=curriculum):
-        raise ValueError('Using a curriculum with get_selfplay_agent_trained_w_selfplay_types requires that the curriculum contain an SELF_PLAY_X train type')
+    # To use SP-types, the curriculum needs to contain only SP types
+    curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
+                                         unallowed_types= TeamType.ALL_TYPES_BESIDES_SP)
 
 
     # Generate a teammates collection (the same kind used for FCP training) by training some SP agents,
@@ -183,10 +183,9 @@ def get_fcp_trained_w_selfplay_types(args,
                                     parallel=True,
                                     tag=None):
 
-    # To use SP-types, the curriculum needs to contain SP types
-    if not curriculum_has_sp_types(curriculum=fcp_w_sp_curriculum):
-        raise ValueError('Using a curriculum with get_fcp_trained_w_selfplay_types requires that fcp_w_sp_curriculum contain a SELF_PLAY_X train type')
-
+    # To use SP-types, the curriculum needs to contain only SP types
+    fcp_w_sp_curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
+                                                  unallowed_types= TeamType.ALL_TYPES_BESIDES_SP)
 
     fcp_agent, fcp_teammates_collection = get_fcp_agent_w_tms_clction(args, 
                                                                   pop_total_training_timesteps=pop_total_training_timesteps,
