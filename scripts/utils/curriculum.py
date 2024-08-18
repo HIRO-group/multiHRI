@@ -112,3 +112,23 @@ class Curriculum:
             print("Rest of the training probabilities:", self.rest_of_the_training_probabilities)
             print("Probabilities decay over time:", self.probabilities_decay_over_time)
         print("---------------")
+
+
+def curriculum_has_sp_types(curriculum:Curriculum) -> bool:
+    '''
+    Function to check that a curriculum contains SP_X TeamType
+    '''
+
+    if (TeamType.SELF_PLAY_HIGH in curriculum.train_types
+        or 
+        TeamType.SELF_PLAY_MEDIUM in curriculum.train_types
+        or 
+        TeamType.SELF_PLAY_LOW in curriculum.train_types):
+        
+        return True
+    else:
+        return False
+    
+
+    
+

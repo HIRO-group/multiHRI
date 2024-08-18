@@ -5,7 +5,7 @@ from oai_agents.common.tags import TeamType
 from .common import load_agents, generate_name
 from .fcp_pop_helper import get_fcp_population
 from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP
-from .curriculum import Curriculum
+from .curriculum import Curriculum, curriculum_has_sp_types
 
 
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
@@ -45,7 +45,6 @@ def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_ty
 def get_selfplay_agent_trained_w_selfplay_types(args,
                                                 pop_total_training_timesteps:int,
                                                 sp_w_sp_total_training_timesteps:int,
-                                                sp_w_sp_train_types:list,
                                                 sp_w_sp_eval_types:list,
                                                 curriculum:Curriculum,
                                                 pop_train_types:list=[TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
@@ -61,13 +60,16 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     
     :param args: Parsed arguments list
     :param pop_total_training_timesteps: Total number of timesteps to train the initial population of agents
-    :param sp_w_sp_train_types: List of TeamTypes to be used for training SP agents against
     :param sp_w_sp_eval_types: List of TeamTypes to be used for evaluating SP agents against
     :param tag: File name to use when loading agent files
     :param pop_force_training: Boolean that (when true) indicates the SP agent population should be trained instead of loaded from file
     :param sp_w_sp_force_training: Boolean that (when true) indicates the SP agent teammates_collection should be trained instead of loaded from file
     :returns: Trained self-play agent and the teammates collection used to generate it
     '''
+
+    # To use SP-types, the curriculum needs to contain SP types
+    if not curriculum_has_sp_types(curriculum=curriculum):
+        raise ValueError('Using a curriculum with get_selfplay_agent_trained_w_selfplay_types requires that the curriculum contain an SELF_PLAY_X train type')
 
 
     # Generate a teammates collection (the same kind used for FCP training) by training some SP agents,
@@ -89,7 +91,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                          prefix='spWsp',
                          seed=seed,
                          h_dim=h_dim, 
-                         train_types=sp_w_sp_train_types,
+                         train_types=curriculum.train_types,
                          has_curriculum = not curriculum.is_random)
 
     
@@ -103,7 +105,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     teammates_collection_for_sp_w_sp_types_training = generate_TC_for_FCP_w_SP_types(args=args,
                                                                                      teammates_collection=population_of_all_train_types,
                                                                                      agent=randomly_init_sp_agent,
-                                                                                     train_types=sp_w_sp_train_types,
+                                                                                     train_types=curriculum.train_types,
                                                                                      eval_types=sp_w_sp_eval_types['generate'])
 
     sp_w_sp_types_trainer = RLAgentTrainer(name=name,
@@ -124,14 +126,13 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
 def get_fcp_agent_w_tms_clction(args, 
                                 pop_total_training_timesteps,
                                 fcp_total_training_timesteps,
-                                fcp_train_types,
                                 fcp_eval_types,
                                 fcp_curriculum,
                                 pop_force_training, fcp_force_training,
                                 num_self_play_agents_to_train=2, tag=None, parallel=True):
     teammates_collection = get_fcp_population(args,
                                               ck_rate = pop_total_training_timesteps // 5,
-                                              train_types = fcp_train_types,
+                                              train_types = fcp_curriculum.train_types,
                                               eval_types_to_generate = fcp_eval_types['generate'],
                                               eval_types_to_load_from_file = fcp_eval_types['load'],
                                               num_self_play_agents_to_train= num_self_play_agents_to_train,
@@ -143,7 +144,7 @@ def get_fcp_agent_w_tms_clction(args,
                          prefix='fcp',
                          seed=seed,
                          h_dim=h_dim, 
-                         train_types=fcp_train_types,
+                         train_types=fcp_curriculum.train_types,
                          has_curriculum = not fcp_curriculum.is_random)
     
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_force_training)
@@ -174,9 +175,7 @@ def get_fcp_trained_w_selfplay_types(args,
                                     pop_force_training,
                                     fcp_force_training,
                                     fcp_w_sp_force_training,
-                                    fcp_train_types, 
                                     fcp_eval_types,
-                                    fcp_w_sp_train_types,
                                     fcp_w_sp_eval_types,
                                     fcp_curriculum,
                                     fcp_w_sp_curriculum,
@@ -184,10 +183,15 @@ def get_fcp_trained_w_selfplay_types(args,
                                     parallel=True,
                                     tag=None):
 
+    # To use SP-types, the curriculum needs to contain SP types
+    if not curriculum_has_sp_types(curriculum=fcp_w_sp_curriculum):
+        raise ValueError('Using a curriculum with get_fcp_trained_w_selfplay_types requires that fcp_w_sp_curriculum contain a SELF_PLAY_X train type')
+
+
     fcp_agent, fcp_teammates_collection = get_fcp_agent_w_tms_clction(args, 
                                                                   pop_total_training_timesteps=pop_total_training_timesteps,
                                                                   fcp_total_training_timesteps=fcp_total_training_timesteps,
-                                                                  fcp_train_types=fcp_train_types,
+                                                                  fcp_train_types=fcp_curriculum.train_types,
                                                                   fcp_eval_types=fcp_eval_types,
                                                                   pop_force_training=pop_force_training,
                                                                   fcp_force_training=fcp_force_training,
@@ -198,7 +202,7 @@ def get_fcp_trained_w_selfplay_types(args,
     teammates_collection = generate_TC_for_FCP_w_SP_types(args=args,
                                                         teammates_collection=fcp_teammates_collection,
                                                         agent=fcp_agent,
-                                                        train_types=fcp_w_sp_train_types,
+                                                        train_types=fcp_w_sp_curriculum.train_types,
                                                         eval_types=fcp_w_sp_eval_types['generate'],
                                                         )
     seed, h_dim = 2602, 256
@@ -206,7 +210,7 @@ def get_fcp_trained_w_selfplay_types(args,
                          prefix='fcpWsp',
                          seed=seed,
                          h_dim=h_dim, 
-                         train_types=fcp_w_sp_train_types,
+                         train_types=fcp_w_sp_curriculum.train_types,
                          has_curriculum = not fcp_curriculum.is_random)
 
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_w_sp_force_training)
