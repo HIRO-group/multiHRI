@@ -135,7 +135,7 @@ def set_input(args, quick_test=False):
     
     if not quick_test: 
         args.n_envs = 50
-        args.learner_type = LearnerType.HELPER
+        args.learner_type = LearnerType.SUPPORTER
         how_long = 1.0
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6 * how_long
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     '3_chefs_forced_coordination_3OP2S1D'.
     '''
     args.n_envs = 50
-    args.learner_type = LearnerType.HELPER
+    args.learner_type = LearnerType.SUPPORTER
 
     args.trainhelper_h_dim = 256
     args.trainhelper_seed = 68

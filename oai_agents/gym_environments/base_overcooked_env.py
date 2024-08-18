@@ -285,19 +285,6 @@ class OvercookedGymEnv(Env):
         self.completed_tasks = [np.zeros(Subtasks.NUM_SUBTASKS), np.zeros(Subtasks.NUM_SUBTASKS)]
         return self.get_obs(self.p_idx, on_reset=True)
     
-    def _get_learner_instance(self, learner_type_str=LearnerType.HELPER) -> Learner:
-        learner_classes = {
-            LearnerType.SABOTEUR: Saboteur(),
-            LearnerType.SELFISHER: Selfisher(),
-            LearnerType.SOLOWORKER: SoloWorker(),
-            LearnerType.COLLABORATOR: Collaborator(),
-            LearnerType.HELPER: Helper(),
-        }
-
-        if learner_type_str not in learner_classes:
-            raise ValueError("Invalid learner type")
-
-        return learner_classes[learner_type_str]
     
     def render(self, mode='human', close=False):
         if self.visualization_enabled:

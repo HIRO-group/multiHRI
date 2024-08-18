@@ -4,16 +4,16 @@ class LearnerType:
     The primary difference between learners are on the weights of personal and group reward.
     Saboteur and Selfisher weight personal reward positively and group reward negatively.
     Soloworker, weight individual reward positively, and group reward with a zero.
-    Collaborator, and Helper weight both rewards positively.
+    Collaborator, and Supporter weight both rewards positively.
     If we grade how much they care about group: 
-    Helper > Collaborator > Soloworker >> Selfisher > Saboteur.
+    Supporter > Collaborator > Soloworker >> Selfisher > Saboteur.
     If more details are desired, learner.py define these learners.
     '''
     SABOTEUR = "saboteur"
     SELFISHER = "selfisher"
     SOLOWORKER = "soloworker"
     COLLABORATOR = "collaborator"
-    HELPER = "helper"
+    SUPPORTER = "supporter"
 
 class Learner:
     def __new__(cls, learner_type: str):
@@ -22,7 +22,7 @@ class Learner:
             LearnerType.SELFISHER: Selfisher,
             LearnerType.SOLOWORKER: SoloWorker,
             LearnerType.COLLABORATOR: Collaborator,
-            LearnerType.HELPER: Helper,
+            LearnerType.SUPPORTER: Supporter,
         }
 
         if learner_type not in learner_classes:
@@ -77,7 +77,7 @@ class Collaborator(Learner):
         return self.magnifier * (0.5 * self.personal_reward + 0.5 * self.group_reward)
 
 
-class Helper(Learner):
+class Supporter(Learner):
     def calculate_reward(self, p_idx, env_info, ratio, num_players):
         super().extract_reward(p_idx, env_info, ratio, num_players)
         return self.magnifier * (1/3 * self.personal_reward + 2/3 * self.group_reward)
