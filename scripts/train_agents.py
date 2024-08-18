@@ -73,7 +73,6 @@ def SP_w_SP_Types(args,
         args,
         pop_total_training_timesteps=args.pop_total_training_timesteps,
         sp_w_sp_total_training_timesteps=args.sp_w_sp_total_training_timesteps,
-        sp_w_sp_train_types=args.sp_w_sp_train_types,
         sp_w_sp_eval_types=args.sp_w_sp_eval_types,
         pop_force_training=pop_force_training,
         sp_w_sp_force_training=sp_w_sp_force_training,
@@ -126,15 +125,13 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
                                 'load': get_eval_types_to_load()}
     
     fcp_curriculum = Curriculum(train_types = args.fcp_train_types,is_random=True)
-    fcp_w_sp_curriculum = Curriculum(train_types=args.fcp_w_sp_eval_types, is_random=True)
+    fcp_w_sp_curriculum = Curriculum(train_types=args.fcp_w_sp_train_types, is_random=True)
 
     get_fcp_trained_w_selfplay_types(args=args,
                                     pop_total_training_timesteps=args.pop_total_training_timesteps,
                                     fcp_total_training_timesteps=args.fcp_total_training_timesteps,
                                     fcp_w_sp_total_training_timesteps=args.fcp_w_sp_total_training_timesteps,
-                                    fcp_train_types=args.fcp_train_types,
                                     fcp_eval_types=args.fcp_eval_types,
-                                    fcp_w_sp_train_types=args.fcp_w_sp_train_types,
                                     fcp_w_sp_eval_types=args.fcp_w_sp_eval_types,
                                     pop_force_training=pop_force_training,
                                     fcp_force_training=fcp_force_training,

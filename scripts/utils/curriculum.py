@@ -112,3 +112,17 @@ class Curriculum:
             print("Rest of the training probabilities:", self.rest_of_the_training_probabilities)
             print("Probabilities decay over time:", self.probabilities_decay_over_time)
         print("---------------")
+
+
+    def validate_curriculum_types(self, expected_types:list, unallowed_types:list) -> None:
+        # Ensure at least one expected type is present in train_types
+        assert any(et in self.train_types for et in expected_types), \
+            "Error: None of the expected types are present in train_types."
+
+        # Ensure no unallowed types are present in train_types
+        assert not any(ut in self.train_types for ut in unallowed_types), \
+            "Error: One or more unallowed types are present in train_types."
+    
+
+    
+
