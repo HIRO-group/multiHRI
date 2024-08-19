@@ -138,5 +138,4 @@ dmypy.json
 multiHRI/oai_agent/data/
 
 #Chihui's scripts
-scripts/nathan_train_agents.py
 nathan_train_agents.py
