@@ -20,13 +20,13 @@ def get_arguments(additional_args=[]):
     
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate used in imitation learning. lr for rl is defined in rl.py')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size used in imitation learning. bs for rl is defined in rl.py')
-    parser.add_argument('--SP-seed', type=int, default=48, help='seed used in train_helper')
+    parser.add_argument('--SP-seed', type=int, default=68, help='seed used in train_helper')
     parser.add_argument('--SP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
-    parser.add_argument('--FCP-seed', type=int, default=48, help='seed used in train_helper')
+    parser.add_argument('--FCP-seed', type=int, default=2020, help='seed used in train_helper')
     parser.add_argument('--FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
-    parser.add_argument('--SPWSP-seed', type=int, default=48, help='seed used in train_helper')
+    parser.add_argument('--SPWSP-seed', type=int, default=1010, help='seed used in train_helper')
     parser.add_argument('--SPWSP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
-    parser.add_argument('--FCPWSP-seed', type=int, default=48, help='seed used in train_helper')
+    parser.add_argument('--FCPWSP-seed', type=int, default=2602, help='seed used in train_helper')
     parser.add_argument('--FCPWSP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
 
     parser.add_argument('--exp-name', type=str, default='aamas25',
