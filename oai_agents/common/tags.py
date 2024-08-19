@@ -1,6 +1,10 @@
 class AgentPerformance:
     '''
-    Agent performance refers to the reward of the agent 
+    Agent performance refers to the reward an agent receives after playing in 
+    self-play scenarios. For example, consider an agent, X, with 
+    AgentPerformance.HIGH.This means X has participated in an Overcooked game
+    with multiple copies of itself, and the self-play team achieved a total 
+    reward categorized as high performance.
     '''
     HIGH = 'H'
     HIGH_MEDIUM = 'HM'
@@ -63,4 +67,3 @@ class TeamType:
 class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'
-
