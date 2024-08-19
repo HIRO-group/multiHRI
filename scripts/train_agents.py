@@ -129,6 +129,11 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
 
 
 def set_input(args, quick_test=False):
+    '''
+    Suggested 3-Chefs Layouts are '3_chefs_small_kitchen_two_resources', 
+    '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages', 
+    '3_chefs_forced_coordination_3OP2S1D'.
+    '''
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
@@ -169,16 +174,28 @@ if __name__ == '__main__':
     sp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
-    '''
-    Suggested 3-Chefs Layouts are '3_chefs_small_kitchen_two_resources', 
-    '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages', 
-    '3_chefs_forced_coordination_3OP2S1D'.
-    '''
+    
     args.n_envs = 50
     args.learner_type = LearnerType.SUPPORTER
 
     args.trainhelper_h_dim = 256
     args.trainhelper_seed = 68
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.trainhelper_seed = 13
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.trainhelper_seed = 48
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.trainhelper_seed = 27
+    SP(args=args,
+       pop_force_training=pop_force_training)
+    
+    args.trainhelper_seed = 6
     SP(args=args,
        pop_force_training=pop_force_training)
 

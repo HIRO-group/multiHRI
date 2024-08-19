@@ -9,12 +9,10 @@ from .curriculum import Curriculum
 
 
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
-    seed = args.trainhelper_seed
-    h_dim = args.trainhelper_h_dim
     name = generate_name(args, 
                          prefix='sp',
-                         seed=seed,
-                         h_dim=h_dim, 
+                         seed=args.trainhelper_seed,
+                         h_dim=args.trainhelper_h_dim, 
                          train_types=train_types,
                          has_curriculum= not curriculum.is_random)
     
@@ -35,8 +33,8 @@ def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_ty
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         curriculum=curriculum,
-        seed=seed,
-        hidden_dim=h_dim,
+        seed=args.trainhelper_seed,
+        hidden_dim=args.trainhelper_h_dim,
     )
 
     selfplay_trainer.train_agents(total_train_timesteps=total_training_timesteps)
@@ -66,7 +64,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     :param sp_w_sp_force_training: Boolean that (when true) indicates the SP agent teammates_collection should be trained instead of loaded from file
     :returns: Trained self-play agent and the teammates collection used to generate it
     '''
-
+  
 
     # Generate a teammates collection (the same kind used for FCP training) by training some SP agents,
     # saving them periodically (to represent various skill levels), and then oragnizing them into teams of
@@ -82,12 +80,11 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                             force_training=pop_force_training,
                                             parallel=parallel)
 
-    seed = args.trainhelper_seed
-    h_dim = args.trainhelper_h_dim
+    
     name = generate_name(args, 
                          prefix='spWsp',
-                         seed=seed,
-                         h_dim=h_dim, 
+                         seed=args.trainhelper_seed,
+                         h_dim=args.trainhelper_h_dim, 
                          train_types=sp_w_sp_train_types,
                          has_curriculum = not curriculum.is_random)
 
@@ -114,8 +111,8 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                            epoch_timesteps=args.epoch_timesteps,
                                            n_envs=args.n_envs,
                                            curriculum=curriculum,
-                                           seed=seed,
-                                           hidden_dim=h_dim)
+                                           seed=args.trainhelper_seed,
+                                           hidden_dim=args.trainhelper_h_dim)
 
     sp_w_sp_types_trainer.train_agents(total_train_timesteps=sp_w_sp_total_training_timesteps)
 
@@ -139,12 +136,10 @@ def get_fcp_agent_w_tms_clction(args,
                                               total_training_timesteps = pop_total_training_timesteps,
                                               force_training=pop_force_training,
                                               parallel=parallel)
-    seed = args.trainhelper_seed
-    h_dim = args.trainhelper_h_dim
     name = generate_name(args, 
                          prefix='fcp',
-                         seed=seed,
-                         h_dim=h_dim, 
+                         seed=args.trainhelper_seed,
+                         h_dim=args.trainhelper_h_dim, 
                          train_types=fcp_train_types,
                          has_curriculum = not fcp_curriculum.is_random)
     
@@ -159,8 +154,8 @@ def get_fcp_agent_w_tms_clction(args,
         teammates_collection=teammates_collection,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
-        seed=seed,
-        hidden_dim=h_dim,
+        seed=args.trainhelper_seed,
+        hidden_dim=args.trainhelper_h_dim,
         curriculum=fcp_curriculum,
     )
 
@@ -203,12 +198,11 @@ def get_fcp_trained_w_selfplay_types(args,
                                                         train_types=fcp_w_sp_train_types,
                                                         eval_types=fcp_w_sp_eval_types['generate'],
                                                         )
-    seed = args.trainhelper_seed
-    h_dim = args.trainhelper_h_dim
+    
     name = generate_name(args, 
                          prefix='fcpWsp',
-                         seed=seed,
-                         h_dim=h_dim, 
+                         seed=args.trainhelper_seed,
+                         h_dim=args.trainhelper_h_dim, 
                          train_types=fcp_train_types,
                          has_curriculum = not fcp_curriculum.is_random)
 
@@ -225,8 +219,8 @@ def get_fcp_trained_w_selfplay_types(args,
         teammates_collection=teammates_collection,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
-        seed=seed,
-        hidden_dim=h_dim,
+        seed=args.trainhelper_seed,
+        hidden_dim=args.trainhelper_h_dim,
         curriculum=fcp_w_sp_curriculum,
     )
 

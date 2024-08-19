@@ -85,7 +85,6 @@ class OvercookedGymEnv(Env):
         self.step_count = 0
         self.reset_p_idx = None
 
-        # set up the learner. Different typese of learner would receive different rewards.
         self.learner = Learner(args.learner_type)
 
         self.p_idx = None
@@ -250,13 +249,6 @@ class OvercookedGymEnv(Env):
         if self.shape_rewards and not self.is_eval_env:
             ratio = min(self.step_count * self.args.n_envs / 1e7, 0.5)
             reward = self.learner.calculate_reward(p_idx=self.p_idx, env_info=info, ratio=ratio, num_players=self.mdp.num_players)
-            # group_sparse_r = sum(info['sparse_r_by_agent'])
-            # group_shaped_r = sum(info['shaped_r_by_agent'])               
-            # sparse_r = info['sparse_r_by_agent'][self.p_idx] if self.p_idx is not None else group_sparse_r
-            # shaped_r = info['shaped_r_by_agent'][self.p_idx] if self.p_idx is not None else group_shaped_r
-            # p_reward = group_sparse_r * ratio + shaped_r * (1 - ratio)
-            # group_reward = (1/self.mdp.num_players) * (self.mdp.num_players * group_sparse_r * ratio + group_shaped_r * (1 - ratio))
-            # reward = self.learner.calculate_reward(individual_reward=p_reward, group_reward=group_reward)
         self.step_count += 1
         return self.get_obs(self.p_idx, done=done), reward, done, info
 
