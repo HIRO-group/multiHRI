@@ -11,8 +11,8 @@ from .curriculum import Curriculum
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
     name = generate_name(args, 
                          prefix='sp',
-                         seed=args.trainhelper_seed,
-                         h_dim=args.trainhelper_h_dim, 
+                         seed=args.SP_seed,
+                         h_dim=args.SP_h_dim, 
                          train_types=train_types,
                          has_curriculum= not curriculum.is_random)
     
@@ -33,8 +33,8 @@ def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_ty
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         curriculum=curriculum,
-        seed=args.trainhelper_seed,
-        hidden_dim=args.trainhelper_h_dim,
+        seed=args.SP_seed,
+        hidden_dim=args.SP_h_dim,
     )
 
     selfplay_trainer.train_agents(total_train_timesteps=total_training_timesteps)
@@ -87,8 +87,8 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     
     name = generate_name(args, 
                          prefix='spWsp',
-                         seed=args.trainhelper_seed,
-                         h_dim=args.trainhelper_h_dim, 
+                         seed=args.SPWSP_seed,
+                         h_dim=args.SPWSP_h_dim, 
                          train_types=curriculum.train_types,
                          has_curriculum = not curriculum.is_random)
 
@@ -113,8 +113,8 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                            epoch_timesteps=args.epoch_timesteps,
                                            n_envs=args.n_envs,
                                            curriculum=curriculum,
-                                           seed=args.trainhelper_seed,
-                                           hidden_dim=args.trainhelper_h_dim)
+                                           seed=args.SPWSP_seed,
+                                           hidden_dim=args.SPWSP_h_dim)
 
     sp_w_sp_types_trainer.train_agents(total_train_timesteps=sp_w_sp_total_training_timesteps)
 
@@ -139,8 +139,8 @@ def get_fcp_agent_w_tms_clction(args,
                                               parallel=parallel)
     name = generate_name(args, 
                          prefix='fcp',
-                         seed=args.trainhelper_seed,
-                         h_dim=args.trainhelper_h_dim, 
+                         seed=args.FCP_seed,
+                         h_dim=args.FCP_h_dim, 
                          train_types=fcp_curriculum.train_types,
                          has_curriculum = not fcp_curriculum.is_random)
     
@@ -155,8 +155,8 @@ def get_fcp_agent_w_tms_clction(args,
         teammates_collection=teammates_collection,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
-        seed=args.trainhelper_seed,
-        hidden_dim=args.trainhelper_h_dim,
+        seed=args.FCP_seed,
+        hidden_dim=args.FCP_h_dim,
         curriculum=fcp_curriculum,
     )
 
@@ -204,8 +204,8 @@ def get_fcp_trained_w_selfplay_types(args,
     
     name = generate_name(args, 
                          prefix='fcpWsp',
-                         seed=args.trainhelper_seed,
-                         h_dim=args.trainhelper_h_dim, 
+                         seed=args.FCPWSP_seed,
+                         h_dim=args.FCPWSP_h_dim, 
                          train_types=fcp_w_sp_curriculum.train_types,
                          has_curriculum = not fcp_curriculum.is_random)
 
@@ -222,8 +222,8 @@ def get_fcp_trained_w_selfplay_types(args,
         teammates_collection=teammates_collection,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
-        seed=args.trainhelper_seed,
-        hidden_dim=args.trainhelper_h_dim,
+        seed=args.FCPWSP_seed,
+        hidden_dim=args.FCPWSP_h_dim,
         curriculum=fcp_w_sp_curriculum,
     )
 

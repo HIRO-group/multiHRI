@@ -165,6 +165,14 @@ def set_input(args, quick_test=False):
         args.fcp_w_sp_total_training_timesteps = 4 * 5e6 * how_long
         args.num_sp_agents_to_train = 2
         args.exp_dir = 'experiment-1'
+        args.SP_seed = 68
+        args.SP_h_dim = 256
+        args.SPWSP_seed = 68
+        args.SPWSP_h_dim = 256
+        args.FCP_seed = 68
+        args.FCP_h_dim = 256
+        args.FCPWSP_seed = 68
+        args.FCPWSP_h_dim = 256
 
 
     else: # Used for doing quick tests
@@ -191,12 +199,7 @@ if __name__ == '__main__':
     sp_w_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
-    
-    args.n_envs = 50
-    args.learner_type = LearnerType.SUPPORTER
 
-    args.trainhelper_h_dim = 256
-    args.trainhelper_seed = 68
     SP(args=args,
        pop_force_training=pop_force_training)
 
