@@ -58,14 +58,14 @@ def SP_w_SP_Types(args,
                             is_random=False,
                             total_steps = args.sp_w_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
-                                TeamType.SELF_PLAY_HIGH: 0.5,
+                                TeamType.SELF_PLAY_LOW: 0.5,
                                 TeamType.SELF_PLAY_MEDIUM: 0.125,
-                                TeamType.SELF_PLAY_LOW: 0.125,
+                                TeamType.SELF_PLAY_HIGH: 0.125,
                             },
                             rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_HIGH: 0.4,
+                                TeamType.SELF_PLAY_LOW: 0.4,
                                 TeamType.SELF_PLAY_MEDIUM: 0.3, 
-                                TeamType.SELF_PLAY_LOW: 0.3,
+                                TeamType.SELF_PLAY_HIGH: 0.3,
                             },
                             probabilities_decay_over_time=0
                             )
