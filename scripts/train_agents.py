@@ -144,7 +144,7 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
                                     )
 
 
-def set_input(args, quick_test=False):
+def set_input(args, quick_test=False, supporter_run=False):
     '''
     Suggested 3-Chefs Layouts are '3_chefs_small_kitchen_two_resources', 
     '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages', 
@@ -154,10 +154,16 @@ def set_input(args, quick_test=False):
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
     
-    if not quick_test: 
-        args.n_envs = 50
+    if supporter_run:
         args.learner_type = LearnerType.SUPPORTER
-        how_long = 1.0
+        args.reward_magnifier = 3.0
+    else:
+        args.learner_type = LearnerType.SOLOWORKER
+        args.reward_magnifier = 1.0
+        
+    if not quick_test: 
+        args.n_envs = 200
+        how_long = 4.0
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6 * how_long
         args.fcp_total_training_timesteps = 2 * 5e6 * how_long
@@ -166,7 +172,7 @@ def set_input(args, quick_test=False):
         args.num_sp_agents_to_train = 2
         args.exp_dir = 'experiment-1'
         args.SP_seed = 68
-        args.SP_h_dim = 256
+        args.SP_h_dim = 512
         args.SPWSP_seed = 68
         args.SPWSP_h_dim = 256
         args.FCP_seed = 68
@@ -191,6 +197,7 @@ def set_input(args, quick_test=False):
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = False
+    supporter_run = False
     parallel = True
     
     pop_force_training = True
@@ -198,7 +205,7 @@ if __name__ == '__main__':
     fcp_w_sp_force_training = True
     sp_w_sp_force_training = True
     
-    set_input(args=args, quick_test=quick_test)
+    set_input(args=args, quick_test=quick_test, supporter_run=supporter_run)
 
     SP(args=args,
        pop_force_training=pop_force_training)
