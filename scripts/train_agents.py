@@ -153,9 +153,7 @@ def set_input(args, quick_test=False, supporter_run=False):
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
-    args.learner_type = LearnerType.SUPPORTER
     
-
     if supporter_run:
         args.learner_type = LearnerType.SUPPORTER
         args.reward_magnifier = 3.0
@@ -177,7 +175,6 @@ def set_input(args, quick_test=False, supporter_run=False):
         args.FCPWSP_seed, args.FCPWSP_h_dim = 2602, 256
         args.num_sp_agents_to_train = 3
         args.exp_dir = 'experiment-1'
-
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
