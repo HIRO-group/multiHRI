@@ -58,14 +58,14 @@ def SP_w_SP_Types(args,
                             is_random=False,
                             total_steps = args.sp_w_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
-                                TeamType.SELF_PLAY_HIGH: 0.5,
+                                TeamType.SELF_PLAY_LOW: 0.5,
                                 TeamType.SELF_PLAY_MEDIUM: 0.125,
-                                TeamType.SELF_PLAY_LOW: 0.125,
+                                TeamType.SELF_PLAY_HIGH: 0.125,
                             },
                             rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_HIGH: 0.4,
+                                TeamType.SELF_PLAY_LOW: 0.4,
                                 TeamType.SELF_PLAY_MEDIUM: 0.3, 
-                                TeamType.SELF_PLAY_LOW: 0.3,
+                                TeamType.SELF_PLAY_HIGH: 0.3,
                             },
                             probabilities_decay_over_time=0
                             )
@@ -153,7 +153,9 @@ def set_input(args, quick_test=False, supporter_run=False):
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
+    args.learner_type = LearnerType.SUPPORTER
     
+
     if supporter_run:
         args.learner_type = LearnerType.SUPPORTER
         args.reward_magnifier = 3.0
@@ -168,18 +170,13 @@ def set_input(args, quick_test=False, supporter_run=False):
         args.pop_total_training_timesteps = 5e6 * how_long
         args.fcp_total_training_timesteps = 2 * 5e6 * how_long
         args.sp_w_sp_total_training_timesteps = 5e6 * how_long
-        args.fcp_w_sp_total_training_timesteps = 4 * 5e6 * how_long
-        args.num_sp_agents_to_train = 2
+        args.fcp_w_sp_total_training_timesteps = 4 * 5e6 * how_long        
+        args.SP_seed, args.SP_h_dim = 68, 256
+        args.SPWSP_seed, args.SPWSP_h_dim = 1010, 256
+        args.FCP_seed, args.FCP_h_dim = 2020, 256
+        args.FCPWSP_seed, args.FCPWSP_h_dim = 2602, 256
+        args.num_sp_agents_to_train = 3
         args.exp_dir = 'experiment-1'
-        args.SP_seed = 68
-        args.SP_h_dim = 512
-        args.SPWSP_seed = 68
-        args.SPWSP_h_dim = 256
-        args.FCP_seed = 68
-        args.FCP_h_dim = 256
-        args.FCPWSP_seed = 68
-        args.FCPWSP_h_dim = 256
-
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
