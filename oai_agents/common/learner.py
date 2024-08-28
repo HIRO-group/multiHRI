@@ -9,6 +9,7 @@ class LearnerType:
     Supporter > Collaborator > Soloworker >> Selfisher > Saboteur.
     If more details are desired, learner.py define these learners.
     '''
+    Originaler = "originaler"
     SABOTEUR = "saboteur"
     SELFISHER = "selfisher"
     SOLOWORKER = "soloworker"
@@ -16,8 +17,9 @@ class LearnerType:
     SUPPORTER = "supporter"
 
 class Learner:
-    def __new__(cls, learner_type: str):
+    def __new__(cls, learner_type: str, magnifier: float):
         learner_classes = {
+            LearnerType.Originaler: Originaler,
             LearnerType.SABOTEUR: Saboteur,
             LearnerType.SELFISHER: Selfisher,
             LearnerType.SOLOWORKER: SoloWorker,
@@ -29,15 +31,15 @@ class Learner:
             raise ValueError(f"Invalid learner type: {learner_type}")
 
         # Create an instance of the appropriate class
-        instance = super().__new__(learner_classes[learner_type])
+        instance = super().__new__(learner_classes[learner_type], magnifier)
         return instance
-    def __init__(self, learner_type: str):
+    def __init__(self, learner_type: str, magnifier: float):
         '''
         magnifier is used to magnify the received reward. 
         This magnification would maginify the advantage.
         This further increase the gradient for the policy optimization.
         '''
-        self.magnifier = 3 
+        self.magnifier = magnifier 
         self.personal_reward = 0
         self.group_reward = 0
     
@@ -53,10 +55,16 @@ class Learner:
         raise NotImplementedError("This method should be overridden by subclasses")
 
 
+class Originaler(Learner):
+    def calculate_reward(self, p_idx, env_info, ratio, num_players):
+        super().extract_reward(p_idx, env_info, ratio, num_players)
+        return self.personal_reward
+
+
 class Saboteur(Learner):
     def calculate_reward(self, p_idx, env_info, ratio, num_players):
         super().extract_reward(p_idx, env_info, ratio, num_players)
-        return self.magnifier * (2 * self.personal_reward - 1 * self.group_reward)
+        return self.magnifier * (2/3 * self.personal_reward - 1/3 * self.group_reward)
 
 
 class Selfisher(Learner):

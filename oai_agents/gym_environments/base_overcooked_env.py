@@ -85,7 +85,7 @@ class OvercookedGymEnv(Env):
         self.step_count = 0
         self.reset_p_idx = None
 
-        self.learner = Learner(args.learner_type)
+        self.learner = Learner(args.learner_type, args.reward_magnifier)
 
         self.p_idx = None
         self.teammates = []
