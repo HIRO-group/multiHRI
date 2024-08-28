@@ -153,15 +153,9 @@ def set_input(args, quick_test=False, supporter_run=False):
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
-    
-    if supporter_run:
-        args.learner_type = LearnerType.SUPPORTER
-        args.reward_magnifier = 3.0
-    else:
-        args.learner_type = LearnerType.SOLOWORKER
-        args.reward_magnifier = 1.0
         
     if not quick_test: 
+        args.learner_type = LearnerType.Originaler
         args.n_envs = 200
         how_long = 1.0
         args.epoch_timesteps = 1e5
