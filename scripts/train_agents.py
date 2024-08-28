@@ -163,7 +163,7 @@ def set_input(args, quick_test=False, supporter_run=False):
         
     if not quick_test: 
         args.n_envs = 200
-        how_long = 4.0
+        how_long = 1.0
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6 * how_long
         args.fcp_total_training_timesteps = 2 * 5e6 * how_long
