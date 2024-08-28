@@ -107,7 +107,6 @@ def FCP(args, pop_force_training, fcp_force_training, parallel):
     _, _ = get_fcp_agent_w_tms_clction(args,
                                         pop_total_training_timesteps=args.pop_total_training_timesteps,
                                         fcp_total_training_timesteps=args.fcp_total_training_timesteps,
-                                        fcp_train_types=args.fcp_train_types,
                                         fcp_eval_types=args.fcp_eval_types,
                                         pop_force_training=pop_force_training,
                                         fcp_force_training=fcp_force_training,
