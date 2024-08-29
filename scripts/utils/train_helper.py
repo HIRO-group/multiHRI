@@ -9,38 +9,6 @@ from .curriculum import Curriculum
 
 from oai_agents.agents.base_agent import OAIAgent
 
-def get_agent_trained_w_stored_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, folder_path='agent_models/small_kitchen/supporters', tag='sp_s68_h256_tr(SP)_ran/best'):
-    name = generate_name(args, 
-                         prefix='sab',
-                         seed=args.SP_seed,
-                         h_dim=args.SP_h_dim, 
-                         train_types=train_types,
-                         has_curriculum= not curriculum.is_random)
-    
-    tc = generate_TC_for_Saboteur(args,
-                                folder_path=folder_path,
-                                tag=tag,
-                                train_types=train_types,
-                                eval_types_to_generate=eval_types['generate'],
-                                eval_types_to_read_from_file=eval_types['load'])
-    
-    saboteur_trainer = RLAgentTrainer(
-        name=name,
-        args=args,
-        agent=None,
-        teammates_collection=tc,
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        curriculum=curriculum,
-        seed=args.SP_seed,
-        hidden_dim=args.SP_h_dim,
-    )
-
-    saboteur_trainer.train_agents(total_train_timesteps=total_training_timesteps)
-    return saboteur_trainer.get_agents()[0], tc
-
-
-
 
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, eval_types, curriculum, tag=None, force_training=False):
     name = generate_name(args, 
@@ -263,5 +231,36 @@ def get_fcp_trained_w_selfplay_types(args,
 
     fcp_trainer.train_agents(total_train_timesteps=fcp_w_sp_total_training_timesteps)
     return fcp_trainer.get_agents()[0], teammates_collection
+
+
+def get_agent_trained_w_stored_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, folder_path='agent_models/small_kitchen/supporters', tag='sp_s68_h256_tr(SP)_ran/best'):
+    name = generate_name(args, 
+                         prefix='sab',
+                         seed=args.SP_seed,
+                         h_dim=args.SP_h_dim, 
+                         train_types=train_types,
+                         has_curriculum= not curriculum.is_random)
+    
+    tc = generate_TC_for_Saboteur(args,
+                                folder_path=folder_path,
+                                tag=tag,
+                                train_types=train_types,
+                                eval_types_to_generate=eval_types['generate'],
+                                eval_types_to_read_from_file=eval_types['load'])
+    
+    saboteur_trainer = RLAgentTrainer(
+        name=name,
+        args=args,
+        agent=None,
+        teammates_collection=tc,
+        epoch_timesteps=args.epoch_timesteps,
+        n_envs=args.n_envs,
+        curriculum=curriculum,
+        seed=args.SP_seed,
+        hidden_dim=args.SP_h_dim,
+    )
+
+    saboteur_trainer.train_agents(total_train_timesteps=total_training_timesteps)
+    return saboteur_trainer.get_agents()[0], tc
 
 
