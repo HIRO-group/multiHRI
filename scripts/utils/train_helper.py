@@ -14,7 +14,7 @@ def get_agent_trained_w_stored_tms_collection(args, total_training_timesteps, tr
                          prefix='sab',
                          seed=args.SP_seed,
                          h_dim=args.SP_h_dim, 
-                         train_types=train_types,
+                         train_types=curriculum.train_types,
                          has_curriculum= not curriculum.is_random)
     
     tc = generate_TC_for_Saboteur(args,
