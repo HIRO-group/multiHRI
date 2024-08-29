@@ -42,17 +42,17 @@ def get_agent_trained_w_stored_tms_collection(args, total_training_timesteps, tr
 
 
 
-def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
+def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, eval_types, curriculum, tag=None, force_training=False):
     name = generate_name(args, 
                          prefix='sp',
                          seed=args.SP_seed,
                          h_dim=args.SP_h_dim, 
-                         train_types=train_types,
+                         train_types=curriculum.train_types,
                          has_curriculum= not curriculum.is_random)
     
     agents = load_agents(args, name=name, tag=tag, force_training=force_training)
     tc = generate_TC_for_SP(args=args,
-                            train_types=train_types,
+                            train_types=curriculum.train_types,
                             eval_types_to_generate=eval_types['generate'],
                             eval_types_to_read_from_file=eval_types['load'])
 

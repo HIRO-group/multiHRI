@@ -33,6 +33,7 @@ class Learner:
         # Create an instance of the appropriate class
         instance = super().__new__(learner_classes[learner_type])
         return instance
+    
     def __init__(self, learner_type: str, magnifier: float):
         '''
         magnifier is used to magnify the received reward. 
