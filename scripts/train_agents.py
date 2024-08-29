@@ -170,7 +170,7 @@ def set_input(args, quick_test=False, supporter_run=False):
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
         
     if not quick_test: 
-        args.learner_type = LearnerType.Originaler
+        args.learner_type = LearnerType.ORIGINALER
         args.n_envs = 200
         how_long = 1.0
         args.epoch_timesteps = 1e5
