@@ -166,10 +166,10 @@ def set_input(args, quick_test=False):
         args.fcp_total_training_timesteps = 2 * 5e6 * how_long
         args.sp_w_sp_total_training_timesteps = 5e6 * how_long
         args.fcp_w_sp_total_training_timesteps = 4 * 5e6 * how_long        
-        args.SP_seed, args.SP_h_dim = 68, 256
-        args.SPWSP_seed, args.SPWSP_h_dim = 2020, 256
-        args.FCP_seed, args.FCP_h_dim = 2020, 256
-        args.FCPWSP_seed, args.FCPWSP_h_dim = 2602, 256
+        args.SP_seed, args.SP_h_dim = 68, 512
+        args.SPWSP_seed, args.SPWSP_h_dim = 2020, 512
+        args.FCP_seed, args.FCP_h_dim = 2020, 512
+        args.FCPWSP_seed, args.FCPWSP_h_dim = 2602, 512
         args.num_sp_agents_to_train = 3
         args.exp_dir = 'all_layouts_supporters'
 
