@@ -22,7 +22,6 @@ def SP(args, pop_force_training):
     curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
 
     get_selfplay_agent_w_tms_collection(args=args,
-                       train_types=args.sp_train_types,
                        eval_types=args.sp_eval_types,
                        total_training_timesteps=args.pop_total_training_timesteps,
                        force_training=pop_force_training,
@@ -184,7 +183,6 @@ def set_input(args, quick_test=False, supporter_run=False):
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = False
-    supporter_run = False
     parallel = True
     
     pop_force_training = True
@@ -192,7 +190,7 @@ if __name__ == '__main__':
     fcp_w_sp_force_training = True
     sp_w_sp_force_training = True
     
-    set_input(args=args, quick_test=quick_test, supporter_run=supporter_run)
+    set_input(args=args, quick_test=quick_test)
 
     SP(args=args,
        pop_force_training=pop_force_training)

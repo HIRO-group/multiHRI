@@ -112,7 +112,7 @@ def ensure_we_have_enough_train_and_eval_agents(teammates_len,
     total_population_len = len(AgentPerformance.ALL) * num_self_play_agents_to_train
     train_agents_len = len(train_types) * teammates_len
     eval_agents_len = len(eval_types) * teammates_len
-    assert total_population_len > train_agents_len + eval_agents_len, "Not enough agents to train and evaluate." \
+    assert total_population_len >= train_agents_len + eval_agents_len, "Not enough agents to train and evaluate." \
                                                                         " Should increase num_sp_agents_to_train." \
                                                                         f" Total population len: {total_population_len}," \
                                                                         f" train_agents len: {train_agents_len}," \

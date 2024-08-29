@@ -30,9 +30,10 @@ class Learner:
         if learner_type not in learner_classes:
             raise ValueError(f"Invalid learner type: {learner_type}")
 
-        # Create an instance of the appropriate class
-        instance = super().__new__(learner_classes[learner_type], magnifier)
+        instance = super().__new__(learner_classes[learner_type])
+        instance.__init__(learner_type=learner_type, magnifier=magnifier)
         return instance
+    
     def __init__(self, learner_type: str, magnifier: float):
         '''
         magnifier is used to magnify the received reward. 
