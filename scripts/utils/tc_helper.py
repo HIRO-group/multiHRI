@@ -1,9 +1,44 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType, TeammatesCollection
 from .common import load_agents
+from oai_agents.agents.agent_utils import load_agent
 
 import random
 from pathlib import Path
+
+def generate_TC_for_Saboteur(args, 
+                            folder_path='agent_models/small_kitchen/supporters', 
+                            tag='sp_s68_h256_tr(SP)_ran/best',
+                            train_types = TeamType.HIGH_FIRST,
+                            eval_types_to_generate=None,
+                            eval_types_to_read_from_file=None):
+    path = folder_path + '/' + tag
+
+    teammates = [load_agent(Path(path), args) for _ in range(args.teammates_len)] 
+
+    eval_collection = {
+            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
+            for layout_name in args.layout_names
+    }
+
+    train_collection = {
+        layout_name: {ttype: [] for ttype in train_types}
+        for layout_name in args.layout_names
+    }
+
+
+    for layout_name in args.layout_names:
+        train_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
+        eval_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
+
+    teammates_collection = {
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
+    }
+    
+    return teammates_collection
+    
+
 
 def generate_TC_for_SP(args,
                        train_types,
