@@ -208,7 +208,7 @@ if __name__ == '__main__':
     
     set_input(args=args, quick_test=quick_test)
 
-    args.learner_type = LearnerType.SUPPORTER
+    args.learner_type = LearnerType.SABOTEUR
     args.reward_magnifier = 3.0
     args.SP_seed, args.SP_h_dim = 68, 512
     args.exp_dir = 'small_kitchen_2/saboteur/0'

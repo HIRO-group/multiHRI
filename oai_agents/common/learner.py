@@ -32,6 +32,7 @@ class Learner:
 
         # Create an instance of the appropriate class
         instance = super().__new__(learner_classes[learner_type])
+        instance.__init__(learner_type=learner_type, magnifier=magnifier)
         return instance
     
     def __init__(self, learner_type: str, magnifier: float):
