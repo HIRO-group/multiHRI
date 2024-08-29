@@ -9,12 +9,12 @@ from .curriculum import Curriculum
 
 from oai_agents.agents.base_agent import OAIAgent
 
-def get_agent_trained_w_stored_tms_collection(args, total_training_timesteps, train_types, eval_types, curriculum, folder_path='agent_models/small_kitchen/supporters', tag='sp_s68_h256_tr(SP)_ran/best'):
+def get_agent_trained_w_stored_tms_collection(args, total_training_timesteps, eval_types, curriculum, folder_path='agent_models/small_kitchen/supporters', tag='sp_s68_h256_tr(SP)_ran/best'):
     name = generate_name(args, 
                          prefix='sab',
                          seed=args.SP_seed,
                          h_dim=args.SP_h_dim, 
-                         train_types=train_types,
+                         train_types=curriculum.train_types,
                          has_curriculum= not curriculum.is_random)
     
     tc = generate_TC_for_Saboteur(args,
