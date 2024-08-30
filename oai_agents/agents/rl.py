@@ -17,29 +17,29 @@ VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
-    def __init__(self, teammates_collection, args, 
+    def __init__(self, teammates_collection, args,
                 agent, epoch_timesteps, n_envs,
                 seed, train_types=[], eval_types=[],
-                curriculum=None, num_layers=2, hidden_dim=256, 
+                curriculum=None, num_layers=2, hidden_dim=256,
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
-        
+
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
-        
+
         self.args = args
         self.device = args.device
         self.teammates_len = self.args.teammates_len
         self.num_players = self.args.num_players
         self.curriculum = curriculum
-        
+
         self.epoch_timesteps = epoch_timesteps
         self.n_envs = n_envs
 
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
-        
+
         self.seed = seed
         self.fcp_ck_rate = fcp_ck_rate
         self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
@@ -51,7 +51,7 @@ class RLAgentTrainer(OAITrainer):
         self.use_policy_clone = use_policy_clone
 
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
-        
+
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
@@ -102,7 +102,7 @@ class RLAgentTrainer(OAITrainer):
     def get_teammates_collection(self, _tms_clctn, learning_agent, train_types=[], eval_types=[]):
         '''
         Returns a dictionary of teammates_collection for training and evaluation
-            dict 
+            dict
             teammates_collection = {
                 'layout_name': {
                     'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
@@ -116,18 +116,18 @@ class RLAgentTrainer(OAITrainer):
             print("No teammates collection provided, using SELF_PLAY: teammates will be the agent itself.")
             _tms_clctn = {
                 TeammatesCollection.TRAIN: {
-                    layout_name: 
+                    layout_name:
                         {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
                 },
                 TeammatesCollection.EVAL: {
-                    layout_name: 
+                    layout_name:
                         {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
                 }
             }
 
-        else: 
+        else:
             for layout in self.args.layout_names:
                 for tt in _tms_clctn[TeammatesCollection.TRAIN][layout]:
                     if tt == TeamType.SELF_PLAY:
@@ -188,7 +188,7 @@ class RLAgentTrainer(OAITrainer):
 
 
     def get_sb3_agent(self):
-        layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers        
+        layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers
         policy_kwargs = dict(net_arch=dict(pi=layers, vf=layers))
 
         if self.use_cnn:
@@ -216,10 +216,10 @@ class RLAgentTrainer(OAITrainer):
                             gamma=0.99, gae_lambda=0.95)
             agent_name = f'{self.name}'
         return sb3_agent, agent_name
-    
+
 
     def check_teammates_collection_structure(self, teammates_collection):
-        '''    
+        '''
         teammates_collection = {
                 'layout_name': {
                     'high_perf_first': [[agent1, agent2], ...],
@@ -229,7 +229,7 @@ class RLAgentTrainer(OAITrainer):
                 },
             }
         '''
-        for layout in teammates_collection: 
+        for layout in teammates_collection:
             for team_type in teammates_collection[layout]:
                 for teammates in teammates_collection[layout][team_type]:
                     assert len(teammates) == self.teammates_len,\
@@ -239,7 +239,7 @@ class RLAgentTrainer(OAITrainer):
 
 
     def _get_constructor_parameters(self):
-        return dict(args=self.args, name=self.name, use_lstm=self.use_lstm, 
+        return dict(args=self.args, name=self.name, use_lstm=self.use_lstm,
                     use_frame_stack=self.use_frame_stack,
                     hidden_dim=self.hidden_dim, seed=self.seed)
 
@@ -259,13 +259,13 @@ class RLAgentTrainer(OAITrainer):
         steps_divisable_by_5 = (steps + 1) % 5 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         fcp_ck_rate_reached = self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)
-    
+
         return steps_divisable_by_5 or mean_rew_greater_than_best or fcp_ck_rate_reached
 
 
     def train_agents(self, total_train_timesteps, exp_name=None):
         experiment_name = self.get_experiment_name(exp_name)
-        run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
+        run = wandb.init(project="n_minus_1_sp", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")
 
@@ -281,7 +281,7 @@ class RLAgentTrainer(OAITrainer):
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
         best_path, best_tag = None, None
-        
+
         steps = 0
         curr_timesteps = 0
         prev_timesteps = self.learning_agent.num_timesteps
@@ -293,13 +293,13 @@ class RLAgentTrainer(OAITrainer):
             # In each iteration the agent collects n_envs * n_steps experiences
             # This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)
-            
-            
+
+
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
 
             if self.should_evaluate(steps=steps):
-                mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])                
+                mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
@@ -329,14 +329,14 @@ class RLAgentTrainer(OAITrainer):
                 closest_score = abs(score - target_score)
                 closest_score_path_tag = (score, path, tag)
         return closest_score_path_tag
-    
+
     @staticmethod
     def get_agents_and_set_score_and_perftag(args, layout_name, scores_path_tag, performance_tag):
         score, path, tag = scores_path_tag
         all_agents = RLAgentTrainer.load_agents(args, path=path, tag=tag)
         for agent in all_agents:
             agent.layout_scores[layout_name] = score
-            agent.layout_performance_tags[layout_name] = performance_tag        
+            agent.layout_performance_tags[layout_name] = performance_tag
         return all_agents
 
     @staticmethod
@@ -347,7 +347,7 @@ class RLAgentTrainer(OAITrainer):
             AgentPerformance.HIGH_MEDIUM
             AgentPerformance.MEDIUM
             AgentPerformance.MEDIUM_LOW
-            AgentPerformance.LOW    
+            AgentPerformance.LOW
         It categorizes by setting their score and performance tag:
             OAIAgent.layout_scores
             OAIAgent.layout_performance_tags
