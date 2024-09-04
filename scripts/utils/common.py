@@ -1,3 +1,4 @@
+from multiHRI.scripts.utils import curriculum
 from oai_agents.agents.rl import RLAgentTrainer
 
 def load_agents(args, name, tag, path=None, force_training=False):
@@ -9,9 +10,10 @@ def load_agents(args, name, tag, path=None, force_training=False):
     except FileNotFoundError as e:
         print(f'Could not find saved {name} agent \nFull Error: {e}')
         return []
-    
-def generate_name(args, prefix, seed, h_dim, train_types, has_curriculum):
-    
+
+def generate_name(args, prefix, seed, h_dim, train_types, has_curriculum, curriculum_name=""):
+
     fname = prefix + '_s' + str(seed) + '_h' + str(h_dim) +'_tr('+'_'.join(train_types)+')'
     fname = fname + '_cur' if has_curriculum else fname + '_ran'
+    fname = fname + curriculum_name
     return fname

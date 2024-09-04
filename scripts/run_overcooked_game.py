@@ -24,11 +24,11 @@ if __name__ == "__main__":
 
     args = get_arguments(additional_args)
     args.num_players = 3
-    args.layout = '3_chefs_small_kitchen'
+    args.layout = '3_chefs_forced_coordination'
     args.p_idx = 0
 
-    tm1_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
-    tm2_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
+    tm1_path = 'agent_models/eval/3_chefs/fcp_hd256_seed39/best'
+    tm2_path = 'agent_models/eval/3_chefs/fcp_hd256_seed39/best'
 
     tm1 = load_agent(Path(tm1_path), args)
     tm2 = load_agent(Path(tm2_path), args)
