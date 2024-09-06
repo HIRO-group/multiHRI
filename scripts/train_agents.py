@@ -116,6 +116,9 @@ def SP_w_SP_Types(args,
                         probabilities_decay_over_time=0,
                         name="h_only"
                     ),
+        "random": Curriculum(train_types = args.sp_w_sp_train_types,
+                             is_random=True,
+                             name = "random")
     }
 
     curriculum = CURRICULUM_SET[curriculum_kind]
@@ -236,15 +239,15 @@ if __name__ == '__main__':
     quick_test = False
     parallel = True
 
-    pop_force_training = True
-    fcp_force_training = True
-    fcp_w_sp_force_training = True
+    pop_force_training = False
+    fcp_force_training = False
+    fcp_w_sp_force_training = False
     sp_w_sp_force_training = True
 
     set_input(args=args, quick_test=quick_test)
 
-    SP(args=args,
-       pop_force_training=pop_force_training)
+    #SP(args=args,
+    #   pop_force_training=pop_force_training)
 
     # FCP(args=args,
     #     pop_force_training=pop_force_training,
@@ -274,6 +277,12 @@ if __name__ == '__main__':
                     sp_w_sp_force_training=sp_w_sp_force_training,
                     parallel=parallel,
                     curriculum_kind="h_only")
+
+    SP_w_SP_Types(args=args,
+                    pop_force_training=pop_force_training,
+                    sp_w_sp_force_training=sp_w_sp_force_training,
+                    parallel=parallel,
+                    curriculum_kind="random")
 
     # FCP_w_SP_TYPES(args=args,
     #                pop_force_training=pop_force_training,
