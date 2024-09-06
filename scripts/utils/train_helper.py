@@ -47,7 +47,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                                 sp_w_sp_eval_types:list,
                                                 curriculum:Curriculum,
                                                 pop_train_types:list=[TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
-                                                pop_eval_types:list=[TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
+                                                pop_eval_types:list=[TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
                                                 tag:str=None,
                                                 pop_force_training:bool=True,
                                                 sp_w_sp_force_training:bool=True,
@@ -105,7 +105,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                                                                      agent=randomly_init_sp_agent,
                                                                                      train_types=curriculum.train_types,
                                                                                      eval_types=sp_w_sp_eval_types['generate'])
-
+    
     sp_w_sp_types_trainer = RLAgentTrainer(name=name,
                                            args=args,
                                            agent=randomly_init_sp_agent,
