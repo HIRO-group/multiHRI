@@ -40,6 +40,7 @@ class Learner:
         This magnification would maginify the advantage.
         This further increase the gradient for the policy optimization.
         '''
+        self.learner_type = learner_type
         self.magnifier = magnifier 
         self.personal_reward = 0
         self.group_reward = 0

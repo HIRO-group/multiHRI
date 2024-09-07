@@ -9,25 +9,72 @@ from utils import (get_selfplay_agent_w_tms_collection,
                 get_eval_types_to_load, 
                 get_fcp_trained_w_selfplay_types, 
                 get_selfplay_agent_trained_w_selfplay_types,
-                get_agent_trained_w_stored_tms_collection,
+                get_saboteur,
+                get_agent_play_w_saboteur,
+                get_agent_play_w_saboteurs,
                 Curriculum
                 )
+def PwSABs(args, 
+          agent_folder_path='agent_models/four-layouts/supporter/0', 
+          agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
+          sab_folder_paths=['agent_models/four-layouts/saboteur/0', 'agent_models/four-layouts/saboteur/1'], 
+          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          ):
+    args.sp_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH]
+    args.sp_eval_types = {
+        'generate': [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH],
+        'load': []
+    }
+    curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
+    agent_path = agent_folder_path + '/' + agent_file_tag
+    sab_paths = [sab_folder_path + '/' + sab_file_tag for sab_folder_path in sab_folder_paths]
+    get_agent_play_w_saboteurs(
+        args=args, 
+        train_types=args.sp_train_types,
+        eval_types=args.sp_eval_types,
+        total_training_timesteps=args.pop_total_training_timesteps,
+        curriculum=curriculum, 
+        agent_path=agent_path,
+        sab_paths=sab_paths)
 
-def SAB(args, folder_path='agent_models/small_kitchen/supporters', tag='sp_s68_h256_tr(SP)_ran/best'):
+
+def PwSAB(args, 
+          agent_folder_path='agent_models/four-layouts/supporter/0', 
+          agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
+          sab_folder_path='agent_models/four-layouts/saboteur/0', 
+          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          ):
+    args.sp_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH]
+    args.sp_eval_types = {
+        'generate': [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH],
+        'load': []
+    }
+    curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
+    agent_path = agent_folder_path + '/' + agent_file_tag
+    sab_path = sab_folder_path + '/' + sab_file_tag
+    get_agent_play_w_saboteur(
+        args=args, 
+        train_types=args.sp_train_types,
+        eval_types=args.sp_eval_types,
+        total_training_timesteps=args.pop_total_training_timesteps,
+        curriculum=curriculum, 
+        agent_path=agent_path,
+        sab_path=sab_path)
+
+def SAB(args, agent_folder_path='agent_models/four-layouts/supporter/0', agent_file_tag='sp_s68_h512_tr(SP)_ran/best'):
     args.sp_train_types = [TeamType.HIGH_FIRST]
     args.sp_eval_types = {
         'generate': [TeamType.HIGH_FIRST],
         'load': []
     }
     curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
-    
-    get_agent_trained_w_stored_tms_collection(  args=args, 
-                                                train_types=args.sp_train_types,
-                                                eval_types=args.sp_eval_types,
-                                                total_training_timesteps=args.pop_total_training_timesteps,
-                                                curriculum=curriculum, 
-                                                folder_path=folder_path, 
-                                                tag=tag)
+    agent_path = agent_folder_path + '/' + agent_file_tag
+    get_saboteur(   args=args, 
+                    train_types=args.sp_train_types,
+                    eval_types=args.sp_eval_types,
+                    total_training_timesteps=args.pop_total_training_timesteps,
+                    curriculum=curriculum, 
+                    agent_path=agent_path)
 
 def SP(args, pop_force_training):
     args.sp_train_types = [TeamType.SELF_PLAY]
@@ -158,20 +205,19 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
                                     )
 
 
-def set_input(args, quick_test=False, supporter_run=False):
+def set_input(args, quick_test=False, how_long=6):
     '''
     Suggested 3-Chefs Layouts are '3_chefs_small_kitchen_two_resources', 
     '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages', 
     '3_chefs_forced_coordination_3OP2S1D'.
     '''
-    args.layout_names = ['3_chefs_small_kitchen_two_resources', '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages', '3_chefs_forced_coordination_3OP2S1D']
+    args.layout_names = ['3_chefs_small_kitchen_two_resources', '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
         
     if not quick_test: 
         args.learner_type = LearnerType.ORIGINALER
         args.n_envs = 200
-        how_long = 1.0
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6 * how_long
         args.fcp_total_training_timesteps = 2 * 5e6 * how_long
@@ -200,25 +246,157 @@ if __name__ == '__main__':
     args = get_arguments()
     quick_test = False
     parallel = True
+    how_long = 5
     
     pop_force_training = True
     fcp_force_training = True
     fcp_w_sp_force_training = True
     sp_w_sp_force_training = True
     
-    set_input(args=args, quick_test=quick_test)
-
-    args.learner_type = LearnerType.SABOTEUR
-    args.reward_magnifier = 3.0
     args.SP_seed, args.SP_h_dim = 68, 512
-    args.exp_dir = 'small_kitchen_2/saboteur/0'
 
-    SAB(args=args, 
-        folder_path='agent_models/small_kitchen_2/supporter/0', 
-        tag='sp_s68_h512_tr(SP)_ran/best')
+    # how_long = 5
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-fishplay/0'
+    # PwSAB(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter/0', 
+    #       agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
+    #       sab_folder_path='agent_models/four-layouts/selfisher/0', 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
+    
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-sabplay/0'
+    # PwSAB(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter/0', 
+    #       agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
+    #       sab_folder_path='agent_models/four-layouts/saboteur/0', 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
+    
+    # how_long = 7
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-fishplay/1'
+    # PwSAB(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter-fishplay/0', 
+    #       agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best',
+    #       sab_folder_path='agent_models/four-layouts/selfisher/0', 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
 
-    SP(args=args,
-       pop_force_training=pop_force_training)
+    # how_long = 4
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SELFISHER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/selfisher/2'
+    # SAB(args=args, 
+    #     agent_folder_path='agent_models/four-layouts/supporter-fishplay/1', 
+    #     agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best')
+    
+    # how_long = 4
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SABOTEUR
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/saboteur/1'
+    # SAB(args=args, 
+    #     agent_folder_path='agent_models/four-layouts/supporter-sabplay/0', 
+    #     agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best')
+
+    # how_long = 8
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-fishplay/2'
+    # PwSABs(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter/0', 
+    #       agent_file_tag='pwsab_s68_h512_tr(SP)_ran/best',
+    #       sab_folder_paths=['agent_models/four-layouts/selfisher/0', 'agent_models/four-layouts/selfisher/2'], 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
+    
+    # how_long = 10
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-fishplay/3'
+    # PwSABs(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter-fishplay/2', 
+    #       agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best',
+    #       sab_folder_paths=['agent_models/four-layouts/selfisher/0', 'agent_models/four-layouts/selfisher/2'], 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
+
+    # how_long = 4
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SELFISHER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/selfisher/4'
+    # SAB(args=args, 
+    #     agent_folder_path='agent_models/four-layouts/supporter-fishplay/3', 
+    #     agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best')
+    
+    # how_long = 14
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-fishplay/4'
+    # PwSABs(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter-fishplay/3', 
+    #       agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best',
+    #       sab_folder_paths=['agent_models/four-layouts/selfisher/4', 'agent_models/four-layouts/selfisher/2', 'agent_models/four-layouts/selfisher/0'], 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
+
+    # how_long = 12
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-fishplay/024'
+    # PwSABs(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter/0', 
+    #       agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
+    #       sab_folder_paths=['agent_models/four-layouts/selfisher/4', 'agent_models/four-layouts/selfisher/2', 'agent_models/four-layouts/selfisher/0'], 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
+    
+    how_long = 14
+    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    args.learner_type = LearnerType.SUPPORTER
+    args.reward_magnifier = 3.0
+    args.exp_dir = 'four-layouts/supporter-fishplay/024_14'
+    PwSABs(args, 
+          agent_folder_path='agent_models/four-layouts/supporter-fishplay/024', 
+          agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best',
+          sab_folder_paths=['agent_models/four-layouts/selfisher/4', 'agent_models/four-layouts/selfisher/2', 'agent_models/four-layouts/selfisher/0'], 
+          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          )
+
+    # how_long = 12
+    # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.learner_type = LearnerType.SUPPORTER
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'four-layouts/supporter-sabplay/1'
+    # PwSABs(args, 
+    #       agent_folder_path='agent_models/four-layouts/supporter-sabplay/0', 
+    #       agent_file_tag='pwsab_s68_h512_tr(SP_SPH)_ran/best',
+    #       sab_folder_paths=['agent_models/four-layouts/saboteur/0', 'agent_models/four-layouts/saboteur/1'], 
+    #       sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+    #       )
+
+    # args.learner_type = LearnerType.SABOTEUR
+    # args.reward_magnifier = 3.0
+    # args.exp_dir = 'small_kitchen_2/saboteur/0'
+    # SAB(args=args, 
+    #     folder_path='agent_models/four-layouts/supporter/0', 
+    #     tag='sp_s68_h512_tr(SP)_ran/best')
+
+    # SP(args=args,
+    #    pop_force_training=pop_force_training)
 
     # FCP(args=args,
     #     pop_force_training=pop_force_training,

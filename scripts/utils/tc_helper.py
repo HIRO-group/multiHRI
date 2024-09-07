@@ -209,9 +209,7 @@ def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_type
             elif train_type == TeamType.SELF_PLAY_LOW:
                 low_p_agent_tr = random.choice([a for a in train_collection[TeamType.LOW_FIRST][0]])
                 tr_teammates = [low_p_agent_tr] + self_teammates
-            elif train_type == TeamType.SELF_PLAY:
-                tr_teammates = [agent for _ in range(args.teammates_len)]
-            
+
             if tr_teammates:
                 teammates_collection[TeammatesCollection.TRAIN][layout][train_type] = [tr_teammates]
 
@@ -226,8 +224,7 @@ def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_type
             elif eval_type == TeamType.SELF_PLAY_LOW:
                 low_p_agent_ev = random.choice([a for a in eval_collection[TeamType.LOW_FIRST][0]])
                 e_teammates = [low_p_agent_ev] + self_teammates
-            elif eval_type == TeamType.SELF_PLAY:
-                e_teammates = [agent for _ in range(args.teammates_len)]
+
             if e_teammates:
                 teammates_collection[TeammatesCollection.EVAL][layout][eval_type] = [e_teammates]
     return teammates_collection
@@ -283,14 +280,12 @@ def print_tc_helper(teammates_collection):
 
 
 def generate_TC_for_Saboteur(args, 
-                            folder_path='agent_models/small_kitchen/supporters', 
-                            tag='sp_s68_h256_tr(SP)_ran/best',
-                            train_types = TeamType.HIGH_FIRST,
+                            agent,
+                            train_types = [TeamType.HIGH_FIRST],
                             eval_types_to_generate=None,
                             eval_types_to_read_from_file=None):
-    path = folder_path + '/' + tag
 
-    teammates = [load_agent(Path(path), args) for _ in range(args.teammates_len)] 
+    teammates = [agent for _ in range(args.teammates_len)] 
 
     eval_collection = {
             layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
@@ -302,7 +297,6 @@ def generate_TC_for_Saboteur(args,
         for layout_name in args.layout_names
     }
 
-
     for layout_name in args.layout_names:
         train_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
         eval_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
@@ -312,4 +306,68 @@ def generate_TC_for_Saboteur(args,
         TeammatesCollection.EVAL: eval_collection
     }
     
+    return teammates_collection
+
+def generate_TC_for_SaboteurPlay(args, 
+                                agent,
+                                saboteur, 
+                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH],
+                                eval_types_to_generate=None,
+                                eval_types_to_read_from_file=None):
+
+    self_teammates = [agent for _ in range(args.teammates_len-1)] 
+    eval_collection = {
+            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
+            for layout_name in args.layout_names
+    }
+
+    train_collection = {
+        layout_name: {ttype: [] for ttype in train_types}
+        for layout_name in args.layout_names
+    }
+
+    for layout_name in args.layout_names:
+        train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
+        eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
+        train_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates]
+        eval_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates]
+        
+
+    teammates_collection = {
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
+    }
+
+    return teammates_collection
+
+def generate_TC_for_SaboteursPlay(args, 
+                                agent,
+                                saboteurs, 
+                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH],
+                                eval_types_to_generate=None,
+                                eval_types_to_read_from_file=None):
+
+    self_teammates = [agent for _ in range(args.teammates_len-1)] 
+    eval_collection = {
+            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
+            for layout_name in args.layout_names
+    }
+
+    train_collection = {
+        layout_name: {ttype: [] for ttype in train_types}
+        for layout_name in args.layout_names
+    }
+
+    for layout_name in args.layout_names:
+        train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
+        eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
+        train_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates for saboteur in saboteurs]
+        eval_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates for saboteur in saboteurs]
+        
+
+    teammates_collection = {
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
+    }
+
     return teammates_collection

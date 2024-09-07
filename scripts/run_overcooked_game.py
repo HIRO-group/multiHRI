@@ -27,8 +27,10 @@ if __name__ == "__main__":
     args.layout = '3_chefs_small_kitchen'
     args.p_idx = 0
 
-    tm1_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
-    tm2_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
+    # tm1_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
+    # tm2_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
+    tm1_path = 'agent_models/fix-rew-bug/spWsp_s1010_h256_tr(SPH_SPM_SPL)_cur/best'
+    tm2_path = tm1_path
 
     tm1 = load_agent(Path(tm1_path), args)
     tm2 = load_agent(Path(tm2_path), args)
