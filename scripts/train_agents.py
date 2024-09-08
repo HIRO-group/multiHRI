@@ -83,25 +83,11 @@ def SP_w_SP_Types(args,
 
 
 def FCP(args, pop_force_training, fcp_force_training, parallel):
-    args.fcp_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
-    args.fcp_eval_types = {'generate' : [],
-                            'load': get_eval_types_to_load()}
+    args.fcp_train_types = [TeamType.ALL_MIX]
+    args.fcp_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
+                            'load': []}
 
-    fcp_curriculum = Curriculum(train_types = args.fcp_train_types,
-                                is_random=False,
-                                total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
-                                training_phases_durations_in_order={
-                                    TeamType.LOW_FIRST: 0.5,
-                                    TeamType.MEDIUM_FIRST: 0.125,
-                                    TeamType.HIGH_FIRST: 0.125,
-                                },
-                                rest_of_the_training_probabilities={
-                                    TeamType.LOW_FIRST: 0.4,
-                                    TeamType.MEDIUM_FIRST: 0.3, 
-                                    TeamType.HIGH_FIRST: 0.3,
-                                },
-                                probabilities_decay_over_time=0
-                            )
+    fcp_curriculum = Curriculum(train_types=args.fcp_train_types, is_random=True)
 
     _, _ = get_fcp_agent_w_tms_clction(args,
                                         pop_total_training_timesteps=args.pop_total_training_timesteps,
