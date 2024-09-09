@@ -82,7 +82,52 @@ def SP_w_SP_Types(args,
         )
 
 
-def FCP(args, pop_force_training, fcp_force_training, parallel):
+def FCP_mhri(args, pop_force_training, fcp_force_training, parallel):
+    '''
+    There are two types of FCP, one is the traditional FCP that uses random teammates (i.e. ALL_MIX), 
+    one is our own version that uses certain types HIGH_FIRST, MEDIUM_FIRST, etc. 
+    The reason we have our version is that when we used the traditional FCP it got ~0 reward so we 
+    decided to add different types for teammates_collection.
+    '''
+    args.fcp_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
+    args.fcp_eval_types = {'generate' : [],
+                            'load': get_eval_types_to_load()}
+
+    fcp_curriculum = Curriculum(train_types = args.fcp_train_types,
+                                is_random=False,
+                                total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
+                                training_phases_durations_in_order={
+                                    TeamType.LOW_FIRST: 0.5,
+                                    TeamType.MEDIUM_FIRST: 0.125,
+                                    TeamType.HIGH_FIRST: 0.125,
+                                },
+                                rest_of_the_training_probabilities={
+                                    TeamType.LOW_FIRST: 0.4,
+                                    TeamType.MEDIUM_FIRST: 0.3, 
+                                    TeamType.HIGH_FIRST: 0.3,
+                                },
+                                probabilities_decay_over_time=0
+                            )
+
+    _, _ = get_fcp_agent_w_tms_clction(args,
+                                        pop_total_training_timesteps=args.pop_total_training_timesteps,
+                                        fcp_total_training_timesteps=args.fcp_total_training_timesteps,
+                                        fcp_eval_types=args.fcp_eval_types,
+                                        pop_force_training=pop_force_training,
+                                        fcp_force_training=fcp_force_training,
+                                        fcp_curriculum=fcp_curriculum,
+                                        num_self_play_agents_to_train=args.num_sp_agents_to_train,
+                                        parallel=parallel
+                                        )    
+
+
+
+def FCP_traditional(args, pop_force_training, fcp_force_training, parallel):
+    '''
+    The ALL_MIX TeamType enables truly random teammates when training (like in the original FCP 
+    implementation)
+    '''
+
     args.fcp_train_types = [TeamType.ALL_MIX]
     args.fcp_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
                             'load': []}
@@ -181,10 +226,15 @@ if __name__ == '__main__':
     SP(args=args,
        pop_force_training=pop_force_training)
 
-    # FCP(args=args,
-    #     pop_force_training=pop_force_training,
-    #     fcp_force_training=fcp_force_training,
-    #     parallel=parallel)
+    # FCP_traditional(args=args,
+    #               pop_force_training=pop_force_training,
+    #               fcp_force_training=fcp_force_training,
+    #               parallel=parallel)
+
+    # FCP_mhri(args=args,
+    #       pop_force_training=pop_force_training,
+    #       fcp_force_training=fcp_force_training,
+    #       parallel=parallel)
 
     # SP_w_SP_Types(args=args,
     #               pop_force_training=pop_force_training,

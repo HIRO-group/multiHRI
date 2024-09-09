@@ -68,7 +68,7 @@ class TeamType:
             TeamType.SELF_PLAY_LOW: 10,
             TeamType.SELF_PLAY_MEDIUM: 11,
             TeamType.SELF_PLAY_HIGH: 12,
-            TeamType.ALL_MIX: 13    # TODO: Should this go here or after HLR?
+            TeamType.ALL_MIX: 13
         }
         return tt_map[teamtype]
 
