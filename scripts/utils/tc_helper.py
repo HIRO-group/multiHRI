@@ -2,6 +2,7 @@ from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType, TeammatesCollection
 from .common import load_agents
 
+from itertools import permutations
 import random
 from pathlib import Path
 
@@ -113,7 +114,7 @@ def get_teammates_per_type_and_layout(agents_perftag_score:list, team_types:list
     :param agents_perftag_score: List of tuples, [(agent, performance tag, score), (...), ...]
     :param team_types: List of TeamTypes to use for defining each team
     :param t_len: Number of agents in each team
-    :returns: Dictionary mapping Each team_type to a list of teammates (agents) and a list of all agents in all teams
+    :returns: Dictionary mapping each team_type to a list of teammates (agents) and a list of all agents in all teams
     '''
     all_teammates_per_type = {
         ttype: [] for ttype in TeamType.ALL_TYPES_BESIDES_SP
@@ -152,7 +153,6 @@ def get_teammates_per_type_and_layout(agents_perftag_score:list, team_types:list
                 all_teammates_per_type[ttype].append(first_half + second_half)
                 random.shuffle(all_teammates_per_type[ttype][0])
 
-
         elif ttype == TeamType.HIGH_LOW:
             if t_len >= 2:
                 first_half = random.sample(all_teammates_per_type[TeamType.LOW_FIRST][0], t_len//2)
@@ -174,6 +174,16 @@ def get_teammates_per_type_and_layout(agents_perftag_score:list, team_types:list
                 tms_prftg_scr = [high, low] + rand
                 all_teammates_per_type[ttype].append([tm[0] for tm in tms_prftg_scr])
 
+        elif ttype == TeamType.ALL_MIX:
+            # Generate list of all possible permutations from the sorted agent population tuples
+            # [(a1, a2, ...), (a1, a3, ...), ...]
+            # Note that a1 is a tuple of (agent, tag, score)
+            teammate_permutations = list(permutations(sorted_agents_perftag_score, t_len))
+            
+            for tp in teammate_permutations:
+                # Drop the tag and score components of each item and convert to list before adding it to the dictionary
+                # so we end up with [[a1, a2, ...], [a1, a3, ...], ...] where a1 is just the agent
+                all_teammates_per_type[ttype].append([tm[0] for tm in tp])
 
     # Only select the agents that are in the selected team_types
     selected_teammates_per_type = {
