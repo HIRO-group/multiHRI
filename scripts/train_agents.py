@@ -197,7 +197,7 @@ def set_input(args, quick_test=False, supporter_run=False):
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.FCPWSP_seed, args.FCPWSP_h_dim = 2602, 256
         args.num_sp_agents_to_train = 3
-        args.exp_dir = 'experiment-1'
+        args.exp_dir = 'experiment/1' # This is the directory where the experiment will be saved. Change it to your desired directory
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
@@ -208,7 +208,7 @@ def set_input(args, quick_test=False, supporter_run=False):
         args.sp_w_sp_total_training_timesteps = 3500
         args.fcp_w_sp_total_training_timesteps = 3500 * 2
         args.num_sp_agents_to_train = 3
-        args.exp_dir = 'test-1'
+        args.exp_dir = 'test/1'
 
 
 if __name__ == '__main__':

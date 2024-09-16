@@ -56,7 +56,7 @@ class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
     def __init__(self, args, layout_name=None, agent=None, teammates=None, p_idx=0, horizon=400,
-                 trial_id=None, user_id=None, stream=None, outlet=None, fps=5):
+                 trial_id=None, user_id=None, stream=None, outlet=None, fps=5, gif_name='gif'):
         self.x = None
         self._running = True
         self._display_surf = None
@@ -105,9 +105,9 @@ class OvercookedGUI:
         self.collect_trajectory = True
         self.trajectory = []
 
-        self.gif_name = f'HAHA_tuned_coord_receiver'
-        if not os.path.exists(f'screenshots/{self.gif_name}'):
-            os.makedirs(f'screenshots/{self.gif_name}')
+        self.gif_name = gif_name
+        if not os.path.exists(f'data/screenshots/{self.gif_name}'):
+            os.makedirs(f'data/screenshots/{self.gif_name}')
 
     def start_screen(self):
         pygame.init()
@@ -153,7 +153,7 @@ class OvercookedGUI:
         pygame.display.flip()
         self._running = True
 
-        pygame.image.save(self.window, f"screenshots/{self.gif_name}/-1.png")
+        pygame.image.save(self.window, f"data/screenshots/{self.gif_name}/-1.png")
         # exit(0)
 
         if USING_WINDOWS:
@@ -246,7 +246,7 @@ class OvercookedGUI:
         pygame.display.flip()
 
         # Save screenshot
-        pygame.image.save(self.window, f"screenshots/{self.gif_name}/{self.curr_tick}.png")
+        pygame.image.save(self.window, f"data/screenshots/{self.gif_name}/{self.curr_tick}.png")
 
     def on_cleanup(self):
         pygame.quit()
