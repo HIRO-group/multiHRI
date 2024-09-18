@@ -343,7 +343,7 @@ def generate_TC_for_SaboteurPlay(args,
 def generate_TC_for_SaboteursPlay(args, 
                                 agent,
                                 saboteurs, 
-                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH],
+                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR],
                                 eval_types_to_generate=None,
                                 eval_types_to_read_from_file=None):
 
@@ -361,8 +361,8 @@ def generate_TC_for_SaboteursPlay(args,
     for layout_name in args.layout_names:
         train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
         eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        train_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates for saboteur in saboteurs]
-        eval_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates for saboteur in saboteurs]
+        train_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[saboteur]+self_teammates for saboteur in saboteurs]
+        eval_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[saboteur]+self_teammates for saboteur in saboteurs]
         
 
     teammates_collection = {

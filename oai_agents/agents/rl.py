@@ -2,7 +2,7 @@ from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer,
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection
+from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, CheckedPoints
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
@@ -58,6 +58,7 @@ class RLAgentTrainer(OAITrainer):
                                                                                                    train_types = train_types,
                                                                                                    eval_types = eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
+        self.worst_score, self.worst_training_rew = float('inf'), float('inf')
 
     @classmethod
     def generate_randomly_initialized_SP_agent(cls,
@@ -281,6 +282,7 @@ class RLAgentTrainer(OAITrainer):
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
         best_path, best_tag = None, None
+        worst_path, worst_tag = None, None
         
         steps = 0
         curr_timesteps = 0
@@ -301,21 +303,35 @@ class RLAgentTrainer(OAITrainer):
             if self.should_evaluate(steps=steps):
                 mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])                
                 if mean_training_rew >= self.best_training_rew:
+                    best_train_path, best_train_tag = self.save_agents(tag=CheckedPoints.BEST_TRAIN_REWARD)
+                    print(f'New best training score of {mean_training_rew} reached, model saved to {best_train_path}/{best_train_tag}')
                     self.best_training_rew = mean_training_rew
-                mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
+                if mean_training_rew <= self.worst_training_rew:
+                    worst_train_path, worst_train_tag = self.save_agents(tag=CheckedPoints.WORST_TRAIN_REWARD)
+                    print(f'Now worst training score of {mean_training_rew} reached, model saved to {worst_train_path}/{worst_train_tag}')
+                    self.worst_training_rew = mean_training_rew
 
+                mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
+                
                 if self.fcp_ck_rate:
                     if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
                         path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:
-                    best_path, best_tag = self.save_agents(tag='best')
-                    print(f'New best score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
+                    best_path, best_tag = self.save_agents(tag=CheckedPoints.BEST_EVAL_REWARD)
+                    print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
+                if mean_reward <= self.worst_score:
+                    worst_path, worst_tag = self.save_agents(tag=CheckedPoints.WORST_EVAL_REWARD)
+                    print(f'New worst evaluation score of {mean_reward} reached, model saved to {worst_path}/{worst_tag}')
+                    self.worst_score = mean_reward
 
             steps += 1
-
+        self.save_agents(tag=CheckedPoints.FINAL_TRAINED_MODEL)
+        # TODO: get rid of the default tag, which uses args.exp_dir, which default as 'aamas25'
+        # Before getting rid of it, we still need the next line of code to 
+        # save the model for function to call it without meeting an issue.
         self.save_agents()
         self.agents = RLAgentTrainer.load_agents(self.args, self.name, best_path, best_tag)
         run.finish()

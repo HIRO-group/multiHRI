@@ -30,6 +30,28 @@ if __name__ == "__main__":
     cc = '3_chefs_counter_circuit'
     args.layout = sk
     args.p_idx = 0
+    s2fp = 'S2FP-asy-sk-cc/'
+    four_layouts = 'four-layouts/'
+    agent_models = 'agent_models/'
+    exp = s2fp
+
+    supporter = 'supporter/'
+    saboteur = 'saboteur/'
+    selfisher = 'selfisher/'
+    supporter_fishplay = 'supporter-fishplay/'
+
+    sup_name = 'sp_s68_h512_tr(SP)_ran/'
+    sab_name = 'sab_s68_h512_tr(H)_ran/'
+    fish_name = 'sab_s68_h512_tr(H)_ran/'
+    sabplay_name = 'pwsab_s68_h512_tr(SP_SPSAB)_ran/'
+    fishplay_name = 'pwsab_s68_h512_tr(SP_SPSAB)_ran/'
+
+    best = 'best'
+    worst = 'worst'
+    last = 'aamas25'
+
+    id = str(25) + '/'
+    s2fp_fishplay_path = agent_models + exp + supporter_fishplay + id + fishplay_name + best
 
     sup_path = 'agent_models/four-layouts/supporter/0/sp_s68_h512_tr(SP)_ran/best'
     sab_path = 'agent_models/four-layouts/saboteur/0/sab_s68_h512_tr(H)_ran/best'
@@ -45,15 +67,26 @@ if __name__ == "__main__":
     fishplay4_path = 'agent_models/four-layouts/supporter-fishplay/4/pwsab_s68_h512_tr(SP_SPH)_ran/best'
     fishplay024_14_path = 'agent_models/four-layouts/supporter-fishplay/024_14/pwsab_s68_h512_tr(SP_SPH)_ran/best'
 
+    asc_fish0_path = 'agent_models/asy-sk-cc/selfisher/0/sab_s68_h512_tr(H)_ran/aamas25'
+    asc_fish1_path = 'agent_models/asy-sk-cc/selfisher/1/sab_s68_h512_tr(H)_ran/aamas25'
+    asc_fish2_path = 'agent_models/asy-sk-cc/selfisher/1/sab_s68_h512_tr(H)_ran/aamas25'
+    asc_fishplay0_path = 'agent_models/asy-sk-cc/supporter-fishplay/0/pwsab_s68_h512_tr(SP_SPSAB)_ran/best'
+    asc_fishplay1_path = 'agent_models/asy-sk-cc/supporter-fishplay/1/pwsab_s68_h512_tr(SP_SPSAB)_ran/best'
+    asc_fishplay2_path = 'agent_models/asy-sk-cc/supporter-fishplay/2/pwsab_s68_h512_tr(SP_SPSAB)_ran/best'
+    asc_fishplay2_extend_path = 'agent_models/asy-sk-cc/supporter-fishplay/2_extend/pwsab_s68_h512_tr(SP_SPSAB)_ran/best'
+    asc_18_fishplay2_extend_path = 'agent_models/asy-sk-cc-18/supporter-fishplay/2_extend/pwsab_s68_h512_tr(SP_SPSAB)_ran/best'
+    asc_18_fishplay2_extend_path = 'agent_models/asy-sk-cc-18/supporter-fishplay/2_extend/pwsab_s68_h512_tr(SP_SPSAB)_ran/best'
+    asc_18_best_fishplay1_path = 'agent_models/asy-sk-cc-18-best/supporter-fishplay/1/pwsab_s68_h512_tr(SP_SPSAB)_ran/best'
     
+    agent = load_agent(Path(s2fp_fishplay_path), args)
+    tester = load_agent(Path(s2fp_fishplay_path), args)
+    tester = 'human'
     
-    orange = load_agent(Path(sup_path), args)
-    green = load_agent(Path(sup_path), args)
-    # blue = load_agent(Path(fishplay4_path), args)
+    orange = agent
+    green = agent
+    blue = tester
 
     teammates = [orange, green]
-
-    blue = 'human'
 
 
     dc = OvercookedGUI(args, agent=blue, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
