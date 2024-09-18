@@ -11,6 +11,7 @@ from sandbox.constants import LAYOUTS_IMAGES_DIR, QUESTIONNAIRES_DIR, AgentType,
 
 
 def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix, trained_on_number_of_layouts, learner_types):
+
     df = pd.read_csv(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/{questionnaire_file_name}.csv')
     df = df[df['Which layout? (write the layout name as it exactly appears on the repository)'].str.contains(layouts_prefix, na=False)]
     df = df[df['Reward'] != 'N/A']
@@ -24,7 +25,7 @@ def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix,
     df_exclude_agents_max_rewards = df[df['Agent Type'].isin(exclude_agent_types)].groupby('Which layout? (write the layout name as it exactly appears on the repository)')['Reward'].max()
     df_max_rewards = df[df['Agent Type'].isin(agent_types)].groupby('Which layout? (write the layout name as it exactly appears on the repository)')['Reward'].max()
     df_exclude_agents_max_rewards = df_exclude_agents_max_rewards.reindex(df_max_rewards.index, fill_value=float('-inf'))
-    df_max_rewards_filtered = df_max_rewards[df_max_rewards >= df_exclude_agents_max_rewards]
+    df_max_rewards_filtered = df_max_rewards[df_max_rewards == df_exclude_agents_max_rewards]
     best_agent_type_layouts = df_max_rewards_filtered.index
     df_best_agent_type = df[df['Which layout? (write the layout name as it exactly appears on the repository)'].isin(best_agent_type_layouts)]
 
@@ -85,7 +86,7 @@ def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix,
     # replace / with _ in agent types
     agent_types = '_'.join(agent_types).replace('/', '+')
 
-    plt.savefig(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/best_{agent_types}_using_LT_{learner_types}_in_{layouts_prefix}_layouts_trained_on_{trained_on_number_of_layouts}_layouts.png', dpi=100)
+    plt.savefig(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/similar_reward_using_LT_{learner_types}_in_{layouts_prefix}_layouts_trained_on_{trained_on_number_of_layouts}_layouts.png', dpi=100)
 
 
 if __name__ == "__main__":
@@ -93,7 +94,7 @@ if __name__ == "__main__":
     layouts_prefix = ''
 
     # agent_types = [AgentType.n_1_sp_new_cur, AgentType.n_1_sp_ran, AgentType.n_1_sp_w_cur]
-    agent_types = [AgentType.n_1_sp_w_cur]
+    agent_types = [AgentType.sp]
     learner_types = [LearnerType.originaler]
     trained_on_number_of_layouts = TrainedOnLayouts.multiple # TrainedOnLayouts.multiple, TrainedOnLayouts.one
 

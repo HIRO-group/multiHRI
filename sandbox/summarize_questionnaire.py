@@ -6,7 +6,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as mpimg
 import textwrap
 
-from sandbox.constants import LAYOUTS_IMAGES_DIR, QUESTIONNAIRES_DIR
+from sandbox.constants import LAYOUTS_IMAGES_DIR, QUESTIONNAIRES_DIR, AgentType, TrainedOnLayouts, LearnerType
 
 def summarize_in_a_figure(questionnaire_file_name, layouts_prefix, trained_on_number_of_layouts):
     df = pd.read_csv(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/{questionnaire_file_name}.csv')
@@ -75,7 +75,7 @@ def summarize_in_a_figure(questionnaire_file_name, layouts_prefix, trained_on_nu
 
 if __name__ == "__main__":
     questionnaire_file_name = '2'
-    layouts_prefix = '5_chefs'
+    layouts_prefix = ''
     trained_on_number_of_layouts = '' # Multiple or One
 
     summarize_in_a_figure(questionnaire_file_name=questionnaire_file_name,

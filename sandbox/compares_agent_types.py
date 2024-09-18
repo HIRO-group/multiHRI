@@ -1,42 +1,42 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as mpimg
+import os
 import textwrap
-
 
 from sandbox.constants import LAYOUTS_IMAGES_DIR, QUESTIONNAIRES_DIR, AgentType, TrainedOnLayouts, LearnerType
 
-
-def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix, trained_on_number_of_layouts, learner_types):
+def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, layouts_prefix, trained_on_number_of_layouts, learner_types):
     df = pd.read_csv(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/{questionnaire_file_name}.csv')
     df = df[df['Which layout? (write the layout name as it exactly appears on the repository)'].str.contains(layouts_prefix, na=False)]
     df = df[df['Reward'] != 'N/A']
     df = df[df['Trained on ... Layout(s)'].str.contains(trained_on_number_of_layouts, na=False)]
     df['Reward'] = pd.to_numeric(df['Reward'], errors='coerce')
     df = df.dropna(subset=['Reward'])
-    df = df[df['LearnerType'].isin(learner_types)]
 
-    # show unique maxs w.r.t to agent types
-    exclude_agent_types = [agent for agent in AgentType.ALL if agent not in agent_types]
-    df_exclude_agents_max_rewards = df[df['Agent Type'].isin(exclude_agent_types)].groupby('Which layout? (write the layout name as it exactly appears on the repository)')['Reward'].max()
-    df_max_rewards = df[df['Agent Type'].isin(agent_types)].groupby('Which layout? (write the layout name as it exactly appears on the repository)')['Reward'].max()
-    df_exclude_agents_max_rewards = df_exclude_agents_max_rewards.reindex(df_max_rewards.index, fill_value=float('-inf'))
-    df_max_rewards_filtered = df_max_rewards[df_max_rewards >= df_exclude_agents_max_rewards]
-    best_agent_type_layouts = df_max_rewards_filtered.index
-    df_best_agent_type = df[df['Which layout? (write the layout name as it exactly appears on the repository)'].isin(best_agent_type_layouts)]
+    # Filter data for agent_A and agent_B
+    df_A = df[(df['Agent Type'] == agent_type_A) & (df['LearnerType'].isin(learner_types))]
+    df_B = df[(df['Agent Type'] == agent_type_B) & (df['LearnerType'].isin(learner_types))]
 
-    unique_layouts = best_agent_type_layouts.unique()
+    # Merge dataframes and calculate reward difference
+    merged_df = pd.merge(df_A, df_B, on='Which layout? (write the layout name as it exactly appears on the repository)', suffixes=('_A', '_B'))
+    merged_df['Reward_Difference'] = merged_df['Reward_A'] - merged_df['Reward_B']
 
-    fig, axes = plt.subplots(nrows=len(unique_layouts), ncols=2, figsize=(27, 5 * len(unique_layouts)))
+    # Filter layouts where agent_A has higher reward
+    layouts_to_plot = merged_df[merged_df['Reward_Difference'] > 0]['Which layout? (write the layout name as it exactly appears on the repository)'].unique()
 
-    if len(unique_layouts) == 1:
+    if len(layouts_to_plot) == 0:
+        print("No layouts found where agent_A has a higher reward than agent_B.")
+        return
+
+    fig, axes = plt.subplots(nrows=len(layouts_to_plot), ncols=2, figsize=(27, 5 * len(layouts_to_plot)))
+
+    if len(layouts_to_plot) == 1:
         axes = [axes]
 
-    for i, layout in enumerate(unique_layouts):
-        layout_df = df_best_agent_type[df_best_agent_type['Which layout? (write the layout name as it exactly appears on the repository)'] == layout]
+    for i, layout in enumerate(layouts_to_plot):
+        layout_df = df[df['Which layout? (write the layout name as it exactly appears on the repository)'] == layout]
         layout_df = layout_df.sort_values(by='Reward', ascending=False)
         layout_df['Label'] = layout_df.apply(
             lambda row: f"{row['Agent Type']}\n{row['LearnerType']}\n Trained on {row['Trained on ... Layout(s)']} layout(s)",
@@ -69,7 +69,7 @@ def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix,
                 axes[i, 0].text(p.get_x() + p.get_width() / 2., y_pos, 
                                 line, ha='center', va='center', 
                                 fontsize=10, color='white')
-        
+
         layout_image_path = os.path.join(LAYOUTS_IMAGES_DIR, f"{layout}/-1.png")
         if os.path.exists(layout_image_path):
             img = mpimg.imread(layout_image_path)
@@ -78,28 +78,27 @@ def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix,
         else:
             axes[i, 1].text(0.5, 0.5, "Image not found", ha='center', va='center', fontsize=12)
             axes[i, 1].axis('off')
-    plt.tight_layout()
-    
+
     if layouts_prefix == '': layouts_prefix = 'all'
     if trained_on_number_of_layouts == '': trained_on_number_of_layouts = 'OneOrMultiple'
-    # replace / with _ in agent types
-    agent_types = '_'.join(agent_types).replace('/', '+')
 
-    plt.savefig(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/best_{agent_types}_using_LT_{learner_types}_in_{layouts_prefix}_layouts_trained_on_{trained_on_number_of_layouts}_layouts.png', dpi=100)
-
+    plt.tight_layout()
+    plt.savefig(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/compare_{agent_type_A}_vs_{agent_type_B}_comparison_A_higher.png', dpi=100)
 
 if __name__ == "__main__":
     questionnaire_file_name = '2'
     layouts_prefix = ''
 
-    # agent_types = [AgentType.n_1_sp_new_cur, AgentType.n_1_sp_ran, AgentType.n_1_sp_w_cur]
-    agent_types = [AgentType.n_1_sp_w_cur]
+    # Compare agent_type_A and agent_type_B
+    agent_type_A = AgentType.n_1_sp_w_cur
+    agent_type_B = AgentType.n_1_sp_ran
     learner_types = [LearnerType.originaler]
-    trained_on_number_of_layouts = TrainedOnLayouts.multiple # TrainedOnLayouts.multiple, TrainedOnLayouts.one
+    trained_on_number_of_layouts = TrainedOnLayouts.multiple 
 
-    plot_best_type_layouts(agent_types=agent_types,
-                           questionnaire_file_name=questionnaire_file_name,
-                           layouts_prefix=layouts_prefix,
-                           trained_on_number_of_layouts=trained_on_number_of_layouts,\
-                           learner_types=learner_types
-                           )
+    plot_agent_comparison(agent_type_A=agent_type_A,
+                          agent_type_B=agent_type_B,
+                          questionnaire_file_name=questionnaire_file_name,
+                          layouts_prefix=layouts_prefix,
+                          trained_on_number_of_layouts=trained_on_number_of_layouts,
+                          learner_types=learner_types
+                          )
