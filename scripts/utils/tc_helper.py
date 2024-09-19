@@ -278,8 +278,7 @@ def print_tc_helper(teammates_collection):
                 for agent in teammates:
                     print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
 
-
-def generate_TC_for_Saboteur(args, 
+def generate_TC_for_Adversary(args, 
                             agent,
                             train_types = [TeamType.HIGH_FIRST],
                             eval_types_to_generate=None,
@@ -308,41 +307,9 @@ def generate_TC_for_Saboteur(args,
     
     return teammates_collection
 
-def generate_TC_for_SaboteurPlay(args, 
+def generate_TC_for_AdversarysPlay(args, 
                                 agent,
-                                saboteur, 
-                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH],
-                                eval_types_to_generate=None,
-                                eval_types_to_read_from_file=None):
-
-    self_teammates = [agent for _ in range(args.teammates_len-1)] 
-    eval_collection = {
-            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
-            for layout_name in args.layout_names
-    }
-
-    train_collection = {
-        layout_name: {ttype: [] for ttype in train_types}
-        for layout_name in args.layout_names
-    }
-
-    for layout_name in args.layout_names:
-        train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        train_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates]
-        eval_collection[layout_name][TeamType.SELF_PLAY_HIGH] = [[saboteur]+self_teammates]
-        
-
-    teammates_collection = {
-        TeammatesCollection.TRAIN: train_collection,
-        TeammatesCollection.EVAL: eval_collection
-    }
-
-    return teammates_collection
-
-def generate_TC_for_SaboteursPlay(args, 
-                                agent,
-                                saboteurs, 
+                                adversarys, 
                                 train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR],
                                 eval_types_to_generate=None,
                                 eval_types_to_read_from_file=None):
@@ -361,8 +328,8 @@ def generate_TC_for_SaboteursPlay(args,
     for layout_name in args.layout_names:
         train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
         eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        train_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[saboteur]+self_teammates for saboteur in saboteurs]
-        eval_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[saboteur]+self_teammates for saboteur in saboteurs]
+        train_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[adversary]+self_teammates for adversary in adversarys]
+        eval_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[adversary]+self_teammates for adversary in adversarys]
         
 
     teammates_collection = {

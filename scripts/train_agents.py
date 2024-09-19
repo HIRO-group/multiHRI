@@ -9,9 +9,9 @@ from utils import (get_selfplay_agent_w_tms_collection,
                 get_eval_types_to_load, 
                 get_fcp_trained_w_selfplay_types, 
                 get_selfplay_agent_trained_w_selfplay_types,
-                get_saboteur,
-                get_agent_play_w_saboteur,
-                get_agent_play_w_saboteurs,
+                get_adversary,
+                get_agent_play_w_adversary,
+                get_agent_play_w_adversarys,
                 Curriculum
                 )
 
@@ -19,17 +19,18 @@ def SingleAdversaryPlay(args,
                         exp_tag = 'S2FP-1010-worst-asy-sk-cc', 
                         main_agent_type = LearnerType.SUPPORTER, 
                         adversary_type = LearnerType.SELFISHER, 
-                        checked_adversary=CheckedPoints.FINAL_TRAINED_MODEL, 
+                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
                         how_long_init = 4.0,
                         how_long_for_agent = 1.0,
                         how_long_for_adv = 1.0,
                         reward_magnifier = 3.0,
                         pop_force_training = True):
     root = exp_tag
-    how_long_init = 4
 
     # how_long = how_long_init
     # set_input(args=args, quick_test=quick_test, how_long=how_long)
+    # args.SP_seed = args.ADV_seed
+    # args.h_dim = args.h_dim
     # args.learner_type = main_agent_type
     # args.reward_magnifier = reward_magnifier
     # args.exp_dir = root + '/' + main_agent_type + '/0'
@@ -49,12 +50,11 @@ def SingleAdversaryPlay(args,
     args.learner_type = LearnerType.SUPPORTER
     args.reward_magnifier = reward_magnifier
     args.exp_dir = root + '/' + main_agent_type + '-' + adversary_type + 'play' + '/0'
-    PwADVs(args=args, 
-          agent_folder_path='agent_models/' + root + '/' + main_agent_type + '/0', 
-          agent_file_tag='sp_s68_h512_tr(SP)_ran/' + CheckedPoints.BEST_EVAL_REWARD,
-          adv_folder_paths=['agent_models/' + root + '/' + adversary_type + '/0'], 
-          adv_file_tag='adv_s68_h512_tr(H)_ran/' + checked_adversary
-          )
+    PwADVs( args=args, 
+            agent_folder_path='agent_models/' + root + '/' + main_agent_type + '/0', 
+            agent_file_tag='sp_s68_h512_tr(SP)_ran/' + CheckedPoints.BEST_EVAL_REWARD,
+            adv_folder_paths=['agent_models/' + root + '/' + adversary_type + '/0'], 
+            adv_file_tag='adv_s68_h512_tr(H)_ran/' + checked_adversary)
     ###################################################################
     for round in range(1,401):
         how_long = how_long_for_adv
@@ -175,18 +175,18 @@ def PwADVs(args,
           adv_folder_paths=['agent_models/four-layouts/saboteur/0', 'agent_models/four-layouts/saboteur/1'], 
           adv_file_tag='adv_s68_h512_tr(H)_ran/best'
           ):
-    args.sp_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR]
-    args.sp_eval_types = {
+    train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR]
+    eval_types = {
         'generate': [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR],
         'load': []
     }
     curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
     agent_path = agent_folder_path + '/' + agent_file_tag
     adv_paths = [adv_folder_path + '/' + adv_file_tag for adv_folder_path in adv_folder_paths]
-    get_agent_play_w_saboteurs(
+    get_agent_play_w_adversarys(
         args=args, 
-        train_types=args.sp_train_types,
-        eval_types=args.sp_eval_types,
+        train_types=train_types,
+        eval_types=eval_types,
         total_training_timesteps=args.pop_total_training_timesteps,
         curriculum=curriculum, 
         agent_path=agent_path,
@@ -194,16 +194,16 @@ def PwADVs(args,
     
 
 def ADV(args, agent_folder_path='agent_models/four-layouts/supporter/0', agent_file_tag='sp_s68_h512_tr(SP)_ran/best'):
-    args.sp_train_types = [TeamType.HIGH_FIRST]
-    args.sp_eval_types = {
+    train_types = [TeamType.HIGH_FIRST]
+    eval_types = {
         'generate': [TeamType.HIGH_FIRST],
         'load': []
     }
     curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
     agent_path = agent_folder_path + '/' + agent_file_tag
-    get_saboteur(   args=args, 
-                    train_types=args.sp_train_types,
-                    eval_types=args.sp_eval_types,
+    get_adversary(  args=args, 
+                    train_types=train_types,
+                    eval_types=eval_types,
                     total_training_timesteps=args.pop_total_training_timesteps,
                     curriculum=curriculum, 
                     agent_path=agent_path)
@@ -359,6 +359,7 @@ def set_input(args, quick_test=False, how_long=6):
         args.SPWSP_seed, args.SPWSP_h_dim = 1010, 512
         args.FCP_seed, args.FCP_h_dim = 2020, 512
         args.FCPWSP_seed, args.FCPWSP_h_dim = 2602, 512
+        args.ADV_seed, args.ADV_h_dim = 68, 512
         args.num_sp_agents_to_train = 3
         args.exp_dir = 'experiment-1'
     else: # Used for doing quick tests
