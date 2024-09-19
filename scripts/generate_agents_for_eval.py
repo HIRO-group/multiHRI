@@ -26,8 +26,8 @@ def set_input(args, quick_test=False):
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
     args.exp_dir = f'eval/{args.teammates_len+1}_chefs'
-    
-    if not quick_test: 
+
+    if not quick_test:
         args.n_envs = 50
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6
@@ -48,6 +48,7 @@ if __name__ == "__main__":
     args = get_arguments()
     quick_test = False
     parallel = True
+    max_concurrent_jobs = None
     pop_force_training = True
     fcp_force_training = True
     set_input(args=args, quick_test=quick_test)
@@ -73,10 +74,11 @@ if __name__ == "__main__":
                                               total_training_timesteps = args.pop_total_training_timesteps,
                                               force_training=pop_force_training,
                                               parallel=parallel,
+                                              max_concurrent_jobs=max_concurrent_jobs
                                               )
 
     teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]
-    
+
     # TODO: run this in parallel
     for fcp_train_types in all_FCP_train_types:
         vb = '_'.join(fcp_train_types)

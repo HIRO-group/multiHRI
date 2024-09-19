@@ -1,3 +1,4 @@
+from typing import Optional
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.base_agent import OAIAgent
 from oai_agents.common.tags import TeamType
@@ -9,13 +10,13 @@ from .curriculum import Curriculum
 
 
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, eval_types, curriculum, tag=None, force_training=False):
-    name = generate_name(args, 
+    name = generate_name(args,
                          prefix='sp',
                          seed=args.SP_seed,
-                         h_dim=args.SP_h_dim, 
+                         h_dim=args.SP_h_dim,
                          train_types=curriculum.train_types,
                          has_curriculum= not curriculum.is_random)
-    
+
     agents = load_agents(args, name=name, tag=tag, force_training=force_training)
     tc = generate_TC_for_SP(args=args,
                             train_types=curriculum.train_types,
@@ -52,11 +53,12 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                                 pop_force_training:bool=True,
                                                 sp_w_sp_force_training:bool=True,
                                                 num_self_play_agents_to_train=2,
-                                                parallel:bool=True) -> tuple:
+                                                parallel:bool=True,
+                                                max_concurrent_jobs:Optional[int]=None) -> tuple:
     '''
     Train a SP agent using SP train types. This function will first train a SP agent and then let that
     agent train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
-    
+
     :param args: Parsed arguments list
     :param pop_total_training_timesteps: Total number of timesteps to train the initial population of agents
     :param sp_w_sp_eval_types: List of TeamTypes to be used for evaluating SP agents against
@@ -72,7 +74,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
 
     # Generate a teammates collection (the same kind used for FCP training) by training some SP agents,
     # saving them periodically (to represent various skill levels), and then oragnizing them into teams of
-    # different TeamTypes for training and evaluation, use all TeamTypes so we can generate whatever teammates_collection 
+    # different TeamTypes for training and evaluation, use all TeamTypes so we can generate whatever teammates_collection
     # needed for the final SP training
     population_of_all_train_types = get_fcp_population(args=args,
                                             ck_rate = pop_total_training_timesteps // 5,
@@ -82,17 +84,18 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
                                             eval_types_to_load_from_file=[],
                                             num_self_play_agents_to_train=num_self_play_agents_to_train,
                                             force_training=pop_force_training,
-                                            parallel=parallel)
+                                            parallel=parallel,
+                                            max_concurrent_jobs=max_concurrent_jobs)
 
-    
-    name = generate_name(args, 
+
+    name = generate_name(args,
                          prefix='spWsp',
                          seed=args.SPWSP_seed,
-                         h_dim=args.SPWSP_h_dim, 
+                         h_dim=args.SPWSP_h_dim,
                          train_types=curriculum.train_types,
                          has_curriculum = not curriculum.is_random)
 
-    
+
     agents = load_agents(args, name=name, tag=tag, force_training=sp_w_sp_force_training)
     if agents:
         return agents[0], population_of_all_train_types
@@ -121,13 +124,17 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     return sp_w_sp_types_trainer.get_agents()[0], teammates_collection_for_sp_w_sp_types_training
 
 
-def get_fcp_agent_w_tms_clction(args, 
+def get_fcp_agent_w_tms_clction(args,
                                 pop_total_training_timesteps,
                                 fcp_total_training_timesteps,
                                 fcp_eval_types,
                                 fcp_curriculum,
-                                pop_force_training, fcp_force_training,
-                                num_self_play_agents_to_train=2, tag=None, parallel=True):
+                                pop_force_training,
+                                fcp_force_training,
+                                num_self_play_agents_to_train: int = 2,
+                                tag=None,
+                                parallel: bool = True,
+                                max_concurrent_jobs: Optional[int] = None):
     teammates_collection = get_fcp_population(args,
                                               ck_rate = pop_total_training_timesteps // 5,
                                               train_types = fcp_curriculum.train_types,
@@ -136,14 +143,15 @@ def get_fcp_agent_w_tms_clction(args,
                                               num_self_play_agents_to_train= num_self_play_agents_to_train,
                                               total_training_timesteps = pop_total_training_timesteps,
                                               force_training=pop_force_training,
-                                              parallel=parallel)
-    name = generate_name(args, 
+                                              parallel=parallel,
+                                              max_concurrent_jobs=max_concurrent_jobs)
+    name = generate_name(args,
                          prefix='fcp',
                          seed=args.FCP_seed,
-                         h_dim=args.FCP_h_dim, 
+                         h_dim=args.FCP_h_dim,
                          train_types=fcp_curriculum.train_types,
                          has_curriculum = not fcp_curriculum.is_random)
-    
+
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_force_training)
     if agents:
         return agents[0], teammates_collection
@@ -176,15 +184,16 @@ def get_fcp_trained_w_selfplay_types(args,
                                     fcp_w_sp_eval_types,
                                     fcp_curriculum,
                                     fcp_w_sp_curriculum,
-                                    num_self_play_agents_to_train=2,
-                                    parallel=True,
+                                    num_self_play_agents_to_train: int = 2,
+                                    parallel: bool = True,
+                                    max_concurrent_jobs: Optional[int] = None,
                                     tag=None):
 
     # To use SP-types, the curriculum needs to contain only SP types
     fcp_w_sp_curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
                                                   unallowed_types= TeamType.ALL_TYPES_BESIDES_SP)
 
-    fcp_agent, fcp_teammates_collection = get_fcp_agent_w_tms_clction(args, 
+    fcp_agent, fcp_teammates_collection = get_fcp_agent_w_tms_clction(args,
                                                                   pop_total_training_timesteps=pop_total_training_timesteps,
                                                                   fcp_total_training_timesteps=fcp_total_training_timesteps,
                                                                   fcp_train_types=fcp_curriculum.train_types,
@@ -193,19 +202,19 @@ def get_fcp_trained_w_selfplay_types(args,
                                                                   fcp_force_training=fcp_force_training,
                                                                   num_self_play_agents_to_train=num_self_play_agents_to_train,
                                                                   fcp_curriculum=fcp_curriculum,
-                                                                  parallel=parallel)
+                                                                  parallel=parallel,
+                                                                  max_concurrent_jobs=max_concurrent_jobs)
 
     teammates_collection = generate_TC_for_FCP_w_SP_types(args=args,
                                                         teammates_collection=fcp_teammates_collection,
                                                         agent=fcp_agent,
                                                         train_types=fcp_w_sp_curriculum.train_types,
-                                                        eval_types=fcp_w_sp_eval_types['generate'],
-                                                        )
-    
-    name = generate_name(args, 
+                                                        eval_types=fcp_w_sp_eval_types['generate'])
+
+    name = generate_name(args,
                          prefix='fcpWsp',
                          seed=args.FCPWSP_seed,
-                         h_dim=args.FCPWSP_h_dim, 
+                         h_dim=args.FCPWSP_h_dim,
                          train_types=fcp_w_sp_curriculum.train_types,
                          has_curriculum = not fcp_curriculum.is_random)
 
@@ -229,5 +238,3 @@ def get_fcp_trained_w_selfplay_types(args,
 
     fcp_trainer.train_agents(total_train_timesteps=fcp_w_sp_total_training_timesteps)
     return fcp_trainer.get_agents()[0], teammates_collection
-
-

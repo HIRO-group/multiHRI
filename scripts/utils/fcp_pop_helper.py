@@ -1,21 +1,23 @@
+from typing import Optional
 from .tc_helper import generate_TC_for_FCP_w_NO_SP_types, get_teammates_per_type_and_layout, print_teammates_collection
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, TeamType
 from .curriculum import Curriculum
 
-import multiprocessing
+import concurrent
 import dill
 
 def get_fcp_population(args,
                        ck_rate,
                        total_training_timesteps,
-                       train_types, 
+                       train_types,
                        eval_types_to_generate,
                        eval_types_to_load_from_file=[],
-                       num_self_play_agents_to_train=2,
-                       parallel=True,
-                       force_training=False,
+                       num_self_play_agents_to_train: int=2,
+                       parallel: bool=True,
+                       max_concurrent_jobs: Optional[int]=None,
+                       force_training: bool=False,
                        ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
@@ -42,8 +44,10 @@ def get_fcp_population(args,
         ]
 
         if parallel:
-            with multiprocessing.Pool() as pool:
-                dilled_results = pool.starmap(train_agent_with_checkpoints, inputs)
+            with concurrent.futures.ProcessPoolExecutor(max_workers=max_concurrent_jobs) as executor:
+                arg_lists = list(zip(*inputs))
+                dilled_results = list(executor.map(train_agent_with_checkpoints, *arg_lists))
+
             for dilled_res in dilled_results:
                 checkpoints_list = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
@@ -94,7 +98,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
-    
+
     rlat.train_agents(total_train_timesteps=total_training_timesteps)
     checkpoints_list = rlat.ck_list
 
@@ -131,13 +135,13 @@ def generate_hdim_and_seed(num_self_play_agents_to_train):
     good_seeds = [68, 14, 13, 0]
     good_hdims = [256, 64, 256, 64]
 
-    # Not tested: 
+    # Not tested:
     other_seeds_copied_from_HAHA = [2907, 2907, 105, 105, 8, 32, 128, 512]
     other_hdims_copied_from_HAHA = [64, 256, 64, 256, 16, 64, 256, 1024]
 
     all_seeds = good_seeds + other_seeds_copied_from_HAHA
     all_hdims = good_hdims + other_hdims_copied_from_HAHA
-    
+
     selected_seeds = all_seeds[:num_self_play_agents_to_train]
     selected_hdims = all_hdims[:num_self_play_agents_to_train]
     return selected_seeds, selected_hdims
