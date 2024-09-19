@@ -15,63 +15,67 @@ from utils import (get_selfplay_agent_w_tms_collection,
                 Curriculum
                 )
 
-def SingleSelfisherPlay(args, pop_force_training, where_to_save='S2FP-1010-worst-asy-sk-cc', checked_selfisher=CheckedPoints.FINAL_TRAINED_MODEL):
-    # TODO: 
-    # 3. allow user to choose the type of primary agents
-    # 4. allow user to choose the type of saboteurs 
-    root = where_to_save
+def SingleAdversaryPlay(args, 
+                        exp_tag = 'S2FP-1010-worst-asy-sk-cc', 
+                        main_agent_type = LearnerType.SUPPORTER, 
+                        adversary_type = LearnerType.SELFISHER, 
+                        checked_adversary=CheckedPoints.FINAL_TRAINED_MODEL, 
+                        how_long_init = 4.0,
+                        how_long_for_agent = 1.0,
+                        how_long_for_adv = 1.0,
+                        reward_magnifier = 3.0,
+                        pop_force_training = True):
+    root = exp_tag
     how_long_init = 4
-    how_long_for_agent = 1.0
-    how_long_for_sab = 1.0
 
-    # how_long = 4
+    # how_long = how_long_init
     # set_input(args=args, quick_test=quick_test, how_long=how_long)
-    # args.learner_type = LearnerType.SUPPORTER
-    # args.reward_magnifier = 3.0
-    # args.exp_dir = root + '/supporter/0'
+    # args.learner_type = main_agent_type
+    # args.reward_magnifier = reward_magnifier
+    # args.exp_dir = root + '/' + main_agent_type + '/0'
     # SP(args=args, pop_force_training=pop_force_training)
 
-    how_long = how_long_for_sab
+    how_long = how_long_for_adv
     set_input(args=args, quick_test=quick_test, how_long=how_long)
-    args.learner_type = LearnerType.SELFISHER
-    args.reward_magnifier = 3.0
-    args.exp_dir = root + '/selfisher/0'
-    SAB(args=args, 
-        agent_folder_path='agent_models/' + root + '/supporter/0', 
+    args.learner_type = adversary_type
+    args.reward_magnifier = reward_magnifier
+    args.exp_dir = root + '/' + adversary_type + '/0'
+    ADV(args=args, 
+        agent_folder_path='agent_models/' + root + '/' + main_agent_type + '/0', 
         agent_file_tag='sp_s68_h512_tr(SP)_ran/' + CheckedPoints.BEST_EVAL_REWARD)
 
     how_long = how_long_init + how_long_for_agent
     set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.learner_type = LearnerType.SUPPORTER
-    args.reward_magnifier = 3.0
-    args.exp_dir = root + '/supporter-fishplay/0'
-    PwSABs(args=args, 
-          agent_folder_path='agent_models/' + root + '/supporter/0', 
+    args.reward_magnifier = reward_magnifier
+    args.exp_dir = root + '/' + main_agent_type + '-' + adversary_type + 'play' + '/0'
+    PwADVs(args=args, 
+          agent_folder_path='agent_models/' + root + '/' + main_agent_type + '/0', 
           agent_file_tag='sp_s68_h512_tr(SP)_ran/' + CheckedPoints.BEST_EVAL_REWARD,
-          sab_folder_paths=['agent_models/' + root + '/selfisher/0'], 
-          sab_file_tag='sab_s68_h512_tr(H)_ran/' + checked_selfisher
+          adv_folder_paths=['agent_models/' + root + '/' + adversary_type + '/0'], 
+          adv_file_tag='adv_s68_h512_tr(H)_ran/' + checked_adversary
           )
     ###################################################################
     for round in range(1,401):
-        how_long = how_long_for_sab
+        how_long = how_long_for_adv
         set_input(args=args, quick_test=quick_test, how_long=how_long)
         args.learner_type = LearnerType.SELFISHER
-        args.reward_magnifier = 3.0
-        args.exp_dir = root + '/selfisher/'+ str(round)
-        SAB(args=args,
-            agent_folder_path='agent_models/' + root + '/supporter-fishplay/'+ str(round-1), 
-            agent_file_tag='pwsab_s68_h512_tr(SP_SPSAB)_ran/' + CheckedPoints.FINAL_TRAINED_MODEL)
+        args.reward_magnifier = reward_magnifier
+        args.exp_dir = root + '/' + adversary_type + '/' + str(round)
+        ADV(args=args,
+            agent_folder_path='agent_models/' + root + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round-1), 
+            agent_file_tag='pwadv_s68_h512_tr(SP_SPADV)_ran/' + CheckedPoints.FINAL_TRAINED_MODEL)
         
         how_long = how_long_init + how_long_for_agent*(round+1)
         set_input(args=args, quick_test=quick_test, how_long=how_long)
         args.learner_type = LearnerType.SUPPORTER
-        args.reward_magnifier = 3.0
-        args.exp_dir = root + '/supporter-fishplay/'+ str(round)
-        PwSABs( args=args, 
-                agent_folder_path='agent_models/' + root + '/supporter-fishplay/'+ str(round-1), 
-                agent_file_tag='pwsab_s68_h512_tr(SP_SPSAB)_ran/' + CheckedPoints.FINAL_TRAINED_MODEL,
-                sab_folder_paths=['agent_models/' + root + '/selfisher/'+ str(round)], 
-                sab_file_tag='sab_s68_h512_tr(H)_ran/' + checked_selfisher)
+        args.reward_magnifier = reward_magnifier
+        args.exp_dir = root + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round)
+        PwADVs( args=args, 
+                agent_folder_path='agent_models/' + root +'/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round-1), 
+                agent_file_tag='pwadv_s68_h512_tr(SP_SPADV)_ran/' + CheckedPoints.FINAL_TRAINED_MODEL,
+                adv_folder_paths=['agent_models/' + root + '/' + adversary_type + '/' + str(round)], 
+                adv_file_tag='adv_s68_h512_tr(H)_ran/' + checked_adversary)
 
 def DiverseSelfisherPlay(args, pop_force_training, file_folder='asy-sk-cc-18-best'):
     # TODO: 
@@ -93,7 +97,7 @@ def DiverseSelfisherPlay(args, pop_force_training, file_folder='asy-sk-cc-18-bes
     args.learner_type = LearnerType.SELFISHER
     args.reward_magnifier = 3.0
     args.exp_dir = root + '/selfisher/0'
-    SAB(args=args, 
+    ADV(args=args, 
         agent_folder_path='agent_models/' + root + '/supporter/0', 
         agent_file_tag='sp_s68_h512_tr(SP)_ran/best')
 
@@ -102,11 +106,11 @@ def DiverseSelfisherPlay(args, pop_force_training, file_folder='asy-sk-cc-18-bes
     args.learner_type = LearnerType.SUPPORTER
     args.reward_magnifier = 3.0
     args.exp_dir = root + '/supporter-fishplay/0'
-    PwSABs(args=args, 
+    PwADVs(args=args, 
           agent_folder_path='agent_models/' + root + '/supporter/0', 
           agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
-          sab_folder_paths=['agent_models/' + root + '/selfisher/0'], 
-          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          adv_folder_paths=['agent_models/' + root + '/selfisher/0'], 
+          adv_file_tag='adv_s68_h512_tr(H)_ran/best'
           )
     ###################################################################
     how_long = 1
@@ -114,20 +118,20 @@ def DiverseSelfisherPlay(args, pop_force_training, file_folder='asy-sk-cc-18-bes
     args.learner_type = LearnerType.SELFISHER
     args.reward_magnifier = 3.0
     args.exp_dir = root + '/selfisher/1'
-    SAB(args=args,
+    ADV(args=args,
         agent_folder_path='agent_models/' + root + '/supporter-fishplay/0', 
-        agent_file_tag='pwsab_s68_h512_tr(SP_SPSAB)_ran/best')
+        agent_file_tag='pwadv_s68_h512_tr(SP_SPADV)_ran/best')
     
     how_long = 8
     set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.learner_type = LearnerType.SUPPORTER
     args.reward_magnifier = 3.0
     args.exp_dir = root + '/supporter-fishplay/1'
-    PwSABs(args=args, 
+    PwADVs(args=args, 
           agent_folder_path='agent_models/' + root + '/supporter/0', 
           agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
-          sab_folder_paths=['agent_models/' + root + '/selfisher/1', 'agent_models/' + root + '/selfisher/0'], 
-          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          adv_folder_paths=['agent_models/' + root + '/selfisher/1', 'agent_models/' + root + '/selfisher/0'], 
+          adv_file_tag='adv_s68_h512_tr(H)_ran/best'
           )
     
     ####################################################################      
@@ -136,20 +140,20 @@ def DiverseSelfisherPlay(args, pop_force_training, file_folder='asy-sk-cc-18-bes
     args.learner_type = LearnerType.SELFISHER
     args.reward_magnifier = 3.0
     args.exp_dir = root + '/selfisher/2'
-    SAB(args=args,
+    ADV(args=args,
         agent_folder_path='agent_models/' + root + '/supporter-fishplay/1', 
-        agent_file_tag='pwsab_s68_h512_tr(SP_SPSAB)_ran/best')
+        agent_file_tag='pwadv_s68_h512_tr(SP_SPADV)_ran/best')
     
     how_long = 8
     set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.learner_type = LearnerType.SUPPORTER
     args.reward_magnifier = 3.0
     args.exp_dir = root + '/supporter-fishplay/2'
-    PwSABs(args=args, 
+    PwADVs(args=args, 
           agent_folder_path='agent_models/' + root + '/supporter/0', 
           agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
-          sab_folder_paths=['agent_models/' + root + '/selfisher/2', 'agent_models/' + root + '/selfisher/1', 'agent_models/' + root + '/selfisher/0'], 
-          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          adv_folder_paths=['agent_models/' + root + '/selfisher/2', 'agent_models/' + root + '/selfisher/1', 'agent_models/' + root + '/selfisher/0'], 
+          adv_file_tag='adv_s68_h512_tr(H)_ran/best'
           )
     
     ####################################################################
@@ -158,18 +162,18 @@ def DiverseSelfisherPlay(args, pop_force_training, file_folder='asy-sk-cc-18-bes
     args.learner_type = LearnerType.SUPPORTER
     args.reward_magnifier = 3.0
     args.exp_dir = root + '/supporter-fishplay/2_extend'
-    PwSABs(args=args, 
+    PwADVs(args=args, 
           agent_folder_path='agent_models/' + root + '/supporter-fishplay/2', 
-          agent_file_tag='pwsab_s68_h512_tr(SP_SPSAB)_ran/best',
-          sab_folder_paths=['agent_models/' + root + '/selfisher/2', 'agent_models/' + root + '/selfisher/1', 'agent_models/' + root + '/selfisher/0'], 
-          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          agent_file_tag='pwadv_s68_h512_tr(SP_SPADV)_ran/best',
+          adversary_folder_paths=['agent_models/' + root + '/selfisher/2', 'agent_models/' + root + '/selfisher/1', 'agent_models/' + root + '/selfisher/0'], 
+          adv_file_tag='adv_s68_h512_tr(H)_ran/best'
           )
 
-def PwSABs(args, 
+def PwADVs(args, 
           agent_folder_path='agent_models/four-layouts/supporter/0', 
           agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
-          sab_folder_paths=['agent_models/four-layouts/saboteur/0', 'agent_models/four-layouts/saboteur/1'], 
-          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
+          adv_folder_paths=['agent_models/four-layouts/saboteur/0', 'agent_models/four-layouts/saboteur/1'], 
+          adv_file_tag='adv_s68_h512_tr(H)_ran/best'
           ):
     args.sp_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR]
     args.sp_eval_types = {
@@ -178,7 +182,7 @@ def PwSABs(args,
     }
     curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
     agent_path = agent_folder_path + '/' + agent_file_tag
-    sab_paths = [sab_folder_path + '/' + sab_file_tag for sab_folder_path in sab_folder_paths]
+    adv_paths = [adv_folder_path + '/' + adv_file_tag for adv_folder_path in adv_folder_paths]
     get_agent_play_w_saboteurs(
         args=args, 
         train_types=args.sp_train_types,
@@ -186,33 +190,10 @@ def PwSABs(args,
         total_training_timesteps=args.pop_total_training_timesteps,
         curriculum=curriculum, 
         agent_path=agent_path,
-        sab_paths=sab_paths)
+        adv_paths=adv_paths)
+    
 
-
-def PwSAB(args, 
-          agent_folder_path='agent_models/four-layouts/supporter/0', 
-          agent_file_tag='sp_s68_h512_tr(SP)_ran/best',
-          sab_folder_path='agent_models/four-layouts/saboteur/0', 
-          sab_file_tag='sab_s68_h512_tr(H)_ran/best'
-          ):
-    args.sp_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH]
-    args.sp_eval_types = {
-        'generate': [TeamType.SELF_PLAY, TeamType.SELF_PLAY_HIGH],
-        'load': []
-    }
-    curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
-    agent_path = agent_folder_path + '/' + agent_file_tag
-    sab_path = sab_folder_path + '/' + sab_file_tag
-    get_agent_play_w_saboteur(
-        args=args, 
-        train_types=args.sp_train_types,
-        eval_types=args.sp_eval_types,
-        total_training_timesteps=args.pop_total_training_timesteps,
-        curriculum=curriculum, 
-        agent_path=agent_path,
-        sab_path=sab_path)
-
-def SAB(args, agent_folder_path='agent_models/four-layouts/supporter/0', agent_file_tag='sp_s68_h512_tr(SP)_ran/best'):
+def ADV(args, agent_folder_path='agent_models/four-layouts/supporter/0', agent_file_tag='sp_s68_h512_tr(SP)_ran/best'):
     args.sp_train_types = [TeamType.HIGH_FIRST]
     args.sp_eval_types = {
         'generate': [TeamType.HIGH_FIRST],
@@ -406,7 +387,7 @@ if __name__ == '__main__':
     
     args.SP_seed, args.SP_h_dim = 68, 512
     # DiverseSelfisherPlay(args=args, pop_force_training=pop_force_training)
-    SingleSelfisherPlay(args=args, pop_force_training=pop_force_training)
+    SingleAdversaryPlay(args=args, pop_force_training=pop_force_training)
 
     # how_long = 5
     # set_input(args=args, quick_test=quick_test, how_long=how_long)

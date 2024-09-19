@@ -238,7 +238,7 @@ def get_fcp_trained_w_selfplay_types(args,
 
 def get_saboteur(args, total_training_timesteps, train_types, eval_types, curriculum, agent_path):
     name = generate_name(args, 
-                         prefix='sab',
+                         prefix='adv',
                          seed=args.SP_seed,
                          h_dim=args.SP_h_dim, 
                          train_types=train_types,
@@ -266,41 +266,10 @@ def get_saboteur(args, total_training_timesteps, train_types, eval_types, curric
     saboteur_trainer.train_agents(total_train_timesteps=total_training_timesteps)
     return saboteur_trainer.get_agents()[0], tc
 
-def get_agent_play_w_saboteur(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, sab_path):
-    name = generate_name(args, 
-                         prefix='pwsab',
-                         seed=args.SP_seed,
-                         h_dim=args.SP_h_dim, 
-                         train_types=train_types,
-                         has_curriculum= not curriculum.is_random)
-    agent = load_agent(Path(agent_path), args)
-    saboteur = load_agent(Path(sab_path), args)
-    
-    tc = generate_TC_for_SaboteurPlay(args,
-                                  agent=agent,
-                                  saboteur=saboteur,
-                                  train_types=train_types,
-                                  eval_types_to_generate=eval_types['generate'],
-                                  eval_types_to_read_from_file=eval_types['load'])
-    
-    agent_trainer = RLAgentTrainer(
-        name=name,
-        args=args,
-        agent=agent,
-        teammates_collection=tc,
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        curriculum=curriculum,
-        seed=args.SP_seed,
-        hidden_dim=args.SP_h_dim,
-    )
-
-    agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)
-    return agent_trainer.get_agents()[0], tc
 
 def get_agent_play_w_saboteurs(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, sab_paths):
     name = generate_name(args, 
-                         prefix='pwsab',
+                         prefix='pwadv',
                          seed=args.SP_seed,
                          h_dim=args.SP_h_dim, 
                          train_types=train_types,
