@@ -138,4 +138,5 @@ dmypy.json
 multiHRI/oai_agent/data/
 
 #Chihui's scripts
-nathan_train_agents.py
+scripts/nathan_train_agents.py
+scripts/run_sabplay_overcooked_game.py
