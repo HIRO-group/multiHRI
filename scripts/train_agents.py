@@ -164,12 +164,12 @@ def PwADVs(args,
           adv_folder_paths=['agent_models/four-layouts/saboteur/0', 'agent_models/four-layouts/saboteur/1'], 
           adv_file_tag='adv_s68_h512_tr(H)_ran/best'
           ):
-    train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR]
+    train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY]
     eval_types = {
-        'generate': [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR],
+        'generate': [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY],
         'load': []
     }
-    curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
+    curriculum = Curriculum(train_types=train_types, is_random=True)
     agent_path = agent_folder_path + '/' + agent_file_tag
     adv_paths = [adv_folder_path + '/' + adv_file_tag for adv_folder_path in adv_folder_paths]
     get_agent_play_w_adversarys(
