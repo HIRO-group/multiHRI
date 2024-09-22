@@ -75,8 +75,8 @@ def summarize_in_a_figure(questionnaire_file_name, layouts_prefix, trained_on_nu
 
 if __name__ == "__main__":
     questionnaire_file_name = '2'
-    layouts_prefix = ''
-    trained_on_number_of_layouts = '' # Multiple or One
+    layouts_prefix = '5_chefs'
+    trained_on_number_of_layouts = TrainedOnLayouts.multiple # Multiple or One
 
     summarize_in_a_figure(questionnaire_file_name=questionnaire_file_name,
                           layouts_prefix=layouts_prefix,
