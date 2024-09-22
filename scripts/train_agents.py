@@ -87,7 +87,7 @@ def SingleAdversaryPlay(args,
                 adv_file_tag = adv_tag + '/' + checked_adversary)
         
 def MultiAdversaryPlay(args, 
-                        exp_tag = 'S2FP', 
+                        exp_tag = 'M2FP', 
                         main_agent_path = None,
                         main_agent_type = LearnerType.SUPPORTER, 
                         adversary_type = LearnerType.SELFISHER, 
