@@ -140,3 +140,4 @@ multiHRI/oai_agent/data/
 #Chihui's scripts
 scripts/nathan_train_agents.py
 scripts/run_sabplay_overcooked_game.py
+scripts/nathan_previous_sabplay_training.py
