@@ -4,7 +4,7 @@ from oai_agents.common.tags import TeamType
 
 from .common import load_agents, generate_name
 from .fcp_pop_helper import get_fcp_population
-from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP, generate_TC_for_Adversary, generate_TC_for_AdversaryPlay, generate_TC_for_AdversarysPlay
+from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP, generate_TC_for_Adversary, generate_TC_for_AdversarysPlay
 from .curriculum import Curriculum
 
 from oai_agents.agents.agent_utils import load_agent

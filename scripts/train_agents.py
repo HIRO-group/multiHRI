@@ -10,79 +10,80 @@ from utils import (get_selfplay_agent_w_tms_collection,
                 get_fcp_trained_w_selfplay_types, 
                 get_selfplay_agent_trained_w_selfplay_types,
                 get_adversary,
-                get_agent_play_w_adversary,
                 get_agent_play_w_adversarys,
                 Curriculum
                 )
 
 def SingleAdversaryPlay(args, 
-                        exp_tag = 'S2FP-1010-worst-asy-sk-cc', 
+                        exp_tag = 'S2FP', 
+                        main_agent_path = None,
                         main_agent_type = LearnerType.SUPPORTER, 
                         adversary_type = LearnerType.SELFISHER, 
                         checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
                         how_long_init = 4.0,
                         how_long_for_agent = 1.0,
                         how_long_for_adv = 1.0,
-                        reward_magnifier = 3.0,
-                        pop_force_training = True):
-    root = exp_tag
+                        rounds_of_advplay = 401,
+                        reward_magnifier = 3.0):
+    if main_agent_path is None:
+        how_long = how_long_init
+        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.SP_seed = args.ADV_seed
+        args.SP_h_dim = args.ADV_h_dim
+        args.learner_type = main_agent_type
+        args.reward_magnifier = reward_magnifier
+        args.exp_dir = exp_tag 
+        SP(args=args, pop_force_training=True)
+        sp_tag = 'sp_s' + args.SP_seed + '_h' + args.SP_h_dim + '_tr(SP)_ran'
+        main_agent_path = exp_tag + '/' + sp_tag
+    root = 'agent_models/' + main_agent_path
+    root_adv = root + '/' + exp_tag
 
-    # how_long = how_long_init
-    # set_input(args=args, quick_test=quick_test, how_long=how_long)
-    # args.SP_seed = args.ADV_seed
-    # args.h_dim = args.h_dim
-    # args.learner_type = main_agent_type
-    # args.reward_magnifier = reward_magnifier
-    # args.exp_dir = root + '/' + main_agent_type + '/0'
-    # SP(args=args, pop_force_training=pop_force_training)
+    adv_tag = 'adv_s' + args.ADV_seed + '_h' + args.ADV_h_dim + '_tr(H)_ran'
+    pwadv_tag = 'pwadv_s' + args.ADV_seed + '_h' + args.ADV_h_dim + '_tr(SP_SPADV)_ran'
 
     how_long = how_long_for_adv
     set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.learner_type = adversary_type
     args.reward_magnifier = reward_magnifier
-    args.exp_dir = root + '/' + adversary_type + '/0'
+    args.exp_dir = root_adv + '/' + adversary_type + '/0'
     ADV(args=args, 
-        agent_folder_path='agent_models/' + root + '/' + main_agent_type + '/0', 
-        agent_file_tag='sp_s68_h512_tr(SP)_ran/' + CheckedPoints.BEST_EVAL_REWARD)
+        agent_folder_path = root, 
+        agent_file_tag= CheckedPoints.BEST_EVAL_REWARD)
 
     how_long = how_long_init + how_long_for_agent
     set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.learner_type = LearnerType.SUPPORTER
     args.reward_magnifier = reward_magnifier
-    args.exp_dir = root + '/' + main_agent_type + '-' + adversary_type + 'play' + '/0'
+    args.exp_dir = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + '/0'
     PwADVs( args=args, 
-            agent_folder_path='agent_models/' + root + '/' + main_agent_type + '/0', 
-            agent_file_tag='sp_s68_h512_tr(SP)_ran/' + CheckedPoints.BEST_EVAL_REWARD,
-            adv_folder_paths=['agent_models/' + root + '/' + adversary_type + '/0'], 
-            adv_file_tag='adv_s68_h512_tr(H)_ran/' + checked_adversary)
+            agent_folder_path = root, 
+            agent_file_tag = CheckedPoints.BEST_EVAL_REWARD,
+            adv_folder_paths = [root_adv + '/' + adversary_type + '/0'], 
+            adv_file_tag = adv_tag + '/' + checked_adversary)
     ###################################################################
-    for round in range(1,401):
+    for round in range(1,rounds_of_advplay):
         how_long = how_long_for_adv
         set_input(args=args, quick_test=quick_test, how_long=how_long)
         args.learner_type = LearnerType.SELFISHER
         args.reward_magnifier = reward_magnifier
-        args.exp_dir = root + '/' + adversary_type + '/' + str(round)
+        args.exp_dir = root_adv + '/' + adversary_type + '/' + str(round)
         ADV(args=args,
-            agent_folder_path='agent_models/' + root + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round-1), 
-            agent_file_tag='pwadv_s68_h512_tr(SP_SPADV)_ran/' + CheckedPoints.FINAL_TRAINED_MODEL)
+            agent_folder_path = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + + str(round-1), 
+            agent_file_tag = pwadv_tag + '/' + CheckedPoints.FINAL_TRAINED_MODEL)
         
         how_long = how_long_init + how_long_for_agent*(round+1)
         set_input(args=args, quick_test=quick_test, how_long=how_long)
         args.learner_type = LearnerType.SUPPORTER
         args.reward_magnifier = reward_magnifier
-        args.exp_dir = root + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round)
+        args.exp_dir = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round)
         PwADVs( args=args, 
-                agent_folder_path='agent_models/' + root +'/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round-1), 
-                agent_file_tag='pwadv_s68_h512_tr(SP_SPADV)_ran/' + CheckedPoints.FINAL_TRAINED_MODEL,
-                adv_folder_paths=['agent_models/' + root + '/' + adversary_type + '/' + str(round)], 
-                adv_file_tag='adv_s68_h512_tr(H)_ran/' + checked_adversary)
+                agent_folder_path = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round-1), 
+                agent_file_tag = pwadv_tag + '/' + CheckedPoints.FINAL_TRAINED_MODEL,
+                adv_folder_paths = [root_adv + '/' + adversary_type + '/' + str(round)], 
+                adv_file_tag = adv_tag + '/' + checked_adversary)
 
 def DiverseSelfisherPlay(args, pop_force_training, file_folder='asy-sk-cc-18-best'):
-    # TODO: 
-    # 1. allow user to choose the last or the best agent for training saboteur
-    # 2. allow user to choose the last or the best or the most adversarial saboteurs for training supporter
-    # 3. allow user to choose the type of primary agents
-    # 4. allow user to choose the type of saboteurs 
     root = file_folder
 
     # how_long = 4
@@ -386,9 +387,17 @@ if __name__ == '__main__':
     fcp_w_sp_force_training = True
     sp_w_sp_force_training = True
     
-    args.SP_seed, args.SP_h_dim = 68, 512
-    # DiverseSelfisherPlay(args=args, pop_force_training=pop_force_training)
-    SingleAdversaryPlay(args=args, pop_force_training=pop_force_training)
+    SingleAdversaryPlay(args=args, 
+                        exp_tag = 'S2FP', 
+                        main_agent_path = None,
+                        main_agent_type = LearnerType.SUPPORTER, 
+                        adversary_type = LearnerType.SELFISHER, 
+                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+                        how_long_init = 0.02,
+                        how_long_for_agent = 0.02,
+                        how_long_for_adv = 0.02,
+                        rounds_of_advplay = 1,
+                        reward_magnifier = 3.0)
 
     # how_long = 5
     # set_input(args=args, quick_test=quick_test, how_long=how_long)
