@@ -46,7 +46,7 @@ class TeamType:
     SELF_PLAY_LOW = 'SPL'
     SELF_PLAY_MEDIUM = 'SPM'
     SELF_PLAY_HIGH = 'SPH'
-    SELF_PLAY_SABOTEUR = 'SPSAB'
+    SELF_PLAY_ADVERSARY = 'SPADV'
 
     def map_to_index(teamtype):
         tt_map = {
@@ -63,7 +63,7 @@ class TeamType:
             TeamType.SELF_PLAY_LOW: 10,
             TeamType.SELF_PLAY_MEDIUM: 11,
             TeamType.SELF_PLAY_HIGH: 12,
-            TeamType.SELF_PLAY_SABOTEUR: 13
+            TeamType.SELF_PLAY_ADVERSARY: 13
         }
         return tt_map[teamtype]
 

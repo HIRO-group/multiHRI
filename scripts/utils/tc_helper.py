@@ -310,7 +310,7 @@ def generate_TC_for_Adversary(args,
 def generate_TC_for_AdversarysPlay(args, 
                                 agent,
                                 adversarys, 
-                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_SABOTEUR],
+                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY],
                                 eval_types_to_generate=None,
                                 eval_types_to_read_from_file=None):
 
@@ -328,8 +328,8 @@ def generate_TC_for_AdversarysPlay(args,
     for layout_name in args.layout_names:
         train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
         eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        train_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[adversary]+self_teammates for adversary in adversarys]
-        eval_collection[layout_name][TeamType.SELF_PLAY_SABOTEUR] = [[adversary]+self_teammates for adversary in adversarys]
+        train_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
+        eval_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
         
 
     teammates_collection = {

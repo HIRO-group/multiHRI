@@ -386,7 +386,19 @@ if __name__ == '__main__':
                         how_long_init = 0.02,
                         how_long_for_agent = 0.02,
                         how_long_for_adv = 0.02,
-                        rounds_of_advplay = 1,
+                        rounds_of_advplay = 2,
+                        reward_magnifier = 3.0)
+    
+    MultiAdversaryPlay(args=args, 
+                        exp_tag = 'M2FP', 
+                        main_agent_path = None,
+                        main_agent_type = LearnerType.SUPPORTER, 
+                        adversary_type = LearnerType.SELFISHER, 
+                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+                        how_long_init = 0.02,
+                        how_long_for_agent = 0.02,
+                        how_long_for_adv = 0.02,
+                        rounds_of_advplay = 2,
                         reward_magnifier = 3.0)
 
     # SP(args=args,
