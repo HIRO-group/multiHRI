@@ -347,6 +347,8 @@ def set_input(args, quick_test=False, how_long=6):
     args.layout_names = ['3_chefs_small_kitchen_two_resources', '3_chefs_counter_circuit', '3_chefs_asymmetric_advantages']
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
+    args.dynamic_reward = True
+    args.final_sparse_r_ratio = 1.0
         
     if not quick_test: 
         args.learner_type = LearnerType.ORIGINALER
