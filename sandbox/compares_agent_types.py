@@ -8,60 +8,47 @@ import textwrap
 from sandbox.constants import LAYOUTS_IMAGES_DIR, QUESTIONNAIRES_DIR, AgentType, TrainedOnLayouts, LearnerType
 
 def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, layouts_prefix, trained_on_number_of_layouts, learner_types):
-    # Load the data
     df = pd.read_csv(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/{questionnaire_file_name}.csv')
-    
-    # Apply basic filters
     df = df[df['Which layout? (write the layout name as it exactly appears on the repository)'].str.contains(layouts_prefix, na=False)]
 
-
-    #List of layout names to exclude
-    exclude_layouts = [
-        "3_chefs_counter_circuit",
-        "3_chefs_coordination_ring",
-        "3_chefs_small_kitchen",
-        "3_chefs_small_kitchen_two_resources",
-        "3_chefs_4P_4O_4D_4S",
-        '3_chefs_forced_coordination_3OP2S1D', 
-        '3_chefs_forced_coordination',
-        '3_chefs_storage_room'
-    ]
-
-    # Filter the DataFrame to exclude these layouts
-    df = df[~df['Which layout? (write the layout name as it exactly appears on the repository)'].isin(exclude_layouts)]
-
-
+    # #List of layout names to exclude
+    # exclude_layouts = [
+    # #     "3_chefs_counter_circuit",
+    # #     "3_chefs_coordination_ring",
+    # #     "3_chefs_small_kitchen",
+    # #     "3_chefs_small_kitchen_two_resources",
+    # #     "3_chefs_4P_4O_4D_4S",
+    #     '3_chefs_forced_coordination_3OP2S1D', 
+    #     '3_chefs_forced_coordination',
+    # #     '3_chefs_storage_room'
+    # ]
+    # df = df[~df['Which layout? (write the layout name as it exactly appears on the repository)'].isin(exclude_layouts)]
 
     df = df[df['Reward'] != 'N/A']
     df = df[df['Trained on ... Layout(s)'].str.contains(trained_on_number_of_layouts, na=False)]
     df['Reward'] = pd.to_numeric(df['Reward'], errors='coerce')
     df = df.dropna(subset=['Reward'])
     
-    # Filter for specific agent types and learner types
     df_A = df[(df['Agent Type'] == agent_type_A) & (df['LearnerType'].isin(learner_types))]
     df_B = df[(df['Agent Type'] == agent_type_B) & (df['LearnerType'].isin(learner_types))]
 
-    # Merge the filtered dataframes on the layout
     merged_df = pd.merge(df_A, df_B, on='Which layout? (write the layout name as it exactly appears on the repository)', suffixes=('_A', '_B'))
     merged_df['Reward_Difference'] = merged_df['Reward_A'] - merged_df['Reward_B']
 
-    # Filter layouts where agent_type_A has a higher reward than agent_type_B
     layouts_to_plot = merged_df[merged_df['Reward_Difference'] > 0]['Which layout? (write the layout name as it exactly appears on the repository)'].unique()
 
     if len(layouts_to_plot) == 0:
         print("No layouts found where agent_type_A has a higher reward than agent_type_B.")
         return
 
-    # Create the plots
     fig, axes = plt.subplots(nrows=len(layouts_to_plot), ncols=2, figsize=(27, 5 * len(layouts_to_plot)))
 
     if len(layouts_to_plot) == 1:
         axes = [axes]
 
     for i, layout in enumerate(layouts_to_plot):
-        # Filter the data for the specific layout and only include the relevant learner types
         layout_df = df[df['Which layout? (write the layout name as it exactly appears on the repository)'] == layout]
-        layout_df = layout_df[layout_df['LearnerType'].isin(learner_types)]  # Ensure learner type filtering
+        layout_df = layout_df[layout_df['LearnerType'].isin(learner_types)]
         layout_df = layout_df.sort_values(by='Reward', ascending=False)
         
         layout_df['Label'] = layout_df.apply(
@@ -69,7 +56,6 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
             axis=1
         )
         
-        # Create bar plot
         sns.barplot(x='Label', y='Reward', data=layout_df, ax=axes[i, 0], palette='viridis')
         axes[i, 0].set_title(f"Layout: {layout} - Sorted by Reward")
         axes[i, 0].set_ylabel("Reward")
@@ -77,23 +63,20 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
         max_reward = layout_df['Reward'].max()
         axes[i, 0].set_ylim(0, max_reward * 1.2)
 
-        # Highlight bars for agent_type_A and agent_type_B based on both Agent Type and LearnerType
         for patch, (agent_type, learner_type) in zip(axes[i, 0].patches, layout_df[['Agent Type', 'LearnerType']].values):
             if agent_type == agent_type_A and learner_type in learner_types:
-                patch.set_facecolor('yellowgreen')  # Highlight agent_type_A
+                patch.set_facecolor('yellowgreen')
             elif agent_type == agent_type_B and learner_type in learner_types:
-                patch.set_facecolor('tomato')  # Highlight agent_type_B
+                patch.set_facecolor('tomato')
             else:
-                patch.set_facecolor('grey')  # Other agents
+                patch.set_facecolor('grey')
 
-        # Annotate reward and add notes
         for p, note in zip(axes[i, 0].patches, layout_df['Notes']):
             axes[i, 0].annotate(format(p.get_height(), '.2f'), 
                                 (p.get_x() + p.get_width() / 2., p.get_height()), 
                                 ha='center', va='center', 
                                 xytext=(0, 9), textcoords='offset points')
             
-            # Annotate notes
             if isinstance(note, str):
                 wrapped_note = "\n".join(textwrap.wrap(note, width=15))
                 lines = wrapped_note.split("\n")
@@ -106,7 +89,6 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
                                     line, ha='center', va='center', 
                                     fontsize=10, color='white')
 
-        # Add layout image
         layout_image_path = os.path.join(LAYOUTS_IMAGES_DIR, f"{layout}/-1.png")
         if os.path.exists(layout_image_path):
             img = mpimg.imread(layout_image_path)
@@ -120,17 +102,18 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
     if trained_on_number_of_layouts == '': trained_on_number_of_layouts = 'OneOrMultiple'
 
     plt.tight_layout()
+    agent_type_A = agent_type_A.replace('/', '_')
+    agent_type_B = agent_type_B.replace('/', '_')
+
+
     plt.savefig(f'{QUESTIONNAIRES_DIR}/{questionnaire_file_name}/compare_{agent_type_A}_>_{agent_type_B}_highlighted.png', dpi=100)
 
 if __name__ == "__main__":
     questionnaire_file_name = '2'
     layouts_prefix = ''
-
-    # Compare agent_type_A and agent_type_B
-
     
-    agent_type_A = AgentType.n_1_sp_w_cur
-    agent_type_B = AgentType.n_1_sp_ran
+    agent_type_A = AgentType.n_1_sp_new_cur
+    agent_type_B = AgentType.n_1_sp_w_cur
     learner_types = [LearnerType.originaler]
     trained_on_number_of_layouts = TrainedOnLayouts.multiple 
 
