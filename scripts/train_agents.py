@@ -188,7 +188,7 @@ def ADV(args, agent_folder_path='agent_models/four-layouts/supporter/0', agent_f
         'generate': [TeamType.HIGH_FIRST],
         'load': []
     }
-    curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
+    curriculum = Curriculum(train_types=train_types, is_random=True)
     agent_path = agent_folder_path + '/' + agent_file_tag
     get_adversary(  args=args, 
                     train_types=train_types,
