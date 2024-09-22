@@ -148,6 +148,9 @@ def get_doable_subtasks(state, prev_subtask, layout_name, terrain, p_idx, valid_
         if not (layout_name == 'forced_coordination' and p_idx == 0):
             subtask_mask[Subtasks.SUBTASKS_TO_IDS['get_plate_from_dish_rack']] = 1
 
+        
+        # TODO: we need to get rid of this filter. Our agents should be smart enough to 
+        # take care of the scneario, where onions/soups/plates are placed on the counter.
         # The following subtasks are only possible on some configurations for some players (this filters useless tasks)
         # These are only possible if the respective objects exist on a counter somewhere
         # for obj in loose_objects:

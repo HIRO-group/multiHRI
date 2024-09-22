@@ -247,7 +247,6 @@ class OvercookedGymEnv(Env):
 
         self.state, reward, done, info = self.env.step(joint_action)
         if self.shape_rewards and not self.is_eval_env:
-            # TODO: allow user to use ratio for their preference
             if args.dynamic_reward:
                 ratio = min(self.step_count * self.args.n_envs / 1e7, args.final_sparse_r_ratio)
             else:
