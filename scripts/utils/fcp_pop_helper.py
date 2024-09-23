@@ -159,3 +159,13 @@ def save_fcp_pop(args, population):
         )
         rt.agents = population[layout_name]
         rt.save_agents(tag='aamas25')
+
+
+def get_population(args,
+                   ck_rate,
+                   total_training_timesteps,
+                   train_types,
+                   eval_types_to_generate,
+                   num_self_play_agents_to_train,
+                   unseen_teammates_len):
+    pass

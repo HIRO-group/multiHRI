@@ -3,8 +3,8 @@ from oai_agents.agents.base_agent import OAIAgent
 from oai_agents.common.tags import TeamType
 
 from .common import load_agents, generate_name
-from .fcp_pop_helper import get_fcp_population
-from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP
+from .fcp_pop_helper import get_fcp_population, get_population
+from .tc_helper import generate_TC_for_FCP_w_SP_types, generate_TC_for_SP, generate_TC_for_N_X_SP
 from .curriculum import Curriculum
 
 
@@ -39,6 +39,63 @@ def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, eval_typ
 
     selfplay_trainer.train_agents(total_train_timesteps=total_training_timesteps)
     return selfplay_trainer.get_agents()[0], tc
+
+
+def get_N_X_selfplay_agents_trained_w_selfplay_types(args,
+                                                     pop_total_training_timesteps:int,
+                                                     pop_force_training:bool,
+                                                     n_x_sp_total_training_timesteps:int,
+                                                     n_x_sp_eval_types:list,
+                                                     n_x_sp_force_training:list,
+                                                     curriculum:Curriculum,
+                                                     tag:str=None,
+                                                     parallel:bool=True,
+                                                     num_self_play_agents_to_train=2) -> tuple:
+    
+    curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
+                                         unallowed_types = TeamType.ALL_TYPES_BESIDES_SP)
+
+    population = get_population(
+        args=args,
+        ck_rate=pop_total_training_timesteps // 10,
+        total_training_timesteps=pop_total_training_timesteps,
+        train_types=curriculum.train_types,
+        eval_types_to_generate=n_x_sp_eval_types['generate'],
+        num_self_play_agents_to_train=num_self_play_agents_to_train,
+        unseen_teammates_len = args.unseen_teammates_len,
+    )
+
+    name = generate_name(args,
+                         prefix='n-x-sp',
+                         seed=args.SPWSP_seed,
+                         h_dim=args.SPWSP_h_dim, 
+                         train_types=curriculum.train_types,
+                         has_curriculum=not curriculum.is_random)
+    
+    agents = load_agents(args, name=name, tag=tag, force_training=n_x_sp_force_training)
+    if agents:
+        return agents[0], population
+
+    randomly_init_agent = RLAgentTrainer.generate_randomly_initialized_SP_agent(args=args)
+    teammates_collection = generate_TC_for_N_X_SP(args=args,
+                                                  population=population,
+                                                  agent=randomly_init_agent,
+                                                  train_types=curriculum.train_types,
+                                                  eval_types=n_x_sp_eval_types,
+                                                  unseen_teammates_len=args.unseen_teammates_len)
+
+    n_x_sp_types_trainer = RLAgentTrainer(name=name,
+                                           args=args,
+                                           agent=randomly_init_agent,
+                                           teammates_collection=teammates_collection,
+                                           epoch_timesteps=args.epoch_timesteps,
+                                           n_envs=args.n_envs,
+                                           curriculum=curriculum,
+                                           seed=args.SPWSP_seed,
+                                           hidden_dim=args.SPWSP_h_dim)
+
+    n_x_sp_types_trainer.train_agents(total_train_timesteps=n_x_sp_total_training_timesteps)
+    return n_x_sp_types_trainer.get_agents()[0], teammates_collection
 
 
 def get_selfplay_agent_trained_w_selfplay_types(args,

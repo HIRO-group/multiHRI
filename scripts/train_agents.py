@@ -9,6 +9,7 @@ from utils import (get_selfplay_agent_w_tms_collection,
                 get_eval_types_to_load, 
                 get_fcp_trained_w_selfplay_types, 
                 get_selfplay_agent_trained_w_selfplay_types,
+                get_N_X_selfplay_agents_trained_w_selfplay_types,
                 Curriculum
                 )
 
@@ -29,6 +30,48 @@ def SP(args, pop_force_training):
 
 
 
+def N_X_SP(args, 
+            pop_force_training:bool,
+            sp_w_sp_force_training:bool,
+            parallel:bool) -> None:
+    
+    args.n_x_sp_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
+    args.n_x_sp_eval_types = {
+                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
+                            'load': []
+                            }
+    curriculum = Curriculum(train_types = args.n_x_sp_train_types,
+                            is_random=False,
+                            total_steps = args.sp_w_sp_total_training_timesteps//args.epoch_timesteps,
+                            training_phases_durations_in_order={
+                                TeamType.SELF_PLAY_LOW: 0.5,
+                                TeamType.SELF_PLAY_MEDIUM: 0.125,
+                                TeamType.SELF_PLAY_HIGH: 0.125,
+                            },
+                            rest_of_the_training_probabilities={
+                                TeamType.SELF_PLAY_LOW: 0.4,
+                                TeamType.SELF_PLAY_MEDIUM: 0.3, 
+                                TeamType.SELF_PLAY_HIGH: 0.3,
+                            },
+                            probabilities_decay_over_time=0
+                            )
+
+    get_N_X_selfplay_agents_trained_w_selfplay_types(
+        args,
+        
+        pop_total_training_timesteps=args.pop_total_training_timesteps,
+        pop_force_training=pop_force_training,
+
+        n_x_sp_total_training_timesteps=args.n_x_sp_train_types,
+        n_x_sp_eval_types=args.n_x_sp_eval_types,
+        n_x_sp_force_training=sp_w_sp_force_training,
+        
+        parallel=parallel,
+        curriculum=curriculum,
+        num_self_play_agents_to_train=args.num_sp_agents_to_train
+        )
+
+
 def SP_w_SP_Types(args, 
                   pop_force_training:bool,
                   sp_w_sp_force_training:bool,
@@ -43,6 +86,7 @@ def SP_w_SP_Types(args,
     :param sp_w_sp_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file
     :param parallel: Boolean indicating if parallel envs should be used for training or not
     '''
+    args.unseen_teammates_len = 1
 
     # If you use train/eval types TeamType.SELF_PLAY_X then X_FIRST should be in pop_train_types 
     # pop_train_types can be passed to get_selfplay_agent_trained_w_selfplay_types and 
@@ -181,6 +225,7 @@ def set_input(args, quick_test=False, supporter_run=False):
     '''
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
+    args.unseen_teammates_len = 1
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
         
     if not quick_test: 
@@ -225,7 +270,14 @@ if __name__ == '__main__':
 
     SP(args=args,
        pop_force_training=pop_force_training)
+    
+    
+    # N_X_SP(args=args,
+    #        pop_force_training=pop_force_training,
+    #        n_x_sp_force_training=n_x_sp_force_training,
+    #        parallel=parallel)
 
+    
     # FCP_traditional(args=args,
     #               pop_force_training=pop_force_training,
     #               fcp_force_training=fcp_force_training,

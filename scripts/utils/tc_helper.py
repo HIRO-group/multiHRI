@@ -238,6 +238,16 @@ def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_type
     return teammates_collection
 
 
+def generate_TC_for_N_X_SP(args,
+                           agent,
+                           population,
+                           train_types,
+                           eval_types,
+                           unseen_teammates_len,
+                           ):
+    
+    pass
+
 
 def update_eval_collection_with_eval_types_from_file(args, eval_types, eval_collection):
     for teammates in eval_types:
