@@ -51,6 +51,7 @@ class TeamType:
     SELF_PLAY = 'SP'
     SELF_PLAY_LOW = 'SPL'
     SELF_PLAY_MEDIUM = 'SPM'
+    SELF_PLAY_MIDDLE = 'SPMID'
     SELF_PLAY_HIGH = 'SPH'
 
     def map_to_index(teamtype):
@@ -67,8 +68,9 @@ class TeamType:
             TeamType.SELF_PLAY: 9,
             TeamType.SELF_PLAY_LOW: 10,
             TeamType.SELF_PLAY_MEDIUM: 11,
-            TeamType.SELF_PLAY_HIGH: 12,
-            TeamType.ALL_MIX: 13
+            TeamType.SELF_PLAY_MIDDLE: 12,
+            TeamType.SELF_PLAY_HIGH: 13,
+            TeamType.ALL_MIX: 14
         }
         return tt_map[teamtype]
 

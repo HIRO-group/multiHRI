@@ -13,7 +13,7 @@ def get_fcp_population(args,
                        train_types, 
                        eval_types_to_generate,
                        eval_types_to_load_from_file=[],
-                       num_self_play_agents_to_train=2,
+                       num_SPs_to_train=2,
                        parallel=True,
                        force_training=False,
                        ):
@@ -30,15 +30,15 @@ def get_fcp_population(args,
     except FileNotFoundError as e:
         print(f'Could not find saved FCP population, creating them from scratch...\nFull Error: {e}')
 
-        ensure_we_have_enough_train_and_eval_agents(teammates_len=args.teammates_len,
-                                                    train_types=train_types,
-                                                    eval_types=eval_types_to_generate,
-                                                    num_self_play_agents_to_train=num_self_play_agents_to_train,
-                                                    )
+        ensure_we_will_have_enough_agents_in_population(teammates_len=args.teammates_len,
+                                                        train_types=train_types,
+                                                        eval_types=eval_types_to_generate,
+                                                        num_SPs_to_train=num_SPs_to_train,
+                                                        )
 
-        seed, h_dim = generate_hdim_and_seed(num_self_play_agents_to_train)
+        seed, h_dim = generate_hdim_and_seed(num_SPs_to_train)
         inputs = [
-            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_self_play_agents_to_train)
+            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
         ]
 
         if parallel:
@@ -103,24 +103,38 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     return checkpoints_list
 
 
-def ensure_we_have_enough_train_and_eval_agents(teammates_len,
-                                                train_types,
-                                                eval_types,
-                                                num_self_play_agents_to_train,
+def ensure_we_will_have_enough_agents_in_population(teammates_len,
+                                                    train_types,
+                                                    eval_types,
+                                                    num_SPs_to_train,
+                                                    unseen_teammates_len=0, # only used for SPX teamtypes
                                                 ):
 
-    total_population_len = len(AgentPerformance.ALL) * num_self_play_agents_to_train
-    train_agents_len = len(train_types) * teammates_len
-    eval_agents_len = len(eval_types) * teammates_len
+    total_population_len = len(AgentPerformance.ALL) * num_SPs_to_train
+
+    train_agents_len, eval_agents_len = 0, 0
+
+    for train_type in train_types:
+        if train_type in TeamType.ALL_TYPES_BESIDES_SP:
+            train_agents_len += teammates_len
+        else:
+            train_agents_len += unseen_teammates_len
+
+    for eval_type in eval_types:
+        if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
+            eval_agents_len += teammates_len
+        else:
+            eval_agents_len += unseen_teammates_len
+
     assert total_population_len >= train_agents_len + eval_agents_len, "Not enough agents to train and evaluate." \
-                                                                        " Should increase num_sp_agents_to_train." \
+                                                                        " Should increase num_SPs_to_train." \
                                                                         f" Total population len: {total_population_len}," \
                                                                         f" train_agents len: {train_agents_len}," \
                                                                         f" eval_agents len: {eval_agents_len}, "\
-                                                                        f" num_self_play_agents_to_train: {num_self_play_agents_to_train}."
+                                                                        f" num_SPs_to_train: {num_SPs_to_train}."
 
 
-def generate_hdim_and_seed(num_self_play_agents_to_train):
+def generate_hdim_and_seed(num_SPs_to_train):
     '''
     (hidden_dim, seed) = reward of selfplay
     (256, 68)=362, (64, 14)=318
@@ -138,13 +152,13 @@ def generate_hdim_and_seed(num_self_play_agents_to_train):
     all_seeds = good_seeds + other_seeds_copied_from_HAHA
     all_hdims = good_hdims + other_hdims_copied_from_HAHA
     
-    selected_seeds = all_seeds[:num_self_play_agents_to_train]
-    selected_hdims = all_hdims[:num_self_play_agents_to_train]
+    selected_seeds = all_seeds[:num_SPs_to_train]
+    selected_hdims = all_hdims[:num_SPs_to_train]
     return selected_seeds, selected_hdims
 
 
-def save_fcp_pop(args, population):
-    name_prefix = 'fcp_pop'
+def save_population(args, population):
+    name_prefix = 'pop'
     for layout_name in args.layout_names:
         rt = RLAgentTrainer(
             name=f'{name_prefix}_{layout_name}',
@@ -165,7 +179,57 @@ def get_population(args,
                    ck_rate,
                    total_training_timesteps,
                    train_types,
-                   eval_types_to_generate,
-                   num_self_play_agents_to_train,
-                   unseen_teammates_len):
-    pass
+                   eval_types,
+                   unseen_teammates_len,
+                   num_SPs_to_train,
+                   parallel=True,
+                   force_training=False,
+                   tag='aamas25',
+                   ):
+    
+    population = {layout_name: [] for layout_name in args.layout_names}
+
+    try:
+        if force_training:
+            raise FileNotFoundError
+        for layout_name in args.layout_names:
+            name = f'pop_{layout_name}'
+            population[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag=tag)
+            print(f'Loaded pop with {len(population[layout_name])} agents.')
+    except FileNotFoundError as e:
+        print(f'Could not find saved population, creating them from scratch...\nFull Error: {e}')
+
+        ensure_we_will_have_enough_agents_in_population(teammates_len=args.teammates_len,
+                                                        unseen_teammates_len=unseen_teammates_len,
+                                                        train_types=train_types,
+                                                        eval_types=eval_types,
+                                                        num_SPs_to_train=num_SPs_to_train)
+
+        seed, h_dim = generate_hdim_and_seed(num_SPs_to_train)
+        inputs = [
+            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
+        ]
+
+        if parallel:
+            with multiprocessing.Pool() as pool:
+                dilled_results = pool.starmap(train_agent_with_checkpoints, inputs)
+            for dilled_res in dilled_results:
+                checkpoints_list = dill.loads(dilled_res)
+                for layout_name in args.layout_names:
+                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
+                    population[layout_name].extend(layout_pop)
+        else:
+            for inp in inputs:
+                checkpoints_list = train_agent_with_checkpoints(args=inp[0],
+                                                   total_training_timesteps = inp[1],
+                                                   ck_rate=inp[2],
+                                                   seed=inp[3],
+                                                   h_dim=inp[4],
+                                                   serialize=False)
+                for layout_name in args.layout_names:
+                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
+                    population[layout_name].extend(layout_pop)
+
+        save_population(args=args, population=population)
+    
+    return population

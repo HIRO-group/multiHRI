@@ -60,9 +60,9 @@ class RLAgentTrainer(OAITrainer):
         self.best_score, self.best_training_rew = -1, float('-inf')
 
     @classmethod
-    def generate_randomly_initialized_SP_agent(cls,
-                                               args,
-                                               seed:int=8080) -> OAIAgent:
+    def generate_randomly_initialized_agent(cls,
+                                            args,
+                                            seed:int=8080) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
         This function does not perform any learning
@@ -74,7 +74,7 @@ class RLAgentTrainer(OAITrainer):
 
         name = 'randomized_agent'
 
-        sp_trainer = cls(name=name,
+        trainer = cls(name=name,
                         args=args,
                         agent=None,
                         teammates_collection={},
@@ -82,7 +82,7 @@ class RLAgentTrainer(OAITrainer):
                         n_envs=args.n_envs,
                         seed=seed)
 
-        return sp_trainer.get_agents()[0]
+        return trainer.get_agents()[0]
 
     def get_learning_agent(self, agent):
         if agent:

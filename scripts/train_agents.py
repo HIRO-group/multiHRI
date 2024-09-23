@@ -31,18 +31,20 @@ def SP(args, pop_force_training):
 
 
 def N_X_SP(args, 
-            pop_force_training:bool,
-            sp_w_sp_force_training:bool,
-            parallel:bool) -> None:
-    
-    args.n_x_sp_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
-    args.n_x_sp_eval_types = {
+           pop_force_training:bool,
+           primary_force_training:bool,
+           parallel:bool) -> None:
+
+    args.unseen_teammates_len = 1 # This is the X in N_X_SP
+    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
+    args.primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
                             'load': []
                             }
-    curriculum = Curriculum(train_types = args.n_x_sp_train_types,
+
+    curriculum = Curriculum(train_types = args.primary_train_types,
                             is_random=False,
-                            total_steps = args.sp_w_sp_total_training_timesteps//args.epoch_timesteps,
+                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
                                 TeamType.SELF_PLAY_LOW: 0.5,
                                 TeamType.SELF_PLAY_MEDIUM: 0.125,
@@ -62,13 +64,16 @@ def N_X_SP(args,
         pop_total_training_timesteps=args.pop_total_training_timesteps,
         pop_force_training=pop_force_training,
 
-        n_x_sp_total_training_timesteps=args.n_x_sp_train_types,
-        n_x_sp_eval_types=args.n_x_sp_eval_types,
-        n_x_sp_force_training=sp_w_sp_force_training,
+        
+        n_x_sp_train_types = curriculum.train_types,
+        n_x_sp_eval_types=args.primary_eval_types,
+        n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
+        n_x_sp_force_training=primary_force_training,
+        
+        curriculum=curriculum,
         
         parallel=parallel,
-        curriculum=curriculum,
-        num_self_play_agents_to_train=args.num_sp_agents_to_train
+        num_SPs_to_train=args.num_SPs_to_train
         )
 
 
@@ -99,7 +104,7 @@ def SP_w_SP_Types(args,
     
     curriculum = Curriculum(train_types = args.sp_w_sp_train_types,
                             is_random=False,
-                            total_steps = args.sp_w_sp_total_training_timesteps//args.epoch_timesteps,
+                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
                                 TeamType.SELF_PLAY_LOW: 0.5,
                                 TeamType.SELF_PLAY_MEDIUM: 0.125,
@@ -116,13 +121,13 @@ def SP_w_SP_Types(args,
     get_selfplay_agent_trained_w_selfplay_types(
         args,
         pop_total_training_timesteps=args.pop_total_training_timesteps,
-        sp_w_sp_total_training_timesteps=args.sp_w_sp_total_training_timesteps,
+        n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
         sp_w_sp_eval_types=args.sp_w_sp_eval_types,
         pop_force_training=pop_force_training,
         sp_w_sp_force_training=sp_w_sp_force_training,
         parallel=parallel,
         curriculum=curriculum,
-        num_self_play_agents_to_train=args.num_sp_agents_to_train
+        num_SPs_to_train=args.num_SPs_to_train
         )
 
 
@@ -160,7 +165,7 @@ def FCP_mhri(args, pop_force_training, fcp_force_training, parallel):
                                         pop_force_training=pop_force_training,
                                         fcp_force_training=fcp_force_training,
                                         fcp_curriculum=fcp_curriculum,
-                                        num_self_play_agents_to_train=args.num_sp_agents_to_train,
+                                        num_SPs_to_train=args.num_SPs_to_train,
                                         parallel=parallel
                                         )    
 
@@ -185,7 +190,7 @@ def FCP_traditional(args, pop_force_training, fcp_force_training, parallel):
                                         pop_force_training=pop_force_training,
                                         fcp_force_training=fcp_force_training,
                                         fcp_curriculum=fcp_curriculum,
-                                        num_self_play_agents_to_train=args.num_sp_agents_to_train,
+                                        num_SPs_to_train=args.num_SPs_to_train,
                                         parallel=parallel
                                         )
 
@@ -210,7 +215,7 @@ def FCP_w_SP_TYPES(args, pop_force_training, fcp_force_training, fcp_w_sp_force_
                                     pop_force_training=pop_force_training,
                                     fcp_force_training=fcp_force_training,
                                     fcp_w_sp_force_training=fcp_w_sp_force_training,
-                                    num_self_play_agents_to_train=args.num_sp_agents_to_train,
+                                    num_SPs_to_train=args.num_SPs_to_train,
                                     parallel=parallel,
                                     fcp_curriculum=fcp_curriculum,
                                     fcp_w_sp_curriculum=fcp_w_sp_curriculum
@@ -225,23 +230,26 @@ def set_input(args, quick_test=False, supporter_run=False):
     '''
     args.layout_names = ['3_chefs_small_kitchen']
     args.teammates_len = 2
-    args.unseen_teammates_len = 1
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
         
-    if not quick_test: 
+    if not quick_test:
         args.learner_type = LearnerType.Originaler
         args.n_envs = 200
-        how_long = 1.0
         args.epoch_timesteps = 1e5
-        args.pop_total_training_timesteps = 5e6 * how_long
-        args.fcp_total_training_timesteps = 2 * 5e6 * how_long
-        args.sp_w_sp_total_training_timesteps = 5e6 * how_long
-        args.fcp_w_sp_total_training_timesteps = 4 * 5e6 * how_long        
+
+        how_long = 1.0
+        args.pop_total_training_timesteps = int(5e6 * how_long)
+        args.n_x_sp_total_training_timesteps = int(5e6 * how_long)
+        args.fcp_total_training_timesteps = int(5e6 * how_long)
+        args.fcp_w_sp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * how_long)
+
         args.SP_seed, args.SP_h_dim = 68, 256
-        args.SPWSP_seed, args.SPWSP_h_dim = 1010, 256
+        args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
+
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.FCPWSP_seed, args.FCPWSP_h_dim = 2602, 256
-        args.num_sp_agents_to_train = 3
+
+        args.num_SPs_to_train = 3
         args.exp_dir = 'experiment/1' # This is the directory where the experiment will be saved. Change it to your desired directory
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -250,32 +258,35 @@ def set_input(args, quick_test=False, supporter_run=False):
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 3500
         args.fcp_total_training_timesteps = 3500
-        args.sp_w_sp_total_training_timesteps = 3500
+        args.n_x_sp_total_training_timesteps = 3500
         args.fcp_w_sp_total_training_timesteps = 3500 * 2
-        args.num_sp_agents_to_train = 3
+        args.num_SPs_to_train = 3
         args.exp_dir = 'test/1'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = False
+    quick_test = True
     parallel = True
-    
-    pop_force_training = True
-    fcp_force_training = True
-    fcp_w_sp_force_training = True
-    sp_w_sp_force_training = True
+
+    pop_force_training = False
+    primary_force_training = True
+
+    # fcp_force_training = True
+    # fcp_w_sp_force_training = True
+    # sp_w_sp_force_training = True
+    # n_x_sp_force_training = True
     
     set_input(args=args, quick_test=quick_test)
 
-    SP(args=args,
-       pop_force_training=pop_force_training)
+    # SP(args=args,
+    #    pop_force_training=pop_force_training)
     
     
-    # N_X_SP(args=args,
-    #        pop_force_training=pop_force_training,
-    #        n_x_sp_force_training=n_x_sp_force_training,
-    #        parallel=parallel)
+    N_X_SP(args=args,
+           pop_force_training=pop_force_training,
+           primary_force_training=primary_force_training,
+           parallel=parallel)
 
     
     # FCP_traditional(args=args,
