@@ -28,7 +28,7 @@ def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, eval_typ
                             eval_types_to_read_from_file=eval_types['load'])
 
     if agents:
-        return agents[0], tc
+        return agents[0], tc, name
 
     selfplay_trainer = RLAgentTrainer(
         name=name,
@@ -43,7 +43,7 @@ def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, eval_typ
     )
 
     selfplay_trainer.train_agents(total_train_timesteps=total_training_timesteps)
-    return selfplay_trainer.get_agents()[0], tc
+    return selfplay_trainer.get_agents()[0], tc, name
 
 
 def get_selfplay_agent_trained_w_selfplay_types(args,
@@ -100,7 +100,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
     
     agents = load_agents(args, name=name, tag=tag, force_training=sp_w_sp_force_training)
     if agents:
-        return agents[0], population_of_all_train_types
+        return agents[0], population_of_all_train_types, name
 
     # Generate a randomly initialized SP agent
     randomly_init_sp_agent = RLAgentTrainer.generate_randomly_initialized_SP_agent(args=args)
@@ -123,7 +123,7 @@ def get_selfplay_agent_trained_w_selfplay_types(args,
 
     sp_w_sp_types_trainer.train_agents(total_train_timesteps=sp_w_sp_total_training_timesteps)
 
-    return sp_w_sp_types_trainer.get_agents()[0], teammates_collection_for_sp_w_sp_types_training
+    return sp_w_sp_types_trainer.get_agents()[0], teammates_collection_for_sp_w_sp_types_training, name
 
 
 def get_fcp_agent_w_tms_clction(args, 
@@ -151,7 +151,7 @@ def get_fcp_agent_w_tms_clction(args,
     
     agents = load_agents(args, name=name, tag=tag, force_training=fcp_force_training)
     if agents:
-        return agents[0], teammates_collection
+        return agents[0], teammates_collection, name
 
     fcp_trainer = RLAgentTrainer(
         name=name,
@@ -166,7 +166,7 @@ def get_fcp_agent_w_tms_clction(args,
     )
 
     fcp_trainer.train_agents(total_train_timesteps=fcp_total_training_timesteps)
-    return fcp_trainer.get_agents()[0], teammates_collection
+    return fcp_trainer.get_agents()[0], teammates_collection, name
 
 
 
@@ -218,7 +218,7 @@ def get_fcp_trained_w_selfplay_types(args,
     if agents:
 
         # If agents were loaded, we already trained them and don't need to continue to the training step
-        return agents[0], teammates_collection
+        return agents[0], teammates_collection, name
 
     fcp_trainer = RLAgentTrainer(
         name=name,
@@ -233,7 +233,7 @@ def get_fcp_trained_w_selfplay_types(args,
     )
 
     fcp_trainer.train_agents(total_train_timesteps=fcp_w_sp_total_training_timesteps)
-    return fcp_trainer.get_agents()[0], teammates_collection
+    return fcp_trainer.get_agents()[0], teammates_collection, name
 
 
 def get_adversary(args, total_training_timesteps, train_types, eval_types, curriculum, agent_path):
@@ -264,7 +264,7 @@ def get_adversary(args, total_training_timesteps, train_types, eval_types, curri
     )
 
     adversary_trainer.train_agents(total_train_timesteps=total_training_timesteps)
-    return adversary_trainer.get_agents()[0], tc
+    return adversary_trainer.get_agents()[0], tc, name
 
 
 def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, adv_paths):
@@ -297,6 +297,6 @@ def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_ti
     )
 
     agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)
-    return agent_trainer.get_agents()[0], tc
+    return agent_trainer.get_agents()[0], tc, name
 
 

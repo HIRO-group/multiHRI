@@ -13,6 +13,7 @@ from utils import (get_selfplay_agent_w_tms_collection,
                 get_agent_play_w_adversarys,
                 Curriculum
                 )
+from scripts.utils.common import generate_name
 
 def SingleAdversaryPlay(args, 
                         exp_tag = 'S2FP', 
@@ -36,21 +37,20 @@ def SingleAdversaryPlay(args,
         args.learner_type = main_agent_type
         args.reward_magnifier = reward_magnifier
         args.exp_dir = exp_tag 
-        SP(args=args, pop_force_training=True)
-        sp_tag = 'sp_s' + args.SP_seed + '_h' + args.SP_h_dim + '_tr(SP)_ran'
+        _, _, sp_tag = SP(args=args, pop_force_training=True)
         main_agent_path = exp_tag + '/' + sp_tag
     root = 'agent_models/' + main_agent_path
     root_adv = root + '/' + exp_tag
 
-    adv_tag = 'adv_s' + args.ADV_seed + '_h' + args.ADV_h_dim + '_tr(H)_ran'
-    pwadv_tag = 'pwadv_s' + args.ADV_seed + '_h' + args.ADV_h_dim + '_tr(SP_SPADV)_ran'
+    # adv_tag = 'adv_s' + args.ADV_seed + '_h' + args.ADV_h_dim + '_tr(H)_ran'
+    # pwadv_tag = 'pwadv_s' + args.ADV_seed + '_h' + args.ADV_h_dim + '_tr(SP_SPADV)_ran'
 
     how_long = how_long_for_adv
     set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.learner_type = adversary_type
     args.reward_magnifier = reward_magnifier
     args.exp_dir = root_adv + '/' + adversary_type + '/0'
-    ADV(args=args, 
+    _, _, adv_tag = ADV(args=args, 
         agent_folder_path = root, 
         agent_file_tag= CheckedPoints.BEST_EVAL_REWARD)
 
@@ -59,7 +59,7 @@ def SingleAdversaryPlay(args,
     args.learner_type = main_agent_type
     args.reward_magnifier = reward_magnifier
     args.exp_dir = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + '/0'
-    PwADVs( args=args, 
+    _, _, pwadv_tag = PwADVs( args=args, 
             agent_folder_path = root, 
             agent_file_tag = CheckedPoints.BEST_EVAL_REWARD,
             adv_folder_paths = [root_adv + '/' + adversary_type + '/0'], 
@@ -71,7 +71,7 @@ def SingleAdversaryPlay(args,
         args.learner_type = adversary_type
         args.reward_magnifier = reward_magnifier
         args.exp_dir = root_adv + '/' + adversary_type + '/' + str(round)
-        ADV(args=args,
+        _, _, adv_tag = ADV(args=args,
             agent_folder_path = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + + str(round-1), 
             agent_file_tag = pwadv_tag + '/' + CheckedPoints.FINAL_TRAINED_MODEL)
         
@@ -80,7 +80,7 @@ def SingleAdversaryPlay(args,
         args.learner_type = main_agent_type
         args.reward_magnifier = reward_magnifier
         args.exp_dir = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round)
-        PwADVs( args=args, 
+        _, _, pwadv_tag = PwADVs( args=args, 
                 agent_folder_path = root_adv + '/' + main_agent_type + '-' + adversary_type + 'play' + '/' + str(round-1), 
                 agent_file_tag = pwadv_tag + '/' + CheckedPoints.FINAL_TRAINED_MODEL,
                 adv_folder_paths = [root_adv + '/' + adversary_type + '/' + str(round)], 
@@ -172,7 +172,7 @@ def PwADVs(args,
     curriculum = Curriculum(train_types=train_types, is_random=True)
     agent_path = agent_folder_path + '/' + agent_file_tag
     adv_paths = [adv_folder_path + '/' + adv_file_tag for adv_folder_path in adv_folder_paths]
-    get_agent_play_w_adversarys(
+    gent_model, teammates, agent_tag = get_agent_play_w_adversarys(
         args=args, 
         train_types=train_types,
         eval_types=eval_types,
@@ -180,6 +180,8 @@ def PwADVs(args,
         curriculum=curriculum, 
         agent_path=agent_path,
         adv_paths=adv_paths)
+    return gent_model, teammates, agent_tag
+    
     
 
 def ADV(args, agent_folder_path='agent_models/four-layouts/supporter/0', agent_file_tag='sp_s68_h512_tr(SP)_ran/best'):
@@ -190,12 +192,13 @@ def ADV(args, agent_folder_path='agent_models/four-layouts/supporter/0', agent_f
     }
     curriculum = Curriculum(train_types=train_types, is_random=True)
     agent_path = agent_folder_path + '/' + agent_file_tag
-    get_adversary(  args=args, 
+    gent_model, teammates, agent_tag = get_adversary(  args=args, 
                     train_types=train_types,
                     eval_types=eval_types,
                     total_training_timesteps=args.pop_total_training_timesteps,
                     curriculum=curriculum, 
                     agent_path=agent_path)
+    return gent_model, teammates, agent_tag
 
 def SP(args, pop_force_training):
     args.sp_train_types = [TeamType.SELF_PLAY]
@@ -205,11 +208,13 @@ def SP(args, pop_force_training):
     }
     curriculum = Curriculum(train_types=args.sp_train_types, is_random=True)
 
-    get_selfplay_agent_w_tms_collection(args=args,
-                       eval_types=args.sp_eval_types,
-                       total_training_timesteps=args.pop_total_training_timesteps,
-                       force_training=pop_force_training,
-                       curriculum=curriculum)
+    agent_model, teammates, agent_tag = get_selfplay_agent_w_tms_collection(
+        args=args,
+        eval_types=args.sp_eval_types,
+        total_training_timesteps=args.pop_total_training_timesteps,
+        force_training=pop_force_training,
+        curriculum=curriculum)
+    return agent_model, teammates, agent_tag
 
 
 
@@ -287,7 +292,7 @@ def FCP(args, pop_force_training, fcp_force_training, parallel):
                                 probabilities_decay_over_time=0
                             )
 
-    _, _ = get_fcp_agent_w_tms_clction(args,
+    _, _, _ = get_fcp_agent_w_tms_clction(args,
                                         pop_total_training_timesteps=args.pop_total_training_timesteps,
                                         fcp_total_training_timesteps=args.fcp_total_training_timesteps,
                                         fcp_eval_types=args.fcp_eval_types,
@@ -389,17 +394,17 @@ if __name__ == '__main__':
                         rounds_of_advplay = 2,
                         reward_magnifier = 3.0)
     
-    MultiAdversaryPlay(args=args, 
-                        exp_tag = 'M2FP', 
-                        main_agent_path = None,
-                        main_agent_type = LearnerType.SUPPORTER, 
-                        adversary_type = LearnerType.SELFISHER, 
-                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long_init = 0.02,
-                        how_long_for_agent = 0.02,
-                        how_long_for_adv = 0.02,
-                        rounds_of_advplay = 2,
-                        reward_magnifier = 3.0)
+    # MultiAdversaryPlay(args=args, 
+    #                     exp_tag = 'M2FP', 
+    #                     main_agent_path = None,
+    #                     main_agent_type = LearnerType.SUPPORTER, 
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 0.02,
+    #                     how_long_for_agent = 0.02,
+    #                     how_long_for_adv = 0.02,
+    #                     rounds_of_advplay = 2,
+    #                     reward_magnifier = 3.0)
 
     # SP(args=args,
     #    pop_force_training=pop_force_training)

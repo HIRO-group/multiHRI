@@ -71,9 +71,9 @@ class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'
 
-class CheckedPoints(Enum):
-    BEST_EVAL_REWARD = "best"
+class CheckedPoints():
+    BEST_EVAL_REWARD = 'best'
     WORST_EVAL_REWARD ='worst'
-    BEST_TRAIN_REWARD = "best_train_reward"
+    BEST_TRAIN_REWARD = 'best_train_reward'
     WORST_TRAIN_REWARD ='worst_train_reward'
-    FINAL_TRAINED_MODEL = "last"
+    FINAL_TRAINED_MODEL = 'last'

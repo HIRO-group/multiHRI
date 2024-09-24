@@ -2,7 +2,7 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_args_to_save, set_args_from_load, get_arguments
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
-from oai_agents.common.tags import AgentPerformance, TeamType
+from oai_agents.common.tags import AgentPerformance, TeamType, CheckedPoints
 from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
