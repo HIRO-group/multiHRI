@@ -146,17 +146,20 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
             all_teammates[teamtype].append([agent for _ in range(teammates_len)])
 
         elif teamtype == TeamType.SELF_PLAY_HIGH:
+            assert agent is not None
             high_p_agents = sorted_agents_perftag_score[:unseen_teammates_len]
             agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in high_p_agents] + agents_itself)
         
         elif teamtype == TeamType.SELF_PLAY_MEDIUM:
+            assert agent is not None
             mean_score = (sorted_agents_perftag_score[0][2] + sorted_agents_perftag_score[-1][2])/2
             mean_p_agents = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))[:unseen_teammates_len]
             agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in mean_p_agents] + agents_itself)
 
         elif teamtype == TeamType.SELF_PLAY_MIDDLE:
+            assert agent is not None
             middle_index = len(sorted_agents_perftag_score)//2
             start_index_for_mid = middle_index - unseen_teammates_len//2
             end_index_for_mid = start_index_for_mid + unseen_teammates_len
@@ -165,6 +168,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
             all_teammates[teamtype].append([tm[0] for tm in mid_p_agents] + agents_itself)
         
         elif teamtype == TeamType.SELF_PLAY_LOW:
+            assert agent is not None
             low_p_agents = sorted_agents_perftag_score[-unseen_teammates_len:]
             agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
@@ -310,14 +314,14 @@ def generate_TC_for_FCP_w_SP_types(args, teammates_collection, agent, train_type
     return teammates_collection
 
 
-def generate_TC_for_N_X_SP(args,
-                           agent,
-                           population,
-                           unseen_teammates_len,
-                           train_types,
-                           eval_types_to_generate,
-                           eval_types_to_read_from_file,
-                           ):
+def generate_TC(args,
+                population,
+                train_types,
+                eval_types_to_generate,
+                eval_types_to_read_from_file,
+                agent=None,
+                unseen_teammates_len=0,
+                ):
 
     '''
     Input:
@@ -340,8 +344,8 @@ def generate_TC_for_N_X_SP(args,
             }
         }
     '''
-    print("Evaluation types to generate: ", eval_types_to_generate)
-    print("Evaluation types to read from file: ", eval_types_to_read_from_file)
+    if unseen_teammates_len > 0 and agent is None:
+        raise ValueError('Unseen teammates length is greater than 0 but agent is not provided')
 
     eval_collection = {
         layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}

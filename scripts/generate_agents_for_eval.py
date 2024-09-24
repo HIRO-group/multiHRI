@@ -49,7 +49,7 @@ if __name__ == "__main__":
     quick_test = False
     parallel = True
     pop_force_training = True
-    fcp_force_training = True
+    primary_force_training = True
     set_input(args=args, quick_test=quick_test)
 
     all_FCP_train_types = [
