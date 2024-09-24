@@ -113,7 +113,6 @@ class RLAgentTrainer(OAITrainer):
             }
         '''
         if _tms_clctn == {}:
-            print("No teammates collection provided, using SELF_PLAY: teammates will be the agent itself.")
             _tms_clctn = {
                 TeammatesCollection.TRAIN: {
                     layout_name: 
@@ -346,7 +345,7 @@ class RLAgentTrainer(OAITrainer):
         return all_agents
 
     @staticmethod
-    def get_fcp_agents(args, ck_list, layout_name):
+    def get_checkedpoints_agents(args, ck_list, layout_name):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH
@@ -361,7 +360,7 @@ class RLAgentTrainer(OAITrainer):
         '''
         if len(ck_list) < len(AgentPerformance.ALL):
             raise ValueError(f'Must have at least {len(AgentPerformance.ALL)} checkpoints saved. \
-                             Currently is: {len(ck_list)}. Increase fcp_ck_rate or training length')
+                             Currently is: {len(ck_list)}. Increase ck_rate or training length')
 
         all_score_path_tag_sorted = []
         for scores, path, tag in ck_list:

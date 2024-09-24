@@ -1,73 +1,11 @@
-from .tc_helper import generate_TC_for_FCP_w_NO_SP_types, get_teammates_per_type_and_layout, print_teammates_collection
-
-from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import AgentPerformance, TeamType
-from .curriculum import Curriculum
 
 import multiprocessing
 import dill
 
-def get_fcp_population(args,
-                       ck_rate,
-                       total_training_timesteps,
-                       train_types, 
-                       eval_types_to_generate,
-                       eval_types_to_load_from_file=[],
-                       num_SPs_to_train=2,
-                       parallel=True,
-                       force_training=False,
-                       ):
+from oai_agents.agents.rl import RLAgentTrainer
+from oai_agents.common.tags import AgentPerformance, TeamType
 
-    population = {layout_name: [] for layout_name in args.layout_names}
-
-    try:
-        if force_training:
-            raise FileNotFoundError
-        for layout_name in args.layout_names:
-            name = f'fcp_pop_{layout_name}'
-            population[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag='aamas25')
-            print(f'Loaded fcp_pop with {len(population[layout_name])} agents.')
-    except FileNotFoundError as e:
-        print(f'Could not find saved FCP population, creating them from scratch...\nFull Error: {e}')
-
-        ensure_we_will_have_enough_agents_in_population(teammates_len=args.teammates_len,
-                                                        train_types=train_types,
-                                                        eval_types=eval_types_to_generate,
-                                                        num_SPs_to_train=num_SPs_to_train,
-                                                        )
-
-        seed, h_dim = generate_hdim_and_seed(num_SPs_to_train)
-        inputs = [
-            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
-        ]
-
-        if parallel:
-            with multiprocessing.Pool() as pool:
-                dilled_results = pool.starmap(train_agent_with_checkpoints, inputs)
-            for dilled_res in dilled_results:
-                checkpoints_list = dill.loads(dilled_res)
-                for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
-                    population[layout_name].extend(layout_pop)
-        else:
-            for inp in inputs:
-                checkpoints_list = train_agent_with_checkpoints(args=inp[0],
-                                                   total_training_timesteps = inp[1],
-                                                   ck_rate=inp[2],
-                                                   seed=inp[3],
-                                                   h_dim=inp[4],
-                                                   serialize=False)
-                for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
-                    population[layout_name].extend(layout_pop)
-
-        save_fcp_pop(args=args, population=population)
-
-    return generate_TC_for_FCP_w_NO_SP_types(args=args,
-                                                       population=population,
-                                                       train_types=train_types,
-                                                       eval_types_to_generate=eval_types_to_generate,
-                                                       eval_types_to_read_from_file=eval_types_to_load_from_file)
+from .curriculum import Curriculum
 
 
 def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
@@ -76,7 +14,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         either serialized or not based on serialize flag
     '''
 
-    name = f'fcp_hd{h_dim}_seed{seed}'
+    name = f'SP_hd{h_dim}_seed{seed}'
 
     rlat = RLAgentTrainer(
         name=name,
@@ -216,7 +154,7 @@ def get_population(args,
             for dilled_res in dilled_results:
                 checkpoints_list = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
         else:
             for inp in inputs:
@@ -227,7 +165,7 @@ def get_population(args,
                                                    h_dim=inp[4],
                                                    serialize=False)
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_fcp_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
 
         save_population(args=args, population=population)

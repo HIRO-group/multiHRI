@@ -1,4 +1,2 @@
-from .train_helper import get_selfplay_agent_w_tms_collection, get_fcp_agent_w_tms_clction, get_fcp_trained_w_selfplay_types, get_selfplay_agent_trained_w_selfplay_types, get_N_X_selfplay_agents_trained_w_selfplay_types
+from .train_helper import get_SP_agent, get_FCP_agent_w_pop, get_N_X_FCP_agents, get_N_X_SP_agents
 from .eval_helper import get_eval_types_to_load
-from .pop_helper import get_fcp_population
-from .curriculum import Curriculum
