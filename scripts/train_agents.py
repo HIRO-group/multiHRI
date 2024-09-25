@@ -19,13 +19,17 @@ from scripts.utils.common import generate_name
 def SingleAdversaryPlay(args, 
                         exp_tag = 'S2FP', 
                         main_agent_path = 'S2FP/sp_s68_h512_tr(SP)_ran',
+                        main_agent_seed = 68,
+                        main_agent_h_dim = 512,
                         main_agent_type = LearnerType.SUPPORTER, 
+                        adversary_seed = 68,
+                        adversary_h_dim = 512,
                         adversary_type = LearnerType.SELFISHER, 
                         checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
                         how_long_init = 4.0,
                         how_long_for_agent = 1.0,
                         how_long_for_adv = 1.0,
-                        rounds_of_advplay = 401,
+                        rounds_of_advplay = 101,
                         reward_magnifier = 3.0):
     
     args.dynamic_reward = False
@@ -33,8 +37,7 @@ def SingleAdversaryPlay(args,
     if main_agent_path is None:
         how_long = how_long_init
         set_input(args=args, quick_test=quick_test, how_long=how_long)
-        args.SP_seed = args.ADV_seed
-        args.SP_h_dim = args.ADV_h_dim
+        args.SP_seed, args.SP_h_dim = args.ADV_seed, args.ADV_h_dim
         args.learner_type = main_agent_type
         args.reward_magnifier = reward_magnifier
         args.exp_dir = exp_tag 
@@ -57,7 +60,7 @@ def SingleAdversaryPlay(args,
     how_long = how_long_init + how_long_for_agent
     # how_long = 0
     set_input(args=args, quick_test=quick_test, how_long=how_long)
-    args.exp_dir = f"{root_adv}/{main_agent_path}-{adversary_type}play/0"
+    args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/0"
     _, _, pwadv_tag = PwADVs( 
             args=args, 
             agent_folder_path = root, 
