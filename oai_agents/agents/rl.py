@@ -257,7 +257,7 @@ class RLAgentTrainer(OAITrainer):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
         self.best_training_rew *= 0.98
 
-        steps_divisable_by_5 = (steps + 1) % 5 == 0
+        steps_divisable_by_5 = (steps + 1) % 1 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         fcp_ck_rate_reached = self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)
     
