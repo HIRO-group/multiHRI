@@ -40,7 +40,14 @@ class TeamType:
     MEDIUM_LOW = 'ML'
     HIGH_LOW_RANDOM = 'HLR'
 
-    ALL_TYPES_BESIDES_SP = [HIGH_FIRST, MEDIUM_FIRST, MIDDLE_FIRST, LOW_FIRST, RANDOM, HIGH_MEDIUM, HIGH_LOW, MEDIUM_LOW, HIGH_LOW_RANDOM]
+    # Used to create a list of all possible permutations of agents from the teammate population
+    # TODO: eventually, teammates_collection should be turned into its own class with 'select' 
+    # and 'update' functions that can be leveraged during training so the teammates_collection 
+    # doesn't need to be created before training begins, once that happens we can remove the AMX
+    # type
+    ALL_MIX = 'AMX'
+
+    ALL_TYPES_BESIDES_SP = [HIGH_FIRST, MEDIUM_FIRST, MIDDLE_FIRST, LOW_FIRST, RANDOM, HIGH_MEDIUM, HIGH_LOW, MEDIUM_LOW, HIGH_LOW_RANDOM, ALL_MIX]
 
     SELF_PLAY = 'SP'
     SELF_PLAY_LOW = 'SPL'
@@ -63,7 +70,8 @@ class TeamType:
             TeamType.SELF_PLAY_LOW: 10,
             TeamType.SELF_PLAY_MEDIUM: 11,
             TeamType.SELF_PLAY_HIGH: 12,
-            TeamType.SELF_PLAY_ADVERSARY: 13
+            TeamType.SELF_PLAY_ADVERSARY: 13,
+            TeamType.ALL_MIX: 14
         }
         return tt_map[teamtype]
 

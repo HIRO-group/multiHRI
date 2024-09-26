@@ -290,6 +290,12 @@ class RLAgentTrainer(OAITrainer):
 
         while curr_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=steps)
+
+            # TODO: eventually, teammates_collection should be turned into its own class with 'select' 
+            # and 'update' functions that can be leveraged during training so the teammates_collection 
+            # doesn't need to be created before training begins, this would allow us to generate a random
+            # TC each round of training (like in the original FCP paper), until then, we have to leverage
+            # the ALL_MIX TeamType to achieve random teammate selection 
             self.set_new_teammates(curriculum=self.curriculum)
 
             # In each iteration the agent collects n_envs * n_steps experiences

@@ -10,9 +10,6 @@ from .curriculum import Curriculum
 from oai_agents.agents.agent_utils import load_agent
 from pathlib import Path
 
-from oai_agents.agents.base_agent import OAIAgent
-
-
 def get_selfplay_agent_w_tms_collection(args, total_training_timesteps, eval_types, curriculum, tag=None, force_training=False):
     name = generate_name(args, 
                          prefix='sp',
