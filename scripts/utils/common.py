@@ -1,10 +1,11 @@
 from oai_agents.agents.rl import RLAgentTrainer
+from oai_agents.common.tags import CheckedPoints
 
 def load_agents(args, name, tag, path=None, force_training=False):
     if force_training:
         return []
     try:
-        agents = RLAgentTrainer.load_agents(args, name=name, path=path, tag=tag or 'best')
+        agents = RLAgentTrainer.load_agents(args, name=name, path=path, tag=tag or CheckedPoints.BEST_EVAL_REWARD)
         return agents
     except FileNotFoundError as e:
         print(f'Could not find saved {name} agent \nFull Error: {e}')

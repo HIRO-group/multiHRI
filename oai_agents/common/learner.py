@@ -9,7 +9,7 @@ class LearnerType:
     Supporter > Collaborator > Soloworker >> Selfisher > Saboteur.
     If more details are desired, learner.py define these learners.
     '''
-    Originaler = "originaler"
+    ORIGINALER = "originaler"
     SABOTEUR = "saboteur"
     SELFISHER = "selfisher"
     SOLOWORKER = "soloworker"
@@ -19,7 +19,7 @@ class LearnerType:
 class Learner:
     def __new__(cls, learner_type: str, magnifier: float):
         learner_classes = {
-            LearnerType.Originaler: Originaler,
+            LearnerType.ORIGINALER: Originaler,
             LearnerType.SABOTEUR: Saboteur,
             LearnerType.SELFISHER: Selfisher,
             LearnerType.SOLOWORKER: SoloWorker,
@@ -40,6 +40,7 @@ class Learner:
         This magnification would maginify the advantage.
         This further increase the gradient for the policy optimization.
         '''
+        self.learner_type = learner_type
         self.magnifier = magnifier 
         self.personal_reward = 0
         self.group_reward = 0

@@ -22,6 +22,10 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--batch-size', type=int, default=32, help='batch size used in imitation learning. bs for rl is defined in rl.py')
     parser.add_argument('--SP-seed', type=int, default=68, help='seed used in train_helper')
     parser.add_argument('--SP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
+    parser.add_argument('--ADV-seed', type=int, default=68, help='seed used in adverary-play')
+    parser.add_argument('--ADV-h-dim', type=int, default=512, help='hidden dimension used in adverary-play')
+    parser.add_argument('--PwADV-seed', type=int, default=68, help='seed used in adverary-play')
+    parser.add_argument('--PwADV-h-dim', type=int, default=512, help='hidden dimension used in adverary-play')
     parser.add_argument('--FCP-seed', type=int, default=2020, help='seed used in train_helper')
     parser.add_argument('--FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
     parser.add_argument('--SPWSP-seed', type=int, default=1010, help='seed used in train_helper')
@@ -58,6 +62,8 @@ def get_arguments(additional_args=[]):
 
     parser.add_argument('--learner-type', type=str, default='supporter')
     parser.add_argument('--reward-magnifier', type=float, default=3.0)
+    parser.add_argument('--dynamic-reward', type=bool, default=True)
+    parser.add_argument('--final-sparse-r-ratio', type=float, default=1.0)
     
     parser.add_argument('--fcp-train-types', nargs='+', type=str)
     parser.add_argument('--fcp-eval-types', type=dict)
