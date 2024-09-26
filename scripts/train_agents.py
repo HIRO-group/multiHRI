@@ -16,7 +16,8 @@ from utils import (get_selfplay_agent_w_tms_collection,
                 )
 from scripts.utils.common import generate_name
 
-def SingleAdversaryPlay(args, 
+def InitializeAdversaryPlay(
+                        args, 
                         exp_tag = 'S2FP', 
                         # main_agent_path = 'S2FP/sp_s68_h512_tr(SP)_ran',
                         main_agent_path = None,
@@ -30,10 +31,8 @@ def SingleAdversaryPlay(args,
                         how_long_init = 4.0,
                         how_long_for_agent = 1.0,
                         how_long_for_adv = 1.0,
-                        rounds_of_advplay = 101,
                         reward_magnifier = 3.0):
-    
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    set_input(args=args, quick_test=quick_test, how_long=how_long_init)
     args.dynamic_reward = False
     args.final_sparse_r_ratio = 0.5
     if main_agent_path is None:
@@ -73,6 +72,43 @@ def SingleAdversaryPlay(args,
             main_agent_seed = main_agent_seed,
             main_agent_h_dim = main_agent_h_dim,
             reward_magnifier = reward_magnifier)
+    
+    return root, root_adv, adv_tag, pwadv_tag
+    
+
+def SingleAdversaryPlay(args, 
+                        exp_tag = 'S2FP', 
+                        # main_agent_path = 'S2FP/sp_s68_h512_tr(SP)_ran',
+                        main_agent_path = None,
+                        main_agent_seed = 68,
+                        main_agent_h_dim = 512,
+                        main_agent_type = LearnerType.SUPPORTER, 
+                        adversary_seed = 68,
+                        adversary_h_dim = 512,
+                        adversary_type = LearnerType.SELFISHER, 
+                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+                        how_long_init = 4.0,
+                        how_long_for_agent = 1.0,
+                        how_long_for_adv = 1.0,
+                        rounds_of_advplay = 101,
+                        reward_magnifier = 3.0):
+    
+    root, root_adv, adv_tag, pwadv_tag = InitializeAdversaryPlay(
+        args=args,
+        exp_tag=exp_tag,
+        main_agent_path=main_agent_path,
+        main_agent_seed=main_agent_seed,
+        main_agent_h_dim=main_agent_h_dim,
+        main_agent_type = main_agent_type, 
+        adversary_seed = adversary_seed,
+        adversary_h_dim = adversary_h_dim,
+        adversary_type = adversary_type, 
+        checked_adversary = checked_adversary, 
+        how_long_init = how_long_init,
+        how_long_for_agent = how_long_for_agent,
+        how_long_for_adv = how_long_for_adv,
+        reward_magnifier = reward_magnifier
+    )
     ###################################################################
     for round in range(1,rounds_of_advplay):
         how_long = how_long_for_adv
@@ -118,46 +154,22 @@ def MultiAdversaryPlay( args,
                         rounds_of_advplay = 101,
                         reward_magnifier = 3.0):
     
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
-    args.dynamic_reward = False
-    args.final_sparse_r_ratio = 0.5
-    if main_agent_path is None:
-        how_long = how_long_init
-        args.pop_total_training_timesteps = 5e6 * how_long
-        args.SP_seed, args.SP_h_dim = main_agent_seed, main_agent_h_dim
-        args.learner_type = main_agent_type
-        args.reward_magnifier = reward_magnifier
-        args.exp_dir = exp_tag 
-        sp, _ = SP(args=args, pop_force_training=True)
-        main_agent_path = f"{exp_tag}/{sp.name}"
-    root = main_agent_path
-    root_adv = f"{root}/{exp_tag}"
-
-    how_long = how_long_for_adv
-    args.pop_total_training_timesteps = 5e6 * how_long
-    args.exp_dir = f"{root_adv}/{adversary_type}/0"
-    _, _, adv_tag = ADV(
-        args = args, 
-        agent_folder_path = root, 
-        agent_file_tag = CheckedPoints.BEST_EVAL_REWARD, 
-        adversary_type = adversary_type,
+    root, root_adv, adv_tag, pwadv_tag = InitializeAdversaryPlay(
+        args=args,
+        exp_tag=exp_tag,
+        main_agent_path=main_agent_path,
+        main_agent_seed=main_agent_seed,
+        main_agent_h_dim=main_agent_h_dim,
+        main_agent_type = main_agent_type, 
         adversary_seed = adversary_seed,
         adversary_h_dim = adversary_h_dim,
-        reward_magnifier = reward_magnifier)
-
-    how_long = how_long_init + how_long_for_agent
-    args.pop_total_training_timesteps = 5e6 * how_long
-    args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/0"
-    _, _, pwadv_tag = PwADVs( 
-            args=args, 
-            agent_folder_path = root, 
-            agent_file_tag = CheckedPoints.BEST_EVAL_REWARD,
-            adv_folder_paths = [f"{root_adv}/{adversary_type}/0"], 
-            adv_file_tag = f"{adv_tag}/{checked_adversary}",
-            main_agent_type = main_agent_type,
-            main_agent_seed = main_agent_seed,
-            main_agent_h_dim = main_agent_h_dim,
-            reward_magnifier = reward_magnifier)
+        adversary_type = adversary_type, 
+        checked_adversary = checked_adversary, 
+        how_long_init = how_long_init,
+        how_long_for_agent = how_long_for_agent,
+        how_long_for_adv = how_long_for_adv,
+        reward_magnifier = reward_magnifier
+    )
     ###################################################################
     for round in range(1,rounds_of_advplay):
         how_long = how_long_for_adv
@@ -203,46 +215,22 @@ def MultiAdversaryScheduledPlay(args,
                                 rounds_of_advplay = 101,
                                 reward_magnifier = 3.0):
     
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
-    args.dynamic_reward = False
-    args.final_sparse_r_ratio = 0.5
-    if main_agent_path is None:
-        how_long = how_long_init
-        args.pop_total_training_timesteps = 5e6 * how_long
-        args.SP_seed, args.SP_h_dim = main_agent_seed, main_agent_h_dim
-        args.learner_type = main_agent_type
-        args.reward_magnifier = reward_magnifier
-        args.exp_dir = exp_tag 
-        sp, _ = SP(args=args, pop_force_training=True)
-        main_agent_path = f"{exp_tag}/{sp.name}"
-    root = main_agent_path
-    root_adv = f"{root}/{exp_tag}"
-
-    how_long = how_long_for_adv
-    args.pop_total_training_timesteps = 5e6 * how_long
-    args.exp_dir = f"{root_adv}/{adversary_type}/0"
-    _, _, adv_tag = ADV(
-        args = args, 
-        agent_folder_path = root, 
-        agent_file_tag = CheckedPoints.BEST_EVAL_REWARD, 
-        adversary_type = adversary_type,
+    root, root_adv, adv_tag, pwadv_tag = InitializeAdversaryPlay(
+        args=args,
+        exp_tag=exp_tag,
+        main_agent_path=main_agent_path,
+        main_agent_seed=main_agent_seed,
+        main_agent_h_dim=main_agent_h_dim,
+        main_agent_type = main_agent_type, 
         adversary_seed = adversary_seed,
         adversary_h_dim = adversary_h_dim,
-        reward_magnifier = reward_magnifier)
-
-    how_long = how_long_init + how_long_for_agent
-    args.pop_total_training_timesteps = 5e6 * how_long
-    args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/0"
-    _, _, pwadv_tag = PwADVs( 
-            args=args, 
-            agent_folder_path = root, 
-            agent_file_tag = CheckedPoints.BEST_EVAL_REWARD,
-            adv_folder_paths = [f"{root_adv}/{adversary_type}/0"], 
-            adv_file_tag = f"{adv_tag}/{checked_adversary}",
-            main_agent_type = main_agent_type,
-            main_agent_seed = main_agent_seed,
-            main_agent_h_dim = main_agent_h_dim,
-            reward_magnifier = reward_magnifier)
+        adversary_type = adversary_type, 
+        checked_adversary = checked_adversary, 
+        how_long_init = how_long_init,
+        how_long_for_agent = how_long_for_agent,
+        how_long_for_adv = how_long_for_adv,
+        reward_magnifier = reward_magnifier
+    )
     ###################################################################
     for round in range(1,rounds_of_advplay):
         how_long = how_long_for_adv
