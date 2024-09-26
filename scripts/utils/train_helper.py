@@ -270,8 +270,8 @@ def get_adversary(args, total_training_timesteps, train_types, eval_types, curri
 def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, adv_paths):
     name = generate_name(args, 
                          prefix='pwadv',
-                         seed=args.ADV_seed,
-                         h_dim=args.ADV_h_dim, 
+                         seed=args.PwADV_seed,
+                         h_dim=args.PwADV_h_dim, 
                          train_types=train_types,
                          has_curriculum= not curriculum.is_random)
     agent = load_agent(Path(agent_path), args)
@@ -292,8 +292,8 @@ def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_ti
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         curriculum=curriculum,
-        seed=args.ADV_seed,
-        hidden_dim=args.ADV_h_dim,
+        seed=args.PwADV_seed,
+        hidden_dim=args.PwADV_h_dim,
     )
     
     agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)
