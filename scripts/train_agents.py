@@ -33,11 +33,12 @@ def SingleAdversaryPlay(args,
                         rounds_of_advplay = 101,
                         reward_magnifier = 3.0):
     
+    set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.dynamic_reward = False
     args.final_sparse_r_ratio = 0.5
     if main_agent_path is None:
         how_long = how_long_init
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.SP_seed, args.SP_h_dim = main_agent_seed, main_agent_h_dim
         args.learner_type = main_agent_type
         args.reward_magnifier = reward_magnifier
@@ -48,7 +49,7 @@ def SingleAdversaryPlay(args,
     root_adv = f"{root}/{exp_tag}"
 
     how_long = how_long_for_adv
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    args.pop_total_training_timesteps = 5e6 * how_long
     args.exp_dir = f"{root_adv}/{adversary_type}/0"
     _, _, adv_tag = ADV(
         args = args, 
@@ -60,7 +61,7 @@ def SingleAdversaryPlay(args,
         reward_magnifier = reward_magnifier)
 
     how_long = how_long_init + how_long_for_agent
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    args.pop_total_training_timesteps = 5e6 * how_long
     args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/0"
     _, _, pwadv_tag = PwADVs( 
             args=args, 
@@ -75,7 +76,7 @@ def SingleAdversaryPlay(args,
     ###################################################################
     for round in range(1,rounds_of_advplay):
         how_long = how_long_for_adv
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.exp_dir = f"{root_adv}/{adversary_type}/{str(round)}"
         _, _, adv_tag = ADV(
             args=args,
@@ -87,7 +88,7 @@ def SingleAdversaryPlay(args,
             reward_magnifier = reward_magnifier)
         
         how_long = how_long_init + how_long_for_agent*(round+1)
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}"
         _, _, pwadv_tag = PwADVs( 
                 args=args, 
@@ -117,11 +118,12 @@ def MultiAdversaryPlay( args,
                         rounds_of_advplay = 101,
                         reward_magnifier = 3.0):
     
+    set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.dynamic_reward = False
     args.final_sparse_r_ratio = 0.5
     if main_agent_path is None:
         how_long = how_long_init
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.SP_seed, args.SP_h_dim = main_agent_seed, main_agent_h_dim
         args.learner_type = main_agent_type
         args.reward_magnifier = reward_magnifier
@@ -132,7 +134,7 @@ def MultiAdversaryPlay( args,
     root_adv = f"{root}/{exp_tag}"
 
     how_long = how_long_for_adv
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    args.pop_total_training_timesteps = 5e6 * how_long
     args.exp_dir = f"{root_adv}/{adversary_type}/0"
     _, _, adv_tag = ADV(
         args = args, 
@@ -144,7 +146,7 @@ def MultiAdversaryPlay( args,
         reward_magnifier = reward_magnifier)
 
     how_long = how_long_init + how_long_for_agent
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    args.pop_total_training_timesteps = 5e6 * how_long
     args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/0"
     _, _, pwadv_tag = PwADVs( 
             args=args, 
@@ -159,7 +161,7 @@ def MultiAdversaryPlay( args,
     ###################################################################
     for round in range(1,rounds_of_advplay):
         how_long = how_long_for_adv
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.exp_dir = f"{root_adv}/{adversary_type}/{str(round)}"
         _, _, adv_tag = ADV(
             args=args,
@@ -171,7 +173,7 @@ def MultiAdversaryPlay( args,
             reward_magnifier = reward_magnifier)
         
         how_long = how_long_init + how_long_for_agent*(round+1)
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}"
         _, _, pwadv_tag = PwADVs( 
                 args=args, 
@@ -201,11 +203,12 @@ def MultiAdversaryScheduledPlay(args,
                                 rounds_of_advplay = 101,
                                 reward_magnifier = 3.0):
     
+    set_input(args=args, quick_test=quick_test, how_long=how_long)
     args.dynamic_reward = False
     args.final_sparse_r_ratio = 0.5
     if main_agent_path is None:
         how_long = how_long_init
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.SP_seed, args.SP_h_dim = main_agent_seed, main_agent_h_dim
         args.learner_type = main_agent_type
         args.reward_magnifier = reward_magnifier
@@ -216,7 +219,7 @@ def MultiAdversaryScheduledPlay(args,
     root_adv = f"{root}/{exp_tag}"
 
     how_long = how_long_for_adv
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    args.pop_total_training_timesteps = 5e6 * how_long
     args.exp_dir = f"{root_adv}/{adversary_type}/0"
     _, _, adv_tag = ADV(
         args = args, 
@@ -228,7 +231,7 @@ def MultiAdversaryScheduledPlay(args,
         reward_magnifier = reward_magnifier)
 
     how_long = how_long_init + how_long_for_agent
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    args.pop_total_training_timesteps = 5e6 * how_long
     args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/0"
     _, _, pwadv_tag = PwADVs( 
             args=args, 
@@ -243,7 +246,7 @@ def MultiAdversaryScheduledPlay(args,
     ###################################################################
     for round in range(1,rounds_of_advplay):
         how_long = how_long_for_adv
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.exp_dir = f"{root_adv}/{adversary_type}/{str(round)}"
         _, _, adv_tag = ADV(
             args=args,
@@ -255,7 +258,7 @@ def MultiAdversaryScheduledPlay(args,
             reward_magnifier = reward_magnifier)
         
         how_long = how_long_init + how_long_for_agent*round + how_long_for_agent*0.5
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}"
         _, _, pwadv_tag = PwADVs( 
                 args=args, 
@@ -269,7 +272,7 @@ def MultiAdversaryScheduledPlay(args,
                 reward_magnifier = reward_magnifier)
         
         how_long = how_long_init + how_long_for_agent*round + how_long_for_agent*1
-        set_input(args=args, quick_test=quick_test, how_long=how_long)
+        args.pop_total_training_timesteps = 5e6 * how_long
         args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}"
         _, _, pwadv_tag = PwADVs( 
                 args=args, 
