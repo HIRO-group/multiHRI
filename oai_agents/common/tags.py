@@ -80,6 +80,10 @@ class TeammatesCollection:
     EVAL = 'eval'
 
 class CheckedPoints():
+    # During training, we saved models if it reaches the best eval/training reward, worst eval/training reward. 
+    # In addition, we also save the very last one.
+    # For all of them, we assign them a tag so that we can use them in the future.
+    # For example, if the training reaches best evaluation reward, we saved it with a tag BEST_EVAL_REWARD.
     BEST_EVAL_REWARD = 'best'
     WORST_EVAL_REWARD ='worst'
     BEST_TRAIN_REWARD = 'best_train_reward'
