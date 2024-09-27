@@ -27,17 +27,17 @@ if __name__ == "__main__":
     args.layout = '3_chefs_small_kitchen'
     args.p_idx = 0
 
-    tm1_path = 'agent_models/eval/3_chefs/fcp_hd256_seed26/best'
-    tm2_path = 'agent_models/eval/3_chefs/fcp_hd256_seed26/best'
+    tm_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
+    agent =  load_agent(Path(tm_path), args)
+    
+    orange = agent
+    green = agent
+    teammates = [orange, green]
 
-    tm1 = load_agent(Path(tm1_path), args)
-    tm2 = load_agent(Path(tm2_path), args)
+    blue = agent
+    # blue = 'human'
 
-    teammates = [tm1, tm2]
-
-    agent = 'human'
-
-    dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
-                       horizon=400, gif_name='3_chefs_small_kitchen_all_SP')
+    dc = OvercookedGUI(args, agent=blue, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
+                       horizon=400)
     dc.on_execute()
     print(dc.trajectory)

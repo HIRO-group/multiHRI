@@ -1,3 +1,4 @@
+from enum import Enum
 class AgentPerformance:
     '''
     Agent performance refers to the reward an agent receives after playing in 
@@ -53,6 +54,7 @@ class TeamType:
     SELF_PLAY_MEDIUM = 'SPM'
     SELF_PLAY_MIDDLE = 'SPMID'
     SELF_PLAY_HIGH = 'SPH'
+    SELF_PLAY_ADVERSARY = 'SPADV'
 
     def map_to_index(teamtype):
         tt_map = {
@@ -68,12 +70,24 @@ class TeamType:
             TeamType.SELF_PLAY: 9,
             TeamType.SELF_PLAY_LOW: 10,
             TeamType.SELF_PLAY_MEDIUM: 11,
-            TeamType.SELF_PLAY_MIDDLE: 12,
-            TeamType.SELF_PLAY_HIGH: 13,
-            TeamType.ALL_MIX: 14
+            TeamType.SELF_PLAY_MIDDLE: 11.5,
+            TeamType.SELF_PLAY_HIGH: 12,
+            TeamType.SELF_PLAY_ADVERSARY: 13,
+            TeamType.ALL_MIX: 14,
         }
         return tt_map[teamtype]
 
 class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'
+
+class CheckedPoints():
+    # During training, we saved models if it reaches the best eval/training reward, worst eval/training reward. 
+    # In addition, we also save the very last one.
+    # For all of them, we assign them a tag so that we can use them in the future.
+    # For example, if the training reaches best evaluation reward, we saved it with a tag BEST_EVAL_REWARD.
+    BEST_EVAL_REWARD = 'best'
+    WORST_EVAL_REWARD ='worst'
+    BEST_TRAIN_REWARD = 'best_train_reward'
+    WORST_TRAIN_REWARD ='worst_train_reward'
+    FINAL_TRAINED_MODEL = 'last'

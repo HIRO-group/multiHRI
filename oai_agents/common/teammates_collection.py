@@ -191,3 +191,66 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
             if len(group) == args.teammates_len:
                 eval_collection[teammates.layout_name][teammates.team_type].append(group)
                 print("Loaded agents from files for eval: ", teammates.names, ", Teamtype: ", teammates.team_type)
+
+
+
+def generate_TC_for_Adversary(args, 
+                            agent,
+                            train_types = [TeamType.HIGH_FIRST],
+                            eval_types_to_generate=None,
+                            eval_types_to_read_from_file=None):
+
+    teammates = [agent for _ in range(args.teammates_len)] 
+
+    eval_collection = {
+            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
+            for layout_name in args.layout_names
+    }
+
+    train_collection = {
+        layout_name: {ttype: [] for ttype in train_types}
+        for layout_name in args.layout_names
+    }
+
+    for layout_name in args.layout_names:
+        train_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
+        eval_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
+
+    teammates_collection = {
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
+    }
+    return teammates_collection
+
+
+def generate_TC_for_AdversarysPlay(args, 
+                                agent,
+                                adversarys, 
+                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY],
+                                eval_types_to_generate=None,
+                                eval_types_to_read_from_file=None):
+
+    self_teammates = [agent for _ in range(args.teammates_len-1)] 
+    eval_collection = {
+            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
+            for layout_name in args.layout_names
+    }
+
+    train_collection = {
+        layout_name: {ttype: [] for ttype in train_types}
+        for layout_name in args.layout_names
+    }
+
+    for layout_name in args.layout_names:
+        train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
+        eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
+        train_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
+        eval_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
+        
+
+    teammates_collection = {
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
+    }
+
+    return teammates_collection

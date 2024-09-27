@@ -1,10 +1,12 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_population
-from oai_agents.common.teammates_collection import generate_TC
+from oai_agents.common.teammates_collection import generate_TC, generate_TC_for_Adversary, generate_TC_for_AdversarysPlay
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
 
+from oai_agents.agents.agent_utils import load_agent
+from pathlib import Path
 
 def get_SP_agent(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
     name = generate_name(args, 
@@ -236,3 +238,66 @@ def get_N_X_FCP_agents(args,
 
     fcp_trainer.train_agents(total_train_timesteps=n_x_fcp_total_training_timesteps)
     return fcp_trainer.get_agents()[0], teammates_collection
+
+def get_adversary(args, total_training_timesteps, train_types, eval_types, curriculum, agent_path):
+    name = generate_name(args, 
+                         prefix='adv',
+                         seed=args.ADV_seed,
+                         h_dim=args.ADV_h_dim, 
+                         train_types=train_types,
+                         has_curriculum= not curriculum.is_random)
+    agent = load_agent(Path(agent_path), args)
+    
+    tc = generate_TC_for_Adversary(args,
+                                  agent=agent,
+                                  train_types=train_types,
+                                  eval_types_to_generate=eval_types['generate'],
+                                  eval_types_to_read_from_file=eval_types['load'])
+    
+    adversary_trainer = RLAgentTrainer(
+        name=name,
+        args=args,
+        agent=None,
+        teammates_collection=tc,
+        epoch_timesteps=args.epoch_timesteps,
+        n_envs=args.n_envs,
+        curriculum=curriculum,
+        seed=args.ADV_seed,
+        hidden_dim=args.ADV_h_dim,
+    )
+
+    adversary_trainer.train_agents(total_train_timesteps=total_training_timesteps)
+    return adversary_trainer.get_agents()[0], tc, name
+
+
+def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, adv_paths):
+    name = generate_name(args, 
+                         prefix='pwadv',
+                         seed=args.PwADV_seed,
+                         h_dim=args.PwADV_h_dim, 
+                         train_types=train_types,
+                         has_curriculum= not curriculum.is_random)
+    agent = load_agent(Path(agent_path), args)
+    adversarys = [load_agent(Path(adv_path), args) for adv_path in adv_paths]
+    
+    tc = generate_TC_for_AdversarysPlay(args,
+                                  agent=agent,
+                                  adversarys=adversarys,
+                                  train_types=train_types,
+                                  eval_types_to_generate=eval_types['generate'],
+                                  eval_types_to_read_from_file=eval_types['load'])
+    
+    agent_trainer = RLAgentTrainer(
+        name=name,
+        args=args,
+        agent=agent,
+        teammates_collection=tc,
+        epoch_timesteps=args.epoch_timesteps,
+        n_envs=args.n_envs,
+        curriculum=curriculum,
+        seed=args.PwADV_seed,
+        hidden_dim=args.PwADV_h_dim,
+    )
+    
+    agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)
+    return agent_trainer.get_agents()[0], tc, name
