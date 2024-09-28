@@ -28,10 +28,12 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--PwADV-h-dim', type=int, default=512, help='hidden dimension used in adverary-play')
     parser.add_argument('--FCP-seed', type=int, default=2020, help='seed used in train_helper')
     parser.add_argument('--FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
-    parser.add_argument('--SPWSP-seed', type=int, default=1010, help='seed used in train_helper')
-    parser.add_argument('--SPWSP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
-    parser.add_argument('--FCPWSP-seed', type=int, default=2602, help='seed used in train_helper')
-    parser.add_argument('--FCPWSP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
+
+    parser.add_argument('--N-X-SP-seed', type=int, default=1010, help='seed used in train_helper')
+    parser.add_argument('--N-X-SP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
+
+    parser.add_argument('--N-X-FCP-seed', type=int, default=1010, help='seed used in train_helper')
+    parser.add_argument('--N-X-FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
 
     parser.add_argument('--exp-name', type=str, default='aamas25',
                         help='Name of experiment. Used to tag save files.')
