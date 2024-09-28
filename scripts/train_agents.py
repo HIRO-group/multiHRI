@@ -192,7 +192,7 @@ def MultiAdversaryPlay( args,
                 args=args, 
                 agent_folder_path = root, 
                 agent_file_tag = CheckedPoints.BEST_EVAL_REWARD,
-                adv_folder_paths = [f"{root_adv}/{adversary_type}/{str(round_num)}" for round_num in range(round)], 
+                adv_folder_paths = [f"{root_adv}/{adversary_type}/{str(round_num)}" for round_num in range(round+1)], 
                 adv_file_tag = f"{adv_tag}/{checked_adversary}",
                 main_agent_type = main_agent_type,
                 main_agent_seed = main_agent_seed,
@@ -267,12 +267,13 @@ def MultiAdversaryScheduledPlay(args,
                 args=args, 
                 agent_folder_path = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}", 
                 agent_file_tag = f"{pwadv_tag}/{CheckedPoints.FINAL_TRAINED_MODEL}",
-                adv_folder_paths = [f"{root_adv}/{adversary_type}/{str(round_num)}" for round_num in range(round)], 
+                adv_folder_paths = [f"{root_adv}/{adversary_type}/{str(round_num)}" for round_num in range(round+1)], 
                 adv_file_tag = f"{adv_tag}/{checked_adversary}",
                 main_agent_type = main_agent_type,
                 main_agent_seed = main_agent_seed,
                 main_agent_h_dim = main_agent_h_dim,
-                reward_magnifier = reward_magnifier)
+                reward_magnifier = reward_magnifier,
+                check_whether_exist = False)
 
 def PwADVs(args, 
           agent_folder_path, 
@@ -282,7 +283,8 @@ def PwADVs(args,
           main_agent_type = LearnerType.SUPPORTER,
           main_agent_seed = 68,
           main_agent_h_dim = 512,
-          reward_magnifier = 3.0
+          reward_magnifier = 3.0,
+          check_whether_exist = True
           ):
     train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY]
     eval_types = {
@@ -303,7 +305,8 @@ def PwADVs(args,
         total_training_timesteps=args.pop_total_training_timesteps,
         curriculum=curriculum, 
         agent_path=agent_path,
-        adv_paths=adv_paths)
+        adv_paths=adv_paths,
+        check_whether_exist = check_whether_exist)
     return agent_model, teammates, agent_tag
     
     
@@ -618,7 +621,7 @@ if __name__ == '__main__':
 
     MultiAdversaryPlay( args, 
                         exp_tag = 'M2FP', 
-                        main_agent_path = None,
+                        main_agent_path = 'M2FSP/sp_s68_h512_tr(SP)_ran',
                         main_agent_seed = 68,
                         main_agent_h_dim = 512,
                         main_agent_type = LearnerType.SUPPORTER, 
@@ -627,26 +630,27 @@ if __name__ == '__main__':
                         adversary_type = LearnerType.SELFISHER, 
                         checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
                         how_long_init = 4.0,
-                        how_long_for_agent = 2.0,
-                        how_long_for_adv = 1.0,
+                        how_long_for_agent = 4.0,
+                        how_long_for_adv = 4.0,
                         rounds_of_advplay = 101,
                         reward_magnifier = 3.0)
     
-    # MultiAdversaryScheduledPlay(args, 
-    #                             exp_tag = 'M2FSP', 
-    #                             main_agent_path = None,
-    #                             main_agent_seed = 68,
-    #                             main_agent_h_dim = 512,
-    #                             main_agent_type = LearnerType.SUPPORTER, 
-    #                             adversary_seed = 68,
-    #                             adversary_h_dim = 512,
-    #                             adversary_type = LearnerType.SELFISHER, 
-    #                             checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                             how_long_init = 4.0,
-    #                             how_long_for_agent = 2.0,
-    #                             how_long_for_adv = 1.0,
-    #                             rounds_of_advplay = 101,
-    #                             reward_magnifier = 3.0)
+#     MultiAdversaryScheduledPlay(args, 
+#                                 exp_tag = 'M2FSP', 
+#                                 main_agent_path = 'M2FSP/sp_s68_h512_tr(SP)_ran',
+#                                 main_agent_seed = 68,
+#                                 main_agent_h_dim = 512,
+#                                 main_agent_type = LearnerType.SUPPORTER, 
+#                                 adversary_seed = 68,
+#                                 adversary_h_dim = 512,
+#                                 adversary_type = LearnerType.SELFISHER, 
+#                                 checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+#                                 how_long_init = 4.0,
+#                                 how_long_for_agent = 4.0,
+#                                 how_long_for_adv = 4.0,
+#                                 rounds_of_advplay = 101,
+#                                 reward_magnifier = 3.0)
+
     
 
     # SP(args=args,

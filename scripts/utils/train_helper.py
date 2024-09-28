@@ -5,6 +5,8 @@ from oai_agents.common.teammates_collection import generate_TC, generate_TC_for_
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
 
+from oai_agents.common.tags import CheckedPoints
+
 from oai_agents.agents.agent_utils import load_agent
 from pathlib import Path
 
@@ -247,12 +249,16 @@ def get_adversary(args, total_training_timesteps, train_types, eval_types, curri
                          train_types=train_types,
                          has_curriculum= not curriculum.is_random)
     agent = load_agent(Path(agent_path), args)
+    adversary = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=False)
     
     tc = generate_TC_for_Adversary(args,
                                   agent=agent,
                                   train_types=train_types,
                                   eval_types_to_generate=eval_types['generate'],
                                   eval_types_to_read_from_file=eval_types['load'])
+    
+    if adversary:
+        return adversary, tc, name
     
     adversary_trainer = RLAgentTrainer(
         name=name,
@@ -270,13 +276,14 @@ def get_adversary(args, total_training_timesteps, train_types, eval_types, curri
     return adversary_trainer.get_agents()[0], tc, name
 
 
-def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, adv_paths):
+def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, adv_paths, check_whether_exist):
     name = generate_name(args, 
                          prefix='pwadv',
                          seed=args.PwADV_seed,
                          h_dim=args.PwADV_h_dim, 
                          train_types=train_types,
                          has_curriculum= not curriculum.is_random)
+    latest_agent = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=False)
     agent = load_agent(Path(agent_path), args)
     adversarys = [load_agent(Path(adv_path), args) for adv_path in adv_paths]
     
@@ -286,6 +293,8 @@ def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_ti
                                   train_types=train_types,
                                   eval_types_to_generate=eval_types['generate'],
                                   eval_types_to_read_from_file=eval_types['load'])
+    if latest_agent and check_whether_exist:
+        return latest_agent, tc, name
     
     agent_trainer = RLAgentTrainer(
         name=name,
