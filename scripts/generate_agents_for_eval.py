@@ -32,7 +32,7 @@ def set_input(args, quick_test=False):
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6
         args.fcp_total_training_timesteps = 5e6
-        args.num_sp_agents_to_train = 5
+        args.num_SPs_to_train = 5
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -41,7 +41,7 @@ def set_input(args, quick_test=False):
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 3500
         args.fcp_total_training_timesteps = 3500
-        args.num_sp_agents_to_train = 4
+        args.num_SPs_to_train = 4
 
 
 if __name__ == "__main__":
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     quick_test = False
     parallel = True
     pop_force_training = True
-    fcp_force_training = True
+    primary_force_training = True
     set_input(args=args, quick_test=quick_test)
 
     all_FCP_train_types = [
@@ -69,7 +69,7 @@ if __name__ == "__main__":
                                               train_types = TeamType.ALL_TYPES_BESIDES_SP,
                                               eval_types_to_generate = [],
                                               eval_types_to_load_from_file = [],
-                                              num_self_play_agents_to_train=args.num_sp_agents_to_train,
+                                              num_SPs_to_train=args.num_SPs_to_train,
                                               total_training_timesteps = args.pop_total_training_timesteps,
                                               force_training=pop_force_training,
                                               parallel=parallel,

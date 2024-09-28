@@ -52,6 +52,7 @@ class TeamType:
     SELF_PLAY = 'SP'
     SELF_PLAY_LOW = 'SPL'
     SELF_PLAY_MEDIUM = 'SPM'
+    SELF_PLAY_MIDDLE = 'SPMID'
     SELF_PLAY_HIGH = 'SPH'
     SELF_PLAY_ADVERSARY = 'SPADV'
 
@@ -69,9 +70,10 @@ class TeamType:
             TeamType.SELF_PLAY: 9,
             TeamType.SELF_PLAY_LOW: 10,
             TeamType.SELF_PLAY_MEDIUM: 11,
+            TeamType.SELF_PLAY_MIDDLE: 11.5,
             TeamType.SELF_PLAY_HIGH: 12,
             TeamType.SELF_PLAY_ADVERSARY: 13,
-            TeamType.ALL_MIX: 14
+            TeamType.ALL_MIX: 14,
         }
         return tt_map[teamtype]
 

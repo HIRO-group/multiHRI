@@ -61,9 +61,9 @@ class RLAgentTrainer(OAITrainer):
         self.worst_score, self.worst_training_rew = float('inf'), float('inf')
 
     @classmethod
-    def generate_randomly_initialized_SP_agent(cls,
-                                               args,
-                                               seed:int=8080) -> OAIAgent:
+    def generate_randomly_initialized_agent(cls,
+                                            args,
+                                            seed:int=8080) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
         This function does not perform any learning
@@ -75,7 +75,7 @@ class RLAgentTrainer(OAITrainer):
 
         name = 'randomized_agent'
 
-        sp_trainer = cls(name=name,
+        trainer = cls(name=name,
                         args=args,
                         agent=None,
                         teammates_collection={},
@@ -83,7 +83,7 @@ class RLAgentTrainer(OAITrainer):
                         n_envs=args.n_envs,
                         seed=seed)
 
-        return sp_trainer.get_agents()[0]
+        return trainer.get_agents()[0]
 
     def get_learning_agent(self, agent):
         if agent:
@@ -114,7 +114,6 @@ class RLAgentTrainer(OAITrainer):
             }
         '''
         if _tms_clctn == {}:
-            print("No teammates collection provided, using SELF_PLAY: teammates will be the agent itself.")
             _tms_clctn = {
                 TeammatesCollection.TRAIN: {
                     layout_name: 
@@ -362,7 +361,7 @@ class RLAgentTrainer(OAITrainer):
         return all_agents
 
     @staticmethod
-    def get_fcp_agents(args, ck_list, layout_name):
+    def get_checkedpoints_agents(args, ck_list, layout_name):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH
@@ -377,7 +376,7 @@ class RLAgentTrainer(OAITrainer):
         '''
         if len(ck_list) < len(AgentPerformance.ALL):
             raise ValueError(f'Must have at least {len(AgentPerformance.ALL)} checkpoints saved. \
-                             Currently is: {len(ck_list)}. Increase fcp_ck_rate or training length')
+                             Currently is: {len(ck_list)}. Increase ck_rate or training length')
 
         all_score_path_tag_sorted = []
         for scores, path, tag in ck_list:
