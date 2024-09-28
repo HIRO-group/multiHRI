@@ -140,7 +140,7 @@ def SingleAdversaryPlay(args,
         
 def MultiAdversaryPlay( args, 
                         exp_tag = 'M2FP', 
-                        # c = 'M2FP/sp_s68_h512_tr(SP)_ran',
+                        # main_agent_path = 'M2FP/sp_s68_h512_tr(SP)_ran',
                         main_agent_path = None,
                         main_agent_seed = 68,
                         main_agent_h_dim = 512,
