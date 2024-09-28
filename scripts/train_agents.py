@@ -594,7 +594,7 @@ def set_input(args, quick_test=False, how_long=6):
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = True
+    quick_test = False
     parallel = True
     how_long = 1
     
