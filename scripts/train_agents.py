@@ -271,7 +271,8 @@ def MultiAdversaryScheduledPlay(args,
                 main_agent_type = main_agent_type,
                 main_agent_seed = main_agent_seed,
                 main_agent_h_dim = main_agent_h_dim,
-                reward_magnifier = reward_magnifier)
+                reward_magnifier = reward_magnifier,
+                check_whether_exist = False)
 
 def PwADVs(args, 
           agent_folder_path, 
@@ -281,7 +282,8 @@ def PwADVs(args,
           main_agent_type = LearnerType.SUPPORTER,
           main_agent_seed = 68,
           main_agent_h_dim = 512,
-          reward_magnifier = 3.0
+          reward_magnifier = 3.0,
+          check_whether_exist = True
           ):
     train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY]
     eval_types = {
@@ -302,7 +304,8 @@ def PwADVs(args,
         total_training_timesteps=args.pop_total_training_timesteps,
         curriculum=curriculum, 
         agent_path=agent_path,
-        adv_paths=adv_paths)
+        adv_paths=adv_paths,
+        check_whether_exist = check_whether_exist)
     return agent_model, teammates, agent_tag
     
     
