@@ -1,4 +1,5 @@
 import concurrent.futures
+from tqdm import tqdm
 from stable_baselines3.common.evaluation import evaluate_policy
 
 import matplotlib.pyplot as plt
@@ -216,7 +217,7 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
             for name, path in all_agents_paths.items()
         ]
         
-        for future in concurrent.futures.as_completed(futures):
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Evaluating Agents"):
             name, mean_rewards, std_rewards = future.result()
             all_mean_rewards[name] = mean_rewards
             all_std_rewards[name] = std_rewards
@@ -260,7 +261,6 @@ def get_5_player_input(args):
         'N-4-SP ran': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
         'N-4-SP cur': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best'
     }
-
     return layout_names, p_idxes, all_agents_paths, args
 
 
