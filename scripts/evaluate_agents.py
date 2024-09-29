@@ -1,3 +1,4 @@
+import concurrent.futures
 from stable_baselines3.common.evaluation import evaluate_policy
 
 import matplotlib.pyplot as plt
@@ -99,6 +100,16 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
     return all_teammates
 
 
+def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams):
+    plot_name = f'{num_players}-players'
+    plot_name += '-det' if deterministic else '-stoch'
+    p_idexes_str = ''.join([str(p_idx) for p_idx in p_idxes])
+    plot_name += f'-pidx{p_idexes_str}'
+    plot_name += f'-eps{num_eps}'
+    plot_name += f'-maxteams{str(max_num_teams)}'
+    return plot_name+'.png'
+
+
 def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, num_players, plot_name):
     num_layouts = len(layout_names) 
     fig, axes = plt.subplots(1, num_layouts, figsize=(5 * num_layouts, 6), sharey=True)
@@ -133,7 +144,7 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, num
 
     plt.tight_layout()
     plt.savefig(f'data/eval/{plot_name}.png')
-    plt.show()
+    # plt.show()
 
 
 def evaluate_agent(args,
@@ -175,14 +186,41 @@ def evaluate_agent(args,
 
     return all_mean_rewards, all_std_rewards
 
-def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams):
-    plot_name = f'{num_players}-players'
-    plot_name += '-det' if deterministic else '-stoch'
-    p_idexes_str = ''.join([str(p_idx) for p_idx in p_idxes])
-    plot_name += f'-pidx{p_idexes_str}'
-    plot_name += f'-eps{num_eps}'
-    plot_name += f'-maxteams{str(max_num_teams)}'
-    return plot_name+'.png'
+
+def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps):
+    agent = load_agent(Path(path), args)
+    agent.deterministic = deterministic
+
+    all_teammates = get_all_teammates_for_evaluation(args=args,
+                                                     primary_agent=agent,
+                                                     num_players=args.num_players,
+                                                     layout_names=layout_names,
+                                                     deterministic=deterministic,
+                                                     max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x)
+    
+    mean_rewards, std_rewards = evaluate_agent(args=args,
+                                               primary_agent=agent,
+                                               p_idxes=p_idxes,
+                                               layout_names=layout_names,
+                                               all_teammates=all_teammates,
+                                               deterministic=deterministic,
+                                               number_of_eps=number_of_eps)
+    return agent_name, mean_rewards, std_rewards
+
+
+def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps):
+    all_mean_rewards, all_std_rewards = {}, {}
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(evaluate_agent_for_layout, name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps)
+            for name, path in all_agents_paths.items()
+        ]
+        
+        for future in concurrent.futures.as_completed(futures):
+            name, mean_rewards, std_rewards = future.result()
+            all_mean_rewards[name] = mean_rewards
+            all_std_rewards[name] = std_rewards
+    return all_mean_rewards, all_std_rewards
 
 
 def get_3_player_input(args):
@@ -211,7 +249,7 @@ def get_5_player_input(args):
                     '5_chefs_clustered_kitchen',
                     '5_chefs_coordination_ring'
                     ]
-    p_idxes = [0]
+    p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
         'FCP': 'agent_models/5-p-layouts/FCP_s2020_h256_tr(AMX)_ran/best',
         'SP': 'agent_models/5-p-layouts/SP_hd256_seed13/ck_20_rew_441.3333333333333',
@@ -232,30 +270,18 @@ if __name__ == "__main__":
     layout_names, p_idxes, all_agents_paths, args = get_5_player_input(args)    
 
     deterministic = True
-    max_num_teams_per_layout_per_x = 10
-    number_of_eps = 10
+    max_num_teams_per_layout_per_x = 1
+    number_of_eps = 1
 
-    all_mean_rewards, all_std_rewards = {}, {}
-    for name, path in all_agents_paths.items():
-        agent = load_agent(Path(path), args)
-        agent.deterministic = deterministic
-
-        all_teammates = get_all_teammates_for_evaluation(args=args,
-                                                        primary_agent=agent,
-                                                        num_players=args.num_players,
-                                                        layout_names=layout_names,
-                                                        deterministic=deterministic,
-                                                        max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x)
-        mean_rewards, std_rewards = evaluate_agent(args = args,
-                                                    primary_agent = agent,
-                                                    p_idxes = p_idxes,
-                                                    layout_names = layout_names,
-                                                    all_teammates = all_teammates,
-                                                    deterministic = deterministic,
-                                                    number_of_eps = number_of_eps)
-
-        all_mean_rewards[name] = mean_rewards
-        all_std_rewards[name] = std_rewards
+    all_mean_rewards, all_std_rewards = run_parallel_evaluation(
+        args=args,
+        all_agents_paths=all_agents_paths,
+        layout_names=layout_names,
+        p_idxes=p_idxes,
+        deterministic=deterministic,
+        max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
+        number_of_eps=number_of_eps
+    )
         
     plot_name = generate_plot_name(num_players=args.num_players,
                                     deterministic=deterministic,
