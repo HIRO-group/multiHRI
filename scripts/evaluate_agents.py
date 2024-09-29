@@ -184,20 +184,15 @@ def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_tea
     plot_name += f'-maxteams{str(max_num_teams)}'
     return plot_name+'.png'
 
-if __name__ == "__main__":
-    args = get_arguments()
+
+def get_3_player_input(args):
     args.num_players = 3
     layout_names = ['3_chefs_small_kitchen_two_resources',
                     '3_chefs_forced_coordination_3OP2S1D',
                     '3_chefs_asymmetric_advantages',
                     '3_chefs_counter_circuit'
                     ]
-    p_idxes = [0,1]
-    deterministic = True
-
-    # start with both=1 for testing purposes
-    max_num_teams_per_layout_per_x = 10
-    number_of_eps = 10
+    p_idxes = [0,1,2]
 
     # the name on the left is shown on the plot
     all_agents_paths = {
@@ -207,6 +202,38 @@ if __name__ == "__main__":
         'FCP': 'agent_models/all_layouts_supporters/fcp_s2020_h256_tr(AMX)_ran/best',
         'SP': 'agent_models/N-1-SP-vs-AP-supporter-howlong-4/SP_hd64_seed14/ck_40_rew_316.0'
     }
+
+    return layout_names, p_idxes, all_agents_paths, args
+
+def get_5_player_input(args):
+    args.num_players = 5
+    layout_names = ['5_chefs_storage_room_lots_resources',
+                    '5_chefs_clustered_kitchen',
+                    '5_chefs_coordination_ring'
+                    ]
+    p_idxes = [0]
+    all_agents_paths = {
+        'FCP': 'agent_models/5-p-layouts/FCP_s2020_h256_tr(AMX)_ran/best',
+        'SP': 'agent_models/5-p-layouts/SP_hd256_seed13/ck_20_rew_441.3333333333333',
+        'N-1-SP ran': 'agent_models/N-X-SP/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+        'N-1-SP cur': 'agent_models/N-4-SP/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+        'N-3-SP ran': 'agent_models/N-3-SP/N-3-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+        'N-3-SP cur': 'agent_models/N-3-SP/N-3-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+        'N-4-SP ran': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+        'N-4-SP cur': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best'
+    }
+
+    return layout_names, p_idxes, all_agents_paths, args
+
+
+if __name__ == "__main__":
+    args = get_arguments()
+    # layout_names, p_idxes, all_agents_paths, args = get_3_player_input(args)
+    layout_names, p_idxes, all_agents_paths, args = get_5_player_input(args)    
+
+    deterministic = True
+    max_num_teams_per_layout_per_x = 10
+    number_of_eps = 10
 
     all_mean_rewards, all_std_rewards = {}, {}
     for name, path in all_agents_paths.items():
