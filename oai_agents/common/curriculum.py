@@ -59,6 +59,8 @@ class Curriculum:
 
     def update(self, current_step):
         self.current_step = current_step
+
+
     
     def select_teammates(self, population_teamtypes):
         '''
@@ -70,7 +72,8 @@ class Curriculum:
         '''
         if self.is_random:
             population = [population_teamtypes[t] for t in population_teamtypes.keys()]
-            
+            # Handle lazy agent in the population here
+
             # Randomly select a list of teams of some teamtype
             teammates_per_type = population[np.random.randint(len(population))]
 

@@ -64,6 +64,7 @@ class RLAgentTrainer(OAITrainer):
     @classmethod
     def generate_randomly_initialized_agent(cls,
                                             args,
+                                            name:str='randomized_agent',
                                             seed:int=8080,
                                             hidden_dim:int=256,
                                             ) -> OAIAgent:
@@ -75,8 +76,6 @@ class RLAgentTrainer(OAITrainer):
         :param seed: Random seed
         :returns: An untrained, randomly inititalized RL agent
         '''
-
-        name = 'randomized_agent'
 
         trainer = cls(name=name,
                         args=args,
