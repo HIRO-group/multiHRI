@@ -266,12 +266,12 @@ def get_5_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    # layout_names, p_idxes, all_agents_paths, args = get_3_player_input(args)
-    layout_names, p_idxes, all_agents_paths, args = get_5_player_input(args)    
+    layout_names, p_idxes, all_agents_paths, args = get_3_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, args = get_5_player_input(args)
 
     deterministic = True
-    max_num_teams_per_layout_per_x = 1
-    number_of_eps = 1
+    max_num_teams_per_layout_per_x = 5
+    number_of_eps = 5
 
     all_mean_rewards, all_std_rewards = run_parallel_evaluation(
         args=args,
