@@ -55,12 +55,16 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
     for train_type in train_types:
         if train_type in TeamType.ALL_TYPES_BESIDES_SP:
             train_agents_len += teammates_len
+        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
+            train_agents_len += 0
         else:
             train_agents_len += unseen_teammates_len
 
     for eval_type in eval_types:
         if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
             eval_agents_len += teammates_len
+        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
+            train_agents_len += 0        
         else:
             eval_agents_len += unseen_teammates_len
 
@@ -119,7 +123,6 @@ def get_population(args,
                    train_types,
                    eval_types,
                    num_SPs_to_train,
-                   parallel=True,
                    unseen_teammates_len=0,
                    force_training=False,
                    tag='aamas25',
@@ -148,7 +151,7 @@ def get_population(args,
             (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
         ]
 
-        if parallel:
+        if args.parallel:
             with multiprocessing.Pool() as pool:
                 dilled_results = pool.starmap(train_agent_with_checkpoints, inputs)
             for dilled_res in dilled_results:

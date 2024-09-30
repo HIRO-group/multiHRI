@@ -358,8 +358,7 @@ def SP(args, pop_force_training):
 
 def N_X_SP(args, 
            pop_force_training:bool,
-           primary_force_training:bool,
-           parallel:bool) -> None:
+           primary_force_training:bool) -> None:
 
     args.unseen_teammates_len = 1 # This is the X in N_X_SP
     args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
@@ -393,21 +392,69 @@ def N_X_SP(args,
         n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
         n_x_sp_force_training=primary_force_training,
         curriculum=curriculum,
-        parallel=parallel,
         num_SPs_to_train=args.num_SPs_to_train
         )
 
 
+def N_X_SP_w_adversaries(args, 
+                         pop_force_training:bool,
+                         primary_force_training:bool) -> None:
+
+    args.unseen_teammates_len = 1
+    args.primary_train_types = [TeamType.SELF_PLAY_HIGH,
+                                TeamType.SELF_PLAY_MEDIUM,
+                                TeamType.SELF_PLAY_LOW,
+                                TeamType.SELF_PLAY,
+                                TeamType.SELF_PLAY_ADVERSARY]
+    
+    args.primary_eval_types = {
+                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
+                            'load': []
+                            }
+    
+    curriculum = Curriculum(train_types = args.primary_train_types,
+                            is_random=False,
+                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
+                            training_phases_durations_in_order={
+                                TeamType.SELF_PLAY_ADVERSARY: 0.4,
+                                TeamType.SELF_PLAY_LOW: 0.1,
+                                TeamType.SELF_PLAY_MEDIUM: 0.1,
+                                TeamType.SELF_PLAY_HIGH: 0.1,
+                            },
+                            rest_of_the_training_probabilities={
+                                TeamType.SELF_PLAY_LOW: 0.2,
+                                TeamType.SELF_PLAY_MEDIUM: 0.2, 
+                                TeamType.SELF_PLAY_HIGH: 0.2,
+                                TeamType.SELF_PLAY_ADVERSARY: 0.2,
+                                TeamType.SELF_PLAY: 0.2,
+                            },
+                            probabilities_decay_over_time=0
+                            )
+    get_N_X_SP_agents(
+        args,
+        pop_total_training_timesteps=args.pop_total_training_timesteps,
+        pop_force_training=pop_force_training,
+
+        n_x_sp_train_types = curriculum.train_types,
+        n_x_sp_eval_types=args.primary_eval_types,
+        n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
+        n_x_sp_force_training=primary_force_training,
+        
+        curriculum=curriculum,
+        num_SPs_to_train=args.num_SPs_to_train
+    )
+
+
+
 def N_1_SP(args, 
             pop_force_training:bool,
-            primary_force_training:bool,
-            parallel:bool) -> None:
+            primary_force_training:bool) -> None:
     '''
     The randomly initialized agent will train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
     
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
     :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file
-    :param parallel: Boolean indicating if parallel envs should be used for training or not
+    :param  : Boolean indicating if   envs should be used for training or not
     '''
     args.unseen_teammates_len = 1
     args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
@@ -441,12 +488,11 @@ def N_1_SP(args,
         n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
         n_x_sp_force_training=primary_force_training,
         curriculum=curriculum,
-        parallel=parallel,
         num_SPs_to_train=args.num_SPs_to_train
     )
 
 
-def FCP_mhri(args, pop_force_training, primary_force_training, parallel):
+def FCP_mhri(args, pop_force_training, primary_force_training):
     '''
     There are two types of FCP, one is the traditional FCP that uses random teammates (i.e. ALL_MIX), 
     one is our own version that uses certain types HIGH_FIRST, MEDIUM_FIRST, etc. 
@@ -474,20 +520,18 @@ def FCP_mhri(args, pop_force_training, primary_force_training, parallel):
                             )
 
     _, _ = get_FCP_agent_w_pop(args,
-                                        pop_total_training_timesteps=args.pop_total_training_timesteps,
-                                        fcp_total_training_timesteps=args.fcp_total_training_timesteps,
-                                        fcp_train_types = fcp_curriculum.train_types,
-                                        fcp_eval_types=args.primary_eval_types,
-                                        pop_force_training=pop_force_training,
-                                        primary_force_training=primary_force_training,
-                                        fcp_curriculum=fcp_curriculum,
-                                        num_SPs_to_train=args.num_SPs_to_train,
-                                        parallel=parallel,
-                                        )
+                                pop_total_training_timesteps=args.pop_total_training_timesteps,
+                                fcp_total_training_timesteps=args.fcp_total_training_timesteps,
+                                fcp_train_types = fcp_curriculum.train_types,
+                                fcp_eval_types=args.primary_eval_types,
+                                pop_force_training=pop_force_training,
+                                primary_force_training=primary_force_training,
+                                fcp_curriculum=fcp_curriculum,
+                                num_SPs_to_train=args.num_SPs_to_train)
 
 
 
-def FCP_traditional(args, pop_force_training, primary_force_training, parallel):
+def FCP_traditional(args, pop_force_training, primary_force_training):
     '''
     The ALL_MIX TeamType enables truly random teammates when training (like in the original FCP 
     implementation)
@@ -511,11 +555,11 @@ def FCP_traditional(args, pop_force_training, primary_force_training, parallel):
 
                                 fcp_curriculum=fcp_curriculum,
                                 num_SPs_to_train=args.num_SPs_to_train,
-                                parallel=parallel
+                                 
                                 )
 
 
-def N_1_FCP(args, pop_force_training, primary_force_training, parallel, fcp_force_training=True):
+def N_1_FCP(args, pop_force_training, primary_force_training, fcp_force_training=True):
     args.unseen_teammates_len = 1 # This is the X in FCP_X_SP
 
     fcp_train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
@@ -543,7 +587,6 @@ def N_1_FCP(args, pop_force_training, primary_force_training, parallel, fcp_forc
                         primary_force_training=primary_force_training,
 
                         num_SPs_to_train=args.num_SPs_to_train,
-                        parallel=parallel,
                         fcp_curriculum=fcp_curriculum,
                         n_1_fcp_curriculum=n_1_fcp_curriculum,
                     )
@@ -555,6 +598,7 @@ def set_input(args, quick_test=False, how_long=6):
     args.num_players = args.teammates_len + 1  # Example: 3 players = 1 agent + 2 teammates
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 1.0
+    args.parallel  = True
         
     if not quick_test:
         args.learner_type = LearnerType.ORIGINALER
@@ -595,7 +639,6 @@ def set_input(args, quick_test=False, how_long=6):
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = False
-    parallel = True
     how_long = 1
     
     pop_force_training = True
@@ -660,28 +703,32 @@ if __name__ == '__main__':
     # N_X_SP(args=args,
     #        pop_force_training=pop_force_training,
     #        primary_force_training=primary_force_training,
-    #        parallel=parallel)
-    
+    #        )
+
+
+    N_X_SP_w_adversaries(args=args,
+                          pop_force_training=pop_force_training,
+                          primary_force_training=primary_force_training)
 
     
     # FCP_traditional(args=args,
     #                 pop_force_training=pop_force_training,
     #                 primary_force_training=primary_force_training,
-    #                 parallel=parallel)
+    #                  )
 
     # FCP_mhri(args=args,
     #         pop_force_training=pop_force_training,
     #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
+    #          )
 
     # N_1_SP(args=args,
     #         pop_force_training=pop_force_training,
     #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
+    #          )
 
 
     # N_1_FCP(args=args,
     #         pop_force_training=pop_force_training,
     #         fcp_force_training=pop_force_training,
     #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
+    #          )

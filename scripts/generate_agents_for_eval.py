@@ -72,7 +72,7 @@ if __name__ == "__main__":
                                               num_SPs_to_train=args.num_SPs_to_train,
                                               total_training_timesteps = args.pop_total_training_timesteps,
                                               force_training=pop_force_training,
-                                              parallel=parallel,
+                                               ,
                                               )
 
     teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]

@@ -85,7 +85,7 @@ class OvercookedGymEnv(Env):
         self.step_count = 0
         self.reset_p_idx = None
 
-        self.learner = Learner(args.learner_type, args.reward_magnifier)
+        # self.learner = Learner(args.learner_type, args.reward_magnifier)
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
 
@@ -96,7 +96,7 @@ class OvercookedGymEnv(Env):
         if full_init:
             self.set_env_layout(**kwargs)
 
-    def set_env_layout(self, env_index=None, layout_name=None, base_env=None, horizon=None):
+    def set_env_layout(self, learner_type, env_index=None, layout_name=None, base_env=None, horizon=None):
         '''
         Required to play nicely with sb3 make_vec_env. make_vec_env doesn't allow different arguments for each env,
         so to specify the layouts, they must first be created then each this is called.
@@ -111,6 +111,7 @@ class OvercookedGymEnv(Env):
 
         if base_env is None:
             self.env_idx = env_index
+            self.learner = Learner(learner_type, args.reward_magnifier)
             self.layout_name = layout_name or self.args.layout_names[env_index]
             self.mdp = OvercookedGridworld.from_layout_name(self.layout_name)
             # print("num players in base_env", self.mdp.num_players)

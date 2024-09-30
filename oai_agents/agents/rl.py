@@ -19,7 +19,8 @@ class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
     def __init__(self, teammates_collection, args, 
                 agent, epoch_timesteps, n_envs,
-                seed, train_types=[], eval_types=[],
+                seed, learner_type, 
+                train_types=[], eval_types=[],
                 curriculum=None, num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
@@ -63,7 +64,9 @@ class RLAgentTrainer(OAITrainer):
     @classmethod
     def generate_randomly_initialized_agent(cls,
                                             args,
-                                            seed:int=8080) -> OAIAgent:
+                                            seed:int=8080,
+                                            hidden_dim:int=256,
+                                            ) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
         This function does not perform any learning
@@ -81,7 +84,9 @@ class RLAgentTrainer(OAITrainer):
                         teammates_collection={},
                         epoch_timesteps=args.epoch_timesteps,
                         n_envs=args.n_envs,
-                        seed=seed)
+                        seed=seed,
+                        hidden_dim=hidden_dim,
+                        )
 
         return trainer.get_agents()[0]
 

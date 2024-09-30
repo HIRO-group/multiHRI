@@ -48,34 +48,31 @@ def get_SP_agent(args, total_training_timesteps, train_types, eval_types, curric
 def get_N_X_SP_agents(args,
                         pop_total_training_timesteps:int,
                         pop_force_training:bool,
-
                         n_x_sp_train_types:list,
                         n_x_sp_eval_types:list,
                         n_x_sp_force_training:list,
                         n_x_sp_total_training_timesteps:int,
-
                         curriculum:Curriculum,
-                        
                         tag:str=None,
-                        parallel:bool=True,
                         num_SPs_to_train=2) -> tuple:
-    
 
-    
-    curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
+    curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM,
+                                                           TeamType.SELF_PLAY_LOW,
+                                                           TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY],
                                          unallowed_types = TeamType.ALL_TYPES_BESIDES_SP)
 
     name = generate_name(args,
                          prefix = f'N-{args.unseen_teammates_len}-SP',
                          seed = args.N_X_SP_seed,
-                         h_dim = args.N_X_SP_h_dim, 
+                         h_dim = args.N_X_SP_h_dim,
                          train_types = n_x_sp_train_types,
-                         has_curriculum = not curriculum.is_random)
-    
+                         has_curriculum = not curriculum.is_random,
+                         has_adversary = TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types)
+
     agents = load_agents(args, name=name, tag=tag, force_training=n_x_sp_force_training)
     if agents:
         return agents[0]
-    
+
     population = get_population(
         args=args,
         ck_rate=pop_total_training_timesteps // 20,
@@ -84,12 +81,11 @@ def get_N_X_SP_agents(args,
         eval_types=n_x_sp_eval_types['generate'],
         unseen_teammates_len = args.unseen_teammates_len,
         num_SPs_to_train=num_SPs_to_train,
-        parallel=parallel,
         force_training=pop_force_training,
         tag = tag
     )
 
-    randomly_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args, seed=args.N_X_SP_seed)
+    randomly_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args, seed=args.N_X_SP_seed, hidden_dim=args.N_X_SP_h_dim)
     teammates_collection = generate_TC(args=args,
                                         population=population,
                                         agent=randomly_init_agent,
@@ -123,8 +119,7 @@ def get_FCP_agent_w_pop(args,
                         pop_force_training,
                         primary_force_training,
                         num_SPs_to_train=2,
-                        tag=None,
-                        parallel=True):
+                        tag=None):
 
     name = generate_name(args, 
                          prefix='FCP',
@@ -140,7 +135,6 @@ def get_FCP_agent_w_pop(args,
         train_types=fcp_train_types,
         eval_types=fcp_eval_types['generate'],
         num_SPs_to_train=num_SPs_to_train,
-        parallel=parallel,
         force_training=pop_force_training,
         tag = tag
     )
@@ -190,7 +184,6 @@ def get_N_X_FCP_agents(args,
                         fcp_curriculum,
                         n_1_fcp_curriculum,
                         num_SPs_to_train=2,
-                        parallel=True,
                         tag=None):
 
     n_1_fcp_curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
@@ -216,7 +209,7 @@ def get_N_X_FCP_agents(args,
                                                 primary_force_training=fcp_force_training,
                                                 num_SPs_to_train=num_SPs_to_train,
                                                 fcp_curriculum=fcp_curriculum,
-                                                parallel=parallel)
+                                                 )
 
     teammates_collection = generate_TC(args=args,
                                         population=population,

@@ -6,7 +6,7 @@ import random
 from pathlib import Path
 
 
-def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, unseen_teammates_len:int, agent:RLAgentTrainer=None):
+def get_teammates(args, agents_perftag_score:list, teamtypes:list, teammates_len:int, unseen_teammates_len:int, agent:RLAgentTrainer=None):
     all_teammates = {
         teamtype: [] for teamtype in teamtypes
     }
@@ -43,6 +43,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 all_teammates[teamtype].append([tm[0] for tm in tp])
 
         elif teamtype == TeamType.SELF_PLAY:
+            assert agent is not None
             all_teammates[teamtype].append([agent for _ in range(teammates_len)])
 
         elif teamtype == TeamType.SELF_PLAY_HIGH:
@@ -72,6 +73,13 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
             low_p_agents = sorted_agents_perftag_score[-unseen_teammates_len:]
             agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
+        
+        elif teamtype == TeamType.SELF_PLAY_ADVERSARY:
+            # assert agent is not None
+            # agents_itself = [agent for _ in range(teammates_len-1)]
+            # all_teammates[teamtype].append([agent]+agents_itself)
+            lazy_adversary = RLAgentTrainer.generate_randomly_initialized_agent(args=agent.args, seed=args.adversary_seed, hidden_dim=args.hidden_dim)
+            all_teammates[teamtype].append([agent for _ in range(teammates_len-1)])
 
     selected_agents = []
     for teamtype in teamtypes:
@@ -127,7 +135,8 @@ def generate_TC(args,
         agents_perftag_score_all = [(agent,
                                      agent.layout_performance_tags[layout_name], 
                                      agent.layout_scores[layout_name]) for agent in layout_population]
-        train_collection[layout_name], train_agents = get_teammates(agents_perftag_score=agents_perftag_score_all,
+        train_collection[layout_name], train_agents = get_teammates(args=args,
+                                                                    agents_perftag_score=agents_perftag_score_all,
                                                                     teamtypes=train_types,
                                                                     teammates_len=args.teammates_len,
                                                                     agent=agent,
@@ -135,7 +144,8 @@ def generate_TC(args,
                                                                     )
 
         agents_perftag_score_eval = [agent for agent in agents_perftag_score_all if agent[0] not in train_agents]
-        eval_collection[layout_name], _eval_agents = get_teammates(agents_perftag_score=agents_perftag_score_eval,
+        eval_collection[layout_name], _eval_agents = get_teammates(args=args,
+                                                                    agents_perftag_score=agents_perftag_score_eval,
                                                                     teamtypes=eval_types_to_generate,
                                                                     teammates_len=args.teammates_len,
                                                                     agent=agent,
