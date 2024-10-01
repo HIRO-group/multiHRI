@@ -50,8 +50,9 @@ class RLAgentTrainer(OAITrainer):
         self.taper_layers = taper_layers
         self.use_frame_stack = use_frame_stack
         self.use_policy_clone = use_policy_clone
+        self.is_already_trained = False
 
-        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
+        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type)
         
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
@@ -64,6 +65,7 @@ class RLAgentTrainer(OAITrainer):
     @classmethod
     def generate_randomly_initialized_agent(cls,
                                             args,
+                                            learner_type,
                                             name:str='randomized_agent',
                                             seed:int=8080,
                                             hidden_dim:int=256,
@@ -85,6 +87,7 @@ class RLAgentTrainer(OAITrainer):
                         n_envs=args.n_envs,
                         seed=seed,
                         hidden_dim=hidden_dim,
+                        learner_type=learner_type,
                         )
 
         return trainer.get_agents()[0]
@@ -173,14 +176,15 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
 
 
-    def get_envs(self, _env, _eval_envs, deterministic):
+    def get_envs(self, _env, _eval_envs, deterministic, learner_type):
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
-                        'deterministic': deterministic,'args': self.args}
+                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type}
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
                                     vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
+            
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
-                                 'deterministic': deterministic, 'args': self.args}
+                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
         else:
             env = _env
@@ -321,7 +325,7 @@ class RLAgentTrainer(OAITrainer):
                     self.worst_training_rew = mean_training_rew
 
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
-                
+
                 if self.fcp_ck_rate:
                     if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
                         path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
@@ -337,6 +341,7 @@ class RLAgentTrainer(OAITrainer):
                     self.worst_score = mean_reward
 
             steps += 1
+        self.is_already_trained = True
         self.save_agents(tag=CheckedPoints.FINAL_TRAINED_MODEL)
         # TODO: get rid of the default tag, which uses args.exp_dir, which default as 'aamas25'
         # Before getting rid of it, we still need the next line of code to 

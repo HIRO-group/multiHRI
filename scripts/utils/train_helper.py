@@ -1,7 +1,7 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_population
-from oai_agents.common.teammates_collection import generate_TC, generate_TC_for_Adversary, generate_TC_for_AdversarysPlay
+from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_Adversary, generate_TC_for_AdversarysPlay
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
 
@@ -85,24 +85,27 @@ def get_N_X_SP_agents(args,
         tag = tag
     )
 
-    randomly_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args, seed=args.N_X_SP_seed, hidden_dim=args.N_X_SP_h_dim)
+    best_SP_agent = get_best_SP_agent(args, population)
+
     teammates_collection = generate_TC(args=args,
                                         population=population,
-                                        agent=randomly_init_agent,
+                                        agent=best_SP_agent,
                                         train_types=n_x_sp_train_types,
                                         eval_types_to_generate=n_x_sp_eval_types['generate'],
                                         eval_types_to_read_from_file=n_x_sp_eval_types['load'],
                                         unseen_teammates_len=args.unseen_teammates_len)
-
-    n_x_sp_types_trainer = RLAgentTrainer(name=name,
-                                           args=args,
-                                           agent=randomly_init_agent,
-                                           teammates_collection=teammates_collection,
-                                           epoch_timesteps=args.epoch_timesteps,
-                                           n_envs=args.n_envs,
-                                           curriculum=curriculum,
-                                           seed=args.N_X_SP_seed,
-                                           hidden_dim=args.N_X_SP_h_dim)
+    for i in range(args.num_attacks):
+        adversary_agent = train_adversary_agent()
+        teammates_collection.add_adversary(adversary_agent)
+        n_x_sp_types_trainer = RLAgentTrainer(name=name,
+                                            args=args,
+                                            agent=best_SP_agent,
+                                            teammates_collection=teammates_collection,
+                                            epoch_timesteps=args.epoch_timesteps,
+                                            n_envs=args.n_envs,
+                                            curriculum=curriculum,
+                                            seed=args.N_X_SP_seed,
+                                            hidden_dim=args.N_X_SP_h_dim)
 
     n_x_sp_types_trainer.train_agents(total_train_timesteps=n_x_sp_total_training_timesteps)
     return n_x_sp_types_trainer.get_agents()[0], teammates_collection

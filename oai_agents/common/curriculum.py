@@ -60,6 +60,7 @@ class Curriculum:
     def update(self, current_step):
         self.current_step = current_step
 
+    # def should_agent_be_created()
 
     
     def select_teammates(self, population_teamtypes):
@@ -72,12 +73,16 @@ class Curriculum:
         '''
         if self.is_random:
             population = [population_teamtypes[t] for t in population_teamtypes.keys()]
-            # Handle lazy agent in the population here
+            
+            for teamtype in population_teamtypes.keys():
+                if teamtype == TeamType.SELF_PLAY_ADVERSARY:
+                    for agent in population_teamtypes[teamtype]:
+                        if agent.name == "adversary":
+                            if agent.is_already_trained:
+                                pass
 
-            # Randomly select a list of teams of some teamtype
+
             teammates_per_type = population[np.random.randint(len(population))]
-
-            # Randomly select a team of agents from that list of agents
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
             return teammates
         return self.select_teammates_based_on_curriculum(population_teamtypes)

@@ -74,16 +74,14 @@ def get_teammates(args, agents_perftag_score:list, teamtypes:list, teammates_len
             agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
         
-        elif teamtype == TeamType.SELF_PLAY_ADVERSARY:
-            # assert agent is not None
-            # agents_itself = [agent for _ in range(teammates_len-1)]
-            # all_teammates[teamtype].append([agent]+agents_itself)
-            lazy_adversary = RLAgentTrainer.generate_randomly_initialized_agent(args=agent.args,
-                                                                                seed=args.adversary_seed,
-                                                                                hidden_dim=args.hidden_dim,
-                                                                                name='lazy_adversary',
-                                                                                )
-            all_teammates[teamtype].append([agent for _ in range(teammates_len-1)] + lazy_adversary)
+        # elif teamtype == TeamType.SELF_PLAY_ADVERSARY:
+        #     lazy_adversary = RLAgentTrainer.generate_randomly_initialized_agent(args=agent.args,
+        #                                                                         seed=args.adversary_seed,
+        #                                                                         hidden_dim=args.hidden_dim,
+        #                                                                         learner_type=args.adversary_learner_type,
+        #                                                                         name='lazy_adversary',
+        #                                                                         )
+        #     all_teammates[teamtype].append([agent for _ in range(teammates_len-1)] + lazy_adversary)
 
     selected_agents = []
     for teamtype in teamtypes:
@@ -169,6 +167,16 @@ def generate_TC(args,
     }
 
     return teammates_collection            
+
+
+def get_best_SP_agent(args, population):
+    # select best SP agent that has the highest reward averaged over all layouts
+    agents_scores_averaged_over_layouts = []
+    for agent in population:
+        scores = [agent.layout_scores[layout_name] for layout_name in args.layout_names]
+        agents_scores_averaged_over_layouts.append(agent, sum(scores)/len(scores))
+    best_agent = max(agents_scores_averaged_over_layouts, key=lambda x: x[1])
+    return best_agent
 
 
 
