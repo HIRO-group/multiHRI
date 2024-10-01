@@ -17,7 +17,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',
                         help='Encoding scheme to use. '
                              'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric"')
-    
+
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate used in imitation learning. lr for rl is defined in rl.py')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size used in imitation learning. bs for rl is defined in rl.py')
     parser.add_argument('--SP-seed', type=int, default=68, help='seed used in train_helper')
@@ -57,7 +57,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--n-envs', type=int, help='Number of environments to use while training')
     parser.add_argument('--teammates-len',  type=int)
     parser.add_argument('--overcooked-verbose', type=bool, default=False, help="Disables the overcooked game logs")
-    
+
     parser.add_argument('--pop-total-training-timesteps', type=int)
     parser.add_argument('--fcp-total-training-timesteps', type=int)
     parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
@@ -66,11 +66,12 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--reward-magnifier', type=float, default=3.0)
     parser.add_argument('--dynamic-reward', type=bool, default=True)
     parser.add_argument('--final-sparse-r-ratio', type=float, default=1.0)
-    
+
     parser.add_argument('--fcp-train-types', nargs='+', type=str)
     parser.add_argument('--fcp-eval-types', type=dict)
 
     parser.add_argument('--exp-dir', type=str, help='Folder to save/load experiment result')
+    parser.add_argument('--max-concurrent-jobs', type=int, default=None, help='Max number of concurrent jobs to run during fcp population training')
 
 
     for parser_arg, parser_kwargs in additional_args:
