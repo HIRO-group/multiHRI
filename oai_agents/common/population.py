@@ -26,6 +26,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         hidden_dim=h_dim,
         seed=seed,
         fcp_ck_rate=ck_rate,
+        learner_type=args.pop_learner_type,
         curriculum=Curriculum(train_types=args.fcp_train_types, is_random=True)
     )
     '''

@@ -406,7 +406,7 @@ def N_X_SP_w_adversaries(args,
                                 TeamType.SELF_PLAY_LOW,
                                 TeamType.SELF_PLAY,
                                 TeamType.SELF_PLAY_ADVERSARY]
-    
+
     args.primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
                             'load': []
@@ -598,13 +598,19 @@ def set_input(args, quick_test=False, how_long=6):
     args.parallel  = True
         
     if not quick_test:
-        args.learner_type = LearnerType.ORIGINALER
         args.n_envs = 200
         args.epoch_timesteps = 1e5
+
+        args.primary_learner_type = LearnerType.SUPPORTER
+        args.adversary_learner_type = LearnerType.SELFISHER
+        args.pop_learner_type = LearnerType.ORIGINALER
+        args.attack_rounds = 3 
 
         how_long = 1.0
         args.pop_total_training_timesteps = int(5e6 * how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * how_long)
+        args.adversary_total_training_timesteps = int(5e6 * how_long)
+
         args.fcp_total_training_timesteps = int(5e6 * how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * how_long)
 
@@ -638,10 +644,16 @@ if __name__ == '__main__':
     quick_test = False
     how_long = 1
     
-    pop_force_training = True
-    primary_force_training = True
+    args.pop_force_training = True
+    args.adversary_force_training = True
+    args.primary_force_training = True
     
     set_input(args=args, quick_test=quick_test)
+
+
+    N_X_SP_w_adversaries(args=args,
+                          pop_force_training=args.pop_force_training,
+                          primary_force_training=args.primary_force_training)
     
     # SingleAdversaryPlay(args, 
     #                     exp_tag = 'S2FP', 
@@ -659,21 +671,21 @@ if __name__ == '__main__':
     #                     rounds_of_advplay = 101,
     #                     reward_magnifier = 3.0)
 
-    MultiAdversaryPlay( args, 
-                        exp_tag = 'M2FP', 
-                        main_agent_path = 'M2FP/sp_s68_h512_tr(SP)_ran',
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 512,
-                        main_agent_type = LearnerType.SUPPORTER, 
-                        adversary_seed = 68,
-                        adversary_h_dim = 512,
-                        adversary_type = LearnerType.SELFISHER, 
-                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long_init = 4.0,
-                        how_long_for_agent = 4.0,
-                        how_long_for_adv = 4.0,
-                        rounds_of_advplay = 101,
-                        reward_magnifier = 3.0)
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'M2FP', 
+    #                     main_agent_path = 'M2FP/sp_s68_h512_tr(SP)_ran',
+    #                     main_agent_seed = 68,
+    #                     main_agent_h_dim = 512,
+    #                     main_agent_type = LearnerType.SUPPORTER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 4.0,
+    #                     how_long_for_agent = 4.0,
+    #                     how_long_for_adv = 4.0,
+    #                     rounds_of_advplay = 101,
+    #                     reward_magnifier = 3.0)
     
 #     MultiAdversaryScheduledPlay(args, 
 #                                 exp_tag = 'M2FSP', 
@@ -702,10 +714,6 @@ if __name__ == '__main__':
     #        primary_force_training=primary_force_training,
     #        )
 
-
-    N_X_SP_w_adversaries(args=args,
-                          pop_force_training=pop_force_training,
-                          primary_force_training=primary_force_training)
 
     
     # FCP_traditional(args=args,

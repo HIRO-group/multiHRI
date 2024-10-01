@@ -215,6 +215,16 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
                 print("Loaded agents from files for eval: ", teammates.names, ", Teamtype: ", teammates.team_type)
 
 
+def update_TC_w_adversary(args,
+                          teammates_collection,
+                          adversaries, 
+                          primary_agent):
+    for layout_name in args.layout_names:
+        for adversary in adversaries:
+            teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+[primary_agent for _ in range(args.teammates_len-1)]]
+            teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+[primary_agent for _ in range(args.teammates_len-1)]]
+    return teammates_collection
+
 
 def generate_TC_for_Adversary(args, 
                             agent,
