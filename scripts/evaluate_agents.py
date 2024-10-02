@@ -10,28 +10,107 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
+
+class Eval:
+    LOW = 0
+    MEDIUM = 1
+    HIGH = 2
+
+
 LAYOUT_NAMES_PATHs = {
-    '3_chefs_small_kitchen': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_small_kitchen_two_resources': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_forced_coordination': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_asymmetric_advantages': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_forced_coordination_3OP2S1D': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_counter_circuit': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '5_chefs_storage_room_lots_resources': [
-        'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
-    ],
+    '3_chefs_small_kitchen': {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_small_kitchen_two_resources': {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_forced_coordination':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_asymmetric_advantages':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_forced_coordination_3OP2S1D':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_counter_circuit':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '5_chefs_storage_room_lots_resources': { # 800, low: [0, 300], medium: [300, 600], high: [600, 800]
+        # Eval.LOW: ['agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+        #              'agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+        # 'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
+        Eval.LOW: ['agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   ],
+        Eval.MEDIUM: [],
+        Eval.HIGH: []
+    },
     '5_chefs_clustered_kitchen' :[
         'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
     ],
