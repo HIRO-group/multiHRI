@@ -263,13 +263,27 @@ def get_5_player_input(args):
     }
     return layout_names, p_idxes, all_agents_paths, args
 
+def get_new_5_player_input(args):
+    args.num_players = 5
+    layout_names = ['5_chefs_storage_room_lots_resources', '5_chefs_clustered_kitchen', '5_chefs_coordination_ring']
+    p_idxes = [0, 1, 2, 3 ,4]
+    all_agents_paths = {
+        'N-1-SP cur': 'agent_models/N-1-SP-4-long/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+        'N-1-SP ran': 'agent_models/N-1-SP-4-long/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+        'SP': 'agent_models/N-1-SP-4-long/SP_hd256_seed68/best',
+        'FCP': 'agent_models/N-1-SP-4-long/FCP_s2020_h256_tr(AMX)_ran/best',
+        'Adversary Play': 'agent_models/M2FP-1/sp_s68_h512_tr(SP)_ran/M2FP/supporter-selfisherplay/0/pwadv_s68_h512_tr(SP_SPADV)_ran/best'
+    }
+    return layout_names, p_idxes, all_agents_paths, args
+
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, args = get_3_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, args = get_3_player_input(args)
     # layout_names, p_idxes, all_agents_paths, args = get_5_player_input(args)
+    layout_names, p_idxes, all_agents_paths, args = get_new_5_player_input(args)
 
-    deterministic = True
+    deterministic = False
     max_num_teams_per_layout_per_x = 5
     number_of_eps = 5
 
