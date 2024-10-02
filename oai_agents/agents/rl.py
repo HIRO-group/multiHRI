@@ -213,10 +213,10 @@ class RLAgentTrainer(OAITrainer):
             '''
             sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
                             n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
-                            gamma=0.99, gae_lambda=0.95)
+                            gamma=0.99, gae_lambda=0.95, device=self.args.device)
             agent_name = f'{self.name}'
         return sb3_agent, agent_name
-    
+
 
     def check_teammates_collection_structure(self, teammates_collection):
         '''    
