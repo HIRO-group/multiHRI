@@ -363,7 +363,7 @@ def N_X_SP(args,
     args.unseen_teammates_len = 1 # This is the X in N_X_SP
     args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
     args.primary_eval_types = {
-                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
+                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
                             }
 
@@ -456,8 +456,8 @@ def N_1_SP(args,
     args.unseen_teammates_len = 1
     args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
     args.primary_eval_types = {
-                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
-                            'load': get_eval_types_to_load()
+                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
+                            'load': []
                             }
     
     curriculum = Curriculum(train_types = args.primary_train_types,
@@ -496,7 +496,7 @@ def FCP_mhri(args, pop_force_training, primary_force_training):
     The reason we have our version is that when we used the traditional FCP it got ~0 reward so we 
     decided to add different types for teammates_collection.
     '''
-    args.primary_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
+    args.primary_train_types = [TeamType.LOW_FIRST, TeamType.HIGH_FIRST]
     args.primary_eval_types = {'generate' : [],
                             'load': get_eval_types_to_load()}
 
@@ -535,7 +535,7 @@ def FCP_traditional(args, pop_force_training, primary_force_training):
     '''
 
     args.primary_train_types = [TeamType.ALL_MIX]
-    args.primary_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST],
+    args.primary_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
                             'load': []}
 
     fcp_curriculum = Curriculum(train_types=args.primary_train_types, is_random=True)
@@ -606,7 +606,7 @@ def set_input(args, quick_test=False, how_long=6):
         args.pop_learner_type = LearnerType.ORIGINALER
         args.attack_rounds = 3
 
-        how_long = 1.0
+        how_long = 4.0
         args.pop_total_training_timesteps = int(5e6 * how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * how_long)
         args.adversary_total_training_timesteps = int(5e6 * how_long)
@@ -620,7 +620,7 @@ def set_input(args, quick_test=False, how_long=6):
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.num_SPs_to_train = 2
+        args.num_SPs_to_train = 3
         # This is the directory where the experiment will be saved. Change it to your desired directory:
         args.exp_dir = 'experiment/1'
 
@@ -632,6 +632,8 @@ def set_input(args, quick_test=False, how_long=6):
         
         args.pop_total_training_timesteps = 3500
         args.fcp_total_training_timesteps = 3500
+        args.adversary_total_training_timesteps = 3500
+
         args.n_x_sp_total_training_timesteps = 3500
         args.n_x_fcp_total_training_timesteps = 3500 * 2
 
@@ -643,8 +645,8 @@ if __name__ == '__main__':
     args = get_arguments()
     quick_test = True
     how_long = 1
-    
-    args.pop_force_training = True
+
+    args.pop_force_training = False
     args.adversary_force_training = True
     args.primary_force_training = True
     

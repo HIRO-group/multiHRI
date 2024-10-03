@@ -17,5 +17,5 @@ def generate_name(args, prefix, seed, h_dim, train_types, has_curriculum, has_ad
     fname = prefix + '_s' + str(seed) + '_h' + str(h_dim) +'_tr('+'_'.join(train_types)+')'
     fname = fname + '_cur' if has_curriculum else fname + '_ran'
     fname = fname + '_adv' if has_adversary else fname + '_noadv'
-    fname = fname + suffix
+    fname = fname + '_'+suffix
     return fname

@@ -72,15 +72,6 @@ class Curriculum:
         '''
         if self.is_random:
             population = [population_teamtypes[t] for t in population_teamtypes.keys()]
-            
-            for teamtype in population_teamtypes.keys():
-                if teamtype == TeamType.SELF_PLAY_ADVERSARY:
-                    for agent in population_teamtypes[teamtype]:
-                        if agent.name == "adversary":
-                            if agent.is_already_trained:
-                                pass
-
-
             teammates_per_type = population[np.random.randint(len(population))]
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
             return teammates

@@ -98,25 +98,35 @@ def get_N_X_SP_agents(args,
                                         unseen_teammates_len=args.unseen_teammates_len)
     
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
-        attack_N_X_SP(args, best_SP_agent, teammates_collection, curriculum, n_x_sp_total_training_timesteps)
+        attack_N_X_SP(args=args,
+                        init_agent=best_SP_agent,
+                        teammates_collection=teammates_collection,
+                        curriculum=curriculum,
+                        n_x_sp_total_training_timesteps=n_x_sp_total_training_timesteps)
     else:
-        dont_attack_N_X_SP(args, best_SP_agent, teammates_collection, curriculum, n_x_sp_total_training_timesteps)
+        dont_attack_N_X_SP(args=args,
+                         init_agent=best_SP_agent,
+                         teammates_collection=teammates_collection,
+                         curriculum=curriculum,
+                          n_x_sp_total_training_timesteps=n_x_sp_total_training_timesteps)
 
 
 def attack_N_X_SP(args, init_agent, teammates_collection, curriculum, n_x_sp_total_training_timesteps):
     assert TeamType.SELF_PLAY_ADVERSARY in args.primary_train_types
-    assert TeamType.SELF_PLAY_ADVERSARY in args.primary_eval_types
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
     primary_agent = init_agent
     adversary_agents = []
     for attack_round in range(args.attack_rounds):
-        adversary_agent = get_adversary_agent(primary_agent)
+        adversary_agent = get_adversary_agent(args=args,
+                                              primary_agent=primary_agent,
+                                              attack_round=attack_round)
         adversary_agents.append(adversary_agent)
 
-        teammates_collection = update_TC_w_adversary(args,
-                                                    agent=primary_agent,
-                                                    adversarys=adversary_agents)
+        teammates_collection = update_TC_w_adversary(args=args,
+                                                        teammates_collection=teammates_collection,
+                                                        primary_agent=primary_agent,
+                                                        adversaries=adversary_agents)
 
         name = generate_name(args,
                             prefix = f'PWADV-N-{args.unseen_teammates_len}-SP',
@@ -181,9 +191,9 @@ def dont_attack_N_X_SP(args, init_agent, teammates_collection, curriculum, n_x_s
 
 
 def get_adversary_agent(args, primary_agent, attack_round, tag=None):
-    teammates_collection = generate_TC_for_Adversary(args,
-                                                    agent=primary_agent,
-                                                    train_types=[TeamType.SELF_PLAY_HIGH])
+    teammates_collection = generate_TC_for_Adversary(args=args,
+                                                    agent=primary_agent)
+
     name = generate_name(args,
                         prefix='adv',
                         seed=args.ADV_seed,
@@ -365,6 +375,7 @@ def get_adversary(args, total_training_timesteps, train_types, eval_types, curri
         curriculum=curriculum,
         seed=args.ADV_seed,
         hidden_dim=args.ADV_h_dim,
+        fcp_ck_rate=total_training_timesteps // 20,
     )
 
     adversary_trainer.train_agents(total_train_timesteps=total_training_timesteps)
@@ -401,6 +412,7 @@ def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_ti
         curriculum=curriculum,
         seed=args.PwADV_seed,
         hidden_dim=args.PwADV_h_dim,
+        fcp_ck_rate=total_training_timesteps // 20,
     )
     
     agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)

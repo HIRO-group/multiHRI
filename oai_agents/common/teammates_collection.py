@@ -170,13 +170,16 @@ def generate_TC(args,
 
 
 def get_best_SP_agent(args, population):
-    # select best SP agent that has the highest reward averaged over all layouts
     agents_scores_averaged_over_layouts = []
-    for agent in population:
+
+    for layout_name in args.layout_names:
+        all_agents = [agent for agent in population[layout_name]]
+
+    for agent in all_agents:
         scores = [agent.layout_scores[layout_name] for layout_name in args.layout_names]
-        agents_scores_averaged_over_layouts.append(agent, sum(scores)/len(scores))
+        agents_scores_averaged_over_layouts.append((agent, sum(scores)/len(scores)))
     best_agent = max(agents_scores_averaged_over_layouts, key=lambda x: x[1])
-    return best_agent
+    return best_agent[0]
 
 
 
@@ -227,20 +230,17 @@ def update_TC_w_adversary(args,
 
 
 def generate_TC_for_Adversary(args, 
-                            agent,
-                            train_types = [TeamType.HIGH_FIRST],
-                            eval_types_to_generate=None,
-                            eval_types_to_read_from_file=None):
+                            agent):
 
-    teammates = [agent for _ in range(args.teammates_len)] 
+    teammates = [agent for _ in range(args.teammates_len)]
 
     eval_collection = {
-            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
+            layout_name: {ttype: [] for ttype in [TeamType.HIGH_FIRST]}
             for layout_name in args.layout_names
     }
 
     train_collection = {
-        layout_name: {ttype: [] for ttype in train_types}
+        layout_name: {ttype: [] for ttype in [TeamType.HIGH_FIRST]}
         for layout_name in args.layout_names
     }
 

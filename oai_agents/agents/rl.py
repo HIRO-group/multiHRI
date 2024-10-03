@@ -50,7 +50,6 @@ class RLAgentTrainer(OAITrainer):
         self.taper_layers = taper_layers
         self.use_frame_stack = use_frame_stack
         self.use_policy_clone = use_policy_clone
-        self.is_already_trained = False
 
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type)
         
@@ -221,10 +220,10 @@ class RLAgentTrainer(OAITrainer):
             '''
             sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
                             n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
-                            gamma=0.99, gae_lambda=0.95)
+                            gamma=0.99, gae_lambda=0.95, device=self.args.device)
             agent_name = f'{self.name}'
         return sb3_agent, agent_name
-    
+
 
     def check_teammates_collection_structure(self, teammates_collection):
         '''    
@@ -314,15 +313,9 @@ class RLAgentTrainer(OAITrainer):
             prev_timesteps = self.learning_agent.num_timesteps
 
             if self.should_evaluate(steps=steps):
-                mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])                
+                mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
                 if mean_training_rew >= self.best_training_rew:
-                    best_train_path, best_train_tag = self.save_agents(tag=CheckedPoints.BEST_TRAIN_REWARD)
-                    print(f'New best training score of {mean_training_rew} reached, model saved to {best_train_path}/{best_train_tag}')
                     self.best_training_rew = mean_training_rew
-                if mean_training_rew <= self.worst_training_rew:
-                    worst_train_path, worst_train_tag = self.save_agents(tag=CheckedPoints.WORST_TRAIN_REWARD)
-                    print(f'Now worst training score of {mean_training_rew} reached, model saved to {worst_train_path}/{worst_train_tag}')
-                    self.worst_training_rew = mean_training_rew
 
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
 
@@ -335,17 +328,8 @@ class RLAgentTrainer(OAITrainer):
                     best_path, best_tag = self.save_agents(tag=CheckedPoints.BEST_EVAL_REWARD)
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
-                if mean_reward <= self.worst_score:
-                    worst_path, worst_tag = self.save_agents(tag=CheckedPoints.WORST_EVAL_REWARD)
-                    print(f'New worst evaluation score of {mean_reward} reached, model saved to {worst_path}/{worst_tag}')
-                    self.worst_score = mean_reward
 
             steps += 1
-        self.is_already_trained = True
-        self.save_agents(tag=CheckedPoints.FINAL_TRAINED_MODEL)
-        # TODO: get rid of the default tag, which uses args.exp_dir, which default as 'aamas25'
-        # Before getting rid of it, we still need the next line of code to 
-        # save the model for function to call it without meeting an issue.
         self.save_agents()
         self.agents = RLAgentTrainer.load_agents(self.args, self.name, best_path, best_tag)
         run.finish()
