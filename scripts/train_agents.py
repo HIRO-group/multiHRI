@@ -435,7 +435,10 @@ def N_1_SP(args,
     :param parallel: Boolean indicating if parallel envs should be used for training or not
     '''
     args.unseen_teammates_len = 1
-    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
+    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, 
+                                TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
+                                TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
+                                ]
     args.primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
@@ -642,33 +645,43 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.n_x_fcp_total_training_timesteps = 3500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = 'test/1'
+        args.exp_dir = 'test/test/3'
 
 
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = False
     parallel = True
-    
+
     pop_force_training = True
     primary_force_training = True
-    
-    MultiAdversaryPlay( args, 
-                        exp_tag = 'MAP', 
-                        main_agent_path = 'Final/2/SP_hd256_seed13',
-                        main_agent_seed = 13,
-                        main_agent_h_dim = 256,
-                        main_agent_type = LearnerType.ORIGINALER, 
-                        adversary_seed = 68,
-                        adversary_h_dim = 512,
-                        adversary_type = LearnerType.SELFISHER, 
-                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long_init = 4,
-                        how_long_for_agent = 1,
-                        how_long_for_adv = 4,
-                        rounds_of_advplay = 3,
-                        reward_magnifier = 3.0,
-                        team_size = 2)
+
+    how_long, teammates_len = 4, 1
+    set_input(args=args, quick_test=quick_test, how_long=how_long, teammates_len=teammates_len)
+
+
+    N_1_SP(args=args,
+            pop_force_training=pop_force_training,
+            primary_force_training=primary_force_training,
+            parallel=parallel)
+
+
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'MAP', 
+    #                     main_agent_path = 'Final/2/SP_hd256_seed13',
+    #                     main_agent_seed = 13,
+    #                     main_agent_h_dim = 256,
+    #                     main_agent_type = LearnerType.ORIGINALER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 4,
+    #                     how_long_for_agent = 1,
+    #                     how_long_for_adv = 4,
+    #                     rounds_of_advplay = 3,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 2)
     
     # MultiAdversaryPlay( args, 
     #                     exp_tag = 'MAP', 
@@ -705,8 +718,6 @@ if __name__ == '__main__':
     #                     team_size = 5)
     
     
-    set_input(args=args, quick_test=quick_test, how_long=4.0)
-    
     # N_X_SP(args=args,
     #        pop_force_training=pop_force_training,
     #        primary_force_training=primary_force_training,
@@ -726,10 +737,6 @@ if __name__ == '__main__':
 
     # set_input(args=args, quick_test=quick_test, how_long=1.5, teammates_len=4, exp_dir='five')
     # args.layout_names = five_chefs_layouts
-    # N_1_SP(args=args,
-    #         pop_force_training=pop_force_training,
-    #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
 
     # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=1, exp_dir='two_9')
     # args.layout_names = two_chefs_layouts
