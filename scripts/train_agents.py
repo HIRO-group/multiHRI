@@ -477,7 +477,10 @@ def N_1_SP(args,
     :param parallel: Boolean indicating if parallel envs should be used for training or not
     '''
     args.unseen_teammates_len = 1
-    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
+    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, 
+                                TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
+                                TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
+                                ]
     args.primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
@@ -684,14 +687,14 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.n_x_fcp_total_training_timesteps = 3500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = 'test/1'
+        args.exp_dir = 'test/test/3'
 
 
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = False
     parallel = True
-    
+
     pop_force_training = True
     primary_force_training = True
 
@@ -830,8 +833,6 @@ if __name__ == '__main__':
     #                     team_size = 5)
     
     
-    set_input(args=args, quick_test=quick_test, how_long=4.0)
-    
     # N_X_SP(args=args,
     #        pop_force_training=pop_force_training,
     #        primary_force_training=primary_force_training,
@@ -851,10 +852,6 @@ if __name__ == '__main__':
 
     # set_input(args=args, quick_test=quick_test, how_long=1.5, teammates_len=4, exp_dir='five')
     # args.layout_names = five_chefs_layouts
-    # N_1_SP(args=args,
-    #         pop_force_training=pop_force_training,
-    #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
 
     # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=1, exp_dir='two_9')
     # args.layout_names = two_chefs_layouts
