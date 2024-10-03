@@ -13,7 +13,7 @@ from utils import (get_SP_agent,
                     get_N_X_FCP_agents, 
                     get_N_X_SP_agents,
                     get_adversary,
-                    get_agent_play_w_adversarys
+                    get_agent_play_w_adversarys,
                     )
 
 
@@ -607,7 +607,7 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.layout_names = layout_names
     args.teammates_len = teammates_len
     args.num_players = args.teammates_len + 1  # Example: 3 players = 1 agent + 2 teammates
-    args.dynamic_reward = False
+    args.dynamic_reward = True
     args.final_sparse_r_ratio = 1.0
         
     if not quick_test:
@@ -702,48 +702,10 @@ if __name__ == '__main__':
     #                     how_long_for_adv = 4,
     #                     rounds_of_advplay = 3,
     #                     reward_magnifier = 3.0,
-    #                     team_size = 3)
+    #                     team_size = 5)
     
-
-
-    # MultiAdversaryPlay( args, 
-    #                     exp_tag = 'MAP', 
-    #                     main_agent_path = 'Final/2/SP_hd256_seed68',
-    #                     main_agent_seed = 68,
-    #                     main_agent_h_dim = 256,
-    #                     main_agent_type = LearnerType.ORIGINALER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
-    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 4.0,
-    #                     how_long_for_agent = 2.0,
-    #                     how_long_for_adv = 4.0,
-    #                     rounds_of_advplay = 3,
-    #                     reward_magnifier = 3.0,
-    #                     team_size = 2)
     
-    # MultiAdversaryPlay( args, 
-    #                     exp_tag = 'MAP', 
-    #                     main_agent_path = 'Final/3/SP_hd256_seed13',
-    #                     main_agent_seed = 13,
-    #                     main_agent_h_dim = 256,
-    #                     main_agent_type = LearnerType.ORIGINALER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
-    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 4.0,
-    #                     how_long_for_agent = 2.0,
-    #                     how_long_for_adv = 4.0,
-    #                     rounds_of_advplay = 3,
-    #                     reward_magnifier = 3.0,
-    #                     team_size = 3)
-    
-
-
-    
-    set_input(args=args, quick_test=quick_test, how_long=how_long)
+    set_input(args=args, quick_test=quick_test, how_long=4.0)
     
     # N_X_SP(args=args,
     #        pop_force_training=pop_force_training,
