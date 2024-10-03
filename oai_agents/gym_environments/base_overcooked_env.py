@@ -86,6 +86,8 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
+        print("learner type", learner_type)
+        
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
 
@@ -96,7 +98,7 @@ class OvercookedGymEnv(Env):
         if full_init:
             self.set_env_layout(**kwargs)
 
-    def set_env_layout(self, learner_type, env_index=None, layout_name=None, base_env=None, horizon=None):
+    def set_env_layout(self, env_index=None, layout_name=None, base_env=None, horizon=None):
         '''
         Required to play nicely with sb3 make_vec_env. make_vec_env doesn't allow different arguments for each env,
         so to specify the layouts, they must first be created then each this is called.
@@ -108,6 +110,7 @@ class OvercookedGymEnv(Env):
         '''
         assert env_index is not None or layout_name is not None or base_env is not None
 
+    
 
         if base_env is None:
             self.env_idx = env_index

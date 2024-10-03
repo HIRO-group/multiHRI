@@ -191,7 +191,7 @@ class RLAgentTrainer(OAITrainer):
             eval_envs = _eval_envs
 
         for i in range(self.n_envs):
-            env.env_method('set_env_layout', indices=i, env_index=i % self.n_layouts)
+            env.env_method('set_env_layout', indices=i, env_index =i % self.n_layouts)
         return env, eval_envs
 
 

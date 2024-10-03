@@ -112,6 +112,7 @@ def save_population(args, population):
             eval_types=[TeamType.SELF_PLAY],
             epoch_timesteps=args.epoch_timesteps,
             n_envs=args.n_envs,
+            learner_type=args.pop_learner_type,
             seed=None,
         )
         rt.agents = population[layout_name]

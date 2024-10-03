@@ -50,8 +50,7 @@ class Curriculum:
             assert self.rest_of_the_training_probabilities is None, "rest_of_the_training_probabilities should be None for random curriculums"
             assert self.probabilities_decay_over_time is None, "probabilities_decay_over_time should be None for random curriculums"
         else:
-            assert set(self.train_types) == set(self.training_phases_durations_in_order.keys()), "Invalid training types"
-            assert set(self.train_types) == set(self.rest_of_the_training_probabilities.keys()), "Invalid training types"
+            assert set(self.train_types) == set(list(self.training_phases_durations_in_order.keys()) + list(self.rest_of_the_training_probabilities.keys())), "Invalid training types"
             assert sum(self.training_phases_durations_in_order.values()) <= 1, "Sum of training_phases_durations_in_order should be <= 1"
             assert 0 <= self.probabilities_decay_over_time <= 1, "probabilities_decay_over_time should be between 0 and 1"
             if sum(self.training_phases_durations_in_order.values()) < 1:

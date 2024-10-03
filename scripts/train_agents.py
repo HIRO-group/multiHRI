@@ -595,8 +595,8 @@ def set_input(args, quick_test=False, how_long=6):
     args.num_players = args.teammates_len + 1  # Example: 3 players = 1 agent + 2 teammates
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 1.0
-    args.parallel  = True
-        
+    args.parallel = False
+
     if not quick_test:
         args.n_envs = 200
         args.epoch_timesteps = 1e5
@@ -604,7 +604,7 @@ def set_input(args, quick_test=False, how_long=6):
         args.primary_learner_type = LearnerType.SUPPORTER
         args.adversary_learner_type = LearnerType.SELFISHER
         args.pop_learner_type = LearnerType.ORIGINALER
-        args.attack_rounds = 3 
+        args.attack_rounds = 3
 
         how_long = 1.0
         args.pop_total_training_timesteps = int(5e6 * how_long)
@@ -636,12 +636,12 @@ def set_input(args, quick_test=False, how_long=6):
         args.n_x_fcp_total_training_timesteps = 3500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = 'test/1'
+        args.exp_dir = 'test/adversary'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = False
+    quick_test = True
     how_long = 1
     
     args.pop_force_training = True
@@ -654,7 +654,7 @@ if __name__ == '__main__':
     N_X_SP_w_adversaries(args=args,
                           pop_force_training=args.pop_force_training,
                           primary_force_training=args.primary_force_training)
-    
+
     # SingleAdversaryPlay(args, 
     #                     exp_tag = 'S2FP', 
     #                     main_agent_path = None,
