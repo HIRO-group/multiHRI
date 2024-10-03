@@ -310,3 +310,6 @@ def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_ti
     
     agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)
     return agent_trainer.get_agents()[0], tc, name
+
+def get_randomly_initialized_agent(args, n_env=200, h_dim=256, seed=13):
+    return RLAgentTrainer.generate_randomly_initialized_agent(args=args, n_env=n_env, h_dim=h_dim, seed=seed)

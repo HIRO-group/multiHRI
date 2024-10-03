@@ -63,6 +63,7 @@ class RLAgentTrainer(OAITrainer):
     @classmethod
     def generate_randomly_initialized_agent(cls,
                                             args,
+                                            hidden_dim=256,
                                             seed:int=8080) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
@@ -81,6 +82,7 @@ class RLAgentTrainer(OAITrainer):
                         teammates_collection={},
                         epoch_timesteps=args.epoch_timesteps,
                         n_envs=args.n_envs,
+                        hidden_dim=hidden_dim,
                         seed=seed)
 
         return trainer.get_agents()[0]

@@ -14,6 +14,7 @@ from utils import (get_SP_agent,
                     get_N_X_SP_agents,
                     get_adversary,
                     get_agent_play_w_adversarys,
+                    get_randomly_initialized_agent
                     )
 
 
@@ -34,7 +35,7 @@ def InitializeAdversaryPlay(
                         how_long_for_adv = 1.0,
                         reward_magnifier = 3.0):
     set_input(args=args, quick_test=quick_test, how_long=how_long_init)
-    args.dynamic_reward = False
+    args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
     if main_agent_path is None:
         how_long = how_long_init
@@ -551,8 +552,37 @@ def N_1_FCP(args, pop_force_training, primary_force_training, parallel, fcp_forc
                     )
 
 
-def set_input(args, quick_test=False, how_long=1, teammates_len=2, exp_dir='experiment/1'):
-    args.layout_names = ['3_chefs_small_kitchen_two_resources', '3_chefs_asymmetric_advantages', '3_chefs_counter_circuit']
+def set_input(args, quick_test=False, how_long=4, teammates_len=2, layout_names = None, exp_dir='experiment/1'):
+    # List for 2 chefs layouts
+    two_chefs_layouts = [
+        'selected_2_chefs_coordination_ring',
+        'selected_2_chefs_counter_circuit',
+        'selected_2_chefs_cramped_room'
+    ]
+
+    # List for 3 chefs layouts
+    three_chefs_layouts = [
+        'selected_3_chefs_coordination_ring',
+        'selected_3_chefs_counter_circuit',
+        'selected_3_chefs_cramped_room'
+    ]
+
+    # List for 5 chefs layouts
+    five_chefs_layouts = [
+        'selected_5_chefs_counter_circuit',
+        'selected_5_chefs_secret_coordination_ring',
+        'selected_5_chefs_storage_room'
+    ]
+    if layout_names is None:
+        team_size = teammates_len+1
+        if team_size == 2:
+            args.layout_names = two_chefs_layouts
+        elif team_size == 3:
+            args.layout_names = three_chefs_layouts
+        elif team_size == 5:
+            args.layout_names = five_chefs_layouts
+    else:
+        args.layout_names = layout_names
     args.teammates_len = teammates_len
     args.num_players = args.teammates_len + 1  # Example: 3 players = 1 agent + 2 teammates
     args.dynamic_reward = False
@@ -604,28 +634,6 @@ if __name__ == '__main__':
     primary_force_training = True
     
     set_input(args=args, quick_test=quick_test, how_long=how_long)
-
-    # List for 2 chefs layouts
-    two_chefs_layouts = [
-        'selected_2_chefs_coordination_ring',
-        'selected_2_chefs_counter_circuit',
-        'selected_2_chefs_cramped_room'
-    ]
-
-    # List for 3 chefs layouts
-    three_chefs_layouts = [
-        'selected_3_chefs_coordination_ring',
-        'selected_3_chefs_counter_circuit',
-        'selected_3_chefs_cramped_room'
-    ]
-
-    # List for 5 chefs layouts
-    five_chefs_layouts = [
-        'selected_5_chefs_counter_circuit',
-        'selected_5_chefs_secret_coordination_ring',
-        'selected_5_chefs_storage_room'
-    ]
-
 
 
 
