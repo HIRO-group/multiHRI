@@ -325,7 +325,7 @@ class RLAgentTrainer(OAITrainer):
                     self.best_score = mean_reward
 
             steps += 1
-
+        self.save_agents(tag=CheckedPoints.FINAL_TRAINED_MODEL)
         self.save_agents()
         self.agents = RLAgentTrainer.load_agents(self.args, self.name, best_path, best_tag)
         run.finish()
