@@ -270,6 +270,7 @@ def get_adversary(args, total_training_timesteps, train_types, eval_types, curri
         curriculum=curriculum,
         seed=args.ADV_seed,
         hidden_dim=args.ADV_h_dim,
+        fcp_ck_rate=total_training_timesteps // 20,
     )
 
     adversary_trainer.train_agents(total_train_timesteps=total_training_timesteps)
@@ -306,6 +307,7 @@ def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_ti
         curriculum=curriculum,
         seed=args.PwADV_seed,
         hidden_dim=args.PwADV_h_dim,
+        fcp_ck_rate=total_training_timesteps // 20,
     )
     
     agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)
