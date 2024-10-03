@@ -22,9 +22,9 @@ def InitializeAdversaryPlay(
                         exp_tag = 'S2FP', 
                         # main_agent_path = 'S2FP/sp_s68_h512_tr(SP)_ran',
                         main_agent_path = None,
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 512,
-                        main_agent_type = LearnerType.SUPPORTER, 
+                        main_agent_seed = 13,
+                        main_agent_h_dim = 256,
+                        main_agent_type = LearnerType.ORIGINALER, 
                         adversary_seed = 68,
                         adversary_h_dim = 512,
                         adversary_type = LearnerType.SELFISHER, 
@@ -32,9 +32,11 @@ def InitializeAdversaryPlay(
                         how_long_init = 4.0,
                         how_long_for_agent = 1.0,
                         how_long_for_adv = 1.0,
-                        reward_magnifier = 3.0):
-    set_input(args=args, quick_test=quick_test, how_long=how_long_init)
-    args.dynamic_reward = False
+                        reward_magnifier = 3.0,
+                        team_size = 3):
+    set_input(args, quick_test=False, how_long=how_long_init, teammates_len=team_size-1, layout_names = None)
+    # TODO: Let SingleAdversaryPlay agent use dynamic_reward=False
+    args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
     if main_agent_path is None:
         how_long = how_long_init
@@ -60,19 +62,20 @@ def InitializeAdversaryPlay(
         adversary_h_dim = adversary_h_dim,
         reward_magnifier = reward_magnifier)
 
-    how_long = how_long_init + how_long_for_agent
+    how_long = how_long_init + how_long_for_agent 
     args.pop_total_training_timesteps = 5e6 * how_long
     args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/0"
     _, _, pwadv_tag = PwADVs( 
             args=args, 
             agent_folder_path = root, 
-            agent_file_tag = CheckedPoints.BEST_EVAL_REWARD,
+            agent_file_tag = CheckedPoints.FIRST_CHECKED_MODEL,
             adv_folder_paths = [f"{root_adv}/{adversary_type}/0"], 
             adv_file_tag = f"{adv_tag}/{checked_adversary}",
             main_agent_type = main_agent_type,
             main_agent_seed = main_agent_seed,
             main_agent_h_dim = main_agent_h_dim,
-            reward_magnifier = reward_magnifier)
+            reward_magnifier = reward_magnifier,
+            check_whether_exist = False)
     
     return root, root_adv, adv_tag, pwadv_tag
     
@@ -81,9 +84,9 @@ def SingleAdversaryPlay(args,
                         exp_tag = 'S2FP', 
                         # main_agent_path = 'S2FP/sp_s68_h512_tr(SP)_ran',
                         main_agent_path = None,
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 512,
-                        main_agent_type = LearnerType.SUPPORTER, 
+                        main_agent_seed = 13,
+                        main_agent_h_dim = 256,
+                        main_agent_type = LearnerType.ORIGINALER, 
                         adversary_seed = 68,
                         adversary_h_dim = 512,
                         adversary_type = LearnerType.SELFISHER, 
@@ -92,7 +95,8 @@ def SingleAdversaryPlay(args,
                         how_long_for_agent = 1.0,
                         how_long_for_adv = 1.0,
                         rounds_of_advplay = 101,
-                        reward_magnifier = 3.0):
+                        reward_magnifier = 3.0,
+                        team_size = 3):
     
     root, root_adv, adv_tag, pwadv_tag = InitializeAdversaryPlay(
         args=args,
@@ -108,7 +112,8 @@ def SingleAdversaryPlay(args,
         how_long_init = how_long_init,
         how_long_for_agent = how_long_for_agent,
         how_long_for_adv = how_long_for_adv,
-        reward_magnifier = reward_magnifier
+        reward_magnifier = reward_magnifier,
+        team_size = team_size
     )
     ###################################################################
     for round in range(1,rounds_of_advplay):
@@ -142,9 +147,9 @@ def MultiAdversaryPlay( args,
                         exp_tag = 'M2FP', 
                         # main_agent_path = 'M2FP/sp_s68_h512_tr(SP)_ran',
                         main_agent_path = None,
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 512,
-                        main_agent_type = LearnerType.SUPPORTER, 
+                        main_agent_seed = 13,
+                        main_agent_h_dim = 256,
+                        main_agent_type = LearnerType.ORIGINALER, 
                         adversary_seed = 68,
                         adversary_h_dim = 512,
                         adversary_type = LearnerType.SELFISHER, 
@@ -153,7 +158,8 @@ def MultiAdversaryPlay( args,
                         how_long_for_agent = 2.0,
                         how_long_for_adv = 1.0,
                         rounds_of_advplay = 101,
-                        reward_magnifier = 3.0):
+                        reward_magnifier = 3.0,
+                        team_size = 3):
     
     root, root_adv, adv_tag, pwadv_tag = InitializeAdversaryPlay(
         args=args,
@@ -169,7 +175,8 @@ def MultiAdversaryPlay( args,
         how_long_init = how_long_init,
         how_long_for_agent = how_long_for_agent,
         how_long_for_adv = how_long_for_adv,
-        reward_magnifier = reward_magnifier
+        reward_magnifier = reward_magnifier,
+        team_size = team_size
     )
     ###################################################################
     for round in range(1,rounds_of_advplay):
@@ -185,27 +192,43 @@ def MultiAdversaryPlay( args,
             adversary_h_dim = adversary_h_dim,
             reward_magnifier = reward_magnifier)
         
-        how_long = how_long_init + how_long_for_agent*(round+1)
-        args.pop_total_training_timesteps = 5e6 * how_long
-        args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}"
-        _, _, pwadv_tag = PwADVs( 
-                args=args, 
-                agent_folder_path = root, 
-                agent_file_tag = CheckedPoints.BEST_EVAL_REWARD,
-                adv_folder_paths = [f"{root_adv}/{adversary_type}/{str(round_num)}" for round_num in range(round+1)], 
-                adv_file_tag = f"{adv_tag}/{checked_adversary}",
-                main_agent_type = main_agent_type,
-                main_agent_seed = main_agent_seed,
-                main_agent_h_dim = main_agent_h_dim,
-                reward_magnifier = reward_magnifier)
+        if round < rounds_of_advplay-1:
+            how_long = how_long_init + how_long_for_agent*(round+1)
+            args.pop_total_training_timesteps = 5e6 * how_long
+            args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}"
+            _, _, pwadv_tag = PwADVs( 
+                    args=args, 
+                    agent_folder_path = root, 
+                    agent_file_tag = CheckedPoints.FIRST_CHECKED_MODEL,
+                    adv_folder_paths = [f"{root_adv}/{adversary_type}/{str(round_num)}" for round_num in range(round+1)], 
+                    adv_file_tag = f"{adv_tag}/{checked_adversary}",
+                    main_agent_type = main_agent_type,
+                    main_agent_seed = main_agent_seed,
+                    main_agent_h_dim = main_agent_h_dim,
+                    reward_magnifier = reward_magnifier)
+        else: 
+            # We let the final round run for a pretty long time to keep the best model we can get
+            how_long = how_long_init + how_long_for_agent*(round+100)
+            args.pop_total_training_timesteps = 5e6 * how_long
+            args.exp_dir = f"{root_adv}/{main_agent_type}-{adversary_type}play/{str(round)}"
+            _, _, pwadv_tag = PwADVs( 
+                    args=args, 
+                    agent_folder_path = root, 
+                    agent_file_tag = CheckedPoints.FIRST_CHECKED_MODEL,
+                    adv_folder_paths = [f"{root_adv}/{adversary_type}/{str(round_num)}" for round_num in range(round+1)], 
+                    adv_file_tag = f"{adv_tag}/{checked_adversary}",
+                    main_agent_type = main_agent_type,
+                    main_agent_seed = main_agent_seed,
+                    main_agent_h_dim = main_agent_h_dim,
+                    reward_magnifier = reward_magnifier)
         
 def MultiAdversaryScheduledPlay(args, 
                                 exp_tag = 'M2FSP', 
                                 # main_agent_path = 'M2FSP/sp_s68_h512_tr(SP)_ran',
                                 main_agent_path = None,
-                                main_agent_seed = 68,
-                                main_agent_h_dim = 512,
-                                main_agent_type = LearnerType.SUPPORTER, 
+                                main_agent_seed = 13,
+                                main_agent_h_dim = 256,
+                                main_agent_type = LearnerType.ORIGINALER, 
                                 adversary_seed = 68,
                                 adversary_h_dim = 512,
                                 adversary_type = LearnerType.SELFISHER, 
@@ -214,7 +237,8 @@ def MultiAdversaryScheduledPlay(args,
                                 how_long_for_agent = 2.0,
                                 how_long_for_adv = 1.0,
                                 rounds_of_advplay = 101,
-                                reward_magnifier = 3.0):
+                                reward_magnifier = 3.0,
+                                team_size = 3):
     
     root, root_adv, adv_tag, pwadv_tag = InitializeAdversaryPlay(
         args=args,
@@ -230,7 +254,8 @@ def MultiAdversaryScheduledPlay(args,
         how_long_init = how_long_init,
         how_long_for_agent = how_long_for_agent,
         how_long_for_adv = how_long_for_adv,
-        reward_magnifier = reward_magnifier
+        reward_magnifier = reward_magnifier,
+        team_size = team_size
     )
     ###################################################################
     for round in range(1,rounds_of_advplay):
@@ -280,9 +305,9 @@ def PwADVs(args,
           agent_file_tag,
           adv_folder_paths, 
           adv_file_tag,
-          main_agent_type = LearnerType.SUPPORTER,
-          main_agent_seed = 68,
-          main_agent_h_dim = 512,
+          main_agent_type = LearnerType.ORIGINALER,
+          main_agent_seed = 13,
+          main_agent_h_dim = 256,
           reward_magnifier = 3.0,
           check_whether_exist = True
           ):
@@ -549,9 +574,38 @@ def N_1_FCP(args, pop_force_training, primary_force_training, parallel, fcp_forc
                     )
 
 
-def set_input(args, quick_test=False, how_long=6):
-    args.layout_names = ['3_chefs_small_kitchen']
-    args.teammates_len = 2
+def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_names = None, exp_dir='experiment/1'):
+    # List for 2 chefs layouts
+    two_chefs_layouts = [
+        'selected_2_chefs_coordination_ring',
+        'selected_2_chefs_counter_circuit',
+        'selected_2_chefs_cramped_room'
+    ]
+
+    # List for 3 chefs layouts
+    three_chefs_layouts = [
+        'selected_3_chefs_coordination_ring',
+        'selected_3_chefs_counter_circuit',
+        'selected_3_chefs_cramped_room'
+    ]
+
+    # List for 5 chefs layouts
+    five_chefs_layouts = [
+        'selected_5_chefs_counter_circuit',
+        'selected_5_chefs_secret_coordination_ring',
+        'selected_5_chefs_storage_room'
+    ]
+    if layout_names is None:
+        team_size = teammates_len+1
+        if team_size == 2:
+            args.layout_names = two_chefs_layouts
+        elif team_size == 3:
+            args.layout_names = three_chefs_layouts
+        elif team_size == 5:
+            args.layout_names = five_chefs_layouts
+    else:
+        args.layout_names = layout_names
+    args.teammates_len = teammates_len
     args.num_players = args.teammates_len + 1  # Example: 3 players = 1 agent + 2 teammates
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 1.0
@@ -561,7 +615,6 @@ def set_input(args, quick_test=False, how_long=6):
         args.n_envs = 200
         args.epoch_timesteps = 1e5
 
-        how_long = 4.0
         args.pop_total_training_timesteps = int(5e6 * how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * how_long)
         args.fcp_total_training_timesteps = int(5e6 * how_long)
@@ -575,7 +628,7 @@ def set_input(args, quick_test=False, how_long=6):
 
         args.num_SPs_to_train = 3
         # This is the directory where the experiment will be saved. Change it to your desired directory:
-        args.exp_dir = 'experiment/1'
+        args.exp_dir = exp_dir
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -600,61 +653,59 @@ if __name__ == '__main__':
     pop_force_training = True
     primary_force_training = True
     
-    set_input(args=args, quick_test=quick_test)
-    
-    # SingleAdversaryPlay(args, 
-    #                     exp_tag = 'S2FP', 
-    #                     main_agent_path = None,
-    #                     main_agent_seed = 68,
-    #                     main_agent_h_dim = 512,
-    #                     main_agent_type = LearnerType.SUPPORTER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
-    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 4.0,
-    #                     how_long_for_agent = 1.0,
-    #                     how_long_for_adv = 1.0,
-    #                     rounds_of_advplay = 101,
-    #                     reward_magnifier = 3.0)
-
     MultiAdversaryPlay( args, 
-                        exp_tag = 'M2FP', 
-                        main_agent_path = 'M2FP/sp_s68_h512_tr(SP)_ran',
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 512,
-                        main_agent_type = LearnerType.SUPPORTER, 
+                        exp_tag = 'MAP', 
+                        main_agent_path = 'Final/2/SP_hd256_seed13',
+                        main_agent_seed = 13,
+                        main_agent_h_dim = 256,
+                        main_agent_type = LearnerType.ORIGINALER, 
                         adversary_seed = 68,
                         adversary_h_dim = 512,
                         adversary_type = LearnerType.SELFISHER, 
                         checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long_init = 4.0,
-                        how_long_for_agent = 4.0,
-                        how_long_for_adv = 4.0,
-                        rounds_of_advplay = 101,
-                        reward_magnifier = 3.0)
+                        how_long_init = 4,
+                        how_long_for_agent = 1,
+                        how_long_for_adv = 4,
+                        rounds_of_advplay = 3,
+                        reward_magnifier = 3.0,
+                        team_size = 2)
     
-#     MultiAdversaryScheduledPlay(args, 
-#                                 exp_tag = 'M2FSP', 
-#                                 main_agent_path = 'M2FSP/sp_s68_h512_tr(SP)_ran',
-#                                 main_agent_seed = 68,
-#                                 main_agent_h_dim = 512,
-#                                 main_agent_type = LearnerType.SUPPORTER, 
-#                                 adversary_seed = 68,
-#                                 adversary_h_dim = 512,
-#                                 adversary_type = LearnerType.SELFISHER, 
-#                                 checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-#                                 how_long_init = 4.0,
-#                                 how_long_for_agent = 4.0,
-#                                 how_long_for_adv = 4.0,
-#                                 rounds_of_advplay = 101,
-#                                 reward_magnifier = 3.0)
-
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'MAP', 
+    #                     main_agent_path = 'Final/3/SP_hd256_seed13',
+    #                     main_agent_seed = 13,
+    #                     main_agent_h_dim = 256,
+    #                     main_agent_type = LearnerType.ORIGINALER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 4,
+    #                     how_long_for_agent = 1,
+    #                     how_long_for_adv = 4,
+    #                     rounds_of_advplay = 3,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 3)
     
-
-    # SP(args=args,
-    #    pop_force_training=pop_force_training)
-
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'MAP', 
+    #                     main_agent_path = 'Final/5/SP_hd256_seed13',
+    #                     main_agent_seed = 13,
+    #                     main_agent_h_dim = 256,
+    #                     main_agent_type = LearnerType.ORIGINALER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 5,
+    #                     how_long_for_agent = 1,
+    #                     how_long_for_adv = 4,
+    #                     rounds_of_advplay = 3,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 5)
+    
+    
+    set_input(args=args, quick_test=quick_test, how_long=4.0)
     
     # N_X_SP(args=args,
     #        pop_force_training=pop_force_training,
@@ -673,11 +724,39 @@ if __name__ == '__main__':
     #         primary_force_training=primary_force_training,
     #         parallel=parallel)
 
+    # set_input(args=args, quick_test=quick_test, how_long=1.5, teammates_len=4, exp_dir='five')
+    # args.layout_names = five_chefs_layouts
     # N_1_SP(args=args,
     #         pop_force_training=pop_force_training,
     #         primary_force_training=primary_force_training,
     #         parallel=parallel)
 
+    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=1, exp_dir='two_9')
+    # args.layout_names = two_chefs_layouts
+    # args.SP_seed, args.SP_h_dim = 9, 256
+    # SP(args, pop_force_training)
+
+    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=2, exp_dir='three_9')
+    # args.layout_names = three_chefs_layouts
+    # args.SP_seed, args.SP_h_dim = 9, 256
+    # SP(args, pop_force_training)
+
+    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=1, exp_dir='two_29')
+    # args.layout_names = two_chefs_layouts
+    # args.SP_seed, args.SP_h_dim = 29, 256
+    # SP(args, pop_force_training)
+
+    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=2, exp_dir='three_29')
+    # args.layout_names = three_chefs_layouts
+    # args.SP_seed, args.SP_h_dim = 29, 256
+    # SP(args, pop_force_training)
+    
+    # set_input(args=args, quick_test=quick_test, how_long=1, teammates_len=2, exp_dir='three')
+    # args.layout_names = three_chefs_layouts
+    # N_1_SP(args=args,
+    #         pop_force_training=pop_force_training,
+    #         primary_force_training=primary_force_training,
+    #         parallel=parallel)
 
     # N_1_FCP(args=args,
     #         pop_force_training=pop_force_training,

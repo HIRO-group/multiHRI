@@ -91,3 +91,4 @@ class CheckedPoints():
     BEST_TRAIN_REWARD = 'best_train_reward'
     WORST_TRAIN_REWARD ='worst_train_reward'
     FINAL_TRAINED_MODEL = 'last'
+    FIRST_CHECKED_MODEL = 'ck_0'
