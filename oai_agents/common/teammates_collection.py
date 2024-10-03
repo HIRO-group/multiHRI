@@ -73,15 +73,7 @@ def get_teammates(args, agents_perftag_score:list, teamtypes:list, teammates_len
             low_p_agents = sorted_agents_perftag_score[-unseen_teammates_len:]
             agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
-        
-        # elif teamtype == TeamType.SELF_PLAY_ADVERSARY:
-        #     lazy_adversary = RLAgentTrainer.generate_randomly_initialized_agent(args=agent.args,
-        #                                                                         seed=args.adversary_seed,
-        #                                                                         hidden_dim=args.hidden_dim,
-        #                                                                         learner_type=args.adversary_learner_type,
-        #                                                                         name='lazy_adversary',
-        #                                                                         )
-        #     all_teammates[teamtype].append([agent for _ in range(teammates_len-1)] + lazy_adversary)
+
 
     selected_agents = []
     for teamtype in teamtypes:
