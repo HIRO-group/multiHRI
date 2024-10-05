@@ -421,15 +421,11 @@ def N_X_SP(args,
         )
 
 
-def N_X_SP_w_adversaries(args, 
-                         pop_force_training:bool,
-                         primary_force_training:bool) -> None:
+def N_X_SP_w_adversaries(args) -> None:
 
     args.unseen_teammates_len = 1
     args.primary_train_types = [TeamType.SELF_PLAY_HIGH,
                                 TeamType.SELF_PLAY_MEDIUM,
-                                TeamType.SELF_PLAY_LOW,
-                                TeamType.SELF_PLAY,
                                 TeamType.SELF_PLAY_ADVERSARY]
 
     args.primary_eval_types = {
@@ -441,30 +437,19 @@ def N_X_SP_w_adversaries(args,
                             is_random=False,
                             total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
-                                TeamType.SELF_PLAY_ADVERSARY: 0.2,
-                                TeamType.SELF_PLAY: 0.2
+                                TeamType.SELF_PLAY_ADVERSARY: 0.5,
                             },
                             rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_LOW: 0.1,
-                                TeamType.SELF_PLAY_MEDIUM: 0.2, 
-                                TeamType.SELF_PLAY_HIGH: 0.2,
-                                TeamType.SELF_PLAY_ADVERSARY: 0.3,
-                                TeamType.SELF_PLAY: 0.2,
+                                TeamType.SELF_PLAY_MEDIUM: 0.3, 
+                                TeamType.SELF_PLAY_HIGH: 0.3,
+                                TeamType.SELF_PLAY_ADVERSARY: 0.4,
                             },
-                            probabilities_decay_over_time=0
-                            )
+                            probabilities_decay_over_time=0)
     get_N_X_SP_agents(
         args,
-        pop_total_training_timesteps=args.pop_total_training_timesteps,
-        pop_force_training=pop_force_training,
-
         n_x_sp_train_types = curriculum.train_types,
         n_x_sp_eval_types=args.primary_eval_types,
-        n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
-        n_x_sp_force_training=primary_force_training,
-        
         curriculum=curriculum,
-        num_SPs_to_train=args.num_SPs_to_train
     )
 
 
@@ -615,45 +600,38 @@ def N_1_FCP(args, pop_force_training, primary_force_training, fcp_force_training
                     )
 
 
-def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_names = None, exp_dir='experiment/1'):
-    # List for 2 chefs layouts
+def set_input(args, how_long=4):
+    args.num_players = args.teammates_len + 1
+
     two_chefs_layouts = [
         'selected_2_chefs_coordination_ring',
         'selected_2_chefs_counter_circuit',
         'selected_2_chefs_cramped_room'
     ]
 
-    # List for 3 chefs layouts
     three_chefs_layouts = [
         'selected_3_chefs_coordination_ring',
         'selected_3_chefs_counter_circuit',
         'selected_3_chefs_cramped_room'
     ]
 
-    # List for 5 chefs layouts
     five_chefs_layouts = [
         'selected_5_chefs_counter_circuit',
         'selected_5_chefs_secret_coordination_ring',
         'selected_5_chefs_storage_room'
     ]
-    if layout_names is None:
-        team_size = teammates_len + 1
-        if team_size == 2:
-            args.layout_names = two_chefs_layouts
-        elif team_size == 3:
-            args.layout_names = three_chefs_layouts
-        elif team_size == 5:
-            args.layout_names = five_chefs_layouts
-    else:
-        args.layout_names = layout_names
 
-    args.teammates_len = teammates_len
-    args.num_players = args.teammates_len + 1  # Example: 3 players = 1 agent + 2 teammates
+    if args.num_players == 2:
+        args.layout_names = two_chefs_layouts
+    elif args.num_players == 3:
+        args.layout_names = three_chefs_layouts
+    elif args.num_players == 5:
+        args.layout_names = five_chefs_layouts
+
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 1.0
-    args.parallel = False
 
-    if not quick_test:
+    if not args.quick_test:
         args.n_envs = 200
         args.epoch_timesteps = 1e5
 
@@ -662,7 +640,6 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.pop_learner_type = LearnerType.ORIGINALER
         args.attack_rounds = 3
 
-        how_long = 4.0
         args.pop_total_training_timesteps = int(5e6 * how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * how_long)
         args.adversary_total_training_timesteps = int(5e6 * how_long)
@@ -677,8 +654,7 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 3
-        # This is the directory where the experiment will be saved. Change it to your desired directory:
-        args.exp_dir = exp_dir
+        args.exp_dir = f'Final/{args.num_players}/'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -694,24 +670,25 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.n_x_fcp_total_training_timesteps = 3500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = 'test/adversary'
+        args.exp_dir = 'test/adversary/4/'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = True
-    how_long = 1
 
+    args.quick_test = False
+    args.parallel = True
+    
     args.pop_force_training = False
     args.adversary_force_training = True
     args.primary_force_training = True
 
-    set_input(args=args, quick_test=quick_test, layout_names=None)
+    args.teammates_len = 1
+    
+    set_input(args=args, how_long=4)
 
+    N_X_SP_w_adversaries(args=args)
 
-    N_X_SP_w_adversaries(args=args,
-                          pop_force_training=args.pop_force_training,
-                          primary_force_training=args.primary_force_training)
 
     # SingleAdversaryPlay(args, 
     #                     exp_tag = 'S2FP', 

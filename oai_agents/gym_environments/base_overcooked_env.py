@@ -86,7 +86,6 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
-        print("learner type", learner_type)
         
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
