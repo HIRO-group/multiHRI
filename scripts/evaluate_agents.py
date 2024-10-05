@@ -201,16 +201,18 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, tea
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
     num_teamsets = len(team_lvl_set_names)
-    fig, axes = plt.subplots(num_teamsets, num_layouts, figsize=(5 * num_layouts, 5 * num_teamsets), sharey=True)
+    fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
 
     if num_layouts == 1:
         axes = [[axes]]
 
     x_values = np.arange(num_players)
 
-    for i, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
-        for j, layout_name in enumerate(layout_names):
-            ax = axes[i][j]
+    for i, layout_name in enumerate(layout_names):
+        cross_exp_mean = {}
+        cross_exp_std = {}
+        for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
+            ax = axes[j][i]
             for agent_name in all_mean_rewards:
                 mean_values = []
                 std_values = []
@@ -221,6 +223,14 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, tea
 
                     mean_values.append(np.mean(mean_rewards))
                     std_values.append(np.mean(std_rewards))
+                    if agent_name not in cross_exp_mean:
+                        cross_exp_mean[agent_name] = [0] * num_players
+                    if agent_name not in cross_exp_std:
+                        cross_exp_std[agent_name] = [0] * num_players
+                    cross_exp_mean[agent_name][unseen_count] += mean_values[-1]
+                    cross_exp_mean[agent_name][unseen_count] += std_values[-1]
+
+
                 ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o',
                             label=f'Agent: {agent_name}', capsize=5)
 
@@ -229,8 +239,17 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, tea
             ax.set_xticks(x_values)
             ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
-            if i == 0:
-                ax.set_ylabel('Mean Reward')
+        ax = axes[-1][i]
+        for agent_name in all_mean_rewards:
+            mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
+            std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
+            ax.errorbar(x_values, mean_values, yerr=std_values, fmt="-o", label=f"Agent: {agent_name}", capsize=5)
+
+        ax.set_title(f"Avg. {layout_name}")
+        ax.set_xlabel('Number of Unseen Teammates')
+        ax.set_xticks(x_values)
+        ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
 
     plt.tight_layout()
     plt.savefig(f'{plot_name}')
