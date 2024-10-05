@@ -671,7 +671,7 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.num_SPs_to_train = 3
+        args.num_SPs_to_train = 4
         # This is the directory where the experiment will be saved. Change it to your desired directory:
         args.exp_dir = exp_dir
 
@@ -687,14 +687,14 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.n_x_fcp_total_training_timesteps = 3500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = 'test/test/3'
+        args.exp_dir = 'test/1'
 
 
 if __name__ == '__main__':
     args = get_arguments()
     quick_test = False
     parallel = True
-
+    
     pop_force_training = True
     primary_force_training = True
 
@@ -833,6 +833,8 @@ if __name__ == '__main__':
     #                     team_size = 5)
     
     
+    set_input(args=args, quick_test=quick_test, how_long=4.0)
+    
     # N_X_SP(args=args,
     #        pop_force_training=pop_force_training,
     #        primary_force_training=primary_force_training,
@@ -852,6 +854,10 @@ if __name__ == '__main__':
 
     # set_input(args=args, quick_test=quick_test, how_long=1.5, teammates_len=4, exp_dir='five')
     # args.layout_names = five_chefs_layouts
+    # N_1_SP(args=args,
+    #         pop_force_training=pop_force_training,
+    #         primary_force_training=primary_force_training,
+    #         parallel=parallel)
 
     # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=1, exp_dir='two_9')
     # args.layout_names = two_chefs_layouts
