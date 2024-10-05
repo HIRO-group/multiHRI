@@ -424,8 +424,8 @@ def N_X_SP(args,
 def N_X_SP_w_adversaries(args) -> None:
 
     args.unseen_teammates_len = 1
-    args.primary_train_types = [TeamType.SELF_PLAY_HIGH,
-                                TeamType.SELF_PLAY_MEDIUM,
+    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
+                                TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
                                 TeamType.SELF_PLAY_ADVERSARY]
 
     args.primary_eval_types = {
@@ -656,8 +656,8 @@ def set_input(args, how_long=4):
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.num_SPs_to_train = 3
-        args.exp_dir = f'Final/{args.num_players}/'
+        args.num_SPs_to_train = 4
+        args.exp_dir = f'Final/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -672,8 +672,8 @@ def set_input(args, how_long=4):
         args.n_x_sp_total_training_timesteps = 3500
         args.n_x_fcp_total_training_timesteps = 3500 * 2
 
-        args.num_SPs_to_train = 2
-        args.exp_dir = 'test/adversary/4/'
+        args.num_SPs_to_train = 4
+        args.exp_dir = f'test/Final/{args.num_players}'
 
 
 if __name__ == '__main__':
