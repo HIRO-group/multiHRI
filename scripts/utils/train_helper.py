@@ -4,6 +4,7 @@ from oai_agents.common.population import get_population
 from oai_agents.common.teammates_collection import generate_TC, generate_TC_for_Adversary, generate_TC_for_AdversarysPlay
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
+from oai_agents.common.tags import Prefix
 
 from oai_agents.common.tags import CheckedPoints
 
@@ -12,7 +13,7 @@ from pathlib import Path
 
 def get_SP_agent(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
     name = generate_name(args, 
-                         prefix='SP',
+                         prefix=Prefix.SELF_PLAY,
                          seed=args.SP_seed,
                          h_dim=args.SP_h_dim, 
                          train_types=train_types,
@@ -127,7 +128,7 @@ def get_FCP_agent_w_pop(args,
                         parallel=True):
 
     name = generate_name(args, 
-                         prefix='FCP',
+                         prefix=Prefix.FICTITIOUS_CO_PLAY,
                          seed=args.FCP_seed,
                          h_dim=args.FCP_h_dim, 
                          train_types=fcp_train_types,
@@ -243,7 +244,7 @@ def get_N_X_FCP_agents(args,
 
 def get_adversary(args, total_training_timesteps, train_types, eval_types, curriculum, agent_path):
     name = generate_name(args, 
-                         prefix='adv',
+                         prefix=Prefix.ADVERSARY,
                          seed=args.ADV_seed,
                          h_dim=args.ADV_h_dim, 
                          train_types=train_types,
@@ -279,7 +280,7 @@ def get_adversary(args, total_training_timesteps, train_types, eval_types, curri
 
 def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, adv_paths, check_whether_exist):
     name = generate_name(args, 
-                         prefix='pwadv',
+                         prefix=Prefix.ADVERSARY_PLAY,
                          seed=args.PwADV_seed,
                          h_dim=args.PwADV_h_dim, 
                          train_types=train_types,
