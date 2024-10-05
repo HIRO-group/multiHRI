@@ -435,7 +435,10 @@ def N_1_SP(args,
     :param parallel: Boolean indicating if parallel envs should be used for training or not
     '''
     args.unseen_teammates_len = 1
-    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
+    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, 
+                                TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
+                                TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
+                                ]
     args.primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
@@ -626,7 +629,7 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.num_SPs_to_train = 3
+        args.num_SPs_to_train = 4
         # This is the directory where the experiment will be saved. Change it to your desired directory:
         args.exp_dir = exp_dir
 

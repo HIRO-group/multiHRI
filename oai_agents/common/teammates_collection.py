@@ -11,31 +11,39 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
         teamtype: [] for teamtype in teamtypes
     }
     sorted_agents_perftag_score = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True)
+    used_agents = set()  # To keep track of used agents
 
     for teamtype in teamtypes:
+        available_agents = [agent for agent in sorted_agents_perftag_score if agent[0] not in used_agents]
+
         if teamtype == TeamType.HIGH_FIRST:
-            tms_prftg_scr = sorted_agents_perftag_score[:teammates_len]
+            tms_prftg_scr = available_agents[:teammates_len]
             all_teammates[teamtype].append([tm[0] for tm in tms_prftg_scr])
+            used_agents.update([tm[0] for tm in tms_prftg_scr])
         
         elif teamtype == TeamType.MEDIUM_FIRST:
-            mean_score = (sorted_agents_perftag_score[0][2] + sorted_agents_perftag_score[-1][2])/2
-            sorted_by_closeness = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))[:teammates_len]
+            mean_score = (available_agents[0][2] + available_agents[-1][2]) / 2
+            sorted_by_closeness = sorted(available_agents, key=lambda x: abs(x[2] - mean_score))[:teammates_len]
             all_teammates[teamtype].append([tm[0] for tm in sorted_by_closeness])
+            used_agents.update([tm[0] for tm in sorted_by_closeness])
 
         elif teamtype == TeamType.MIDDLE_FIRST:
-            middle_index = len(sorted_agents_perftag_score)//2
-            start_index_for_mid = middle_index - teammates_len//2
+            middle_index = len(available_agents) // 2
+            start_index_for_mid = middle_index - teammates_len // 2
             end_index_for_mid = start_index_for_mid + teammates_len
-            tms_prftg_scr = sorted_agents_perftag_score[start_index_for_mid:end_index_for_mid]
+            tms_prftg_scr = available_agents[start_index_for_mid:end_index_for_mid]
             all_teammates[teamtype].append([tm[0] for tm in tms_prftg_scr])
+            used_agents.update([tm[0] for tm in tms_prftg_scr])
 
         elif teamtype == TeamType.LOW_FIRST:
-            tms_prftg_scr = sorted_agents_perftag_score[-teammates_len:]
+            tms_prftg_scr = available_agents[-teammates_len:]
             all_teammates[teamtype].append([tm[0] for tm in tms_prftg_scr])
+            used_agents.update([tm[0] for tm in tms_prftg_scr])
 
         elif teamtype == TeamType.RANDOM:
-            tms_prftg_scr = random.sample(agents_perftag_score, teammates_len)
+            tms_prftg_scr = random.sample(available_agents, teammates_len)
             all_teammates[teamtype].append([tm[0] for tm in tms_prftg_scr])
+            used_agents.update([tm[0] for tm in tms_prftg_scr])
 
         elif teamtype == TeamType.ALL_MIX:
             teammate_permutations = list(permutations(sorted_agents_perftag_score, teammates_len))
@@ -47,31 +55,35 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
 
         elif teamtype == TeamType.SELF_PLAY_HIGH:
             assert agent is not None
-            high_p_agents = sorted_agents_perftag_score[:unseen_teammates_len]
-            agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
+            high_p_agents = available_agents[:unseen_teammates_len]
+            agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in high_p_agents] + agents_itself)
-        
+            used_agents.update([tm[0] for tm in high_p_agents])
+
         elif teamtype == TeamType.SELF_PLAY_MEDIUM:
             assert agent is not None
-            mean_score = (sorted_agents_perftag_score[0][2] + sorted_agents_perftag_score[-1][2])/2
-            mean_p_agents = sorted(agents_perftag_score, key=lambda x: abs(x[2] - mean_score))[:unseen_teammates_len]
-            agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
+            mean_score = (available_agents[0][2] + available_agents[-1][2]) / 2
+            mean_p_agents = sorted(available_agents, key=lambda x: abs(x[2] - mean_score))[:unseen_teammates_len]
+            agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in mean_p_agents] + agents_itself)
+            used_agents.update([tm[0] for tm in mean_p_agents])
 
         elif teamtype == TeamType.SELF_PLAY_MIDDLE:
             assert agent is not None
-            middle_index = len(sorted_agents_perftag_score)//2
-            start_index_for_mid = middle_index - unseen_teammates_len//2
+            middle_index = len(available_agents) // 2
+            start_index_for_mid = middle_index - unseen_teammates_len // 2
             end_index_for_mid = start_index_for_mid + unseen_teammates_len
-            mid_p_agents = sorted_agents_perftag_score[start_index_for_mid:end_index_for_mid]
-            agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
+            mid_p_agents = available_agents[start_index_for_mid:end_index_for_mid]
+            agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in mid_p_agents] + agents_itself)
-        
+            used_agents.update([tm[0] for tm in mid_p_agents])
+
         elif teamtype == TeamType.SELF_PLAY_LOW:
             assert agent is not None
-            low_p_agents = sorted_agents_perftag_score[-unseen_teammates_len:]
-            agents_itself = [agent for _ in range(teammates_len-unseen_teammates_len)]
+            low_p_agents = available_agents[-unseen_teammates_len:]
+            agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
+            used_agents.update([tm[0] for tm in low_p_agents])
 
     selected_agents = []
     for teamtype in teamtypes:
