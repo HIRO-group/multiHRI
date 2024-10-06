@@ -19,7 +19,8 @@ class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
     def __init__(self, teammates_collection, args, 
                 agent, epoch_timesteps, n_envs,
-                seed, train_types=[], eval_types=[],
+                seed, learner_type, 
+                train_types=[], eval_types=[],
                 curriculum=None, num_layers=2, hidden_dim=256, 
                 fcp_ck_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
@@ -50,7 +51,7 @@ class RLAgentTrainer(OAITrainer):
         self.use_frame_stack = use_frame_stack
         self.use_policy_clone = use_policy_clone
 
-        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic)
+        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type)
         
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
@@ -63,8 +64,11 @@ class RLAgentTrainer(OAITrainer):
     @classmethod
     def generate_randomly_initialized_agent(cls,
                                             args,
-                                            hidden_dim=256,
-                                            seed:int=8080) -> OAIAgent:
+                                            learner_type,
+                                            name:str='randomized_agent',
+                                            seed:int=8080,
+                                            hidden_dim:int=256,
+                                            ) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
         This function does not perform any learning
@@ -74,16 +78,16 @@ class RLAgentTrainer(OAITrainer):
         :returns: An untrained, randomly inititalized RL agent
         '''
 
-        name = 'randomized_agent'
-
         trainer = cls(name=name,
                         args=args,
                         agent=None,
                         teammates_collection={},
                         epoch_timesteps=args.epoch_timesteps,
                         n_envs=args.n_envs,
+                        seed=seed,
                         hidden_dim=hidden_dim,
-                        seed=seed)
+                        learner_type=learner_type,
+                        )
 
         return trainer.get_agents()[0]
 
@@ -171,21 +175,22 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
 
 
-    def get_envs(self, _env, _eval_envs, deterministic):
+    def get_envs(self, _env, _eval_envs, deterministic, learner_type):
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
-                        'deterministic': deterministic,'args': self.args}
+                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type}
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
                                     vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
+            
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
-                                 'deterministic': deterministic, 'args': self.args}
+                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
         else:
             env = _env
             eval_envs = _eval_envs
 
         for i in range(self.n_envs):
-            env.env_method('set_env_layout', indices=i, env_index=i % self.n_layouts)
+            env.env_method('set_env_layout', indices=i, env_index =i % self.n_layouts)
         return env, eval_envs
 
 
@@ -313,7 +318,7 @@ class RLAgentTrainer(OAITrainer):
                     self.best_training_rew = mean_training_rew
 
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
-                
+
                 if self.fcp_ck_rate:
                     if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
                         path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
@@ -325,7 +330,6 @@ class RLAgentTrainer(OAITrainer):
                     self.best_score = mean_reward
 
             steps += 1
-        self.save_agents(tag=CheckedPoints.FINAL_TRAINED_MODEL)
         self.save_agents()
         self.agents = RLAgentTrainer.load_agents(self.args, self.name, best_path, best_tag)
         run.finish()

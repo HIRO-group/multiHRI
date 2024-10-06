@@ -50,8 +50,7 @@ class Curriculum:
             assert self.rest_of_the_training_probabilities is None, "rest_of_the_training_probabilities should be None for random curriculums"
             assert self.probabilities_decay_over_time is None, "probabilities_decay_over_time should be None for random curriculums"
         else:
-            assert set(self.train_types) == set(self.training_phases_durations_in_order.keys()), "Invalid training types"
-            assert set(self.train_types) == set(self.rest_of_the_training_probabilities.keys()), "Invalid training types"
+            assert set(self.train_types) == set(list(self.training_phases_durations_in_order.keys()) + list(self.rest_of_the_training_probabilities.keys())), "Invalid training types"
             assert sum(self.training_phases_durations_in_order.values()) <= 1, "Sum of training_phases_durations_in_order should be <= 1"
             assert 0 <= self.probabilities_decay_over_time <= 1, "probabilities_decay_over_time should be between 0 and 1"
             if sum(self.training_phases_durations_in_order.values()) < 1:
@@ -59,6 +58,9 @@ class Curriculum:
 
     def update(self, current_step):
         self.current_step = current_step
+
+    # def should_agent_be_created()
+
     
     def select_teammates(self, population_teamtypes):
         '''
@@ -70,11 +72,7 @@ class Curriculum:
         '''
         if self.is_random:
             population = [population_teamtypes[t] for t in population_teamtypes.keys()]
-            
-            # Randomly select a list of teams of some teamtype
             teammates_per_type = population[np.random.randint(len(population))]
-
-            # Randomly select a team of agents from that list of agents
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
             return teammates
         return self.select_teammates_based_on_curriculum(population_teamtypes)

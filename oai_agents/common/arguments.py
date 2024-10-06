@@ -72,6 +72,11 @@ def get_arguments(additional_args=[]):
 
     parser.add_argument('--exp-dir', type=str, help='Folder to save/load experiment result')
 
+    parser.add_argument('--primary-learner-type', type=str, default='supporter')
+    parser.add_argument('--adversary-learner-type', type=str, default='selfisher')
+    parser.add_argument('--pop-learner-type', type=str, default='originaler')
+    parser.add_argument('--attack-rounds', type=int, default=3)
+
 
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
