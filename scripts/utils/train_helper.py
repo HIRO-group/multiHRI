@@ -103,7 +103,8 @@ def attack_N_X_SP(args, population, curriculum):
     assert TeamType.SELF_PLAY_ADVERSARY in args.primary_train_types
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
-    agent_to_be_attacked = RLAgentTrainer.load_agents(args, name='SP_hd64_seed14', tag='best')[0]
+    agent_to_be_attacked = get_best_SP_agent(args=args, population=population)
+    #agent_to_be_attacked = RLAgentTrainer.load_agents(args, name='SP_hd64_seed14', tag='best')[0]
 
     adversary_agents = []
     for attack_round in range(args.attack_rounds):
@@ -151,7 +152,9 @@ def attack_N_X_SP(args, population, curriculum):
                                             curriculum=curriculum,
                                             seed=args.N_X_SP_seed,
                                             hidden_dim=args.N_X_SP_h_dim,
-                                            learner_type=args.primary_learner_type)
+                                            learner_type=args.primary_learner_type,
+                                            fcp_ck_rate=args.n_x_sp_total_training_timesteps // 20,
+                                            )
         n_x_sp_types_trainer.train_agents(total_train_timesteps=args.n_x_sp_total_training_timesteps)
         agent_to_be_attacked = n_x_sp_types_trainer.get_agents()[0]
 
@@ -194,7 +197,9 @@ def dont_attack_N_X_SP(args, population, curriculum):
                                         curriculum=curriculum,
                                         seed=args.N_X_SP_seed,
                                         hidden_dim=args.N_X_SP_h_dim,
-                                        learner_type=args.primary_learner_type)
+                                        learner_type=args.primary_learner_type,
+                                        fcp_ck_rate=args.n_x_sp_total_training_timesteps // 20,
+                                        )
     n_x_sp_types_trainer.train_agents(total_train_timesteps=args.n_x_sp_total_training_timesteps)
 
 
@@ -204,10 +209,10 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=None):
                                                     agent=agent_to_be_attacked)
 
     name = generate_name(args,
-                        prefix='adv',
+                        prefix='ADV',
                         seed=args.ADV_seed,
                         h_dim=args.ADV_h_dim,
-                        train_types=[TeamType.SELF_PLAY_HIGH],
+                        train_types=[TeamType.HIGH_FIRST],
                         has_curriculum=False,
                         suffix=args.adversary_learner_type +'_attack'+ str(attack_round))
     
@@ -224,7 +229,8 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=None):
                                         curriculum=Curriculum(train_types=[TeamType.HIGH_FIRST], is_random=True),
                                         seed=args.ADV_seed,
                                         hidden_dim=args.ADV_h_dim,
-                                        learner_type=args.adversary_learner_type)
+                                        learner_type=args.adversary_learner_type,
+                                        fcp_ck_rate=args.adversary_total_training_timesteps // 20)
     adversary_trainer.train_agents(total_train_timesteps=args.adversary_total_training_timesteps)
     return adversary_trainer.get_agents()[0]
         
