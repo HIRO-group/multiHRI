@@ -1,5 +1,6 @@
 import multiprocessing as mp
 import os
+from pathlib import Path
 mp.set_start_method('spawn', force=True) # should be called before any other module imports
 
 from oai_agents.common.arguments import get_arguments
@@ -299,6 +300,47 @@ def MultiAdversaryScheduledPlay(args,
                 main_agent_h_dim = main_agent_h_dim,
                 reward_magnifier = reward_magnifier,
                 check_whether_exist = False)
+        
+def PwADVs_from_folder( args, 
+                        exp_tag = 'MAP_ADV_256_13', 
+                        main_agent_path = 'Final/2/SP_hd256_seed68',
+                        main_agent_type = LearnerType.ORIGINALER, 
+                        main_agent_seed = 68,
+                        main_agent_h_dim = 256,
+                        adversaries_folder = 'Final/2/SP_hd256_seed13/MAP/selfisher',
+                        adversary_type = LearnerType.SELFISHER,
+                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+                        how_long = 8.0,
+                        reward_magnifier = 3.0,
+                        team_size = 2):
+    
+    # Generate the list of adversaray folder paths under {adversaries_folder}
+    adv_directory = Path(f"agent_models/{adversaries_folder}")
+    adv_ids = [f.name for f in adv_directory.iterdir() if f.is_dir()]
+    adv_folder_paths = [f"{adversaries_folder}/{adv_id}" for adv_id in adv_ids]
+    adv_0_path = adv_directory / str(0)
+    adv_tag = [f.name for f in adv_0_path.iterdir() if f.is_dir()][0] 
+    print(f"selfisher_folders: {adv_folder_paths}")
+    print(f"adv_tag: {adv_tag}/{checked_adversary}")
+
+    # Initialization of Training
+    set_input(args, quick_test=False, how_long=how_long, teammates_len=team_size-1, layout_names = None)
+    args.dynamic_reward = True
+    args.final_sparse_r_ratio = 0.5
+
+    args.pop_total_training_timesteps = 5e6 * how_long
+    args.exp_dir = f"{main_agent_path}/{exp_tag}/{main_agent_type}-{adversary_type}play/{str(len(adv_ids)-1)}"
+    _, _, pwadv_tag = PwADVs( 
+            args=args, 
+            agent_folder_path = main_agent_path, 
+            agent_file_tag = CheckedPoints.FIRST_CHECKED_MODEL,
+            adv_folder_paths = adv_folder_paths, 
+            adv_file_tag = f"{adv_tag}/{checked_adversary}",
+            main_agent_type = main_agent_type,
+            main_agent_seed = main_agent_seed,
+            main_agent_h_dim = main_agent_h_dim,
+            reward_magnifier = reward_magnifier)
+    
 
 def PwADVs(args, 
           agent_folder_path, 
@@ -655,23 +697,70 @@ if __name__ == '__main__':
     
     pop_force_training = True
     primary_force_training = True
-    
-    MultiAdversaryPlay( args, 
-                        exp_tag = 'MAP', 
-                        main_agent_path = 'Final/2/SP_hd256_seed13',
-                        main_agent_seed = 13,
-                        main_agent_h_dim = 256,
+
+    PwADVs_from_folder( args, 
+                        exp_tag = 'MAP_ADV_256_13', 
+                        main_agent_path = 'Final/2/SP_hd256_seed68',
                         main_agent_type = LearnerType.ORIGINALER, 
-                        adversary_seed = 68,
-                        adversary_h_dim = 512,
-                        adversary_type = LearnerType.SELFISHER, 
+                        main_agent_seed = 68,
+                        main_agent_h_dim = 256,
+                        adversaries_folder = 'Final/2/SP_hd256_seed13/MAP/selfisher',
+                        adversary_type = LearnerType.SELFISHER,
                         checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long_init = 4,
-                        how_long_for_agent = 1,
-                        how_long_for_adv = 4,
-                        rounds_of_advplay = 3,
+                        how_long = 10,
                         reward_magnifier = 3.0,
                         team_size = 2)
+    
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'MAP', 
+    #                     main_agent_path = 'Final/2/SP_hd64_seed14',
+    #                     main_agent_seed = 14,
+    #                     main_agent_h_dim = 64,
+    #                     main_agent_type = LearnerType.ORIGINALER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 4,
+    #                     how_long_for_agent = 1,
+    #                     how_long_for_adv = 4,
+    #                     rounds_of_advplay = 3,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 2)
+    
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'MAP', 
+    #                     main_agent_path = 'Final/3/SP_hd64_seed14',
+    #                     main_agent_seed = 14,
+    #                     main_agent_h_dim = 64,
+    #                     main_agent_type = LearnerType.ORIGINALER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 6,
+    #                     how_long_for_agent = 0.5,
+    #                     how_long_for_adv = 4,
+    #                     rounds_of_advplay = 3,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 3)
+    
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'MAP', 
+    #                     main_agent_path = 'Final/3/SP_hd256_seed68',
+    #                     main_agent_seed = 68,
+    #                     main_agent_h_dim = 256,
+    #                     main_agent_type = LearnerType.ORIGINALER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 6,
+    #                     how_long_for_agent = 0.5,
+    #                     how_long_for_adv = 4,
+    #                     rounds_of_advplay = 3,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 3)
     
     # MultiAdversaryPlay( args, 
     #                     exp_tag = 'MAP', 
