@@ -1,3 +1,5 @@
+from typing import Sequence
+import itertools
 import concurrent.futures
 from tqdm import tqdm
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -10,28 +12,113 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
+
+class Eval:
+    LOW = 0
+    MEDIUM = 1
+    HIGH = 2
+
+eval_key_lut = {
+    0: "LOW",
+    1: "MEDIUM",
+    2: "HIGH"
+}
+
+
 LAYOUT_NAMES_PATHs = {
-    '3_chefs_small_kitchen': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_small_kitchen_two_resources': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_forced_coordination': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_asymmetric_advantages': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_forced_coordination_3OP2S1D': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '3_chefs_counter_circuit': [
-        'agent_models/sp-vs-spwsp/3-chefs-all-layouts/'
-    ],
-    '5_chefs_storage_room_lots_resources': [
-        'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
-    ],
+    '3_chefs_small_kitchen': {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_small_kitchen_two_resources': {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_forced_coordination':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_asymmetric_advantages':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_forced_coordination_3OP2S1D':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '3_chefs_counter_circuit':  {
+        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
+                   ],
+        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
+                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
+                      ],
+        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
+                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
+                    ]
+    },
+    '5_chefs_storage_room_lots_resources': { # 800, low: [0, 300], medium: [300, 600], high: [600, 800]
+        # Eval.LOW: ['agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+        #              'agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
+        # 'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
+        Eval.LOW: ['agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_0',
+                   ],
+        Eval.MEDIUM: [],
+        Eval.HIGH: []
+    },
     '5_chefs_clustered_kitchen' :[
         'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
     ],
@@ -44,7 +131,7 @@ LAYOUT_NAMES_PATHs = {
     '5_chefs_cramped_room': [
         'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
     ],
-    
+
     '5_chefs_counter_circuit': [],
     '5_chefs_asymmetric_advantages': [],
 }
@@ -56,7 +143,7 @@ def print_all_teammates(all_teammates):
             print([agent.name for agent in teammates])
         print()
 
-def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_names, deterministic, max_num_teams_per_layout_per_x):
+def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_names, deterministic, max_num_teams_per_layout_per_x, teammate_lvl_set: Sequence[Eval]=[Eval.LOW, Eval.MEDIUM, Eval.HIGH]):
     '''
     x = 0 means all N-1 teammates are primary_agent
     x = 1 means 1 teammate out of N-1 is unseen agent
@@ -65,21 +152,19 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
 
     N = num_players
     X = list(range(N))
-    
+
     # Contains all the agents which are later used to create all_teammates
     all_agents = {layout_name: [] for layout_name in layout_names}
     # Containts teams for each layout and each x up to MAX_NUM_TEAMS_PER_LAYOUT_PER_X
     all_teammates = {
         layout_name: {
-            unseen_count: [] for unseen_count in X} 
-        for layout_name in layout_names} 
+            unseen_count: [] for unseen_count in X}
+        for layout_name in layout_names}
 
     for layout_name in layout_names:
-        for path in LAYOUT_NAMES_PATHs[layout_name]:
-            file_names = [path+'/'+file.name + '/best' for file in Path(path).iterdir() if not file.name.startswith('fcp_pop')]
-
-            for file_name in file_names:
-                agent = load_agent(Path(file_name), args)
+        for lvl in teammate_lvl_set:
+            for path in LAYOUT_NAMES_PATHs[layout_name][lvl]:
+                agent = load_agent(Path(path), args)
                 agent.deterministic = deterministic
                 all_agents[layout_name].append(agent)
 
@@ -91,7 +176,7 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
             for num_teams in range(max_num_teams_per_layout_per_x):
                 teammates = [primary_agent] * (N-1-unseen_count)
                 for i in range(unseen_count):
-                    try: 
+                    try:
                         teammates.append(agents[i + (num_teams)])
                     except:
                         continue
@@ -111,40 +196,63 @@ def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_tea
     return plot_name+'.png'
 
 
-def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, num_players, plot_name):
-    num_layouts = len(layout_names) 
-    fig, axes = plt.subplots(1, num_layouts, figsize=(5 * num_layouts, 6), sharey=True)
+def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name):
+    num_layouts = len(layout_names)
+    team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
+    team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
+    num_teamsets = len(team_lvl_set_names)
+    fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
 
     if num_layouts == 1:
-        axes = [axes]
+        axes = [[axes]]
 
     x_values = np.arange(num_players)
 
     for i, layout_name in enumerate(layout_names):
-        ax = axes[i]
-        for agent_name in all_mean_rewards:
-            mean_values = []
-            std_values = []
-            
-            for unseen_count in range(num_players):
-                mean_rewards = all_mean_rewards[agent_name][layout_name][unseen_count]
-                std_rewards = all_std_rewards[agent_name][layout_name][unseen_count]
-                
-                mean_values.append(np.mean(mean_rewards))
-                std_values.append(np.mean(std_rewards))
-            ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o', 
-                         label=f'Agent: {agent_name}', capsize=5)
+        cross_exp_mean = {}
+        cross_exp_std = {}
+        for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
+            ax = axes[j][i]
+            for agent_name in all_mean_rewards:
+                mean_values = []
+                std_values = []
 
-        ax.set_title(f'{layout_name}')
+                for unseen_count in range(num_players):
+                    mean_rewards = all_mean_rewards[agent_name][team][layout_name][unseen_count]
+                    std_rewards = all_std_rewards[agent_name][team][layout_name][unseen_count]
+
+                    mean_values.append(np.mean(mean_rewards))
+                    std_values.append(np.mean(std_rewards))
+                    if agent_name not in cross_exp_mean:
+                        cross_exp_mean[agent_name] = [0] * num_players
+                    if agent_name not in cross_exp_std:
+                        cross_exp_std[agent_name] = [0] * num_players
+                    cross_exp_mean[agent_name][unseen_count] += mean_values[-1]
+                    cross_exp_mean[agent_name][unseen_count] += std_values[-1]
+
+
+                ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o',
+                            label=f'Agent: {agent_name}', capsize=5)
+
+            ax.set_title(f'{layout_name}\n{team_name}')
+            ax.set_xlabel('Number of Unseen Teammates')
+            ax.set_xticks(x_values)
+            ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+        ax = axes[-1][i]
+        for agent_name in all_mean_rewards:
+            mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
+            std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
+            ax.errorbar(x_values, mean_values, yerr=std_values, fmt="-o", label=f"Agent: {agent_name}", capsize=5)
+
+        ax.set_title(f"Avg. {layout_name}")
         ax.set_xlabel('Number of Unseen Teammates')
         ax.set_xticks(x_values)
         ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
-        if i == 0:
-            ax.set_ylabel('Mean Reward')
 
     plt.tight_layout()
-    plt.savefig(f'data/eval/{plot_name}.png')
+    plt.savefig(f'{plot_name}')
     # plt.show()
 
 
@@ -188,7 +296,7 @@ def evaluate_agent(args,
     return all_mean_rewards, all_std_rewards
 
 
-def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps):
+def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set: Sequence[Eval]):
     agent = load_agent(Path(path), args)
     agent.deterministic = deterministic
 
@@ -197,8 +305,9 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
                                                      num_players=args.num_players,
                                                      layout_names=layout_names,
                                                      deterministic=deterministic,
-                                                     max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x)
-    
+                                                     max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
+                                                     teammate_lvl_set=teammate_lvl_set)
+
     mean_rewards, std_rewards = evaluate_agent(args=args,
                                                primary_agent=agent,
                                                p_idxes=p_idxes,
@@ -206,21 +315,26 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
                                                all_teammates=all_teammates,
                                                deterministic=deterministic,
                                                number_of_eps=number_of_eps)
-    return agent_name, mean_rewards, std_rewards
+    return agent_name, str(teammate_lvl_set), mean_rewards, std_rewards
 
 
-def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps):
+def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_sets: Sequence[Sequence[Eval]]):
     all_mean_rewards, all_std_rewards = {}, {}
     with concurrent.futures.ProcessPoolExecutor() as executor:
         futures = [
-            executor.submit(evaluate_agent_for_layout, name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps)
-            for name, path in all_agents_paths.items()
+            executor.submit(evaluate_agent_for_layout, name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set)
+            for (name, path), teammate_lvl_set in itertools.product(all_agents_paths.items(), teammate_lvl_sets)
         ]
-        
+
         for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Evaluating Agents"):
-            name, mean_rewards, std_rewards = future.result()
-            all_mean_rewards[name] = mean_rewards
-            all_std_rewards[name] = std_rewards
+            name, teammate_lvl_set_str, mean_rewards, std_rewards = future.result()
+            if name not in all_mean_rewards:
+                all_mean_rewards[name] = {}
+            if name not in all_std_rewards:
+                all_std_rewards[name] = {}
+            all_mean_rewards[name][teammate_lvl_set_str] = mean_rewards
+            all_std_rewards[name][teammate_lvl_set_str] = std_rewards
+
     return all_mean_rewards, all_std_rewards
 
 
@@ -235,14 +349,25 @@ def get_3_player_input(args):
 
     # the name on the left is shown on the plot
     all_agents_paths = {
-        'N-1-SP_cur': 'agent_models/N-1-SP-vs-AP-supporter-howlong-4/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
-        'N-1-SP_ran': 'agent_models/N-1-SP-vs-AP-supporter-howlong-4/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
-        'Saboteur Play': 'agent_models/four-layouts/supporter-fishplay/024_14/pwsab_s68_h512_tr(SP_SPH)_ran/best',
-        'FCP': 'agent_models/all_layouts_supporters/fcp_s2020_h256_tr(AMX)_ran/best',
-        'SP': 'agent_models/N-1-SP-vs-AP-supporter-howlong-4/SP_hd64_seed14/ck_40_rew_316.0'
+        'N-1-SP_cur': 'agent_models/sp-vs-spwsp/3-chefs-all-layouts/spWsp_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+        'N-1-SP_ran': 'agent_models/sp-vs-spwsp/3-chefs-all-layouts/spWsp_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+        #'Saboteur Play': 'agent_models/four-layouts/supporter-fishplay/024_14/pwsab_s68_h512_tr(SP_SPH)_ran/best',
+        #'FCP': 'agent_models/all_layouts_supporters/fcp_s2020_h256_tr(AMX)_ran/best',
+        #'SP': 'agent_models/N-1-SP-vs-AP-supporter-howlong-4/SP_hd64_seed14/ck_40_rew_316.0'
     }
 
-    return layout_names, p_idxes, all_agents_paths, args
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH],
+        [
+            Eval.LOW,
+            Eval.MEDIUM,
+            Eval.HIGH
+        ]
+    ]
+
+    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
 def get_5_player_input(args):
     args.num_players = 5
@@ -279,9 +404,9 @@ def get_new_5_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    # layout_names, p_idxes, all_agents_paths, args = get_3_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
     # layout_names, p_idxes, all_agents_paths, args = get_5_player_input(args)
-    layout_names, p_idxes, all_agents_paths, args = get_new_5_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, args = get_new_5_player_input(args)
 
     deterministic = False
     max_num_teams_per_layout_per_x = 5
@@ -294,9 +419,10 @@ if __name__ == "__main__":
         p_idxes=p_idxes,
         deterministic=deterministic,
         max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
-        number_of_eps=number_of_eps
+        number_of_eps=number_of_eps,
+        teammate_lvl_sets=teammate_lvl_sets
     )
-        
+
     plot_name = generate_plot_name(num_players=args.num_players,
                                     deterministic=deterministic,
                                     p_idxes=p_idxes,
@@ -305,5 +431,6 @@ if __name__ == "__main__":
     plot_evaluation_results(all_mean_rewards=all_mean_rewards,
                             all_std_rewards=all_std_rewards,
                             layout_names=layout_names,
+                            teammate_lvl_sets=teammate_lvl_sets,
                             num_players=args.num_players,
                             plot_name=plot_name)
