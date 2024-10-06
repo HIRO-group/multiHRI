@@ -7,6 +7,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
+import pickle as pkl
 
 from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
@@ -186,14 +187,15 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
     return all_teammates
 
 
-def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams):
+def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams, teammate_lvl_sets):
     plot_name = f'{num_players}-players'
     plot_name += '-det' if deterministic else '-stoch'
     p_idexes_str = ''.join([str(p_idx) for p_idx in p_idxes])
     plot_name += f'-pidx{p_idexes_str}'
     plot_name += f'-eps{num_eps}'
     plot_name += f'-maxteams{str(max_num_teams)}'
-    return plot_name+'.png'
+    plot_name += f"-teams{str(teammate_lvl_sets)}"
+    return plot_name
 
 
 def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name):
@@ -252,7 +254,7 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, tea
 
 
     plt.tight_layout()
-    plt.savefig(f'{plot_name}')
+    plt.savefig(f'{plot_name}.png')
     # plt.show()
 
 
@@ -358,13 +360,6 @@ def get_3_player_input(args):
 
     teammate_lvl_sets = [
         [Eval.LOW],
-        [Eval.MEDIUM],
-        [Eval.HIGH],
-        [
-            Eval.LOW,
-            Eval.MEDIUM,
-            Eval.HIGH
-        ]
     ]
 
     return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
@@ -412,22 +407,33 @@ if __name__ == "__main__":
     max_num_teams_per_layout_per_x = 5
     number_of_eps = 5
 
-    all_mean_rewards, all_std_rewards = run_parallel_evaluation(
-        args=args,
-        all_agents_paths=all_agents_paths,
-        layout_names=layout_names,
-        p_idxes=p_idxes,
-        deterministic=deterministic,
-        max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
-        number_of_eps=number_of_eps,
-        teammate_lvl_sets=teammate_lvl_sets
-    )
-
     plot_name = generate_plot_name(num_players=args.num_players,
                                     deterministic=deterministic,
                                     p_idxes=p_idxes,
                                     num_eps=number_of_eps,
-                                    max_num_teams=max_num_teams_per_layout_per_x)
+                                    max_num_teams=max_num_teams_per_layout_per_x,
+                                    teammate_lvl_sets=teammate_lvl_sets)
+
+    pre_evaluated_results_file = Path(f"{plot_name}.pkl")
+    if pre_evaluated_results_file.is_file():
+        with open(pre_evaluated_results_file, "rb") as f:
+            all_mean_rewards, all_std_rewards = pkl.load(f)
+    else:
+        all_mean_rewards, all_std_rewards = run_parallel_evaluation(
+            args=args,
+            all_agents_paths=all_agents_paths,
+            layout_names=layout_names,
+            p_idxes=p_idxes,
+            deterministic=deterministic,
+            max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
+            number_of_eps=number_of_eps,
+            teammate_lvl_sets=teammate_lvl_sets
+        )
+
+        with open(pre_evaluated_results_file, "wb") as f:
+            pkl.dump((all_mean_rewards, all_std_rewards), f)
+
+
     plot_evaluation_results(all_mean_rewards=all_mean_rewards,
                             all_std_rewards=all_std_rewards,
                             layout_names=layout_names,
