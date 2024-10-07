@@ -1,3 +1,5 @@
+import os
+import sys
 from typing import Sequence
 import itertools
 import concurrent.futures
@@ -13,6 +15,7 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
+import hashlib
 
 class Eval:
     LOW = 0
@@ -299,24 +302,45 @@ def evaluate_agent(args,
 
 
 def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set: Sequence[Eval]):
-    agent = load_agent(Path(path), args)
-    agent.deterministic = deterministic
+    fn_args = (agent_name, path, tuple(layout_names), tuple(p_idxes), tuple([(k, tuple(v) if isinstance(v, list) else v) for k,v in vars(args).items()]), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
+    m = hashlib.md5()
+    for s in fn_args:
+        m.update(str(s).encode())
+    arg_hash = m.hexdigest()
 
-    all_teammates = get_all_teammates_for_evaluation(args=args,
-                                                     primary_agent=agent,
-                                                     num_players=args.num_players,
-                                                     layout_names=layout_names,
-                                                     deterministic=deterministic,
-                                                     max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
-                                                     teammate_lvl_set=teammate_lvl_set)
+    print(f"Eval Hash: {arg_hash}")
+    cache_file_path = f"eval_cache/eval_{arg_hash}.pkl"
+    cached_eval = Path(cache_file_path)
+    if cached_eval.is_file():
+        print(f"Loading cached evaluation from {cached_eval}")
+        with open(cached_eval, "rb") as f:
+            agent_name, teammate_lvl_set, mean_rewards, std_rewards = pkl.load(f)
 
-    mean_rewards, std_rewards = evaluate_agent(args=args,
-                                               primary_agent=agent,
-                                               p_idxes=p_idxes,
-                                               layout_names=layout_names,
-                                               all_teammates=all_teammates,
-                                               deterministic=deterministic,
-                                               number_of_eps=number_of_eps)
+    else:
+        agent = load_agent(Path(path), args)
+        agent.deterministic = deterministic
+
+        all_teammates = get_all_teammates_for_evaluation(args=args,
+                                                        primary_agent=agent,
+                                                        num_players=args.num_players,
+                                                        layout_names=layout_names,
+                                                        deterministic=deterministic,
+                                                        max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
+                                                        teammate_lvl_set=teammate_lvl_set)
+
+        mean_rewards, std_rewards = evaluate_agent(args=args,
+                                                primary_agent=agent,
+                                                p_idxes=p_idxes,
+                                                layout_names=layout_names,
+                                                all_teammates=all_teammates,
+                                                deterministic=deterministic,
+                                                number_of_eps=number_of_eps)
+
+
+        Path('eval_cache').mkdir(parents=True, exist_ok=True)
+        with open(cached_eval, "wb") as f:
+            pkl.dump((agent_name, teammate_lvl_set, mean_rewards, std_rewards), f)
+
     return agent_name, str(teammate_lvl_set), mean_rewards, std_rewards
 
 
