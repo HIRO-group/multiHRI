@@ -1,3 +1,8 @@
+import multiprocessing as mp
+import os
+from pathlib import Path
+mp.set_start_method('spawn', force=True) 
+
 import os
 import sys
 from typing import Sequence
@@ -18,126 +23,73 @@ from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 import hashlib
 
 class Eval:
-    LOW = 0
-    MEDIUM = 1
-    HIGH = 2
+    LOW = 'l'
+    MEDIUM = 'm'
+    HIGH = 'h'
 
 eval_key_lut = {
-    0: "LOW",
-    1: "MEDIUM",
-    2: "HIGH"
+    'l': "LOW",
+    'm': "MEDIUM",
+    'h': "HIGH"
 }
+
+ # 0 - 100, 100-200, 200-300
+two_player_low = [
+    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
+    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_1_rew_18.666666666666668',
+    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_1_rew_22.0',
+    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_1_rew_38.0',
+    'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_0',
+]
+two_player_medium = [
+    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_2_rew_108.66666666666667',
+    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_3_rew_170.66666666666666',
+    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_2_rew_106.66666666666667',
+    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_3_rew_192.66666666666666',
+    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_2_rew_110.66666666666667',
+]
+two_player_high = [
+    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_24_rew_298.0',
+    'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_20_rew_286.6666666666667',
+    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_24_rew_258.0',
+    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_22_rew_262.0',
+    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_13_rew_274.0',
+]
 
 
 LAYOUT_NAMES_PATHs = {
-    '3_chefs_small_kitchen': {
-        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
-                   ],
-        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
-                      ],
-        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
-                    ]
+    'selected_2_chefs_coordination_ring': {
+        Eval.LOW: two_player_low,
+        Eval.MEDIUM: two_player_medium,
+        Eval.HIGH:two_player_high
     },
-    '3_chefs_small_kitchen_two_resources': {
-        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
-                   ],
-        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
-                      ],
-        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
-                    ]
+    'selected_2_chefs_counter_circuit': {
+        Eval.LOW: two_player_low,
+        Eval.MEDIUM: two_player_medium,
+        Eval.HIGH:two_player_high
     },
-    '3_chefs_forced_coordination':  {
-        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
-                   ],
-        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
-                      ],
-        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
-                    ]
+    'selected_2_chefs_cramped_room': {
+        Eval.LOW: two_player_low,
+        Eval.MEDIUM: two_player_medium,
+        Eval.HIGH:two_player_high
     },
-    '3_chefs_asymmetric_advantages':  {
-        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
-                   ],
-        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
-                      ],
-        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
-                    ]
-    },
-    '3_chefs_forced_coordination_3OP2S1D':  {
-        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
-                   ],
-        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
-                      ],
-        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
-                    ]
-    },
-    '3_chefs_counter_circuit':  {
-        Eval.LOW: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
-                   'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_0',
-                   ],
-        Eval.MEDIUM: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_1_rew_112.0',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_2_rew_165.11111111111111',
-                      'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_3_rew_184.66666666666666',
-                      ],
-        Eval.HIGH: ['agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd64_seed14/ck_5_rew_216.44444444444446',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_3_rew_218.22222222222223',
-                    'agent_models/sp-vs-spwsp/3-chefs-all-layouts/fcp_hd256_seed68/ck_4_rew_235.66666666666666'
-                    ]
-    },
-    '5_chefs_storage_room_lots_resources': { # 800, low: [0, 300], medium: [300, 600], high: [600, 800]
-        # Eval.LOW: ['agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-        #              'agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_1_rew_97.66666666666667',
-        # 'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
-        Eval.LOW: ['agent_models/sp-vs-spwsp/5-chefs-all-layouts/fcp_hd64_seed14/ck_0',
-                   ],
-        Eval.MEDIUM: [],
-        Eval.HIGH: []
-    },
-    '5_chefs_clustered_kitchen' :[
-        'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
-    ],
-    '5_chefs_coordination_ring': [
-        'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
-    ],
-    '5_chefs_storage_room_lots_resources': [
-        'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
-    ],
-    '5_chefs_cramped_room': [
-        'agent_models/sp-vs-spwsp/5-chefs-all-layouts'
-    ],
 
-    '5_chefs_counter_circuit': [],
-    '5_chefs_asymmetric_advantages': [],
+    'selected_3_chefs_coordination_ring': {
+    },
+    'selected_3_chefs_counter_circuit': {
+    },
+    'selected_3_chefs_cramped_room': {
+
+    },
+    'selected_5_chefs_counter_circuit': {
+
+    },
+    'selected_5_chefs_secret_coordination_ring': {
+
+    },
+    'selected_5_chefs_storage_room': {
+
+    },
 }
 
 def print_all_teammates(all_teammates):
@@ -197,7 +149,8 @@ def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_tea
     plot_name += f'-pidx{p_idexes_str}'
     plot_name += f'-eps{num_eps}'
     plot_name += f'-maxteams{str(max_num_teams)}'
-    plot_name += f"-teams{str(teammate_lvl_sets)}"
+    teams = ''.join([str(t[0]) for t in teammate_lvl_sets])
+    plot_name += f"-teams({str(teams)})"
     return plot_name
 
 
@@ -238,8 +191,8 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, tea
 
                 ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o',
                             label=f'Agent: {agent_name}', capsize=5)
-
-            ax.set_title(f'{layout_name}\n{team_name}')
+            team_name_print = team_name.strip("[]'\"")
+            ax.set_title(f'{layout_name}\n{team_name_print}')
             ax.set_xlabel('Number of Unseen Teammates')
             ax.set_xticks(x_values)
             ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
@@ -257,7 +210,7 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, tea
 
 
     plt.tight_layout()
-    plt.savefig(f'{plot_name}.png')
+    plt.savefig(f'data/plots/{plot_name}.png')
     # plt.show()
 
 
@@ -364,71 +317,90 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
     return all_mean_rewards, all_std_rewards
 
 
-def get_3_player_input(args):
-    args.num_players = 3
-    layout_names = ['3_chefs_small_kitchen_two_resources',
-                    '3_chefs_forced_coordination_3OP2S1D',
-                    '3_chefs_asymmetric_advantages',
-                    '3_chefs_counter_circuit'
-                    ]
-    p_idxes = [0,1,2]
+# def get_3_player_input(args):
+#     args.num_players = 3
+#     layout_names = ['3_chefs_small_kitchen_two_resources',
+#                     '3_chefs_forced_coordination_3OP2S1D',
+#                     '3_chefs_asymmetric_advantages',
+#                     '3_chefs_counter_circuit'
+#                     ]
+#     p_idxes = [0,1,2]
 
-    # the name on the left is shown on the plot
+#     # the name on the left is shown on the plot
+#     all_agents_paths = {
+#         'N-1-SP_cur': 'agent_models/sp-vs-spwsp/3-chefs-all-layouts/spWsp_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+#         'N-1-SP_ran': 'agent_models/sp-vs-spwsp/3-chefs-all-layouts/spWsp_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+#         #'Saboteur Play': 'agent_models/four-layouts/supporter-fishplay/024_14/pwsab_s68_h512_tr(SP_SPH)_ran/best',
+#         #'FCP': 'agent_models/all_layouts_supporters/fcp_s2020_h256_tr(AMX)_ran/best',
+#         #'SP': 'agent_models/N-1-SP-vs-AP-supporter-howlong-4/SP_hd64_seed14/ck_40_rew_316.0'
+#     }
+#     teammate_lvl_sets = [
+#         [Eval.LOW],
+#     ]
+#     return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
+
+
+# def get_5_player_input(args):
+#     args.num_players = 5
+#     layout_names = ['5_chefs_storage_room_lots_resources',
+#                     '5_chefs_clustered_kitchen',
+#                     '5_chefs_coordination_ring'
+#                     ]
+#     p_idxes = [0, 1, 2, 3, 4]
+#     all_agents_paths = {
+#         'FCP': 'agent_models/5-p-layouts/FCP_s2020_h256_tr(AMX)_ran/best',
+#         'SP': 'agent_models/5-p-layouts/SP_hd256_seed13/ck_20_rew_441.3333333333333',
+#         'N-1-SP ran': 'agent_models/N-X-SP/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+#         'N-1-SP cur': 'agent_models/N-4-SP/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+#         'N-3-SP ran': 'agent_models/N-3-SP/N-3-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+#         'N-3-SP cur': 'agent_models/N-3-SP/N-3-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+#         'N-4-SP ran': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+#         'N-4-SP cur': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best'
+#     }
+#     return layout_names, p_idxes, all_agents_paths, args
+
+# def get_new_5_player_input(args):
+#     args.num_players = 5
+#     layout_names = ['5_chefs_storage_room_lots_resources', '5_chefs_clustered_kitchen', '5_chefs_coordination_ring']
+#     p_idxes = [0, 1, 2, 3 ,4]
+#     all_agents_paths = {
+#         'N-1-SP cur': 'agent_models/N-1-SP-4-long/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
+#         'N-1-SP ran': 'agent_models/N-1-SP-4-long/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
+#         'SP': 'agent_models/N-1-SP-4-long/SP_hd256_seed68/best',
+#         'FCP': 'agent_models/N-1-SP-4-long/FCP_s2020_h256_tr(AMX)_ran/best',
+#         'Adversary Play': 'agent_models/M2FP-1/sp_s68_h512_tr(SP)_ran/M2FP/supporter-selfisherplay/0/pwadv_s68_h512_tr(SP_SPADV)_ran/best'
+#     }
+#     return layout_names, p_idxes, all_agents_paths, args
+
+
+def get_2_player_input(args):
+    args.num_players = 2
+    layout_names = ['selected_2_chefs_coordination_ring',
+                    'selected_2_chefs_counter_circuit',
+                    'selected_2_chefs_cramped_room']
+    p_idxes = [0, 1]
+
     all_agents_paths = {
-        'N-1-SP_cur': 'agent_models/sp-vs-spwsp/3-chefs-all-layouts/spWsp_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
-        'N-1-SP_ran': 'agent_models/sp-vs-spwsp/3-chefs-all-layouts/spWsp_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
-        #'Saboteur Play': 'agent_models/four-layouts/supporter-fishplay/024_14/pwsab_s68_h512_tr(SP_SPH)_ran/best',
-        #'FCP': 'agent_models/all_layouts_supporters/fcp_s2020_h256_tr(AMX)_ran/best',
-        #'SP': 'agent_models/N-1-SP-vs-AP-supporter-howlong-4/SP_hd64_seed14/ck_40_rew_316.0'
+        'N-1-SP FCP CUR':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
+        'N-1-SP FCP RAN':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
+        'SP':              'agent_models/Result/2/SP_hd64_seed14/best',
+        'FCP':             'agent_models/Result/2/FCP_s2020_h256_tr(AMX)_ran/best',
+        'N-1-SP ADV':      'agent_models/Result/2/MAP_SP_hd64_seed14/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
     }
-
     teammate_lvl_sets = [
         [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
     ]
-
     return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
-
-def get_5_player_input(args):
-    args.num_players = 5
-    layout_names = ['5_chefs_storage_room_lots_resources',
-                    '5_chefs_clustered_kitchen',
-                    '5_chefs_coordination_ring'
-                    ]
-    p_idxes = [0, 1, 2, 3, 4]
-    all_agents_paths = {
-        'FCP': 'agent_models/5-p-layouts/FCP_s2020_h256_tr(AMX)_ran/best',
-        'SP': 'agent_models/5-p-layouts/SP_hd256_seed13/ck_20_rew_441.3333333333333',
-        'N-1-SP ran': 'agent_models/N-X-SP/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
-        'N-1-SP cur': 'agent_models/N-4-SP/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
-        'N-3-SP ran': 'agent_models/N-3-SP/N-3-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
-        'N-3-SP cur': 'agent_models/N-3-SP/N-3-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
-        'N-4-SP ran': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
-        'N-4-SP cur': 'agent_models/N-4-SP/N-4-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best'
-    }
-    return layout_names, p_idxes, all_agents_paths, args
-
-def get_new_5_player_input(args):
-    args.num_players = 5
-    layout_names = ['5_chefs_storage_room_lots_resources', '5_chefs_clustered_kitchen', '5_chefs_coordination_ring']
-    p_idxes = [0, 1, 2, 3 ,4]
-    all_agents_paths = {
-        'N-1-SP cur': 'agent_models/N-1-SP-4-long/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_cur/best',
-        'N-1-SP ran': 'agent_models/N-1-SP-4-long/N-1-SP_s1010_h256_tr(SPH_SPM_SPL)_ran/best',
-        'SP': 'agent_models/N-1-SP-4-long/SP_hd256_seed68/best',
-        'FCP': 'agent_models/N-1-SP-4-long/FCP_s2020_h256_tr(AMX)_ran/best',
-        'Adversary Play': 'agent_models/M2FP-1/sp_s68_h512_tr(SP)_ran/M2FP/supporter-selfisherplay/0/pwadv_s68_h512_tr(SP_SPADV)_ran/best'
-    }
-    return layout_names, p_idxes, all_agents_paths, args
 
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, args = get_5_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, args = get_new_5_player_input(args)
-
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    
     deterministic = False
-    max_num_teams_per_layout_per_x = 5
+    max_num_teams_per_layout_per_x = 4
     number_of_eps = 5
 
     plot_name = generate_plot_name(num_players=args.num_players,
@@ -438,7 +410,8 @@ if __name__ == "__main__":
                                     max_num_teams=max_num_teams_per_layout_per_x,
                                     teammate_lvl_sets=teammate_lvl_sets)
 
-    pre_evaluated_results_file = Path(f"{plot_name}.pkl")
+    pre_evaluated_results_file = Path(f"data/plots/{plot_name}.pkl")
+
     if pre_evaluated_results_file.is_file():
         with open(pre_evaluated_results_file, "rb") as f:
             all_mean_rewards, all_std_rewards = pkl.load(f)
