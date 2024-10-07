@@ -61,6 +61,7 @@ def fix_ck_list(initial_run_root, continued_run_root, corrected_run_root, ck_sta
 def fix_pop(args, initial_run_root, continued_run_root, corrected_run_root):
     initial_run_exp = re.search(r'agent_models/(.*)', initial_run_root).group(1)
     continued_run_exp = re.search(r'agent_models/(.*)', continued_run_root).group(1)
+    corrected_run_exp = re.search(r'agent_models/(.*)', corrected_run_root).group(1)
 
     population_initial = {layout_name: [] for layout_name in args.layout_names}
     population_continued = {layout_name: [] for layout_name in args.layout_names}    
@@ -89,7 +90,7 @@ def fix_pop(args, initial_run_root, continued_run_root, corrected_run_root):
             seed=None,
         )
         rt.agents = all_agents
-        args.exp_dir = corrected_run_root
+        args.exp_dir = corrected_run_exp
         rt.save_agents(tag='aamas25')
         print(f"Saved {name} in {corrected_run_root}, size: {len(all_agents)}")
 
@@ -107,10 +108,10 @@ def set_input():
 
 
 if __name__ == "__main__":
-    initial_run_root = 'agent_models/Final/Eval/5_first_run'
-    continued_run_root = 'agent_models/Final/Eval/5_continued_run'
-    corrected_run_root = 'agent_models/Final/Eval/5'
-    ck_starts_from = 40
+    initial_run_root = 'agent_models/Final/5_first_run'
+    continued_run_root = 'agent_models/Final/5_continued_run'
+    corrected_run_root = 'agent_models/Final/5'
+    ck_starts_from = 20
     args = set_input()
     # ^ set all the above vars before running the script
 
