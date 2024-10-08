@@ -157,7 +157,84 @@ def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_tea
     return plot_name
 
 
-def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name):
+def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False):
+    plot_name = plot_name + "_delivery" if display_delivery else plot_name
+    uc = ''.join([str(u) for u in unseen_counts])
+    plot_name += f"_uc{uc}"
+
+    num_layouts = len(layout_names)
+    team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
+    team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
+    num_teamsets = len(team_lvl_set_names)
+    fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
+
+    if num_layouts == 1:
+        axes = [[axes]]
+
+    x_values = np.arange(len(unseen_counts))
+    num_agents = len(all_mean_rewards)
+    width = 0.8 / num_agents  # Adjust bar width based on number of agents
+
+    # Function to process rewards (divide by 20 if display_delivery is True)
+    def process_reward(reward):
+        return reward / 20 if display_delivery else reward
+
+    for i, layout_name in enumerate(layout_names):
+        cross_exp_mean = {}
+        cross_exp_std = {}
+        for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
+            ax = axes[j][i]
+            for idx, agent_name in enumerate(all_mean_rewards):
+                mean_values = []
+                std_values = []
+
+                for unseen_count in unseen_counts:
+                    mean_rewards = [process_reward(r) for r in all_mean_rewards[agent_name][team][layout_name][unseen_count]]
+                    std_rewards = [process_reward(r) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
+
+                    mean_values.append(np.mean(mean_rewards))
+                    std_values.append(np.mean(std_rewards))
+                    if agent_name not in cross_exp_mean:
+                        cross_exp_mean[agent_name] = [0] * len(unseen_counts)
+                    if agent_name not in cross_exp_std:
+                        cross_exp_std[agent_name] = [0] * len(unseen_counts)
+                    cross_exp_mean[agent_name][unseen_counts.index(unseen_count)] += mean_values[-1]
+                    cross_exp_std[agent_name][unseen_counts.index(unseen_count)] += std_values[-1]
+
+                # Plot bars for each agent
+                x = x_values + idx * width - width * (num_agents - 1) / 2
+                ax.bar(x, mean_values, width, yerr=std_values, label=f'Agent: {agent_name}', capsize=5)
+
+            team_name_print = team_name.strip("[]'\"")
+            ax.set_title(f'{layout_name}\n{team_name_print}')
+            ax.set_xlabel('Number of Unseen Teammates')
+            ax.set_xticks(x_values)
+            ax.set_xticklabels(unseen_counts)
+            ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+        # Average plot across all teamsets
+        ax = axes[-1][i]
+        for idx, agent_name in enumerate(all_mean_rewards):
+            mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
+            std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
+            
+            x = x_values + idx * width - width * (num_agents - 1) / 2
+            ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
+
+        ax.set_title(f"Avg. {layout_name}")
+        ax.set_xlabel('Number of Unseen Teammates')
+        ax.set_xticks(x_values)
+        ax.set_xticklabels(unseen_counts)
+        ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+    # Set y-axis label based on display_delivery
+    fig.text(0.04, 0.5, 'Number of Deliveries' if display_delivery else 'Reward', va='center', rotation='vertical')
+
+    plt.tight_layout()
+    plt.savefig(f'data/plots/{plot_name}_{"deliveries" if display_delivery else "rewards"}_bar.png')
+
+
+def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name):
     num_layouts = len(layout_names)
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
@@ -213,8 +290,9 @@ def plot_evaluation_results(all_mean_rewards, all_std_rewards, layout_names, tea
 
 
     plt.tight_layout()
-    plt.savefig(f'data/plots/{plot_name}.png')
+    plt.savefig(f'data/plots/{plot_name}_line.png')
     # plt.show()
+
 
 
 def evaluate_agent(args,
@@ -332,10 +410,10 @@ def get_2_player_input(args):
         'N-1-SP FCP CUR':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
         'N-1-SP FCP RAN':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
         'SP':              'agent_models/Result/2/SP_hd64_seed14/best',
-        'FCP':             'agent_models/Result/2/FCP_s2020_h256_tr(AMX)_ran/best',
+        'FCP corrected':   'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
         'N-1-SP ADV':      'agent_models/Result/2/MAP_SP_hd64_seed14/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
-        'N-1-SP FCP + ADV CUR [attack 0]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack0/best',
-        'N-1-SP FCP + ADV CUR [attack 1]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack1/best',
+        # 'N-1-SP FCP + ADV CUR [attack 0]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack0/best',
+        # 'N-1-SP FCP + ADV CUR [attack 1]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack1/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -394,6 +472,10 @@ if __name__ == "__main__":
     max_num_teams_per_layout_per_x = 4
     number_of_eps = 5
 
+    # For display_purposes
+    unseen_counts = [1, 2]
+    show_delivery_num = False
+
     plot_name = generate_plot_name(num_players=args.num_players,
                                     deterministic=deterministic,
                                     p_idxes=p_idxes,
@@ -421,9 +503,20 @@ if __name__ == "__main__":
     #     pkl.dump((all_mean_rewards, all_std_rewards), f)
 
 
-    plot_evaluation_results(all_mean_rewards=all_mean_rewards,
-                            all_std_rewards=all_std_rewards,
-                            layout_names=layout_names,
-                            teammate_lvl_sets=teammate_lvl_sets,
-                            num_players=args.num_players,
-                            plot_name=plot_name)
+    # plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
+    #                         all_std_rewards=all_std_rewards,
+    #                         layout_names=layout_names,
+    #                         teammate_lvl_sets=teammate_lvl_sets,
+    #                         unseen_counts=unseen_counts,
+    #                         display_delivery=show_delivery_num,
+    #                         plot_name=plot_name)
+    
+
+    plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
+                                    all_std_rewards=all_std_rewards,
+                                    layout_names=layout_names,
+                                    teammate_lvl_sets=teammate_lvl_sets,
+                                    num_players=args.num_players,
+                                    plot_name=plot_name)
+    
+
