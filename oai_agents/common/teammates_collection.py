@@ -1,5 +1,5 @@
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import TeamType, TeammatesCollection
+from oai_agents.common.tags import TeamType, TeammatesCollection, AgentPerformance
 
 from itertools import permutations
 import random
@@ -92,6 +92,26 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
     return all_teammates, selected_agents
 
 
+def filter_agent_scores_for_FCP(agents_perftag_score_all):
+    from collections import defaultdict
+    
+    agent_scores = defaultdict(list)
+    name_to_agent = {agent.name: agent for agent, _, _ in agents_perftag_score_all}
+    for agent, tag, score in agents_perftag_score_all:
+        agent_scores[agent.name].append((tag, score))
+    
+    
+    filtered_scores = []
+    for agent_name, tag_scores in agent_scores.items():
+        sorted_scores = sorted(tag_scores, key=lambda x: x[1])
+
+        lowest = sorted_scores[0]
+        mid = sorted_scores[len(sorted_scores) // 2]
+        highest = sorted_scores[-1]
+        filtered_scores.extend([(name_to_agent[agent_name], *lowest), (name_to_agent[agent_name], *mid), (name_to_agent[agent_name], *highest)])
+
+    return filtered_scores
+
 
 def generate_TC(args,
                 population,
@@ -139,6 +159,11 @@ def generate_TC(args,
         agents_perftag_score_all = [(agent,
                                      agent.layout_performance_tags[layout_name], 
                                      agent.layout_scores[layout_name]) for agent in layout_population]
+
+        agents_perftag_score_all = filter_agent_scores_for_FCP(agents_perftag_score_all)
+        print(len(agents_perftag_score_all))
+
+
         train_collection[layout_name], train_agents = get_teammates(agents_perftag_score=agents_perftag_score_all,
                                                                     teamtypes=train_types,
                                                                     teammates_len=args.teammates_len,

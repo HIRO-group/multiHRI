@@ -619,7 +619,7 @@ def N_1_FCP(args, pop_force_training, primary_force_training, parallel, fcp_forc
                     )
 
 
-def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_names = None, exp_dir='experiment/1'):
+def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_names = None):
     # List for 2 chefs layouts
     two_chefs_layouts = [
         'selected_2_chefs_coordination_ring',
@@ -673,7 +673,7 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
 
         args.num_SPs_to_train = 4
         # This is the directory where the experiment will be saved. Change it to your desired directory:
-        args.exp_dir = exp_dir
+        args.exp_dir = f'FCP_correct/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -695,21 +695,30 @@ if __name__ == '__main__':
     quick_test = False
     parallel = True
     
-    pop_force_training = True
+    pop_force_training = False
     primary_force_training = True
 
-    PwADVs_from_folder( args, 
-                        exp_tag = 'MAP_ADV_256_13', 
-                        main_agent_path = 'Final/2/SP_hd256_seed68',
-                        main_agent_type = LearnerType.ORIGINALER, 
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 256,
-                        adversaries_folder = 'Final/2/SP_hd256_seed13/MAP/selfisher',
-                        adversary_type = LearnerType.SELFISHER,
-                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long = 10,
-                        reward_magnifier = 3.0,
-                        team_size = 2)
+    teammates_len = 1
+    how_long = 4
+
+    set_input(args=args, quick_test=quick_test, how_long=how_long, teammates_len=teammates_len)
+    FCP_traditional(args=args,
+                    pop_force_training=pop_force_training,
+                    primary_force_training=primary_force_training,
+                    parallel=parallel)
+
+    # PwADVs_from_folder( args, 
+    #                     exp_tag = 'MAP_ADV_256_13', 
+    #                     main_agent_path = 'Final/2/SP_hd256_seed68',
+    #                     main_agent_type = LearnerType.ORIGINALER, 
+    #                     main_agent_seed = 68,
+    #                     main_agent_h_dim = 256,
+    #                     adversaries_folder = 'Final/2/SP_hd256_seed13/MAP/selfisher',
+    #                     adversary_type = LearnerType.SELFISHER,
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long = 10,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 2)
     
     # MultiAdversaryPlay( args, 
     #                     exp_tag = 'MAP', 
@@ -797,7 +806,7 @@ if __name__ == '__main__':
     #                     team_size = 5)
     
     
-    set_input(args=args, quick_test=quick_test, how_long=4.0)
+    # set_input(args=args, quick_test=quick_test, how_long=4.0)
     
     # N_X_SP(args=args,
     #        pop_force_training=pop_force_training,
@@ -805,7 +814,7 @@ if __name__ == '__main__':
     #        parallel=parallel)
     
 
-    
+    # set_input(args=args, quick_test=quick_test, how_long=4.0)
     # FCP_traditional(args=args,
     #                 pop_force_training=pop_force_training,
     #                 primary_force_training=primary_force_training,
