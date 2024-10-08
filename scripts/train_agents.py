@@ -698,6 +698,23 @@ if __name__ == '__main__':
     pop_force_training = True
     primary_force_training = True
 
+    MultiAdversaryPlay( args, 
+                        exp_tag = 'MAP', 
+                        main_agent_path = 'Final/3/SP_hd256_seed13',
+                        main_agent_seed = 13,
+                        main_agent_h_dim = 256,
+                        main_agent_type = LearnerType.ORIGINALER, 
+                        adversary_seed = 68,
+                        adversary_h_dim = 512,
+                        adversary_type = LearnerType.SELFISHER, 
+                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+                        how_long_init = 6,
+                        how_long_for_agent = 0.5,
+                        how_long_for_adv = 4,
+                        rounds_of_advplay = 3,
+                        reward_magnifier = 3.0,
+                        team_size = 3)
+
     # PwADVs_from_folder( args, 
     #                     exp_tag = 'MAP_ADV_256_13', 
     #                     main_agent_path = 'Final/2/SP_hd256_seed68',
@@ -781,22 +798,22 @@ if __name__ == '__main__':
 
 
 
-    MultiAdversaryPlay( args, 
-                        exp_tag = 'MAP', 
-                        main_agent_path = 'MAP/SP_s68_h512_tr(SP)_ran',
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 512,
-                        main_agent_type = LearnerType.SUPPORTER, 
-                        adversary_seed = 68,
-                        adversary_h_dim = 512,
-                        adversary_type = LearnerType.SELFISHER, 
-                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long_init = 4,
-                        how_long_for_agent = 1,
-                        how_long_for_adv = 4,
-                        rounds_of_advplay = 3,
-                        reward_magnifier = 3.0,
-                        team_size = 3)
+    # MultiAdversaryPlay( args, 
+    #                     exp_tag = 'MAP', 
+    #                     main_agent_path = 'MAP/SP_s68_h512_tr(SP)_ran',
+    #                     main_agent_seed = 68,
+    #                     main_agent_h_dim = 512,
+    #                     main_agent_type = LearnerType.SUPPORTER, 
+    #                     adversary_seed = 68,
+    #                     adversary_h_dim = 512,
+    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                     how_long_init = 4,
+    #                     how_long_for_agent = 1,
+    #                     how_long_for_adv = 4,
+    #                     rounds_of_advplay = 3,
+    #                     reward_magnifier = 3.0,
+    #                     team_size = 3)
     
     # MultiAdversaryPlay( args, 
     #                     exp_tag = 'MAP', 
