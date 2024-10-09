@@ -329,11 +329,15 @@ def get_2_player_input(args):
     p_idxes = [0, 1]
 
     all_agents_paths = {
-        'N-1-SP FCP CUR':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
-        'N-1-SP FCP RAN':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
-        'SP':              'agent_models/Result/2/SP_hd64_seed14/best',
-        'FCP':             'agent_models/Result/2/FCP_s2020_h256_tr(AMX)_ran/best',
-        'N-1-SP ADV':      'agent_models/Result/2/MAP_SP_hd64_seed14/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
+        'N-1-SP FCP CUR':       'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
+        'N-1-SP FCP RAN':       'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
+        'SP h64 s14':           'agent_models/Result/2/SP_hd64_seed14/best',
+        'SP h64 s0':            'agent_models/Result/2/SP_hd64_seed0/best',
+        'SP h256 s13':          'agent_models/Result/2/SP_hd256_seed13/best',
+        'SP h256 s68':          'agent_models/Result/2/SP_hd256_seed68/best',
+        'FCP':                  'agent_models/Result/2/FCP_s2020_h256_tr(AMX)_ran/best',
+        'N-1-SP ADV h64 s14':   'agent_models/Result/2/SP_hd64_seed14/MAP/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
+        'N-1-SP ADV h256 s13':  'agent_models/Result/2/SP_hd256_seed13/MAP/originaler-selfisherplay/2/pwadv_s13_h256_tr(SP_SPADV)_ran/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -383,8 +387,8 @@ def get_five_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
     
     deterministic = False
     max_num_teams_per_layout_per_x = 4
