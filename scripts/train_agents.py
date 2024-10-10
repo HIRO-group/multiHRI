@@ -632,13 +632,18 @@ def set_input(args, how_long=4):
         args.layout_names = five_chefs_layouts
 
     args.dynamic_reward = True
-    args.final_sparse_r_ratio = 1.0
+    # args.final_sparse_r_ratio = 1.0
+
+
+    args.dynamic_reward = True
+    args.final_sparse_r_ratio = 0.5
+    args.reward_magnifier = 3.0
 
     if not args.quick_test:
         args.n_envs = 200
         args.epoch_timesteps = 1e5
 
-        args.primary_learner_type = LearnerType.SUPPORTER
+        args.primary_learner_type = LearnerType.ORIGINALER
         args.adversary_learner_type = LearnerType.SELFISHER
         args.pop_learner_type = LearnerType.ORIGINALER
         args.attack_rounds = 3

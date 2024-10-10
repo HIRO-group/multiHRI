@@ -103,8 +103,8 @@ def attack_N_X_SP(args, population, curriculum):
     assert TeamType.SELF_PLAY_ADVERSARY in args.primary_train_types
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
-    agent_to_be_attacked = get_best_SP_agent(args=args, population=population)
-    #agent_to_be_attacked = RLAgentTrainer.load_agents(args, name='SP_hd64_seed14', tag='best')[0]
+    # agent_to_be_attacked = get_best_SP_agent(args=args, population=population)
+    agent_to_be_attacked = RLAgentTrainer.load_agents(args, name='SP_hd64_seed14', tag='best')[0]
 
     adversary_agents = []
     for attack_round in range(args.attack_rounds):

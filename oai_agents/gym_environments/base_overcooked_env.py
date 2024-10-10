@@ -256,6 +256,7 @@ class OvercookedGymEnv(Env):
             else:
                 ratio = self.final_sparse_r_ratio
             reward = self.learner.calculate_reward(p_idx=self.p_idx, env_info=info, ratio=ratio, num_players=self.mdp.num_players)
+            # print(f"reward: {reward}, ratio:{ratio}, at step: {self.step_count}")
         self.step_count += 1
         return self.get_obs(self.p_idx, done=done), reward, done, info
 
