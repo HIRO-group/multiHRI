@@ -92,7 +92,7 @@ FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL = [
 
     'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_6_rew_67.73333333333333',
     'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_7_rew_86.4',
-    'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_8_rew_105.86666666666666'
+    'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_8_rew_105.86666666666666',
     'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_9_rew_128.0'
 ]
 
@@ -137,7 +137,7 @@ FIVE_PLAYERS_MEDIUM_STORAGE_EVAL = [
 
     'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_6_rew_67.73333333333333',
     'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_7_rew_86.4',
-    'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_8_rew_105.86666666666666'
+    'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_8_rew_105.86666666666666',
     'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_9_rew_128.0'
 ]
 
@@ -145,7 +145,7 @@ FIVE_PLAYERS_HIGH_STORAGE_EVAL = [
     'agent_models/Result/Eval/5/SP_hd256_seed105/ck_52_rew_208.26666666666668',
     'agent_models/Result/Eval/5/SP_hd256_seed105/ck_53_rew_242.13333333333333',
     'agent_models/Result/Eval/5/SP_hd256_seed128/ck_58_rew_228.26666666666668',
-    'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_57_rew_216.26666666666668'
+    'agent_models/Result/Eval/5/SP_hd256_seed2907/ck_57_rew_216.26666666666668',
 
     'agent_models/Result/Eval/5/SP_hd256_seed105/ck_54_rew_259.46666666666664',
     'agent_models/Result/Eval/5/SP_hd256_seed105/ck_55_rew_253.86666666666667',

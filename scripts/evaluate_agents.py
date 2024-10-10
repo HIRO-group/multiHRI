@@ -380,7 +380,7 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
 
 def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_sets: Sequence[Sequence[Eval]]):
     all_mean_rewards, all_std_rewards = {}, {}
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
         futures = [
             executor.submit(evaluate_agent_for_layout, name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set)
             for (name, path), teammate_lvl_set in itertools.product(all_agents_paths.items(), teammate_lvl_sets)
@@ -449,7 +449,7 @@ def get_3_player_input(args):
     return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
 
-def get_five_player_input(args):
+def get_5_player_input(args):
     args.num_players = 5
     layout_names = ['selected_5_chefs_counter_circuit',
                     'selected_5_chefs_secret_coordination_ring',
@@ -459,7 +459,7 @@ def get_five_player_input(args):
         'N-1-SP FCP CUR':  'agent_models/Result/5/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
         'N-1-SP FCP RAN':  'agent_models/Result/5/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
         'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
-        'FCP':             'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best'}
+        'FCP at 38M steps':             'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best'}
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
@@ -470,8 +470,9 @@ def get_five_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
     deterministic = False
     max_num_teams_per_layout_per_x = 4
@@ -508,20 +509,20 @@ if __name__ == "__main__":
     #     pkl.dump((all_mean_rewards, all_std_rewards), f)
 
 
-    plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
-                            all_std_rewards=all_std_rewards,
-                            layout_names=layout_names,
-                            teammate_lvl_sets=teammate_lvl_sets,
-                            unseen_counts=unseen_counts,
-                            display_delivery=show_delivery_num,
-                            plot_name=plot_name)
+    #plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
+    #                        all_std_rewards=all_std_rewards,
+    #                        layout_names=layout_names,
+    #                        teammate_lvl_sets=teammate_lvl_sets,
+    #                        unseen_counts=unseen_counts,
+    #                        display_delivery=show_delivery_num,
+    #                        plot_name=plot_name)
     
 
-    # plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
-    #                                 all_std_rewards=all_std_rewards,
-    #                                 layout_names=layout_names,
-    #                                 teammate_lvl_sets=teammate_lvl_sets,
-    #                                 num_players=args.num_players,
-    #                                 plot_name=plot_name)
+    plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
+                                     all_std_rewards=all_std_rewards,
+                                     layout_names=layout_names,
+                                     teammate_lvl_sets=teammate_lvl_sets,
+                                     num_players=args.num_players,
+                                     plot_name=plot_name)
     
 
