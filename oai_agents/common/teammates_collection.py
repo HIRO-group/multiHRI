@@ -1,5 +1,5 @@
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import TeamType, TeammatesCollection
+from oai_agents.common.tags import TeamType, TeammatesCollection, AdversaryPlayConfig
 
 from itertools import permutations
 import random
@@ -222,71 +222,31 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
                 print("Loaded agents from files for eval: ", teammates.names, ", Teamtype: ", teammates.team_type)
 
 
-def update_TC_w_adversary(args,
-                          teammates_collection,
-                          adversaries, 
-                          primary_agent):
-    for layout_name in args.layout_names:
-        for adversary in adversaries:
-            teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+[primary_agent for _ in range(args.teammates_len-1)]]
-            teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+[primary_agent for _ in range(args.teammates_len-1)]]
-    return teammates_collection
-
-
-def generate_TC_for_Adversary(args, 
-                            agent):
-
-    teammates = [agent for _ in range(args.teammates_len)]
-
-    eval_collection = {
-            layout_name: {ttype: [] for ttype in [TeamType.HIGH_FIRST]}
-            for layout_name in args.layout_names
-    }
-
-    train_collection = {
-        layout_name: {ttype: [] for ttype in [TeamType.HIGH_FIRST]}
-        for layout_name in args.layout_names
-    }
-
-    for layout_name in args.layout_names:
-        train_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
-        eval_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
-
+def generate_TC_for_ADV_agent(args, agent_to_be_attacked, teamtype):
+    '''
+        For when we train the adversary
+    '''
+    teammates = [agent_to_be_attacked for _ in range(args.teammates_len)]
+    collection_template = {
+        layout_name: {teamtype: [teammates]} for layout_name in args.layout_names }
     teammates_collection = {
-        TeammatesCollection.TRAIN: train_collection,
-        TeammatesCollection.EVAL: eval_collection
+        TeammatesCollection.TRAIN: collection_template,
+        TeammatesCollection.EVAL: collection_template.copy()
     }
     return teammates_collection
 
 
-def generate_TC_for_AdversarysPlay(args, 
-                                agent,
-                                adversarys, 
-                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY],
-                                eval_types_to_generate=None,
-                                eval_types_to_read_from_file=None):
-
-    self_teammates = [agent for _ in range(args.teammates_len-1)] 
-    eval_collection = {
-            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
-            for layout_name in args.layout_names
-    }
-
-    train_collection = {
-        layout_name: {ttype: [] for ttype in train_types}
-        for layout_name in args.layout_names
-    }
+def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_agent):
+    '''
+        For when we train a primary agent with adversary teammates
+    '''
+    self_teammates = [primary_agent for _ in range(args.teammates_len-1)]
+    if args.adversary_play_config == AdversaryPlayConfig.SAP:
+        teammates = [[adversaries[-1]] + self_teammates]
+    if args.adversary_play_config == AdversaryPlayConfig.MAP:
+        teammates = [[adversary]+self_teammates for adversary in adversaries]
 
     for layout_name in args.layout_names:
-        train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        train_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
-        eval_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
-        
-
-    teammates_collection = {
-        TeammatesCollection.TRAIN: train_collection,
-        TeammatesCollection.EVAL: eval_collection
-    }
-
+        teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
+        teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
     return teammates_collection

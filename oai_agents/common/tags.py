@@ -92,3 +92,13 @@ class CheckedPoints():
     WORST_TRAIN_REWARD ='worst_train_reward'
     FINAL_TRAINED_MODEL = 'last'
     FIRST_CHECKED_MODEL = 'ck_0'
+
+class Prefix:
+    SELF_PLAY = 'SP'
+    FICTITIOUS_CO_PLAY = 'FCP'
+    ADVERSARY = 'adv'
+    ADVERSARY_PLAY = 'pwadv'
+
+class AdversaryPlayConfig:
+    MAP = 'MultiAdversaryPlay' # adapts to a list of adversary [adv0, adv1, adv2]
+    SAP = 'SingleAdversaryPlay' # adapts to the latest trained adversary

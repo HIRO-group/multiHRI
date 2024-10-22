@@ -1,9 +1,10 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_population
-from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, update_TC_w_adversary, generate_TC_for_Adversary, generate_TC_for_AdversarysPlay
+from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
+from oai_agents.common.tags import Prefix
 
 from oai_agents.common.tags import CheckedPoints
 
@@ -12,7 +13,7 @@ from pathlib import Path
 
 def get_SP_agent(args, total_training_timesteps, train_types, eval_types, curriculum, tag=None, force_training=False):
     name = generate_name(args, 
-                         prefix='SP',
+                         prefix=Prefix.SELF_PLAY,
                          seed=args.SP_seed,
                          h_dim=args.SP_h_dim, 
                          train_types=train_types,
@@ -51,9 +52,11 @@ def get_N_X_SP_agents(args,
                         curriculum:Curriculum,
                         tag:str=None) -> tuple:
 
-    curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM,
+    curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, 
+                                                           TeamType.SELF_PLAY_MEDIUM,
                                                            TeamType.SELF_PLAY_LOW,
-                                                           TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY],
+                                                           TeamType.SELF_PLAY,
+                                                           TeamType.SELF_PLAY_ADVERSARY],
                                          unallowed_types = TeamType.ALL_TYPES_BESIDES_SP)
 
 
@@ -104,7 +107,6 @@ def attack_N_X_SP(args, population, curriculum):
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
     agent_to_be_attacked = get_best_SP_agent(args=args, population=population)
-    #agent_to_be_attacked = RLAgentTrainer.load_agents(args, name='SP_hd64_seed14', tag='best')[0]
 
     adversary_agents = []
     for attack_round in range(args.attack_rounds):
@@ -127,21 +129,23 @@ def attack_N_X_SP(args, population, curriculum):
             agent_to_be_attacked = agents[0]
             continue
 
-        random_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args, learner_type=args.primary_learner_type,
-                                                                               hidden_dim=args.N_X_SP_h_dim, seed=args.N_X_SP_seed)
+        random_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args,
+                                                                               learner_type=args.primary_learner_type,
+                                                                               hidden_dim=args.N_X_SP_h_dim,
+                                                                               seed=args.N_X_SP_seed)
 
         teammates_collection = generate_TC(args=args,
-                                        population=population,
-                                        agent=random_init_agent,
-                                        train_types=curriculum.train_types,
-                                        eval_types_to_generate=args.primary_eval_types['generate'],
-                                        eval_types_to_read_from_file=args.primary_eval_types['load'],
-                                        unseen_teammates_len=args.unseen_teammates_len)
-        
-        teammates_collection = update_TC_w_adversary(args=args,
-                                                        teammates_collection=teammates_collection,
-                                                        primary_agent=random_init_agent,
-                                                        adversaries=adversary_agents)
+                                            population=population,
+                                            agent=random_init_agent,
+                                            train_types=curriculum.train_types,
+                                            eval_types_to_generate=args.primary_eval_types['generate'],
+                                            eval_types_to_read_from_file=args.primary_eval_types['load'],
+                                            unseen_teammates_len=args.unseen_teammates_len)
+
+        teammates_collection = update_TC_w_ADV_teammates(args=args,
+                                                    teammates_collection=teammates_collection,
+                                                    primary_agent=random_init_agent,
+                                                    adversaries=adversary_agents)
 
         n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                             args=args,
@@ -171,12 +175,11 @@ def dont_attack_N_X_SP(args, population, curriculum):
                          train_types = curriculum.train_types,
                          has_curriculum = not curriculum.is_random,
                          suffix=args.primary_learner_type,
-                         )
-    
+                        )
+
     agents = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=args.primary_force_training)
     if agents:
         return agents[0]
-    
 
     random_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args, h_dim=args.N_X_SP_h_dim, seed=args.N_X_SP_seed)
 
@@ -205,18 +208,23 @@ def dont_attack_N_X_SP(args, population, curriculum):
 
 
 def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=None):
-    teammates_collection = generate_TC_for_Adversary(args=args,
-                                                    agent=agent_to_be_attacked)
+    # It doesn't matter what we set this variable, the purpose of it is to maintain 
+    # consistent naming and correct TC/curriculum creation
+    adversary_teammates_teamtype = TeamType.HIGH_FIRST
+
+    teammates_collection = generate_TC_for_ADV_agent(args=args,
+                                                    agent_to_be_attacked=agent_to_be_attacked,
+                                                    teamtype=adversary_teammates_teamtype)
 
     name = generate_name(args,
                         prefix='ADV',
                         seed=args.ADV_seed,
                         h_dim=args.ADV_h_dim,
-                        train_types=[TeamType.HIGH_FIRST],
+                        train_types=[adversary_teammates_teamtype],
                         has_curriculum=False,
                         suffix=args.adversary_learner_type +'_attack'+ str(attack_round))
     
-    agents = load_agents(args, name=name, tag=tag, force_training=False)
+    agents = load_agents(args, name=name, tag=tag, force_training=args.adversary_force_training)
     if agents:
         return agents[0]
 
@@ -226,14 +234,13 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=None):
                                         teammates_collection=teammates_collection,
                                         epoch_timesteps=args.epoch_timesteps,
                                         n_envs=args.n_envs,
-                                        curriculum=Curriculum(train_types=[TeamType.HIGH_FIRST], is_random=True),
+                                        curriculum=Curriculum(train_types=[adversary_teammates_teamtype], is_random=True),
                                         seed=args.ADV_seed,
                                         hidden_dim=args.ADV_h_dim,
                                         learner_type=args.adversary_learner_type,
                                         fcp_ck_rate=args.adversary_total_training_timesteps // 20)
     adversary_trainer.train_agents(total_train_timesteps=args.adversary_total_training_timesteps)
     return adversary_trainer.get_agents()[0]
-        
 
 
 def get_FCP_agent_w_pop(args, 
@@ -248,7 +255,7 @@ def get_FCP_agent_w_pop(args,
                         tag=None):
 
     name = generate_name(args, 
-                         prefix='FCP',
+                         prefix=Prefix.FICTITIOUS_CO_PLAY,
                          seed=args.FCP_seed,
                          h_dim=args.FCP_h_dim, 
                          train_types=fcp_train_types,
@@ -359,78 +366,3 @@ def get_N_X_FCP_agents(args,
 
     fcp_trainer.train_agents(total_train_timesteps=n_x_fcp_total_training_timesteps)
     return fcp_trainer.get_agents()[0], teammates_collection
-
-def get_adversary(args, total_training_timesteps, train_types, eval_types, curriculum, agent_path):
-    name = generate_name(args, 
-                         prefix='adv',
-                         seed=args.ADV_seed,
-                         h_dim=args.ADV_h_dim, 
-                         train_types=train_types,
-                         has_curriculum= not curriculum.is_random)
-
-    adversary = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=False)
-    
-    tc = generate_TC_for_Adversary(args,
-                                  agent=agent,
-                                  train_types=train_types,
-                                  eval_types_to_generate=eval_types['generate'],
-                                  eval_types_to_read_from_file=eval_types['load'])
-
-    if adversary:
-        return adversary, tc, name
-    
-    adversary_trainer = RLAgentTrainer(
-        name=name,
-        args=args,
-        agent=None,
-        teammates_collection=tc,
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        curriculum=curriculum,
-        seed=args.ADV_seed,
-        hidden_dim=args.ADV_h_dim,
-        fcp_ck_rate=total_training_timesteps // 20,
-    )
-
-    adversary_trainer.train_agents(total_train_timesteps=total_training_timesteps)
-    return adversary_trainer.get_agents()[0], tc, name
-
-
-def get_agent_play_w_adversarys(args, train_types, eval_types, total_training_timesteps, curriculum, agent_path, adv_paths, check_whether_exist):
-    name = generate_name(args, 
-                         prefix='pwadv',
-                         seed=args.PwADV_seed,
-                         h_dim=args.PwADV_h_dim, 
-                         train_types=train_types,
-                         has_curriculum= not curriculum.is_random)
-    latest_agent = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=False)
-    agent = load_agent(Path(agent_path), args)
-    adversarys = [load_agent(Path(adv_path), args) for adv_path in adv_paths]
-    
-    tc = generate_TC_for_AdversarysPlay(args,
-                                  agent=agent,
-                                  adversarys=adversarys,
-                                  train_types=train_types,
-                                  eval_types_to_generate=eval_types['generate'],
-                                  eval_types_to_read_from_file=eval_types['load'])
-    if latest_agent and check_whether_exist:
-        return latest_agent, tc, name
-    
-    agent_trainer = RLAgentTrainer(
-        name=name,
-        args=args,
-        agent=agent,
-        teammates_collection=tc,
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        curriculum=curriculum,
-        seed=args.PwADV_seed,
-        hidden_dim=args.PwADV_h_dim,
-        fcp_ck_rate=total_training_timesteps // 20,
-    )
-    
-    agent_trainer.train_agents(total_train_timesteps=total_training_timesteps)
-    return agent_trainer.get_agents()[0], tc, name
-
-def get_randomly_initialized_agent(args, n_env=200, h_dim=256, seed=13):
-    return RLAgentTrainer.generate_randomly_initialized_agent(args=args, n_env=n_env, h_dim=h_dim, seed=seed)
