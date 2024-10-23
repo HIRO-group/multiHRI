@@ -274,6 +274,7 @@ class RLAgentTrainer(OAITrainer):
         self.print_tc_helper(self.teammates_collection, "Train TC")
         self.print_tc_helper(self.eval_teammates_collection, "Eval TC")
         self.curriculum.print_curriculum()
+        print("How Long: ", self.args.how_long)
         print(f"Epoch timesteps: {self.epoch_timesteps}")
         print(f"Total training timesteps: {total_train_timesteps}")
         print(f"Number of environments: {self.n_envs}")
@@ -354,12 +355,20 @@ class RLAgentTrainer(OAITrainer):
         return closest_score_path_tag
     
     @staticmethod
-    def get_agents_and_set_score_and_perftag(args, layout_name, scores_path_tag, performance_tag):
+    def get_agents_and_set_score_and_perftag(args, layout_name, scores_path_tag, performance_tag, ck_list):
         score, path, tag = scores_path_tag
         all_agents = RLAgentTrainer.load_agents(args, path=path, tag=tag)
         for agent in all_agents:
             agent.layout_scores[layout_name] = score
-            agent.layout_performance_tags[layout_name] = performance_tag        
+            agent.layout_performance_tags[layout_name] = performance_tag
+        
+        # set other layouts's scores. Can't set their performance tags because we don't know it but it doesn't matter, we don't use the perftag
+        for agent in all_agents:
+            for scores, ck_path, ck_tag in ck_list:
+                if ck_path == path and ck_tag == tag:
+                    for other_layout in args.layout_names:
+                        if other_layout != layout_name:
+                            agent.layout_scores[other_layout] = scores[other_layout]
         return all_agents
 
     @staticmethod
@@ -397,11 +406,11 @@ class RLAgentTrainer(OAITrainer):
         medium_score_low_path_tag = RLAgentTrainer.find_closest_score_path_tag(middle_low_score, all_score_path_tag_sorted)
         low_score_path_tag = all_score_path_tag_sorted[-1]
 
-        H_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, high_score_path_tag, AgentPerformance.HIGH)
-        HM_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, high_score_medium_path_tag, AgentPerformance.HIGH_MEDIUM)
-        M_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_path_tag, AgentPerformance.MEDIUM)
-        ML_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_low_path_tag, AgentPerformance.MEDIUM_LOW)
-        L_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, low_score_path_tag, AgentPerformance.LOW)
+        H_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, high_score_path_tag, AgentPerformance.HIGH, ck_list=ck_list)
+        HM_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, high_score_medium_path_tag, AgentPerformance.HIGH_MEDIUM, ck_list=ck_list)
+        M_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_path_tag, AgentPerformance.MEDIUM, ck_list=ck_list)
+        ML_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_low_path_tag, AgentPerformance.MEDIUM_LOW, ck_list=ck_list)
+        L_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, low_score_path_tag, AgentPerformance.LOW, ck_list=ck_list)
 
         all_agents = H_agents + HM_agents + M_agents + ML_agents + L_agents
         return all_agents

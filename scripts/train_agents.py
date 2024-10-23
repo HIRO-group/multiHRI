@@ -213,7 +213,7 @@ def N_1_FCP(args):
                         unseen_teammates_len=unseen_teammates_len)
 
 
-def set_input(args, how_long=4):
+def set_input(args):
     args.num_players = args.teammates_len + 1
 
     two_chefs_layouts = [
@@ -252,11 +252,11 @@ def set_input(args, how_long=4):
         args.adversary_learner_type = LearnerType.SELFISHER
         args.pop_learner_type = LearnerType.ORIGINALER
 
-        args.pop_total_training_timesteps = int(5e6 * how_long)
-        args.n_x_sp_total_training_timesteps = int(5e6 * how_long)
-        args.adversary_total_training_timesteps = int(5e6 * how_long)
-        args.fcp_total_training_timesteps = int(5e6 * how_long)
-        args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * how_long)
+        args.pop_total_training_timesteps = int(5e6 * args.how_long)
+        args.n_x_sp_total_training_timesteps = int(5e6 * args.how_long)
+        args.adversary_total_training_timesteps = int(5e6 * args.how_long)
+        args.fcp_total_training_timesteps = int(5e6 * args.how_long)
+        args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.SP_seed, args.SP_h_dim = 68, 256
         args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
@@ -294,8 +294,9 @@ if __name__ == '__main__':
     args.primary_force_training = True
 
     args.teammates_len = 2
-    
-    set_input(args=args, how_long=4)
+    args.how_long = 4 # not effective when quick_test is True
+
+    set_input(args=args)
 
     N_X_SP_w_adversaries(args=args)
     
