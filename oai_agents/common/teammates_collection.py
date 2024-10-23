@@ -236,14 +236,14 @@ def generate_TC_for_ADV_agent(args, agent_to_be_attacked, teamtype):
     return teammates_collection
 
 
-def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_agent):
+def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_agent, adversary_play_config):
     '''
         For when we train a primary agent with adversary teammates
     '''
     self_teammates = [primary_agent for _ in range(args.teammates_len-1)]
-    if args.adversary_play_config == AdversaryPlayConfig.SAP:
+    if adversary_play_config == AdversaryPlayConfig.SAP:
         teammates = [[adversaries[-1]] + self_teammates]
-    if args.adversary_play_config == AdversaryPlayConfig.MAP:
+    if adversary_play_config == AdversaryPlayConfig.MAP:
         teammates = [[adversary]+self_teammates for adversary in adversaries]
 
     for layout_name in args.layout_names:

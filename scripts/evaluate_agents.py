@@ -412,8 +412,8 @@ def get_2_player_input(args):
         'SP':              'agent_models/Result/2/SP_hd64_seed14/best',
         'FCP corrected':   'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
         'N-1-SP ADV':      'agent_models/Result/2/MAP_SP_hd64_seed14/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
-        'N-1-SP FCP + ADV CUR [attack 2]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack2/best',
         
+        'N-1-SP FCP + ADV CUR [attack 2]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack2/best',
         # These reuse CH's ADV, the first one has SP, the second one doesn't
         'N-1-SP FCP + ADV RAN CH [attack 2]': 'agent_models/Result/2/adv_reused_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV_SP)_ran_originaler_attack2/best',
         'N-1-SP FCP + ADV CUR CH NO SP [attack 2]': 'agent_models/Result/2/adv_reused_no_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best',
