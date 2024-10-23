@@ -23,19 +23,24 @@ if __name__ == "__main__":
 
 
     args = get_arguments(additional_args)
-    args.num_players = 3
-    args.layout = '3_chefs_small_kitchen'
+    args.num_players = 2
+    two_chefs_layouts = [
+        'selected_2_chefs_coordination_ring',
+        'selected_2_chefs_counter_circuit',
+        'selected_2_chefs_cramped_room'
+    ]
+    args.layout = two_chefs_layouts[2]
     args.p_idx = 0
 
-    tm_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
+    tm_path = 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best'
     agent =  load_agent(Path(tm_path), args)
-    
+
     orange = agent
     green = agent
-    teammates = [orange, green]
+    teammates = [orange]
 
     blue = agent
-    # blue = 'human'
+    blue = 'human'
 
     dc = OvercookedGUI(args, agent=blue, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
                        horizon=400)

@@ -34,7 +34,7 @@ USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'as
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+    def __init__(self, learner_type=LearnerType.ORIGINALER, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, enc_fn=None, full_init=True, args=None, num_enc_channels=27, deterministic=False,
                  **kwargs):
         self.is_eval_env = is_eval_env
@@ -86,7 +86,7 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
-        
+
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
 
@@ -109,7 +109,7 @@ class OvercookedGymEnv(Env):
         '''
         assert env_index is not None or layout_name is not None or base_env is not None
 
-    
+
 
         if base_env is None:
             self.env_idx = env_index
@@ -164,7 +164,7 @@ class OvercookedGymEnv(Env):
     def stack_frames(self, c_idx):
         if c_idx == self.p_idx:
             return self.main_agent_stack_frames
-        
+
         elif len(self.teammates) != 0:
             for t_idx in self.t_idxes:
                 if c_idx == t_idx:
@@ -204,7 +204,7 @@ class OvercookedGymEnv(Env):
         elif self.teammates is not None:
             for t_idx in self.t_idxes:
                 if c_idx == t_idx:
-                    teammate = self.get_teammate_from_idx(c_idx)    
+                    teammate = self.get_teammate_from_idx(c_idx)
                     if 'subtask_mask' in teammate.policy.observation_space.keys():
                         obs['subtask_mask'] = self.action_masks(c_idx)
                         break
@@ -275,7 +275,7 @@ class OvercookedGymEnv(Env):
         teammates_ids.remove(self.p_idx)
         random.shuffle(teammates_ids)
         self.t_idxes = teammates_ids
-   
+
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset()
         self.prev_state = None
@@ -284,8 +284,8 @@ class OvercookedGymEnv(Env):
         # Reset subtask counts
         self.completed_tasks = [np.zeros(Subtasks.NUM_SUBTASKS), np.zeros(Subtasks.NUM_SUBTASKS)]
         return self.get_obs(self.p_idx, on_reset=True)
-    
-    
+
+
     def render(self, mode='human', close=False):
         if self.visualization_enabled:
             surface = StateVisualizer().render_state(self.state, grid=self.env.mdp.terrain_mtx)

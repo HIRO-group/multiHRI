@@ -33,7 +33,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
-    
+
     rlat.train_agents(total_train_timesteps=total_training_timesteps)
     checkpoints_list = rlat.ck_list
 
@@ -65,7 +65,7 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
         if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
             eval_agents_len += teammates_len
         elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
-            train_agents_len += 0        
+            train_agents_len += 0
         else:
             eval_agents_len += unseen_teammates_len
 
@@ -88,13 +88,13 @@ def generate_hdim_and_seed(num_SPs_to_train):
     good_seeds = [68, 14, 13, 0]
     good_hdims = [256, 64, 256, 64]
 
-    # Not tested: 
+    # Not tested:
     other_seeds_copied_from_HAHA = [2907, 2907, 105, 105, 8, 32, 128, 512]
     other_hdims_copied_from_HAHA = [64, 256, 64, 256, 16, 64, 256, 1024]
 
     all_seeds = good_seeds + other_seeds_copied_from_HAHA
     all_hdims = good_hdims + other_hdims_copied_from_HAHA
-    
+
     selected_seeds = all_seeds[:num_SPs_to_train]
     selected_hdims = all_hdims[:num_SPs_to_train]
     return selected_seeds, selected_hdims
@@ -129,7 +129,7 @@ def get_population(args,
                    force_training=False,
                    tag='aamas25',
                    ):
-    
+
     population = {layout_name: [] for layout_name in args.layout_names}
 
     try:
@@ -174,5 +174,5 @@ def get_population(args,
                     population[layout_name].extend(layout_pop)
 
         save_population(args=args, population=population)
-    
+
     return population
