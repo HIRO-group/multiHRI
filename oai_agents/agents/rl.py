@@ -22,7 +22,7 @@ class RLAgentTrainer(OAITrainer):
                 seed, learner_type, 
                 train_types=[], eval_types=[],
                 curriculum=None, num_layers=2, hidden_dim=256, 
-                fcp_ck_rate=None, name=None, env=None, eval_envs=None,
+                checkpoint_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
         
@@ -42,7 +42,7 @@ class RLAgentTrainer(OAITrainer):
         self.num_layers = num_layers
         
         self.seed = seed
-        self.fcp_ck_rate = fcp_ck_rate
+        self.checkpoint_rate = checkpoint_rate
         self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
 
         self.use_lstm = use_lstm
@@ -51,6 +51,7 @@ class RLAgentTrainer(OAITrainer):
         self.use_frame_stack = use_frame_stack
         self.use_policy_clone = use_policy_clone
 
+        self.learner_type = learner_type
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type)
         
         self.learning_agent, self.agents = self.get_learning_agent(agent)
@@ -64,10 +65,10 @@ class RLAgentTrainer(OAITrainer):
     @classmethod
     def generate_randomly_initialized_agent(cls,
                                             args,
-                                            learner_type,
-                                            name:str='randomized_agent',
-                                            seed:int=8080,
-                                            hidden_dim:int=256,
+                                            learner_type:str,
+                                            name:str,
+                                            seed:int,
+                                            hidden_dim:int,
                                             ) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
@@ -77,7 +78,6 @@ class RLAgentTrainer(OAITrainer):
         :param seed: Random seed
         :returns: An untrained, randomly inititalized RL agent
         '''
-
         trainer = cls(name=name,
                         args=args,
                         agent=None,
@@ -89,14 +89,14 @@ class RLAgentTrainer(OAITrainer):
                         learner_type=learner_type,
                         )
 
-        return trainer.get_agents()[0]
+        learning_agent, _ = trainer.get_learning_agent(None)
+        return learning_agent
 
     def get_learning_agent(self, agent):
         if agent:
             learning_agent = agent
             learning_agent.agent.env = self.env
             learning_agent.agent.env.reset()
-
             agents = [learning_agent]
             return learning_agent, agents
 
@@ -265,9 +265,24 @@ class RLAgentTrainer(OAITrainer):
 
         steps_divisable_by_5 = (steps + 1) % 5 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
-        fcp_ck_rate_reached = self.fcp_ck_rate and self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1)
+        checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
     
-        return steps_divisable_by_5 or mean_rew_greater_than_best or fcp_ck_rate_reached
+        return steps_divisable_by_5 or mean_rew_greater_than_best or checkpoint_rate_reached
+
+    def log_details(self, experiment_name, total_train_timesteps):
+        print("Training agent: " + self.name + ", for experiment: " + experiment_name)
+        self.print_tc_helper(self.teammates_collection, "Train TC")
+        self.print_tc_helper(self.eval_teammates_collection, "Eval TC")
+        self.curriculum.print_curriculum()
+        print(f"Epoch timesteps: {self.epoch_timesteps}")
+        print(f"Total training timesteps: {total_train_timesteps}")
+        print(f"Number of environments: {self.n_envs}")
+        print(f"Hidden dimension: {self.hidden_dim}")
+        print(f"Seed: {self.seed}")
+        print(f"Checkpoint rate: {self.checkpoint_rate}")
+        print(f"Learner type: {self.learner_type}")
+        print("Dynamic Reward? ", self.args.dynamic_reward)
+        print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
 
     def train_agents(self, total_train_timesteps, exp_name=None):
@@ -276,19 +291,14 @@ class RLAgentTrainer(OAITrainer):
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")
 
-        print("Training agent: " + self.name + ", for experiment: " + experiment_name)
+        self.log_details(experiment_name, total_train_timesteps)
 
-        self.print_tc_helper(self.teammates_collection, "Train TC")
-        self.print_tc_helper(self.eval_teammates_collection, "Eval TC")
-        self.curriculum.print_curriculum()
-
-        if self.fcp_ck_rate is not None:
+        if self.checkpoint_rate is not None:
             self.ck_list = []
             path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
         best_path, best_tag = None, None
-        worst_path, worst_tag = None, None
         
         steps = 0
         curr_timesteps = 0
@@ -319,8 +329,8 @@ class RLAgentTrainer(OAITrainer):
 
                 mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
 
-                if self.fcp_ck_rate:
-                    if self.learning_agent.num_timesteps // self.fcp_ck_rate > (len(self.ck_list) - 1):
+                if self.checkpoint_rate:
+                    if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
                         path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
                         self.ck_list.append((rew_per_layout, path, tag))
 
@@ -328,7 +338,6 @@ class RLAgentTrainer(OAITrainer):
                     best_path, best_tag = self.save_agents(tag=CheckedPoints.BEST_EVAL_REWARD)
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
-
             steps += 1
         self.save_agents()
         self.agents = RLAgentTrainer.load_agents(self.args, self.name, best_path, best_tag)

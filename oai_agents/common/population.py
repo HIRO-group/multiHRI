@@ -20,14 +20,14 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         name=name,
         args=args,
         agent=None,
-        teammates_collection={},
+        teammates_collection={}, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         hidden_dim=h_dim,
         seed=seed,
-        fcp_ck_rate=ck_rate,
+        checkpoint_rate=ck_rate,
         learner_type=args.pop_learner_type,
-        curriculum=Curriculum(train_types=args.fcp_train_types, is_random=True)
+        curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True)
     )
     '''
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.

@@ -21,12 +21,11 @@ def SP(args):
     }
     curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    agent = get_SP_agent(args=args,
-                        train_types=curriculum.train_types,
-                        eval_types=primary_eval_types,
-                        curriculum=curriculum
-                        )
-    return agent[0]
+    get_SP_agent(args=args,
+                train_types=curriculum.train_types,
+                eval_types=primary_eval_types,
+                curriculum=curriculum
+                )
 
 
 def N_X_SP(args) -> None:
@@ -147,9 +146,9 @@ def FCP_mhri(args):
     The reason we have our version is that when we used the traditional FCP it got ~0 reward so we 
     decided to add different types for teammates_collection.
     '''
-    primary_train_types = [TeamType.LOW_FIRST, TeamType.HIGH_FIRST]
+    primary_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
     primary_eval_types = {'generate' : [],
-                            'load': get_eval_types_to_load()}
+                          'load': []}
 
     fcp_curriculum = Curriculum(train_types = primary_train_types,
                                 is_random=False,
@@ -226,7 +225,7 @@ def set_input(args, how_long=4):
     three_chefs_layouts = [
         'selected_3_chefs_coordination_ring',
         'selected_3_chefs_counter_circuit',
-        'selected_3_chefs_cramped_room'
+        # 'selected_3_chefs_cramped_room'
     ]
 
     five_chefs_layouts = [
@@ -281,8 +280,8 @@ def set_input(args, how_long=4):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
-        args.num_SPs_to_train = 4
-        args.exp_dir = f'test/Final/{args.num_players}'
+        args.num_SPs_to_train = 2
+        args.exp_dir = f'Test_f/{args.num_players}'
 
 
 if __name__ == '__main__':
@@ -290,11 +289,11 @@ if __name__ == '__main__':
     args.quick_test = True
     args.parallel = True
     
-    args.pop_force_training = False
+    args.pop_force_training = True
     args.adversary_force_training = True
     args.primary_force_training = True
 
-    args.teammates_len = 1
+    args.teammates_len = 2
     
     set_input(args=args, how_long=4)
 
