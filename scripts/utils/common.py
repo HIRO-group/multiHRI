@@ -13,7 +13,9 @@ def load_agents(args, name, tag, path=None, force_training=False):
         return []
 
 
-def generate_name(args, prefix, seed, h_dim, train_types, has_curriculum):
-    fname = prefix + '_s' + str(seed) + '_h' + str(h_dim) +'_tr('+'_'.join(train_types)+')'
+def generate_name(args, prefix, seed, h_dim, train_types, has_curriculum, suffix=None):
+    fname = prefix + '_s' + str(seed) + '_h' + str(h_dim) +'_tr['+'_'.join(train_types)+']'
     fname = fname + '_cur' if has_curriculum else fname + '_ran'
+    if suffix:
+        fname = fname + '_'+ suffix
     return fname

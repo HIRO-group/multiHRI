@@ -20,13 +20,14 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         name=name,
         args=args,
         agent=None,
-        teammates_collection={},
+        teammates_collection={}, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
         hidden_dim=h_dim,
         seed=seed,
-        fcp_ck_rate=ck_rate,
-        curriculum=Curriculum(train_types=args.fcp_train_types, is_random=True)
+        checkpoint_rate=ck_rate,
+        learner_type=args.pop_learner_type,
+        curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True)
     )
     '''
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
@@ -55,12 +56,16 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
     for train_type in train_types:
         if train_type in TeamType.ALL_TYPES_BESIDES_SP:
             train_agents_len += teammates_len
+        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
+            train_agents_len += 0
         else:
             train_agents_len += unseen_teammates_len
 
     for eval_type in eval_types:
         if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
             eval_agents_len += teammates_len
+        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
+            train_agents_len += 0        
         else:
             eval_agents_len += unseen_teammates_len
 
@@ -107,6 +112,7 @@ def save_population(args, population):
             eval_types=[TeamType.SELF_PLAY],
             epoch_timesteps=args.epoch_timesteps,
             n_envs=args.n_envs,
+            learner_type=args.pop_learner_type,
             seed=None,
         )
         rt.agents = population[layout_name]
@@ -119,7 +125,6 @@ def get_population(args,
                    train_types,
                    eval_types,
                    num_SPs_to_train,
-                   parallel=True,
                    unseen_teammates_len=0,
                    force_training=False,
                    tag='aamas25',
@@ -148,7 +153,7 @@ def get_population(args,
             (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
         ]
 
-        if parallel:
+        if args.parallel:
             with multiprocessing.Pool() as pool:
                 dilled_results = pool.starmap(train_agent_with_checkpoints, inputs)
             for dilled_res in dilled_results:

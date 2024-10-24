@@ -66,11 +66,12 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--reward-magnifier', type=float, default=3.0)
     parser.add_argument('--dynamic-reward', type=bool, default=True)
     parser.add_argument('--final-sparse-r-ratio', type=float, default=1.0)
-    
-    parser.add_argument('--fcp-train-types', nargs='+', type=str)
-    parser.add_argument('--fcp-eval-types', type=dict)
 
     parser.add_argument('--exp-dir', type=str, help='Folder to save/load experiment result')
+
+    parser.add_argument('--primary-learner-type', type=str, default='originaler')
+    parser.add_argument('--adversary-learner-type', type=str, default='selfisher')
+    parser.add_argument('--pop-learner-type', type=str, default='originaler')
 
 
     for parser_arg, parser_kwargs in additional_args:

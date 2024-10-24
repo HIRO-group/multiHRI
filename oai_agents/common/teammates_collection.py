@@ -1,12 +1,12 @@
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import TeamType, TeammatesCollection
+from oai_agents.common.tags import TeamType, TeammatesCollection, AdversaryPlayConfig
 
 from itertools import permutations
 import random
 from pathlib import Path
 
 
-def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, unseen_teammates_len:int, agent:RLAgentTrainer=None):
+def get_teammates(args, agents_perftag_score:list, teamtypes:list, teammates_len:int, unseen_teammates_len:int, agent:RLAgentTrainer=None):
     all_teammates = {
         teamtype: [] for teamtype in teamtypes
     }
@@ -51,6 +51,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 all_teammates[teamtype].append([tm[0] for tm in tp])
 
         elif teamtype == TeamType.SELF_PLAY:
+            assert agent is not None
             all_teammates[teamtype].append([agent for _ in range(teammates_len)])
 
         elif teamtype == TeamType.SELF_PLAY_HIGH:
@@ -84,6 +85,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
             agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
             all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
             used_agents.update([tm[0] for tm in low_p_agents])
+
 
     selected_agents = []
     for teamtype in teamtypes:
@@ -139,7 +141,8 @@ def generate_TC(args,
         agents_perftag_score_all = [(agent,
                                      agent.layout_performance_tags[layout_name], 
                                      agent.layout_scores[layout_name]) for agent in layout_population]
-        train_collection[layout_name], train_agents = get_teammates(agents_perftag_score=agents_perftag_score_all,
+        train_collection[layout_name], train_agents = get_teammates(args=args,
+                                                                    agents_perftag_score=agents_perftag_score_all,
                                                                     teamtypes=train_types,
                                                                     teammates_len=args.teammates_len,
                                                                     agent=agent,
@@ -147,7 +150,8 @@ def generate_TC(args,
                                                                     )
 
         agents_perftag_score_eval = [agent for agent in agents_perftag_score_all if agent[0] not in train_agents]
-        eval_collection[layout_name], _eval_agents = get_teammates(agents_perftag_score=agents_perftag_score_eval,
+        eval_collection[layout_name], _eval_agents = get_teammates(args=args,
+                                                                    agents_perftag_score=agents_perftag_score_eval,
                                                                     teamtypes=eval_types_to_generate,
                                                                     teammates_len=args.teammates_len,
                                                                     agent=agent,
@@ -167,6 +171,19 @@ def generate_TC(args,
     }
 
     return teammates_collection            
+
+
+def get_best_SP_agent(args, population):
+    agents_scores_averaged_over_layouts = []
+
+    for layout_name in args.layout_names:
+        all_agents = [agent for agent in population[layout_name]]
+
+    for agent in all_agents:
+        scores = [agent.layout_scores[layout_name] for layout_name in args.layout_names]
+        agents_scores_averaged_over_layouts.append((agent, sum(scores)/len(scores)))
+    best_agent = max(agents_scores_averaged_over_layouts, key=lambda x: x[1])
+    return best_agent[0]
 
 
 
@@ -205,6 +222,34 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
                 print("Loaded agents from files for eval: ", teammates.names, ", Teamtype: ", teammates.team_type)
 
 
+def generate_TC_for_ADV_agent(args, agent_to_be_attacked, teamtype):
+    '''
+        For when we train the adversary
+    '''
+    teammates = [agent_to_be_attacked for _ in range(args.teammates_len)]
+    collection_template = {
+        layout_name: {teamtype: [teammates]} for layout_name in args.layout_names }
+    teammates_collection = {
+        TeammatesCollection.TRAIN: collection_template,
+        TeammatesCollection.EVAL: collection_template.copy()
+    }
+    return teammates_collection
+
+
+def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_agent, adversary_play_config):
+    '''
+        For when we train a primary agent with adversary teammates
+    '''
+    self_teammates = [primary_agent for _ in range(args.teammates_len-1)]
+    if adversary_play_config == AdversaryPlayConfig.SAP:
+        teammates = [[adversaries[-1]] + self_teammates]
+    if adversary_play_config == AdversaryPlayConfig.MAP:
+        teammates = [[adversary]+self_teammates for adversary in adversaries]
+
+    for layout_name in args.layout_names:
+        teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
+        teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
+    return teammates_collection
 
 def generate_TC_for_Adversary(args, 
                             agent,
