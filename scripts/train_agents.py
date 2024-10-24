@@ -629,7 +629,7 @@ def set_input(args):
     three_chefs_layouts = [
         'selected_3_chefs_coordination_ring',
         'selected_3_chefs_counter_circuit',
-        # 'selected_3_chefs_cramped_room'
+        'selected_3_chefs_cramped_room'
     ]
 
     five_chefs_layouts = [
@@ -669,7 +669,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 4
-        args.exp_dir = f'Experiment/{args.num_players}/'
+        args.exp_dir = f'Final/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -690,7 +690,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
     
     args.pop_force_training = True
@@ -698,7 +698,7 @@ if __name__ == '__main__':
     args.primary_force_training = True
 
     args.teammates_len = 2
-    args.how_long = 4 # not effective when quick_test is True
+    args.how_long = 6 # not effective when quick_test is True
 
     set_input(args=args)
 
@@ -717,22 +717,22 @@ if __name__ == '__main__':
     #                     reward_magnifier = 3.0,
     #                     team_size = 2)
     
-    MultiAdversaryPlay( args, 
-                        exp_tag = 'MAP', 
-                        main_agent_path = 'Final/2/SP_hd64_seed14',
-                        main_agent_seed = 14,
-                        main_agent_h_dim = 64,
-                        main_agent_type = LearnerType.ORIGINALER, 
-                        adversary_seed = 68,
-                        adversary_h_dim = 512,
-                        adversary_type = LearnerType.SELFISHER, 
-                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long_init = 4,
-                        how_long_for_agent = 1,
-                        how_long_for_adv = 4,
-                        rounds_of_advplay = 3,
-                        reward_magnifier = 3.0,
-                        team_size = 2)
+    #MultiAdversaryPlay( args, 
+    #                    exp_tag = 'MAP', 
+    #                    main_agent_path = 'Final/2/SP_hd64_seed14',
+    #                    main_agent_seed = 14,
+    #                    main_agent_h_dim = 64,
+    #                    main_agent_type = LearnerType.ORIGINALER, 
+    #                    adversary_seed = 68,
+    #                    adversary_h_dim = 512,
+    #                    adversary_type = LearnerType.SELFISHER, 
+    #                    checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                    how_long_init = 4,
+    #                    how_long_for_agent = 1,
+    #                    how_long_for_adv = 4,
+    #                    rounds_of_advplay = 3,
+    #                    reward_magnifier = 3.0,
+    #                    team_size = 2)
     
     # SP(args)
     
