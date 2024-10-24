@@ -282,7 +282,7 @@ class RLAgentTrainer(OAITrainer):
         print(f"Seed: {self.seed}")
         print(f"Checkpoint rate: {self.checkpoint_rate}")
         print(f"Learner type: {self.learner_type}")
-        print("Dynamic Reward? ", self.args.dynamic_reward)
+        print("Dynamic Reward: ", self.args.dynamic_reward)
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
 
