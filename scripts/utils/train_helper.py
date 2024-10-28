@@ -90,7 +90,7 @@ def get_N_X_SP_agents(args,
 
     
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
-        attack_N_X_SP(args=args,
+        joint_ADV_N_X_SP(args=args,
                       population=population,
                       curriculum=curriculum,
                       unseen_teammates_len=unseen_teammates_len,
@@ -99,7 +99,7 @@ def get_N_X_SP_agents(args,
                       n_x_sp_eval_types=n_x_sp_eval_types
                       )
     else:
-        dont_attack_N_X_SP(args=args,
+        no_ADV_N_X_SP(args=args,
                            population=population,
                            curriculum=curriculum,
                            unseen_teammates_len=unseen_teammates_len,
@@ -107,7 +107,7 @@ def get_N_X_SP_agents(args,
                            )
 
 
-def attack_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types):
+def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types):
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
     agent_to_be_attacked = get_best_SP_agent(args=args, population=population)
@@ -170,7 +170,7 @@ def attack_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_
         agent_to_be_attacked = n_x_sp_types_trainer.get_agents()[0]
 
 
-def dont_attack_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types):
+def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types):
     assert TeamType.SELF_PLAY_ADVERSARY not in curriculum.train_types
 
     name = generate_name(args,
