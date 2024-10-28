@@ -98,3 +98,7 @@ class Prefix:
     FICTITIOUS_CO_PLAY = 'FCP'
     ADVERSARY = 'adv'
     ADVERSARY_PLAY = 'pwadv'
+
+class AdversaryPlayConfig:
+    MAP = 'MultiAdversaryPlay' # adapts to a list of adversary [adv0, adv1, adv2]
+    SAP = 'SingleAdversaryPlay' # adapts to the latest trained adversary

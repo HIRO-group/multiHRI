@@ -1,10 +1,8 @@
 import multiprocessing as mp
-import os
-from pathlib import Path
 mp.set_start_method('spawn', force=True) # should be called before any other module imports
 
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.tags import TeamType, CheckedPoints
+from oai_agents.common.tags import TeamType, AdversaryPlayConfig, CheckedPoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
@@ -13,11 +11,8 @@ from utils import (get_SP_agent,
                     get_eval_types_to_load, 
                     get_N_X_FCP_agents, 
                     get_N_X_SP_agents,
-                    get_adversary,
-                    get_agent_play_w_adversarys,
+                    get_agent_play_w_adversarys
                     )
-
-
 def InitializeAdversaryPlay(
                         args, 
                         exp_tag = 'S2FP', 
@@ -422,20 +417,30 @@ def SP(args, pop_force_training):
     return agent[0]
 
 
+def SP(args):
+    primary_train_types = [TeamType.SELF_PLAY]
+    primary_eval_types = {
+        'generate': [TeamType.SELF_PLAY],
+        'load': []
+    }
+    curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-def N_X_SP(args, 
-           pop_force_training:bool,
-           primary_force_training:bool,
-           parallel:bool) -> None:
+    get_SP_agent(args=args,
+                train_types=curriculum.train_types,
+                eval_types=primary_eval_types,
+                curriculum=curriculum
+                )
 
-    args.unseen_teammates_len = 1 # This is the X in N_X_SP
-    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
-    args.primary_eval_types = {
+
+def N_X_SP(args) -> None:
+    unseen_teammates_len = 1 # This is the X in N_X_SP
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
+    primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
                             }
 
-    curriculum = Curriculum(train_types = args.primary_train_types,
+    curriculum = Curriculum(train_types = primary_train_types,
                             is_random=False,
                             total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
@@ -453,40 +458,66 @@ def N_X_SP(args,
 
     get_N_X_SP_agents(
         args,
-        pop_total_training_timesteps=args.pop_total_training_timesteps,
-        pop_force_training=pop_force_training,
-        n_x_sp_train_types = curriculum.train_types,
-        n_x_sp_eval_types=args.primary_eval_types,
-        n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
-        n_x_sp_force_training=primary_force_training,
+        n_x_sp_train_types=curriculum.train_types,
+        n_x_sp_eval_types=primary_eval_types,
         curriculum=curriculum,
-        parallel=parallel,
-        num_SPs_to_train=args.num_SPs_to_train
+        unseen_teammates_len=unseen_teammates_len,
         )
 
 
-def N_1_SP(args, 
-            pop_force_training:bool,
-            primary_force_training:bool,
-            parallel:bool) -> None:
+def N_X_SP_w_adversaries(args) -> None:
+    attack_rounds = 3
+    unseen_teammates_len = 1
+    adversary_play_config = AdversaryPlayConfig.MAP
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
+                           TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
+                           TeamType.SELF_PLAY_ADVERSARY]
+
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
+                          'load': []}
+
+    curriculum = Curriculum(train_types = primary_train_types,
+                            is_random=False,
+                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
+                            training_phases_durations_in_order={
+                                TeamType.SELF_PLAY_ADVERSARY: 0.5,
+                            },
+                            rest_of_the_training_probabilities={
+                                TeamType.SELF_PLAY_MEDIUM: 0.3, 
+                                TeamType.SELF_PLAY_HIGH: 0.3,
+                                TeamType.SELF_PLAY_ADVERSARY: 0.4,
+                            },
+                            probabilities_decay_over_time=0)
+    get_N_X_SP_agents(
+        args,
+        n_x_sp_train_types=curriculum.train_types,
+        n_x_sp_eval_types=primary_eval_types,
+        curriculum=curriculum,
+        unseen_teammates_len=unseen_teammates_len,
+        adversary_play_config=adversary_play_config,
+        attack_rounds=attack_rounds
+    )
+
+
+
+def N_1_SP(args) -> None:
     '''
     The randomly initialized agent will train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
     
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
     :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file
-    :param parallel: Boolean indicating if parallel envs should be used for training or not
     '''
-    args.unseen_teammates_len = 1
-    args.primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, 
+    unseen_teammates_len = 1
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, 
                                 TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
                                 TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
                                 ]
-    args.primary_eval_types = {
+    primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
                             }
     
-    curriculum = Curriculum(train_types = args.primary_train_types,
+    curriculum = Curriculum(train_types = primary_train_types,
                             is_random=False,
                             total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
@@ -504,30 +535,25 @@ def N_1_SP(args,
 
     get_N_X_SP_agents(
         args,
-        pop_total_training_timesteps=args.pop_total_training_timesteps,
-        pop_force_training=pop_force_training,
         n_x_sp_train_types = curriculum.train_types,
-        n_x_sp_eval_types=args.primary_eval_types,
-        n_x_sp_total_training_timesteps=args.n_x_sp_total_training_timesteps,
-        n_x_sp_force_training=primary_force_training,
+        n_x_sp_eval_types=primary_eval_types,
         curriculum=curriculum,
-        parallel=parallel,
-        num_SPs_to_train=args.num_SPs_to_train
+        unseen_teammates_len=unseen_teammates_len,
     )
 
 
-def FCP_mhri(args, pop_force_training, primary_force_training, parallel):
+def FCP_mhri(args):
     '''
     There are two types of FCP, one is the traditional FCP that uses random teammates (i.e. ALL_MIX), 
     one is our own version that uses certain types HIGH_FIRST, MEDIUM_FIRST, etc. 
     The reason we have our version is that when we used the traditional FCP it got ~0 reward so we 
     decided to add different types for teammates_collection.
     '''
-    args.primary_train_types = [TeamType.LOW_FIRST, TeamType.HIGH_FIRST]
-    args.primary_eval_types = {'generate' : [],
-                            'load': get_eval_types_to_load()}
+    primary_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
+    primary_eval_types = {'generate' : [],
+                          'load': []}
 
-    fcp_curriculum = Curriculum(train_types = args.primary_train_types,
+    fcp_curriculum = Curriculum(train_types = primary_train_types,
                                 is_random=False,
                                 total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
                                 training_phases_durations_in_order={
@@ -544,126 +570,96 @@ def FCP_mhri(args, pop_force_training, primary_force_training, parallel):
                             )
 
     _, _ = get_FCP_agent_w_pop(args,
-                                pop_total_training_timesteps=args.pop_total_training_timesteps,
-                                fcp_total_training_timesteps=args.fcp_total_training_timesteps,
                                 fcp_train_types = fcp_curriculum.train_types,
-                                fcp_eval_types=args.primary_eval_types,
-                                pop_force_training=pop_force_training,
-                                primary_force_training=primary_force_training,
-                                fcp_curriculum=fcp_curriculum,
-                                num_SPs_to_train=args.num_SPs_to_train,
-                                parallel=parallel,
-                                )
+                                fcp_eval_types=primary_eval_types,
+                                fcp_curriculum=fcp_curriculum)
 
 
 
-def FCP_traditional(args, pop_force_training, primary_force_training, parallel):
+def FCP_traditional(args):
     '''
     The ALL_MIX TeamType enables truly random teammates when training (like in the original FCP 
     implementation)
     '''
 
-    args.primary_train_types = [TeamType.ALL_MIX]
-    args.primary_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
+    primary_train_types = [TeamType.ALL_MIX]
+    primary_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
                             'load': []}
-
-    fcp_curriculum = Curriculum(train_types=args.primary_train_types, is_random=True)
+    fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
     _, _ = get_FCP_agent_w_pop(args,
-                                pop_total_training_timesteps=args.pop_total_training_timesteps,
-                                fcp_total_training_timesteps=args.fcp_total_training_timesteps,
-                                
                                 fcp_train_types=fcp_curriculum.train_types,
-                                fcp_eval_types=args.primary_eval_types,
-
-                                pop_force_training=pop_force_training,
-                                primary_force_training=primary_force_training,
-
+                                fcp_eval_types=primary_eval_types,
                                 fcp_curriculum=fcp_curriculum,
-                                num_SPs_to_train=args.num_SPs_to_train,
-                                parallel=parallel
                                 )
 
 
-def N_1_FCP(args, pop_force_training, primary_force_training, parallel, fcp_force_training=True):
-    args.unseen_teammates_len = 1 # This is the X in FCP_X_SP
+def N_1_FCP(args):
+    unseen_teammates_len = 1 # This is the X in FCP_X_SP
 
     fcp_train_types = [TeamType.HIGH_FIRST, TeamType.MEDIUM_FIRST, TeamType.LOW_FIRST]
     fcp_eval_types = {'generate' : [], 'load': []}
     fcp_curriculum = Curriculum(train_types=fcp_train_types, is_random=True)
     
-    args.primary_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
-    args.primary_eval_types = {'generate': [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH],
+    primary_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH],
                                 'load': []}
-    n_1_fcp_curriculum = Curriculum(train_types=args.primary_train_types, is_random=True)
+    n_1_fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
     get_N_X_FCP_agents(args=args,
-                        pop_total_training_timesteps=args.pop_total_training_timesteps,
-                        fcp_total_training_timesteps=args.fcp_total_training_timesteps,
-                        n_x_fcp_total_training_timesteps=args.n_x_fcp_total_training_timesteps,
-
                         fcp_train_types=fcp_curriculum.train_types,
                         fcp_eval_types=fcp_eval_types,
-
                         n_1_fcp_train_types=n_1_fcp_curriculum.train_types,
-                        n_1_fcp_eval_types=args.primary_eval_types,
-
-                        pop_force_training=pop_force_training,
-                        fcp_force_training=fcp_force_training,
-                        primary_force_training=primary_force_training,
-
-                        num_SPs_to_train=args.num_SPs_to_train,
-                        parallel=parallel,
+                        n_1_fcp_eval_types=primary_eval_types,
                         fcp_curriculum=fcp_curriculum,
                         n_1_fcp_curriculum=n_1_fcp_curriculum,
-                    )
+                        unseen_teammates_len=unseen_teammates_len)
 
 
-def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_names = None, exp_dir='experiment/1'):
-    # List for 2 chefs layouts
+def set_input(args):
+    args.num_players = args.teammates_len + 1
+
     two_chefs_layouts = [
         'selected_2_chefs_coordination_ring',
         'selected_2_chefs_counter_circuit',
         'selected_2_chefs_cramped_room'
     ]
 
-    # List for 3 chefs layouts
     three_chefs_layouts = [
         'selected_3_chefs_coordination_ring',
         'selected_3_chefs_counter_circuit',
         'selected_3_chefs_cramped_room'
     ]
 
-    # List for 5 chefs layouts
     five_chefs_layouts = [
         'selected_5_chefs_counter_circuit',
         'selected_5_chefs_secret_coordination_ring',
         'selected_5_chefs_storage_room'
     ]
-    if layout_names is None:
-        team_size = teammates_len+1
-        if team_size == 2:
-            args.layout_names = two_chefs_layouts
-        elif team_size == 3:
-            args.layout_names = three_chefs_layouts
-        elif team_size == 5:
-            args.layout_names = five_chefs_layouts
-    else:
-        args.layout_names = layout_names
-    args.teammates_len = teammates_len
-    args.num_players = args.teammates_len + 1  # Example: 3 players = 1 agent + 2 teammates
+
+    if args.num_players == 2:
+        args.layout_names = two_chefs_layouts
+    elif args.num_players == 3:
+        args.layout_names = three_chefs_layouts
+    elif args.num_players == 5:
+        args.layout_names = five_chefs_layouts
+
     args.dynamic_reward = True
-    args.final_sparse_r_ratio = 1.0
-        
-    if not quick_test:
-        args.learner_type = LearnerType.ORIGINALER
+    args.final_sparse_r_ratio = 0.5
+
+    if not args.quick_test:
         args.n_envs = 200
         args.epoch_timesteps = 1e5
 
-        args.pop_total_training_timesteps = int(5e6 * how_long)
-        args.n_x_sp_total_training_timesteps = int(5e6 * how_long)
-        args.fcp_total_training_timesteps = int(5e6 * how_long)
-        args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * how_long)
+        args.primary_learner_type = LearnerType.ORIGINALER
+        args.adversary_learner_type = LearnerType.SELFISHER
+        args.pop_learner_type = LearnerType.ORIGINALER
+
+        args.pop_total_training_timesteps = int(5e6 * args.how_long)
+        args.n_x_sp_total_training_timesteps = int(5e6 * args.how_long)
+        args.adversary_total_training_timesteps = int(5e6 * args.how_long)
+        args.fcp_total_training_timesteps = int(5e6 * args.how_long)
+        args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.SP_seed, args.SP_h_dim = 68, 256
         args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
@@ -672,8 +668,7 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 4
-        # This is the directory where the experiment will be saved. Change it to your desired directory:
-        args.exp_dir = exp_dir
+        args.exp_dir = f'Final/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -682,176 +677,70 @@ def set_input(args, quick_test=False, how_long=4.0, teammates_len=2, layout_name
         args.epoch_timesteps = 2
         
         args.pop_total_training_timesteps = 3500
-        args.fcp_total_training_timesteps = 3500
-        args.n_x_sp_total_training_timesteps = 3500
-        args.n_x_fcp_total_training_timesteps = 3500 * 2
+        args.n_x_sp_total_training_timesteps = 1500
+        args.adversary_total_training_timesteps = 1500
+
+        args.fcp_total_training_timesteps = 1500
+        args.n_x_fcp_total_training_timesteps = 1500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = 'test/1'
+        args.exp_dir = f'Test/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    quick_test = False
-    parallel = True
-    
-    pop_force_training = True
-    primary_force_training = True
+    args.quick_test = False
+    args.parallel = True
 
-    PwADVs_from_folder( args, 
-                        exp_tag = 'MAP_ADV_256_13', 
-                        main_agent_path = 'Final/2/SP_hd256_seed68',
-                        main_agent_type = LearnerType.ORIGINALER, 
-                        main_agent_seed = 68,
-                        main_agent_h_dim = 256,
-                        adversaries_folder = 'Final/2/SP_hd256_seed13/MAP/selfisher',
-                        adversary_type = LearnerType.SELFISHER,
-                        checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-                        how_long = 10,
-                        reward_magnifier = 3.0,
-                        team_size = 2)
-    
-    # MultiAdversaryPlay( args, 
-    #                     exp_tag = 'MAP', 
-    #                     main_agent_path = 'Final/2/SP_hd64_seed14',
-    #                     main_agent_seed = 14,
-    #                     main_agent_h_dim = 64,
+    args.pop_force_training = True
+    args.adversary_force_training = True
+    args.primary_force_training = True
+
+    args.teammates_len = 2
+    args.how_long = 6 # not effective when quick_test is True
+
+    set_input(args=args)
+
+    N_X_SP_w_adversaries(args=args)
+
+    # PwADVs_from_folder( args, 
+    #                     exp_tag = 'MAP_ADV_256_13', 
+    #                     main_agent_path = 'Final/2/SP_hd256_seed68',
     #                     main_agent_type = LearnerType.ORIGINALER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
+    #                     main_agent_seed = 68,
+    #                     main_agent_h_dim = 256,
+    #                     adversaries_folder = 'Final/2/SP_hd256_seed13/MAP/selfisher',
+    #                     adversary_type = LearnerType.SELFISHER,
     #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 4,
-    #                     how_long_for_agent = 1,
-    #                     how_long_for_adv = 4,
-    #                     rounds_of_advplay = 3,
+    #                     how_long = 10,
     #                     reward_magnifier = 3.0,
     #                     team_size = 2)
     
-    # MultiAdversaryPlay( args, 
-    #                     exp_tag = 'MAP', 
-    #                     main_agent_path = 'Final/3/SP_hd64_seed14',
-    #                     main_agent_seed = 14,
-    #                     main_agent_h_dim = 64,
-    #                     main_agent_type = LearnerType.ORIGINALER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
-    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 6,
-    #                     how_long_for_agent = 0.5,
-    #                     how_long_for_adv = 4,
-    #                     rounds_of_advplay = 3,
-    #                     reward_magnifier = 3.0,
-    #                     team_size = 3)
+    #MultiAdversaryPlay( args, 
+    #                    exp_tag = 'MAP', 
+    #                    main_agent_path = 'Final/2/SP_hd64_seed14',
+    #                    main_agent_seed = 14,
+    #                    main_agent_h_dim = 64,
+    #                    main_agent_type = LearnerType.ORIGINALER, 
+    #                    adversary_seed = 68,
+    #                    adversary_h_dim = 512,
+    #                    adversary_type = LearnerType.SELFISHER, 
+    #                    checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
+    #                    how_long_init = 4,
+    #                    how_long_for_agent = 1,
+    #                    how_long_for_adv = 4,
+    #                    rounds_of_advplay = 3,
+    #                    reward_magnifier = 3.0,
+    #                    team_size = 2)
     
-    # MultiAdversaryPlay( args, 
-    #                     exp_tag = 'MAP', 
-    #                     main_agent_path = 'Final/3/SP_hd256_seed68',
-    #                     main_agent_seed = 68,
-    #                     main_agent_h_dim = 256,
-    #                     main_agent_type = LearnerType.ORIGINALER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
-    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 6,
-    #                     how_long_for_agent = 0.5,
-    #                     how_long_for_adv = 4,
-    #                     rounds_of_advplay = 3,
-    #                     reward_magnifier = 3.0,
-    #                     team_size = 3)
+    # SP(args)
     
-    # MultiAdversaryPlay( args, 
-    #                     exp_tag = 'MAP', 
-    #                     main_agent_path = 'Final/3/SP_hd256_seed13',
-    #                     main_agent_seed = 13,
-    #                     main_agent_h_dim = 256,
-    #                     main_agent_type = LearnerType.ORIGINALER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
-    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 4,
-    #                     how_long_for_agent = 1,
-    #                     how_long_for_adv = 4,
-    #                     rounds_of_advplay = 3,
-    #                     reward_magnifier = 3.0,
-    #                     team_size = 3)
-    
-    # MultiAdversaryPlay( args, 
-    #                     exp_tag = 'MAP', 
-    #                     main_agent_path = 'Final/5/SP_hd256_seed13',
-    #                     main_agent_seed = 13,
-    #                     main_agent_h_dim = 256,
-    #                     main_agent_type = LearnerType.ORIGINALER, 
-    #                     adversary_seed = 68,
-    #                     adversary_h_dim = 512,
-    #                     adversary_type = LearnerType.SELFISHER, 
-    #                     checked_adversary = CheckedPoints.FINAL_TRAINED_MODEL, 
-    #                     how_long_init = 5,
-    #                     how_long_for_agent = 1,
-    #                     how_long_for_adv = 4,
-    #                     rounds_of_advplay = 3,
-    #                     reward_magnifier = 3.0,
-    #                     team_size = 5)
-    
-    
-    set_input(args=args, quick_test=quick_test, how_long=4.0)
-    
-    # N_X_SP(args=args,
-    #        pop_force_training=pop_force_training,
-    #        primary_force_training=primary_force_training,
-    #        parallel=parallel)
-    
+    # N_X_SP(args=args)
 
+    # FCP_traditional(args=args)
+
+    # FCP_mhri(args=args)
     
-    # FCP_traditional(args=args,
-    #                 pop_force_training=pop_force_training,
-    #                 primary_force_training=primary_force_training,
-    #                 parallel=parallel)
+    # N_1_SP(args=args)
 
-    # FCP_mhri(args=args,
-    #         pop_force_training=pop_force_training,
-    #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
-
-    # set_input(args=args, quick_test=quick_test, how_long=1.5, teammates_len=4, exp_dir='five')
-    # args.layout_names = five_chefs_layouts
-    # N_1_SP(args=args,
-    #         pop_force_training=pop_force_training,
-    #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
-
-    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=1, exp_dir='two_9')
-    # args.layout_names = two_chefs_layouts
-    # args.SP_seed, args.SP_h_dim = 9, 256
-    # SP(args, pop_force_training)
-
-    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=2, exp_dir='three_9')
-    # args.layout_names = three_chefs_layouts
-    # args.SP_seed, args.SP_h_dim = 9, 256
-    # SP(args, pop_force_training)
-
-    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=1, exp_dir='two_29')
-    # args.layout_names = two_chefs_layouts
-    # args.SP_seed, args.SP_h_dim = 29, 256
-    # SP(args, pop_force_training)
-
-    # set_input(args=args, quick_test=quick_test, how_long=4, teammates_len=2, exp_dir='three_29')
-    # args.layout_names = three_chefs_layouts
-    # args.SP_seed, args.SP_h_dim = 29, 256
-    # SP(args, pop_force_training)
-    
-    # set_input(args=args, quick_test=quick_test, how_long=1, teammates_len=2, exp_dir='three')
-    # args.layout_names = three_chefs_layouts
-    # N_1_SP(args=args,
-    #         pop_force_training=pop_force_training,
-    #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
-
-    # N_1_FCP(args=args,
-    #         pop_force_training=pop_force_training,
-    #         fcp_force_training=pop_force_training,
-    #         primary_force_training=primary_force_training,
-    #         parallel=parallel)
+    # N_1_FCP(args=args)

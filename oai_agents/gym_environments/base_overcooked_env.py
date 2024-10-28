@@ -34,7 +34,7 @@ USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'as
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+    def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, enc_fn=None, full_init=True, args=None, num_enc_channels=27, deterministic=False,
                  **kwargs):
         self.is_eval_env = is_eval_env
@@ -85,7 +85,8 @@ class OvercookedGymEnv(Env):
         self.step_count = 0
         self.reset_p_idx = None
 
-        self.learner = Learner(args.learner_type, args.reward_magnifier)
+        self.learner = Learner(learner_type, args.reward_magnifier)
+        
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
 
@@ -108,6 +109,7 @@ class OvercookedGymEnv(Env):
         '''
         assert env_index is not None or layout_name is not None or base_env is not None
 
+    
 
         if base_env is None:
             self.env_idx = env_index
