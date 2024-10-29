@@ -360,7 +360,7 @@ def set_input(args):
         args.pop_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * args.how_long)
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
-        args.fcp_total_training_timesteps = int(5e6 * args.how_long)
+        args.fcp_total_training_timestFeps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.SP_seed, args.SP_h_dim = 68, 256
@@ -392,7 +392,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
     args.pop_force_training = True

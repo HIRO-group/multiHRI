@@ -116,7 +116,7 @@ def save_population(args, population):
             seed=None,
         )
         rt.agents = population[layout_name]
-        rt.save_agents(tag='aamas25')
+        rt.save_agents(tag='last')
 
 
 def get_population(args,
@@ -127,7 +127,7 @@ def get_population(args,
                    num_SPs_to_train,
                    unseen_teammates_len=0,
                    force_training=False,
-                   tag='aamas25',
+                   tag='last',
                    ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
