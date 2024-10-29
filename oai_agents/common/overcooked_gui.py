@@ -82,7 +82,7 @@ class OvercookedGUI:
             teammate.set_encoding_params(t_idx+1, self.args.horizon, env=self.env, is_haha=isinstance(teammate, HierarchicalRL), tune_subtasks=True)
 
         self.teammate_names= [n.name for n in self.env.teammates]
-        self.deterministic = True
+        self.deterministic = False
         self.env.deterministic = self.deterministic
 
 
