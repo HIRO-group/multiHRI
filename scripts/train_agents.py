@@ -640,27 +640,57 @@ def set_input(args):
     args.num_players = args.teammates_len + 1
 
     two_chefs_layouts = [
-        'selected_2_chefs_coordination_ring',
-        'selected_2_chefs_counter_circuit',
-        'selected_2_chefs_cramped_room'
+        # 'selected_2_chefs_coordination_ring',
+        # 'selected_2_chefs_counter_circuit',
+        # 'selected_2_chefs_cramped_room',
+        'selected_2_chefs_double_counter_circuit',
+        'selected_2_chefs_secret_coordination_ring',
+        'selected_2_chefs_spacious_room_few_resources',
+        'selected_2_chefs_spacious_room_no_counter_space',
+        'selected_2_chefs_storage_room'
     ]
 
+
     three_chefs_layouts = [
-        'selected_3_chefs_coordination_ring',
-        'selected_3_chefs_counter_circuit',
-        'selected_3_chefs_cramped_room'
+        # 'selected_3_chefs_coordination_ring',
+        # 'selected_3_chefs_counter_circuit',
+        # 'selected_3_chefs_cramped_room',
+        'selected_3_chefs_double_counter_circuit',
+        'selected_3_chefs_secret_coordination_ring',
+        'selected_3_chefs_spacious_room_few_resources',
+        'selected_3_chefs_spacious_room_no_counter_space',
+        'selected_3_chefs_storage_room'
+    ]
+
+    four_chefs_layouts = [
+        # 'selected_4_chefs_coordination_ring',
+        # 'selected_4_chefs_counter_circuit',
+        # 'selected_4_chefs_cramped_room',
+        'selected_4_chefs_double_counter_circuit',
+        'selected_4_chefs_secret_coordination_ring',
+        'selected_4_chefs_spacious_room_few_resources',
+        'selected_4_chefs_spacious_room_no_counter_space',
+        'selected_4_chefs_storage_room'
     ]
 
     five_chefs_layouts = [
-        'selected_5_chefs_counter_circuit',
+        # 'selected_5_chefs_coordination_ring',
+        # 'selected_5_chefs_counter_circuit',
+        # 'selected_5_chefs_cramped_room',
+        'selected_5_chefs_double_counter_circuit',
         'selected_5_chefs_secret_coordination_ring',
+        'selected_5_chefs_spacious_room_few_resources',
+        'selected_5_chefs_spacious_room_no_counter_space',
         'selected_5_chefs_storage_room'
     ]
+
 
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
     elif args.num_players == 3:
         args.layout_names = three_chefs_layouts
+    elif args.num_players == 4:
+        args.layout_names = four_chefs_layouts
     elif args.num_players == 5:
         args.layout_names = five_chefs_layouts
 
