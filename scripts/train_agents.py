@@ -464,8 +464,28 @@ def N_X_SP(args) -> None:
         unseen_teammates_len=unseen_teammates_len,
         )
 
+def N_1_SP_w_ADV(args) -> None:
+    attack_rounds = 3
+    unseen_teammates_len = 1
+    adversary_play_config = AdversaryPlayConfig.MAP
+    primary_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY]
 
-def N_X_SP_w_adversaries(args) -> None:
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
+                          'load': []}
+
+    curriculum = Curriculum(train_types = primary_train_types,
+                            is_random = True)
+    get_N_X_SP_agents(
+        args,
+        n_x_sp_train_types=curriculum.train_types,
+        n_x_sp_eval_types=primary_eval_types,
+        curriculum=curriculum,
+        unseen_teammates_len=unseen_teammates_len,
+        adversary_play_config=adversary_play_config,
+        attack_rounds=attack_rounds
+    )
+
+def N_1_SP_w_ADV_SPCKP(args) -> None:
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
@@ -477,7 +497,7 @@ def N_X_SP_w_adversaries(args) -> None:
                           'load': []}
 
     curriculum = Curriculum(train_types = primary_train_types,
-                            is_random=False,
+                            is_random = False,
                             total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
                                 TeamType.SELF_PLAY_ADVERSARY: 0.5,
@@ -724,16 +744,16 @@ if __name__ == '__main__':
     args.quick_test = False
     args.parallel = True
 
-    args.pop_force_training = True
-    args.adversary_force_training = True
-    args.primary_force_training = True
+    args.pop_force_training = False
+    args.adversary_force_training = False
+    args.primary_force_training = False
 
-    args.teammates_len = 2
+    args.teammates_len = 1
     args.how_long = 6 # not effective when quick_test is True
 
     set_input(args=args)
 
-    N_X_SP_w_adversaries(args=args)
+    N_1_SP_w_ADV(args=args)
 
     # PwADVs_from_folder( args,
     #                     exp_tag = 'MAP_ADV_256_13',
