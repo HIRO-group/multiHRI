@@ -77,12 +77,12 @@ class OvercookedGUI:
         if self.agent != 'human':
             self.agent.set_encoding_params(self.p_idx, self.args.horizon, env=self.env, is_haha=isinstance(self.agent, HierarchicalRL), tune_subtasks=False)
             self.env.encoding_fn = self.agent.encoding_fn
-        
+
         for t_idx, teammate in enumerate(self.env.teammates):
             teammate.set_encoding_params(t_idx+1, self.args.horizon, env=self.env, is_haha=isinstance(teammate, HierarchicalRL), tune_subtasks=True)
 
         self.teammate_names= [n.name for n in self.env.teammates]
-        self.deterministic = True
+        self.deterministic = False
         self.env.deterministic = self.deterministic
 
 
