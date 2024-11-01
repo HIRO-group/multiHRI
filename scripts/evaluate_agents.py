@@ -320,7 +320,9 @@ def evaluate_agent(args,
                                        ret_completed_subtasks=False,
                                        is_eval_env=True,
                                        horizon=400,
-                                       deterministic=deterministic)
+                                       deterministic=deterministic,
+                                       learner_type='originaler'
+                                       )
                 env.set_teammates(teammates)
                 for p_idx in p_idxes:
                     env.reset(p_idx=p_idx)
@@ -407,16 +409,17 @@ def get_2_player_input(args):
     p_idxes = [0, 1]
 
     all_agents_paths = {
-        'N-1-SP FCP CUR':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
-        'N-1-SP FCP RAN':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
+        # 'N-1-SP FCP CUR':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
+        # 'N-1-SP FCP RAN':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
         'SP':              'agent_models/Result/2/SP_hd64_seed14/best',
         'FCP corrected':   'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
-        'N-1-SP ADV':      'agent_models/Result/2/MAP_SP_hd64_seed14/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
+        # 'N-1-SP ADV':      'agent_models/Result/2/MAP_SP_hd64_seed14/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
         
-        'N-1-SP FCP + ADV CUR [attack 2]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack2/best',
+        # 'N-1-SP FCP + ADV CUR [attack 2]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack2/best',
         # These reuse CH's ADV, the first one has SP, the second one doesn't
-        'N-1-SP FCP + ADV RAN CH [attack 2]': 'agent_models/Result/2/adv_reused_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV_SP)_ran_originaler_attack2/best',
-        'N-1-SP FCP + ADV CUR CH NO SP [attack 2]': 'agent_models/Result/2/adv_reused_no_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best',
+        # 'N-1-SP FCP + ADV RAN CH [attack 2]': 'agent_models/Result/2/adv_reused_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV_SP)_ran_originaler_attack2/best',
+        # 'N-1-SP FCP + ADV CUR CH NO SP [attack 2]': 'agent_models/Result/2/adv_reused_no_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best',
+        'N-1-SP SPCKP + ADV MAP [attack 2]': 'agent_models/Result/2/rerun/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
         # 'N-1-SP FCP + ADV CUR [attack 0]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack0/best',
         # 'N-1-SP FCP + ADV CUR [attack 1]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack1/best',
     }
@@ -459,7 +462,7 @@ def get_5_player_input(args):
         'N-1-SP FCP CUR':  'agent_models/Result/5/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
         'N-1-SP FCP RAN':  'agent_models/Result/5/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
         'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
-        'FCP at 38M steps':             'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best'}
+        'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best'}
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
@@ -470,9 +473,9 @@ def get_5_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
     deterministic = False
     max_num_teams_per_layout_per_x = 4
@@ -509,20 +512,20 @@ if __name__ == "__main__":
     #     pkl.dump((all_mean_rewards, all_std_rewards), f)
 
 
-    #plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
-    #                        all_std_rewards=all_std_rewards,
-    #                        layout_names=layout_names,
-    #                        teammate_lvl_sets=teammate_lvl_sets,
-    #                        unseen_counts=unseen_counts,
-    #                        display_delivery=show_delivery_num,
-    #                        plot_name=plot_name)
+    plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
+                           all_std_rewards=all_std_rewards,
+                           layout_names=layout_names,
+                           teammate_lvl_sets=teammate_lvl_sets,
+                           unseen_counts=unseen_counts,
+                        #    display_delivery=show_delivery_num,
+                           plot_name=plot_name)
     
 
-    plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
-                                     all_std_rewards=all_std_rewards,
-                                     layout_names=layout_names,
-                                     teammate_lvl_sets=teammate_lvl_sets,
-                                     num_players=args.num_players,
-                                     plot_name=plot_name)
+    # plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
+    #                                  all_std_rewards=all_std_rewards,
+    #                                  layout_names=layout_names,
+    #                                  teammate_lvl_sets=teammate_lvl_sets,
+    #                                  num_players=args.num_players,
+    #                                  plot_name=plot_name)
     
 

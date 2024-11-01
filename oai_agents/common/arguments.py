@@ -17,7 +17,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',
                         help='Encoding scheme to use. '
                              'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric"')
-    
+
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate used in imitation learning. lr for rl is defined in rl.py')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size used in imitation learning. bs for rl is defined in rl.py')
     parser.add_argument('--SP-seed', type=int, default=68, help='seed used in train_helper')
@@ -57,7 +57,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--n-envs', type=int, help='Number of environments to use while training')
     parser.add_argument('--teammates-len',  type=int)
     parser.add_argument('--overcooked-verbose', type=bool, default=False, help="Disables the overcooked game logs")
-    
+
     parser.add_argument('--pop-total-training-timesteps', type=int)
     parser.add_argument('--fcp-total-training-timesteps', type=int)
     parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
@@ -72,6 +72,9 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--primary-learner-type', type=str, default='originaler')
     parser.add_argument('--adversary-learner-type', type=str, default='selfisher')
     parser.add_argument('--pop-learner-type', type=str, default='originaler')
+    parser.add_argument("--max-concurrent-jobs", type=int, default=None)
+
+    parser.add_argument("--num-of-ckpoints", type=int, default=10)
 
 
     for parser_arg, parser_kwargs in additional_args:
