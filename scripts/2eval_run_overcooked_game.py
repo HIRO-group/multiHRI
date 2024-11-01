@@ -25,11 +25,11 @@ if __name__ == "__main__":
         'selected_2_chefs_coordination_ring',
         'selected_2_chefs_counter_circuit',
         'selected_2_chefs_cramped_room',
-        'selected_2_chefs_double_counter_circuit',
-        'selected_2_chefs_secret_coordination_ring',
-        'selected_2_chefs_spacious_room_few_resources',
-        'selected_2_chefs_spacious_room_no_counter_space',
-        'selected_2_chefs_storage_room'
+        # 'selected_2_chefs_double_counter_circuit',
+        # 'selected_2_chefs_secret_coordination_ring',
+        # 'selected_2_chefs_spacious_room_few_resources',
+        # 'selected_2_chefs_spacious_room_no_counter_space',
+        # 'selected_2_chefs_storage_room'
     ]
 
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     ]
 
     args = get_arguments(additional_args)
-    args.num_players = 5
+    args.num_players = 2
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
     elif args.num_players == 3:
@@ -90,7 +90,8 @@ if __name__ == "__main__":
         # 'agent_models/Final/eval_2/SP_hd64_seed14/best', # 200, 220, 440
         # 'agent_models/Final/eval_2/SP_hd256_seed13/best', # 200, 160, 420
         # 'agent_models/Final/eval_2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best', # 220, 220, 460 // 240, 240, 460
-        'agent_models/Final/eval_2/SP_hd64_seed14_MAP/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best' # 240, 220, 420
+        'agent_models/Final/eval_2/SP_hd64_seed14_MAP/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/ck_1_rew_226.66666666666666' # 240, 220, 420
+        # 'agent_models/Final/2-old/PWADV-N-1-SP_s1010_h256_tr[SP_SPADV]_ran_originaler_attack2/best' #
     ]
     for layout in args.layout_names:
         args.layout = layout
@@ -105,6 +106,6 @@ if __name__ == "__main__":
             blue = 'human'
 
             dc = OvercookedGUI(args, agent=blue, teammates=teammates[:args.num_players-1], layout_name=args.layout, p_idx=args.p_idx, fps=10,
-                            horizon=3)
+                            horizon=400)
             dc.on_execute()
             # print(dc.trajectory)
