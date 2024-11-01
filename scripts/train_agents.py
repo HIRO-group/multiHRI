@@ -6,7 +6,8 @@ from oai_agents.common.tags import TeamType, AdversaryPlayConfig, CheckedPoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
-from scripts.utils import (get_SP_agent,
+
+from scripts.scripts.utils import (get_SP_agent,
                     get_FCP_agent_w_pop,
                     get_eval_types_to_load,
                     get_N_X_FCP_agents,
