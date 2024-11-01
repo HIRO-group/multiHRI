@@ -74,6 +74,8 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--pop-learner-type', type=str, default='originaler')
     parser.add_argument("--max-concurrent-jobs", type=int, default=None)
 
+    parser.add_argument("--num-of-ckpoints", type=int, default=10)
+
 
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)

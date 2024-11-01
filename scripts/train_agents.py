@@ -678,6 +678,7 @@ def set_input(args):
     args.final_sparse_r_ratio = 0.5
 
     if not args.quick_test:
+        args.num_of_ckpoints = 10
         args.n_envs = 200
         args.epoch_timesteps = 1e5
 
@@ -701,6 +702,7 @@ def set_input(args):
         args.exp_dir = f'Final/{args.num_players}'
 
     else: # Used for doing quick tests
+        args.num_of_ckpoints = 2
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
         args.n_envs = 2
