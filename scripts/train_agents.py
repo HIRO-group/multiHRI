@@ -330,11 +330,12 @@ def set_input(args):
 
         args.num_SPs_to_train = 2
         args.exp_dir = f'Test/{args.num_players}'
+        args.resume = True
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
     args.pop_force_training = False

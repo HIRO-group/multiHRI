@@ -24,7 +24,11 @@ class RLAgentTrainer(OAITrainer):
                 curriculum=None, num_layers=2, hidden_dim=256,
                 checkpoint_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
+<<<<<<< HEAD
                 taper_layers=False, use_policy_clone=False, deterministic=False):
+=======
+                taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0):
+>>>>>>> 74154d9 (basic restart with step count)
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
@@ -174,10 +178,10 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
 
 
-    def get_envs(self, _env, _eval_envs, deterministic, learner_type):
+    def get_envs(self, _env, _eval_envs, deterministic, learner_type, start_step: int = 0):
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
-                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type}
+                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_step': start_step}
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
                                     vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
@@ -265,7 +269,7 @@ class RLAgentTrainer(OAITrainer):
         steps_divisable_by_15 = (steps + 1) % 15 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
-    
+
         return steps_divisable_by_15 or mean_rew_greater_than_best or checkpoint_rate_reached
 
     def log_details(self, experiment_name, total_train_timesteps):

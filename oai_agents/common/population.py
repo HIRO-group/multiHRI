@@ -13,13 +13,21 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         Returns ckeckpoints_list
         either serialized or not based on serialize flag
     '''
-
     name = f'SP_hd{h_dim}_seed{seed}'
+
+    agent_ckpt = None
+    start_step = 0
+    if args.resume:
+        agent_ckpt_info, env_info = RLAgentTrainer.load_agents(args, name=name, tag='best')
+        agent_ckpt = agent_ckpt_info[0]
+        start_step = env_info["step_count"]
+        print(f"Restarting training from step: {start_step}")
+
 
     rlat = RLAgentTrainer(
         name=name,
         args=args,
-        agent=None,
+        agent=agent_ckpt,
         teammates_collection={}, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
@@ -27,7 +35,8 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         seed=seed,
         checkpoint_rate=ck_rate,
         learner_type=args.pop_learner_type,
-        curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True)
+        curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True),
+        start_step=start_step
     )
     '''
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.

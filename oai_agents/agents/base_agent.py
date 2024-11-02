@@ -23,6 +23,7 @@ from stable_baselines3.common.vec_env.stacked_observations import StackedObserva
 import wandb
 import os
 import random
+import pickle as pkl
 
 class OAIAgent(nn.Module, ABC):
     """
@@ -405,7 +406,7 @@ class OAITrainer(ABC):
         # This is outside of the for loop, meaning that each time we evaluate the same player positions across all layouts for a fair comparison
         selected_p_indexes = random.sample(range(self.args.num_players), min(3, self.args.num_players))
 
-        for _, env in enumerate(self.eval_envs): 
+        for _, env in enumerate(self.eval_envs):
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
             }
@@ -471,6 +472,7 @@ class OAITrainer(ABC):
 
         tag = tag or self.args.exp_name
         save_path = path / tag / 'trainer_file'
+        env_path = path / tag / "env_file"
         agent_path = path / tag / 'agents_dir'
         Path(agent_path).mkdir(parents=True, exist_ok=True)
         save_dict = {'agent_fns': []}
@@ -479,6 +481,11 @@ class OAITrainer(ABC):
             agent.save(agent_path_i)
             save_dict['agent_fns'].append(f'agent_{i}')
         th.save(save_dict, save_path)
+        with open(env_path, "wb") as f:
+            step_counts = self.env.get_attr("step_count")
+            # Should be the same but to be safe save the min
+            step_count = min(step_counts)
+            pkl.dump({"step_count": step_count}, f)
         return path, tag
 
     @staticmethod
@@ -492,6 +499,7 @@ class OAITrainer(ABC):
 
         tag = tag or args.exp_name
         load_path = path / tag / 'trainer_file'
+        env_path = path / tag / "env_file"
         agent_path = path / tag / 'agents_dir'
         device = args.device
         saved_variables = th.load(load_path, map_location=device)
@@ -502,4 +510,8 @@ class OAITrainer(ABC):
             agent = load_agent(agent_path / agent_fn, args)
             agent.to(device)
             agents.append(agent)
-        return agents
+
+        with open(env_path, "rb") as f:
+            env_info = pkl.load(f)
+
+        return agents, env_info
