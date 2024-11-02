@@ -154,6 +154,11 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
                                                     adversaries=adversary_agents,
                                                     adversary_play_config=adversary_play_config)
 
+        if attack_round == attack_rounds-1:
+            total_train_timesteps = 4*args.n_x_sp_total_training_timesteps
+        else:
+            total_train_timesteps = args.n_x_sp_total_training_timesteps
+
         n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                             args=args,
                                             agent=random_init_agent,
@@ -164,10 +169,10 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
                                             seed=args.N_X_SP_seed,
                                             hidden_dim=args.N_X_SP_h_dim,
                                             learner_type=args.primary_learner_type,
-                                            checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
+                                            checkpoint_rate=total_train_timesteps // args.num_of_ckpoints,
                                             )
 
-        n_x_sp_types_trainer.train_agents(total_train_timesteps=args.n_x_sp_total_training_timesteps)
+        n_x_sp_types_trainer.train_agents(total_train_timesteps=total_train_timesteps)
         agent_to_be_attacked = n_x_sp_types_trainer.get_agents()[0]
 
 

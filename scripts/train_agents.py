@@ -85,7 +85,7 @@ def SPN_1ADV(args) -> None:
     adversary_play_config = AdversaryPlayConfig.MAP
     primary_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
                           'load': []}
 
     curriculum = Curriculum(train_types = primary_train_types,
@@ -108,7 +108,7 @@ def SPN_1ADV_XSPCKP(args) -> None:
                            TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
                            TeamType.SELF_PLAY_ADVERSARY]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
                           'load': []}
 
     curriculum = Curriculum(train_types = primary_train_types,
@@ -363,7 +363,7 @@ if __name__ == '__main__':
     args.adversary_force_training = True
     args.primary_force_training = True
 
-    args.teammates_len = 1
+    args.teammates_len = 3
     args.how_long = 6 # not effective when quick_test is True
 
     set_input(args=args)
@@ -380,6 +380,6 @@ if __name__ == '__main__':
 
     # SPN_XSPCKP(args=args)
 
-    # SPN_1ADV_XSPCKP(args=args)
+    SPN_1ADV_XSPCKP(args=args)
 
     # N_1_FCP(args=args)
