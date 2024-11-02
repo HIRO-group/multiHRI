@@ -81,6 +81,14 @@ def N_X_SP(args) -> None:
         )
 
 def SPN_1ADV(args) -> None:
+    '''
+    In N-agents games, a randomly initialized agent will be trained with either one of two conditions:
+    (a)N-1 copies of itself and 1 unseen adversary teammate.
+    (b)N copies of itself
+
+    e.g.
+    when N is 4, the team can be composed by [SP, SP, SP, SP] or [SP, SP, SP, ADV] in a 4-chef layout.
+    '''
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
@@ -103,8 +111,20 @@ def SPN_1ADV(args) -> None:
 
 def SPN_1ADV_XSPCKP(args) -> None:
     '''
-    The randomly initialized agent will train with itself and one other unseen teammate, which could be (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
-    Please note that X is the number of unseen teammate. X depends on the variable, unseen_teammates_len, in the funciton.
+    In N-agents games, a randomly initialized agent will be trained with N-X copies of itself and X unseen teammates.
+    X unseen teammates can be composed by either one of the two conditions:
+    (a) 1 adversary and X-1 self-play checkedpoints.
+    (b) X self-play checkedpoints.
+    e.g.
+    when N is 4 and X is 1, the team can be composed by [SP, SP, SP, ADV] or [SP, SP, SP, H] or [SP, SP, SP, M] or [SP, SP, SP, L] in a 4-chef layout.
+    when N is 4 and X is 2, the team can be composed
+    [SP, SP, ADV, H] or [SP, SP, ADV, M] or [SP, SP, ADV, L] or
+    [SP, SP, H, H] or [SP, SP, M, M] or [SP, SP, L, L] in a 4-chef layout.
+
+
+    Please note that
+    - X is the number of unseen teammate.
+    - X is assigned by the variable, unseen_teammates_len, in the funciton.
     '''
     attack_rounds = 3
     unseen_teammates_len = 1
@@ -142,12 +162,18 @@ def SPN_1ADV_XSPCKP(args) -> None:
 
 def SPN_XSPCKP(args) -> None:
     '''
-    The randomly initialized agent will train with itself and X other unseen teammate
+    In N-agents games, a randomly initialized agent will be trained with N-X copies of itself
+    and X homogeneous unseen teammates, which are checkpoints saved during a previous self-play process.
+    These saved checkpoints are cateogorized into High, Medium, Low performance.
     e.g.
-    when X is 1, we have [SP, SP, SP, SP_H] in a 4-chef layout.
-    when X is 2, we have [SP, SP, SP_H, SP_H] in a 4-chef layout.
+    when N is 4 and X is 1, the team can be composed by [SP, SP, SP, H], [SP, SP, SP, M], [SP, SP, SP, L] in a 4-chef layout.
+    when N is 4 and X is 2, the team can be composed [SP, SP, H, H], [SP, SP, M, M], [SP, SP, L, L] in a 4-chef layout.
 
-    Please note that X is the number of unseen teammate. X depends on the variable, unseen_teammates_len, in the funciton.
+
+    Please note that
+    - X is the number of unseen teammate.
+    - X is assigned by the variable, unseen_teammates_len, in the funciton.
+
 
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
     :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file.
