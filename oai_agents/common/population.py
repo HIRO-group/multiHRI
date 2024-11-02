@@ -3,7 +3,7 @@ import concurrent
 import dill
 
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import AgentPerformance, TeamType
+from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, KeyCheckpoints, TeamType
 
 from .curriculum import Curriculum
 
@@ -116,7 +116,7 @@ def save_population(args, population):
             seed=None,
         )
         rt.agents = population[layout_name]
-        rt.save_agents(tag='last')
+        rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
 
 def get_population(args,

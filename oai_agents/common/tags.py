@@ -1,10 +1,10 @@
 from enum import Enum
 class AgentPerformance:
     '''
-    Agent performance refers to the reward an agent receives after playing in 
-    self-play scenarios. For example, consider an agent, X, with 
+    Agent performance refers to the reward an agent receives after playing in
+    self-play scenarios. For example, consider an agent, X, with
     AgentPerformance.HIGH.This means X has participated in an Overcooked game
-    with multiple copies of itself, and the self-play team achieved a total 
+    with multiple copies of itself, and the self-play team achieved a total
     reward categorized as high performance.
     '''
     HIGH = 'H'
@@ -14,7 +14,7 @@ class AgentPerformance:
     LOW = 'L'
 
     ALL = [HIGH, HIGH_MEDIUM, MEDIUM, MEDIUM_LOW, LOW]
-    
+
     NOTSET = 'NS'
 
 
@@ -24,13 +24,13 @@ class TeamType:
     For example if teammates_len is 2, and the team type is HIGH_PRIORITY
     Then the list of agents are sorted based on score in a descending order
     and the first 2 agents are selected.
-    
+
     SP: All agents are the same agent
     SPL: N-1 agents are the same agent, 1 agent is a low performing agent
     SPM: ...
     '''
 
-    HIGH_FIRST = 'H' 
+    HIGH_FIRST = 'H'
     MEDIUM_FIRST = 'M'
     MIDDLE_FIRST = 'MID'
     LOW_FIRST = 'L'
@@ -41,8 +41,8 @@ class TeamType:
     HIGH_LOW_RANDOM = 'HLR'
 
     # Used to create a list of all possible permutations of agents from the teammate population
-    # TODO: eventually, teammates_collection should be turned into its own class with 'select' 
-    # and 'update' functions that can be leveraged during training so the teammates_collection 
+    # TODO: eventually, teammates_collection should be turned into its own class with 'select'
+    # and 'update' functions that can be leveraged during training so the teammates_collection
     # doesn't need to be created before training begins, once that happens we can remove the AMX
     # type
     ALL_MIX = 'AMX'
@@ -81,8 +81,8 @@ class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'
 
-class CheckedPoints():
-    # During training, we saved models if it reaches the best eval/training reward, worst eval/training reward. 
+class KeyCheckpoints():
+    # During training, we saved models if it reaches the best eval/training reward, worst eval/training reward.
     # In addition, we also save the very last one.
     # For all of them, we assign them a tag so that we can use them in the future.
     # For example, if the training reaches best evaluation reward, we saved it with a tag BEST_EVAL_REWARD.
@@ -90,7 +90,7 @@ class CheckedPoints():
     WORST_EVAL_REWARD ='worst'
     BEST_TRAIN_REWARD = 'best_train_reward'
     WORST_TRAIN_REWARD ='worst_train_reward'
-    FINAL_TRAINED_MODEL = 'last'
+    MOST_RECENT_TRAINED_MODEL = 'last'
     FIRST_CHECKED_MODEL = 'ck_0'
 
 class Prefix:

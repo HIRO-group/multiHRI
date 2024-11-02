@@ -2,7 +2,7 @@ import multiprocessing as mp
 mp.set_start_method('spawn', force=True) # should be called before any other module imports
 
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.tags import TeamType, AdversaryPlayConfig, CheckedPoints
+from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
@@ -360,7 +360,7 @@ def set_input(args):
         args.pop_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * args.how_long)
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
-        args.fcp_total_training_timestFeps = int(5e6 * args.how_long)
+        args.fcp_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.SP_seed, args.SP_h_dim = 68, 256

@@ -2,7 +2,7 @@ from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer,
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, CheckedPoints
+from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
@@ -17,30 +17,30 @@ VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
-    def __init__(self, teammates_collection, args, 
+    def __init__(self, teammates_collection, args,
                 agent, epoch_timesteps, n_envs,
-                seed, learner_type, 
+                seed, learner_type,
                 train_types=[], eval_types=[],
-                curriculum=None, num_layers=2, hidden_dim=256, 
+                curriculum=None, num_layers=2, hidden_dim=256,
                 checkpoint_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
                 taper_layers=False, use_policy_clone=False, deterministic=False):
-        
+
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
-        
+
         self.args = args
         self.device = args.device
         self.teammates_len = self.args.teammates_len
         self.num_players = self.args.num_players
         self.curriculum = curriculum
-        
+
         self.epoch_timesteps = epoch_timesteps
         self.n_envs = n_envs
 
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
-        
+
         self.seed = seed
         self.checkpoint_rate = checkpoint_rate
         self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
@@ -53,7 +53,7 @@ class RLAgentTrainer(OAITrainer):
 
         self.learner_type = learner_type
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type)
-        
+
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
@@ -109,7 +109,7 @@ class RLAgentTrainer(OAITrainer):
     def get_teammates_collection(self, _tms_clctn, learning_agent, train_types=[], eval_types=[]):
         '''
         Returns a dictionary of teammates_collection for training and evaluation
-            dict 
+            dict
             teammates_collection = {
                 'layout_name': {
                     'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
@@ -122,18 +122,18 @@ class RLAgentTrainer(OAITrainer):
         if _tms_clctn == {}:
             _tms_clctn = {
                 TeammatesCollection.TRAIN: {
-                    layout_name: 
+                    layout_name:
                         {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
                 },
                 TeammatesCollection.EVAL: {
-                    layout_name: 
+                    layout_name:
                         {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
                     for layout_name in self.args.layout_names
                 }
             }
 
-        else: 
+        else:
             for layout in self.args.layout_names:
                 for tt in _tms_clctn[TeammatesCollection.TRAIN][layout]:
                     if tt == TeamType.SELF_PLAY:
@@ -181,7 +181,7 @@ class RLAgentTrainer(OAITrainer):
                         'deterministic': deterministic,'args': self.args, 'learner_type': learner_type}
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
                                     vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
-            
+
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
                                  'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
@@ -195,7 +195,7 @@ class RLAgentTrainer(OAITrainer):
 
 
     def get_sb3_agent(self):
-        layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers        
+        layers = [self.hidden_dim // (2**i) for i in range(self.num_layers)] if self.taper_layers else [self.hidden_dim] * self.num_layers
         policy_kwargs = dict(net_arch=dict(pi=layers, vf=layers))
 
         if self.use_cnn:
@@ -226,7 +226,7 @@ class RLAgentTrainer(OAITrainer):
 
 
     def check_teammates_collection_structure(self, teammates_collection):
-        '''    
+        '''
         teammates_collection = {
                 'layout_name': {
                     'high_perf_first': [[agent1, agent2], ...],
@@ -236,7 +236,7 @@ class RLAgentTrainer(OAITrainer):
                 },
             }
         '''
-        for layout in teammates_collection: 
+        for layout in teammates_collection:
             for team_type in teammates_collection[layout]:
                 for teammates in teammates_collection[layout][team_type]:
                     assert len(teammates) == self.teammates_len,\
@@ -246,7 +246,7 @@ class RLAgentTrainer(OAITrainer):
 
 
     def _get_constructor_parameters(self):
-        return dict(args=self.args, name=self.name, use_lstm=self.use_lstm, 
+        return dict(args=self.args, name=self.name, use_lstm=self.use_lstm,
                     use_frame_stack=self.use_frame_stack,
                     hidden_dim=self.hidden_dim, seed=self.seed)
 
@@ -266,7 +266,7 @@ class RLAgentTrainer(OAITrainer):
         steps_divisable_by_5 = (steps + 1) % 5 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
-    
+
         return steps_divisable_by_5 or mean_rew_greater_than_best or checkpoint_rate_reached
 
     def log_details(self, experiment_name, total_train_timesteps):
@@ -300,7 +300,7 @@ class RLAgentTrainer(OAITrainer):
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
         best_path, best_tag = None, None
-        
+
         steps = 0
         curr_timesteps = 0
         prev_timesteps = self.learning_agent.num_timesteps
@@ -308,18 +308,18 @@ class RLAgentTrainer(OAITrainer):
         while curr_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=steps)
 
-            # TODO: eventually, teammates_collection should be turned into its own class with 'select' 
-            # and 'update' functions that can be leveraged during training so the teammates_collection 
+            # TODO: eventually, teammates_collection should be turned into its own class with 'select'
+            # and 'update' functions that can be leveraged during training so the teammates_collection
             # doesn't need to be created before training begins, this would allow us to generate a random
             # TC each round of training (like in the original FCP paper), until then, we have to leverage
-            # the ALL_MIX TeamType to achieve random teammate selection 
+            # the ALL_MIX TeamType to achieve random teammate selection
             self.set_new_teammates(curriculum=self.curriculum)
 
             # In each iteration the agent collects n_envs * n_steps experiences
             # This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)
-            
-            
+
+
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
 
@@ -336,7 +336,7 @@ class RLAgentTrainer(OAITrainer):
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:
-                    best_path, best_tag = self.save_agents(tag=CheckedPoints.BEST_EVAL_REWARD)
+                    best_path, best_tag = self.save_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
             steps += 1
@@ -353,7 +353,7 @@ class RLAgentTrainer(OAITrainer):
                 closest_score = abs(score - target_score)
                 closest_score_path_tag = (score, path, tag)
         return closest_score_path_tag
-    
+
     @staticmethod
     def get_agents_and_set_score_and_perftag(args, layout_name, scores_path_tag, performance_tag, ck_list):
         score, path, tag = scores_path_tag
@@ -361,7 +361,7 @@ class RLAgentTrainer(OAITrainer):
         for agent in all_agents:
             agent.layout_scores[layout_name] = score
             agent.layout_performance_tags[layout_name] = performance_tag
-        
+
         # set other layouts's scores. Can't set their performance tags because we don't know it but it doesn't matter, we don't use the perftag
         for agent in all_agents:
             for scores, ck_path, ck_tag in ck_list:
@@ -379,7 +379,7 @@ class RLAgentTrainer(OAITrainer):
             AgentPerformance.HIGH_MEDIUM
             AgentPerformance.MEDIUM
             AgentPerformance.MEDIUM_LOW
-            AgentPerformance.LOW    
+            AgentPerformance.LOW
         It categorizes by setting their score and performance tag:
             OAIAgent.layout_scores
             OAIAgent.layout_performance_tags

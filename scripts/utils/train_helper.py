@@ -5,7 +5,7 @@ from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agen
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
 from oai_agents.common.tags import Prefix
-from oai_agents.common.tags import CheckedPoints
+from oai_agents.common.tags import KeyCheckpoints
 
 
 def get_SP_agent(args, train_types, eval_types, curriculum, tag=None):
@@ -126,7 +126,7 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
                             suffix=args.primary_learner_type + '_attack' + str(attack_round),
                             )
 
-        agents = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=args.adversary_force_training)
+        agents = load_agents(args, name=name, tag=KeyCheckpoints.FINAL_TRAINED_MODEL, force_training=args.adversary_force_training)
         if agents:
             agent_to_be_attacked = agents[0]
             continue
@@ -185,7 +185,7 @@ def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eva
                          suffix=args.primary_learner_type,
                         )
 
-    agents = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=args.primary_force_training)
+    agents = load_agents(args, name=name, tag=KeyCheckpoints.FINAL_TRAINED_MODEL, force_training=args.primary_force_training)
     if agents:
         return agents[0]
 
@@ -362,6 +362,7 @@ def get_N_X_FCP_agents(args,
 
     fcp_trainer.train_agents(total_train_timesteps=args.n_x_fcp_total_training_timesteps)
     return fcp_trainer.get_agents()[0], teammates_collection
+
 
 def get_randomly_initialized_agent(args, n_env=200, h_dim=256, seed=13):
     return RLAgentTrainer.generate_randomly_initialized_agent(args=args, n_env=n_env, h_dim=h_dim, seed=seed)
