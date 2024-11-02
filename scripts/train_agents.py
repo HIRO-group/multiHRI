@@ -7,7 +7,7 @@ from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
 
-from scripts.scripts.utils import (get_SP_agent,
+from scripts.utils import (get_SP_agent,
                     get_FCP_agent_w_pop,
                     get_eval_types_to_load,
                     get_N_X_FCP_agents,
@@ -359,9 +359,9 @@ if __name__ == '__main__':
     args.quick_test = False
     args.parallel = True
 
-    args.pop_force_training = False
-    args.adversary_force_training = False
-    args.primary_force_training = False
+    args.pop_force_training = True
+    args.adversary_force_training = True
+    args.primary_force_training = True
 
     args.teammates_len = 1
     args.how_long = 6 # not effective when quick_test is True
