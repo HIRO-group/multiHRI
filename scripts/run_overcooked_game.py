@@ -32,7 +32,11 @@ if __name__ == "__main__":
     args.layout = two_chefs_layouts[2]
     args.p_idx = 0
 
-    tm_path = 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best'
+    # tm_path = 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best'
+    # tm_path = 'agent_models/Final/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best'
+    # 0, 1, 2: 240, 220, 520
+    tm_path = 'agent_models/Final/2/FCP_s2020_h256_tr(AMX)_ran/best'
+    # 0, 1, 2: 220, 200, 460
     agent =  load_agent(Path(tm_path), args)
 
     orange = agent
