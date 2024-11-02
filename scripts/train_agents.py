@@ -9,10 +9,8 @@ from oai_agents.common.curriculum import Curriculum
 
 from scripts.utils import (get_SP_agent,
                     get_FCP_agent_w_pop,
-                    get_eval_types_to_load,
                     get_N_X_FCP_agents,
                     get_N_X_SP_agents,
-                    get_agent_play_w_adversarys
                     )
 
 def SP(args, pop_force_training):
