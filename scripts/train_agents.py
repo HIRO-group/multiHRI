@@ -46,6 +46,9 @@ def SP(args):
 
 
 def N_X_SP(args) -> None:
+    '''
+    It is similar to SPN_XSPCKP. We may want to delete N_X_SP function.
+    '''
     unseen_teammates_len = 1 # This is the X in N_X_SP
     primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
     primary_eval_types = {
@@ -99,6 +102,10 @@ def SPN_1ADV(args) -> None:
     )
 
 def SPN_1ADV_XSPCKP(args) -> None:
+    '''
+    The randomly initialized agent will train with itself and one other unseen teammate, which could be (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
+    Please note that X is the number of unseen teammate. X depends on the variable, unseen_teammates_len, in the funciton.
+    '''
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
@@ -135,10 +142,15 @@ def SPN_1ADV_XSPCKP(args) -> None:
 
 def SPN_XSPCKP(args) -> None:
     '''
-    The randomly initialized agent will train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
+    The randomly initialized agent will train with itself and X other unseen teammate
+    e.g.
+    when X is 1, we have [SP, SP, SP, SP_H] in a 4-chef layout.
+    when X is 2, we have [SP, SP, SP_H, SP_H] in a 4-chef layout.
+
+    Please note that X is the number of unseen teammate. X depends on the variable, unseen_teammates_len, in the funciton.
 
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
-    :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file
+    :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file.
     '''
     unseen_teammates_len = 1
     primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
