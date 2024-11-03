@@ -20,7 +20,7 @@ def get_teammates(args, agents_perftag_score:list, teamtypes:list, teammates_len
             tms_prftg_scr = available_agents[:teammates_len]
             all_teammates[teamtype].append([tm[0] for tm in tms_prftg_scr])
             used_agents.update([tm[0] for tm in tms_prftg_scr])
-        
+
         elif teamtype == TeamType.MEDIUM_FIRST:
             mean_score = (available_agents[0][2] + available_agents[-1][2]) / 2
             sorted_by_closeness = sorted(available_agents, key=lambda x: abs(x[2] - mean_score))[:teammates_len]
@@ -139,7 +139,7 @@ def generate_TC(args,
     for layout_name in args.layout_names:
         layout_population = population[layout_name]
         agents_perftag_score_all = [(agent,
-                                     agent.layout_performance_tags[layout_name], 
+                                     agent.layout_performance_tags[layout_name],
                                      agent.layout_scores[layout_name]) for agent in layout_population]
         train_collection[layout_name], train_agents = get_teammates(args=args,
                                                                     agents_perftag_score=agents_perftag_score_all,
@@ -157,7 +157,7 @@ def generate_TC(args,
                                                                     agent=agent,
                                                                     unseen_teammates_len=unseen_teammates_len,
                                                                     )
-    
+
     update_eval_collection_with_eval_types_from_file(args=args,
                                                      eval_types=eval_types_to_read_from_file,
                                                      eval_collection=eval_collection,
@@ -170,7 +170,7 @@ def generate_TC(args,
         TeammatesCollection.EVAL: eval_collection
     }
 
-    return teammates_collection            
+    return teammates_collection
 
 
 def get_best_SP_agent(args, population):
@@ -191,13 +191,13 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
     for teammates in eval_types:
         if teammates.team_type not in eval_collection[teammates.layout_name]:
             eval_collection[teammates.layout_name][teammates.team_type] = []
-        tms_path = Path.cwd() / 'agent_models' / teammates.names[0] 
+        tms_path = Path.cwd() / 'agent_models' / teammates.names[0]
         if teammates.load_from_pop_structure:
             layout_population = RLAgentTrainer.load_agents(args, path=tms_path, tag=teammates.tags[0])
             agents_perftag_score_all = [(agent,
-                                         agent.layout_performance_tags[teammates.layout_name], 
+                                         agent.layout_performance_tags[teammates.layout_name],
                                          agent.layout_scores[teammates.layout_name]) for agent in layout_population]
-            
+
             ec_ln , _ = get_teammates(agents_perftag_score=agents_perftag_score_all,
                                      teamtypes=[teammates.team_type],
                                      teammates_len=args.teammates_len,
@@ -249,65 +249,4 @@ def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_a
     for layout_name in args.layout_names:
         teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
         teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
-    return teammates_collection
-
-def generate_TC_for_Adversary(args, 
-                            agent,
-                            train_types = [TeamType.HIGH_FIRST],
-                            eval_types_to_generate=None,
-                            eval_types_to_read_from_file=None):
-
-    teammates = [agent for _ in range(args.teammates_len)] 
-
-    eval_collection = {
-            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
-            for layout_name in args.layout_names
-    }
-
-    train_collection = {
-        layout_name: {ttype: [] for ttype in train_types}
-        for layout_name in args.layout_names
-    }
-
-    for layout_name in args.layout_names:
-        train_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
-        eval_collection[layout_name][TeamType.HIGH_FIRST] = [teammates]
-
-    teammates_collection = {
-        TeammatesCollection.TRAIN: train_collection,
-        TeammatesCollection.EVAL: eval_collection
-    }
-    return teammates_collection
-
-
-def generate_TC_for_AdversarysPlay(args, 
-                                agent,
-                                adversarys, 
-                                train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY],
-                                eval_types_to_generate=None,
-                                eval_types_to_read_from_file=None):
-
-    self_teammates = [agent for _ in range(args.teammates_len-1)] 
-    eval_collection = {
-            layout_name: {ttype: [] for ttype in set(eval_types_to_generate + [t.team_type for t in eval_types_to_read_from_file])}
-            for layout_name in args.layout_names
-    }
-
-    train_collection = {
-        layout_name: {ttype: [] for ttype in train_types}
-        for layout_name in args.layout_names
-    }
-
-    for layout_name in args.layout_names:
-        train_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        eval_collection[layout_name][TeamType.SELF_PLAY] = [[]]
-        train_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
-        eval_collection[layout_name][TeamType.SELF_PLAY_ADVERSARY] = [[adversary]+self_teammates for adversary in adversarys]
-        
-
-    teammates_collection = {
-        TeammatesCollection.TRAIN: train_collection,
-        TeammatesCollection.EVAL: eval_collection
-    }
-
     return teammates_collection
