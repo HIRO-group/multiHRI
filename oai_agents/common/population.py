@@ -128,7 +128,7 @@ def get_population(args,
                    unseen_teammates_len=0,
                    force_training=False,
                    tag='aamas25',
-                   ):
+                   ) -> dict:
 
     population = {layout_name: [] for layout_name in args.layout_names}
 

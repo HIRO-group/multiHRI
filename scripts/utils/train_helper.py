@@ -43,7 +43,7 @@ def get_SP_agent(args, train_types, eval_types, curriculum, tag=None):
 def get_N_X_SP_agents(args,
                         unseen_teammates_len:int,
                         n_x_sp_train_types:list,
-                        n_x_sp_eval_types:list,
+                        n_x_sp_eval_types:dict,
                         curriculum:Curriculum,
                         tag:str=None,
                         attack_rounds:int=-1,
@@ -88,7 +88,6 @@ def get_N_X_SP_agents(args,
         tag = tag
     )
 
-    
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
         joint_ADV_N_X_SP(args=args,
                       population=population,
@@ -145,7 +144,8 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
                                             train_types=curriculum.train_types,
                                             eval_types_to_generate=n_x_sp_eval_types['generate'],
                                             eval_types_to_read_from_file=n_x_sp_eval_types['load'],
-                                            unseen_teammates_len=unseen_teammates_len)
+                                            unseen_teammates_len=unseen_teammates_len,
+                                            use_entire_population_for_train_types_teammates=True)
 
         teammates_collection = update_TC_w_ADV_teammates(args=args,
                                                     teammates_collection=teammates_collection,
@@ -198,7 +198,8 @@ def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eva
                                         train_types=curriculum.train_types,
                                         eval_types_to_generate=n_x_sp_eval_types['generate'],
                                         eval_types_to_read_from_file=n_x_sp_eval_types['load'],
-                                        unseen_teammates_len=unseen_teammates_len)
+                                        unseen_teammates_len=unseen_teammates_len,
+                                        use_entire_population_for_train_types_teammates=True)
 
     n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                         args=args,
@@ -280,8 +281,9 @@ def get_FCP_agent_w_pop(args,
                                         population=population,
                                         train_types=fcp_train_types,
                                         eval_types_to_generate=fcp_eval_types['generate'],
-                                        eval_types_to_read_from_file=fcp_eval_types['load'])
-    
+                                        eval_types_to_read_from_file=fcp_eval_types['load'],
+                                        use_entire_population_for_train_types_teammates=False)
+
     agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
     if agents:
         return agents[0], population
@@ -340,7 +342,8 @@ def get_N_X_FCP_agents(args,
                                         train_types=n_1_fcp_train_types,
                                         eval_types_to_generate=n_1_fcp_eval_types['generate'],
                                         eval_types_to_read_from_file=n_1_fcp_eval_types['load'],
-                                        unseen_teammates_len=unseen_teammates_len)
+                                        unseen_teammates_len=unseen_teammates_len,
+                                        use_entire_population_for_train_types_teammates=False)
 
     fcp_trainer = RLAgentTrainer(
         name=name,

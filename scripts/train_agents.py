@@ -503,15 +503,10 @@ def N_X_SP_w_adversaries(args) -> None:
 def N_1_SP(args) -> None:
     '''
     The randomly initialized agent will train with itself and one other unseen teammate (e.g. [SP, SP, SP, SP_H] in a 4-chef layout)
-    
-    :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
-    :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file
     '''
+
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, 
-                                TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
-                                TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
-                                ]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
     primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
@@ -550,7 +545,7 @@ def FCP_mhri(args):
     decided to add different types for teammates_collection.
     '''
     primary_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
-    primary_eval_types = {'generate' : [],
+    primary_eval_types = {'generate' : [TeamType.HIGH_FIRST],
                           'load': []}
 
     fcp_curriculum = Curriculum(train_types = primary_train_types,
@@ -675,7 +670,7 @@ def set_input(args):
         args.wandb_mode = 'disabled'
         args.n_envs = 2
         args.epoch_timesteps = 2
-        
+
         args.pop_total_training_timesteps = 3500
         args.n_x_sp_total_training_timesteps = 1500
         args.adversary_total_training_timesteps = 1500
@@ -689,7 +684,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
     args.pop_force_training = True
@@ -701,7 +696,7 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    N_X_SP_w_adversaries(args=args)
+    # N_X_SP_w_adversaries(args=args)
 
     # PwADVs_from_folder( args, 
     #                     exp_tag = 'MAP_ADV_256_13', 
@@ -732,15 +727,15 @@ if __name__ == '__main__':
     #                    rounds_of_advplay = 3,
     #                    reward_magnifier = 3.0,
     #                    team_size = 2)
-    
+
     # SP(args)
-    
+
     # N_X_SP(args=args)
 
     # FCP_traditional(args=args)
 
     # FCP_mhri(args=args)
-    
-    # N_1_SP(args=args)
+
+    N_1_SP(args=args)
 
     # N_1_FCP(args=args)

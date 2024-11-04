@@ -8,13 +8,10 @@ class AgentPerformance:
     reward categorized as high performance.
     '''
     HIGH = 'H'
-    HIGH_MEDIUM = 'HM'
     MEDIUM = 'M'
-    MEDIUM_LOW = 'ML'
     LOW = 'L'
 
-    ALL = [HIGH, HIGH_MEDIUM, MEDIUM, MEDIUM_LOW, LOW]
-    
+    ALL = [HIGH, MEDIUM, LOW]
     NOTSET = 'NS'
 
 
@@ -55,6 +52,8 @@ class TeamType:
     SELF_PLAY_MIDDLE = 'SPMID'
     SELF_PLAY_HIGH = 'SPH'
     SELF_PLAY_ADVERSARY = 'SPADV'
+
+    SELF_PLAY_X_TYPES = [SELF_PLAY_LOW, SELF_PLAY_MEDIUM, SELF_PLAY_MIDDLE, SELF_PLAY_HIGH, SELF_PLAY_ADVERSARY]
 
     def map_to_index(teamtype):
         tt_map = {
