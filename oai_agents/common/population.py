@@ -3,7 +3,7 @@ import concurrent
 import dill
 
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import AgentPerformance, TeamType
+from oai_agents.common.tags import AgentPerformance, TeamType, CheckedPoints
 
 from .curriculum import Curriculum
 
@@ -142,7 +142,7 @@ def save_population(args, population):
             seed=None,
         )
         rt.agents = population[layout_name]
-        rt.save_agents(tag='aamas25')
+        rt.save_agents(tag=CheckedPoints.FINAL_TRAINED_MODEL)
 
 
 def get_population(args,
@@ -153,7 +153,7 @@ def get_population(args,
                    num_SPs_to_train,
                    unseen_teammates_len=0,
                    force_training=False,
-                   tag='aamas25',
+                   tag=CheckedPoints.FINAL_TRAINED_MODEL,
                    ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
