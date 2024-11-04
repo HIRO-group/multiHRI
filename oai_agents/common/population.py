@@ -7,6 +7,8 @@ from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
 
 from .curriculum import Curriculum
 
+import random
+
 
 def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
@@ -77,28 +79,52 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
                                                                         f" num_SPs_to_train: {num_SPs_to_train}."
 
 
-def generate_hdim_and_seed(num_SPs_to_train):
+def generate_hdim_and_seed(num_of_required_agents):
     '''
-    (hidden_dim, seed) = reward of selfplay
-    (256, 68)=362, (64, 14)=318
-    (256, 13)=248, (64, 0)=230
-    (256, 48)=20, (64, 30)=0
+    Generates lists of seeds and hidden dimensions for a given number of agents.
+
+    Each setting is a pair (hidden_dim, seed). If the number of required agents
+    is less than or equal to the number of predefined settings, it selects from
+    the predefined seeds and hidden dimensions. Otherwise, it generates random
+    seeds and hidden dimensions to fill the remaining number of agents.
+
+    Arguments:
+    num_of_required_agents -- the number of (hidden_dim, seed) pairs to generate.
+
+    Returns:
+    selected_seeds -- list of selected seeds
+    selected_hdims -- list of selected hidden dimensions
     '''
-    # Tested in 3-chefs-small-kitchen:
-    good_seeds = [68, 14, 13, 0]
-    good_hdims = [256, 64, 256, 64]
 
-    # Not tested:
-    other_seeds_copied_from_HAHA = [2907, 2907, 105, 105, 8, 32, 128, 512]
-    other_hdims_copied_from_HAHA = [64, 256, 64, 256, 16, 64, 256, 1024]
+    # Predefined seeds and hidden dimensions
+    seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
+    hdims = [256] * len(seeds)
 
-    all_seeds = good_seeds + other_seeds_copied_from_HAHA
-    all_hdims = good_hdims + other_hdims_copied_from_HAHA
+    # Initialize selected lists
+    selected_seeds = []
+    selected_hdims = []
 
-    selected_seeds = all_seeds[:num_SPs_to_train]
-    selected_hdims = all_hdims[:num_SPs_to_train]
+    # Check if we have enough predefined pairs
+    if num_of_required_agents <= len(seeds):
+        # Select predefined seeds and hdims
+        selected_seeds = seeds[:num_of_required_agents]
+        selected_hdims = hdims[:num_of_required_agents]
+    else:
+        # Use all predefined settings
+        selected_seeds = seeds[:]
+        selected_hdims = hdims[:]
+
+        # Generate additional random settings if more agents are needed
+        remaining = num_of_required_agents - len(seeds)
+        available_seeds = set(range(0, 5000)) - set(selected_seeds)
+        random_seeds = random.sample(available_seeds, remaining)  # Generate random seeds
+        random_hdims = random.choices([256, 512], k=remaining)  # Generate random hidden dimensions
+
+        # Append randomly generated settings to selected lists
+        selected_seeds += random_seeds
+        selected_hdims += random_hdims
+
     return selected_seeds, selected_hdims
-
 
 def save_population(args, population):
     name_prefix = 'pop'
