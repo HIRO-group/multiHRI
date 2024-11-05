@@ -31,7 +31,6 @@ class RLAgentTrainer(OAITrainer):
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
 
-
         self.args = args
         self.device = args.device
         self.teammates_len = self.args.teammates_len
