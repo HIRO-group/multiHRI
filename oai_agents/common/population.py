@@ -10,7 +10,7 @@ from .curriculum import Curriculum
 import random
 
 
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
+def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, force_training):
     '''
         Returns ckeckpoints_list
         either serialized or not based on serialize flag
@@ -178,6 +178,7 @@ def get_population(args,
         inputs = [
             (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
         ]
+
 
         if args.parallel:
             with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_concurrent_jobs) as executor:
