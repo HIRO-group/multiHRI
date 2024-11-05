@@ -1,6 +1,7 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_population, generate_hdim_and_seed
+from oai_agents.common.population import get_population, generate_hdim_and_seed
 from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
