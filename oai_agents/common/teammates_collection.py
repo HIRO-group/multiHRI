@@ -349,7 +349,7 @@ def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_a
 def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, teammates_collection, primary_agent, adversaries):
     itself = [primary_agent for _ in range(args.teammates_len-1)]
 
-    for layout_name in args.layout_names: 
+    for layout_name in args.layout_names:
         for tr in train_types:
             if tr == TeamType.SELF_PLAY_STATIC_ADV:
                 static_advs = adversaries[tr]
