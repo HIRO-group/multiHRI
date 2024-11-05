@@ -271,8 +271,6 @@ def get_best_SP_agent(args, population):
     all_agents = get_all_agents( args.layout_names[0], population)
     agents_scores_averaged_over_layouts = []
 
-    all_agents = [agent for agent in population[args.layout_names[0]]]
-
     for agent in all_agents:
         scores = [agent.layout_scores[layout_name] for layout_name in args.layout_names]
         agents_scores_averaged_over_layouts.append((agent, sum(scores)/len(scores)))
