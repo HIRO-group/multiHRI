@@ -93,7 +93,7 @@ def get_N_X_SP_agents(args,
     )
 
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
-        # Trains the adversaries 
+        # Trains the adversaries
         train_ADV_and_N_X_SP(args=args,
                             population=population,
                             curriculum=curriculum,
@@ -144,13 +144,13 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                         eval_types_to_read_from_file=n_x_sp_eval_types['load'],
                                         unseen_teammates_len=unseen_teammates_len,
                                         use_entire_population_for_train_types_teammates=True)
-    
+
     heatmap_source = get_best_SP_agent(args=args, population=population)
     adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, teammates_collection=teammates_collection, train_types=curriculum.train_types)
-    
+
     total_train_timesteps = args.n_x_sp_total_training_timesteps // args.custom_agent_ck_rate_generation
     ck_rate = (args.n_x_sp_total_training_timesteps // args.num_of_ckpoints) // args.custom_agent_ck_rate_generation
-    
+
     for round in range(args.custom_agent_ck_rate_generation):
         name = generate_name(args,
                         prefix = f'N-{unseen_teammates_len}-SP',
@@ -163,9 +163,9 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
         if agents:
             init_agent = agents[0]
             continue
-       
+
         teammates_collection = update_TC_w_dynamic_and_static_ADV_teammates(args=args,
-                                                                            train_types=curriculum.train_types, 
+                                                                            train_types=curriculum.train_types,
                                                                             teammates_collection=teammates_collection,
                                                                             primary_agent=init_agent,
                                                                             adversaries=adversaries)
@@ -180,7 +180,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                 hidden_dim=args.N_X_SP_h_dim,
                                                 learner_type=args.primary_learner_type,
                                                 checkpoint_rate=ck_rate)
-        
+
         n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps * (round + 1),
                                                     tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         init_agent = n_x_sp_types_trainer.agents[0]
