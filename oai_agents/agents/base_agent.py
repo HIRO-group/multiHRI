@@ -512,8 +512,8 @@ class OAITrainer(ABC):
         If the integer is greater than 0, it must be followed by CheckedPoints.REWARD_SUBSTR and a floating-point number.
 
         Parameters:
-        - args: Experiment arguments containing base directory info.
-        - name: The name of the agent (or experiment) for which tags should be listed.
+        - args: Experiment arguments containing base directory info and experiment directory info.
+        - name: The name of the agent for which tags should be listed.
         - path: Optional. If provided, it overrides the default path to the agents directory.
 
         Returns:
