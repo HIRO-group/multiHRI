@@ -507,6 +507,7 @@ class OAITrainer(ABC):
         # Load weights
         agents = []
         for agent_fn in saved_variables['agent_fns']:
+            print(f"Loading agent from: {agent_path / agent_fn}")
             agent = load_agent(agent_path / agent_fn, args)
             agent.to(device)
             agents.append(agent)

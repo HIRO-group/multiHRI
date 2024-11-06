@@ -24,11 +24,8 @@ class RLAgentTrainer(OAITrainer):
                 curriculum=None, num_layers=2, hidden_dim=256,
                 checkpoint_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
-<<<<<<< HEAD
-                taper_layers=False, use_policy_clone=False, deterministic=False):
-=======
                 taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0):
->>>>>>> 74154d9 (basic restart with step count)
+
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
@@ -298,9 +295,20 @@ class RLAgentTrainer(OAITrainer):
         self.log_details(experiment_name, total_train_timesteps)
 
         if self.checkpoint_rate is not None:
-            self.ck_list = []
-            path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
-            self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+            if self.args.resume:
+                import os
+
+                path = self.args.base_dir / 'agent_models' / experiment_name
+
+                ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
+                ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+                sorted_idxs = np.argsort(ckpts_nums)
+                ckpts = [ckpts[i] for i in sorted_idxs]
+                self.ck_list = [({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
+            else:
+                self.ck_list = []
+                path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
+                self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
         best_path, best_tag = None, None
 
