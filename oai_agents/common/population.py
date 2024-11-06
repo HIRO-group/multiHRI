@@ -3,7 +3,7 @@ import concurrent
 import dill
 
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, KeyCheckpoints, TeamType
+from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
 
 from .curriculum import Curriculum
 
@@ -127,7 +127,7 @@ def get_population(args,
                    num_SPs_to_train,
                    unseen_teammates_len=0,
                    force_training=False,
-                   tag='last',
+                   tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
                    ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
