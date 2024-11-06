@@ -23,6 +23,7 @@ from stable_baselines3.common.vec_env.stacked_observations import StackedObserva
 import wandb
 import os
 import random
+import re
 
 class OAIAgent(nn.Module, ABC):
     """
@@ -405,7 +406,7 @@ class OAITrainer(ABC):
         # This is outside of the for loop, meaning that each time we evaluate the same player positions across all layouts for a fair comparison
         selected_p_indexes = random.sample(range(self.args.num_players), min(3, self.args.num_players))
 
-        for _, env in enumerate(self.eval_envs): 
+        for _, env in enumerate(self.eval_envs):
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
             }
@@ -503,3 +504,44 @@ class OAITrainer(ABC):
             agent.to(device)
             agents.append(agent)
         return agents
+
+    @staticmethod
+    def list_agent_checked_tags(args, name: str=None, path: Union[Path, None] = None) -> List[str]:
+        '''
+        Lists only tags that start with CheckedPoints.CHECKED_MODEL_PREFIX, followed by an integer.
+        If the integer is greater than 0, it must be followed by CheckedPoints.REWARD_SUBSTR and a floating-point number.
+
+        Parameters:
+        - args: Experiment arguments containing base directory info.
+        - name: The name of the agent (or experiment) for which tags should be listed.
+        - path: Optional. If provided, it overrides the default path to the agents directory.
+
+        Returns:
+        - A list of tags (directories) that match the specified pattern.
+        '''
+        if not path:
+            if args.exp_dir:
+                path = args.base_dir / 'agent_models' / args.exp_dir / name
+            else:
+                path = args.base_dir / 'agent_models' / name
+
+        # Ensure the directory exists
+        if not path.exists() or not path.is_dir():
+            raise FileNotFoundError(f"Agent directory not found: {path}")
+
+        # Define the prefix and the regular expression to match the pattern
+        prefix = KeyCheckpoints.CHECKED_MODEL_PREFIX
+        reward_substr = KeyCheckpoints.REWARD_SUBSTR
+        pattern = re.compile(f"^{re.escape(prefix)}(\\d+)(?:{re.escape(reward_substr)}[\\d.]+)?$")
+
+        # List all subdirectories (tags) that match the pattern
+        tags = []
+        for tag in path.iterdir():
+            if tag.is_dir() and pattern.match(tag.name):
+                match = pattern.match(tag.name)
+                integer_part = int(match.group(1))
+                # Only add tags that either have no reward substring for integer 0, or have it when integer > 0
+                if integer_part == 0 or (integer_part > 0 and reward_substr in tag.name):
+                    tags.append(tag.name)
+
+        return tags
