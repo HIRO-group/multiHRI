@@ -6,7 +6,6 @@ from oai_agents.common.tags import TeamType, AdversaryPlayConfig, CheckedPoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
-
 from scripts.utils import (get_SP_agent,
                     get_FCP_agent_w_pop,
                     get_N_X_FCP_agents,
@@ -129,9 +128,7 @@ def SPN_1ADV_XSPCKP(args) -> None:
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
-                           TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
-                           TeamType.SELF_PLAY_ADVERSARY]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_ADVERSARY]
 
     primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
                           'load': []}
@@ -180,10 +177,7 @@ def SPN_XSPCKP(args) -> None:
     '''
 
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
-                                TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
-                                TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
-                                ]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
     primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
