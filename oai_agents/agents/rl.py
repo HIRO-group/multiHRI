@@ -303,7 +303,7 @@ class RLAgentTrainer(OAITrainer):
 <<<<<<< HEAD
             path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}')
 =======
-            path, tag = self.save_agents(tag=f'{CheckedPoints.FIRST_CHECKED_MODEL}')
+            path, tag = self.save_agents(tag=f'{KeyCheckpoints.FIRST_CHECKED_MODEL}')
 >>>>>>> 4bf7932b797e1170e6f5fc0d39c77e538e313d63
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
@@ -343,7 +343,7 @@ class RLAgentTrainer(OAITrainer):
 <<<<<<< HEAD
                         path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}{KeyCheckpoints.REWARD_SUBSTR}{mean_reward}')
 =======
-                        path, tag = self.save_agents(tag=f'{CheckedPoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}{CheckedPoints.REWARD_SUBSTR}{mean_reward}')
+                        path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}{KeyCheckpoints.REWARD_SUBSTR}{mean_reward}')
 >>>>>>> 4bf7932b797e1170e6f5fc0d39c77e538e313d63
                         self.ck_list.append((rew_per_layout, path, tag))
 
@@ -384,7 +384,7 @@ class RLAgentTrainer(OAITrainer):
         return all_agents
 
     @staticmethod
-    def get_checkedpoints_agents(args, ck_list, layout_name):
+    def get_KeyCheckpoints_agents(args, ck_list, layout_name):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH

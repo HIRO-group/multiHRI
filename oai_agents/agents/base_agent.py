@@ -522,8 +522,8 @@ class OAITrainer(ABC):
     @staticmethod
     def list_agent_checked_tags(args, name: str=None, path: Union[Path, None] = None) -> List[str]:
         '''
-        Lists only tags that start with CheckedPoints.CHECKED_MODEL_PREFIX, followed by an integer.
-        If the integer is greater than 0, it must be followed by CheckedPoints.REWARD_SUBSTR and a floating-point number.
+        Lists only tags that start with KeyCheckpoints.CHECKED_MODEL_PREFIX, followed by an integer.
+        If the integer is greater than 0, it must be followed by KeyCheckpoints.REWARD_SUBSTR and a floating-point number.
 
         Parameters:
         - args: Experiment arguments containing base directory info and experiment directory info.
@@ -548,8 +548,8 @@ class OAITrainer(ABC):
         prefix = KeyCheckpoints.CHECKED_MODEL_PREFIX
         reward_substr = KeyCheckpoints.REWARD_SUBSTR
 =======
-        prefix = CheckedPoints.CHECKED_MODEL_PREFIX
-        reward_substr = CheckedPoints.REWARD_SUBSTR
+        prefix = KeyCheckpoints.CHECKED_MODEL_PREFIX
+        reward_substr = KeyCheckpoints.REWARD_SUBSTR
 >>>>>>> 4bf7932b797e1170e6f5fc0d39c77e538e313d63
         pattern = re.compile(f"^{re.escape(prefix)}(\\d+)(?:{re.escape(reward_substr)}[\\d.]+)?$")
 
