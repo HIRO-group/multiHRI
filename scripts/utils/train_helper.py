@@ -9,7 +9,12 @@ from oai_agents.common.tags import Prefix
 from oai_agents.common.tags import KeyCheckpoints
 
 
+<<<<<<< HEAD
 def get_SP_agent(args, train_types, eval_types, curriculum, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
+=======
+
+def get_SP_agent(args, train_types, eval_types, curriculum, tag=None):
+>>>>>>> 4bf7932b797e1170e6f5fc0d39c77e538e313d63
     name = generate_name(args,
                          prefix=Prefix.SELF_PLAY,
                          seed=args.SP_seed,
