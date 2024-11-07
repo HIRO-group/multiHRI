@@ -70,8 +70,6 @@ def SPN_1ADV_XSPCKP(args) -> None:
     [SP, SP, ADV, H] or [SP, SP, ADV, M] or [SP, SP, ADV, L] or
     [SP, SP, H, H] or [SP, SP, M, M] or [SP, SP, L, L] in a 4-chef layout.
 
-
-    Please note that
     - X is the number of unseen teammate.
     - X is assigned by the variable, unseen_teammates_len, in the funciton.
     '''
@@ -89,7 +87,7 @@ def SPN_1ADV_XSPCKP(args) -> None:
                             is_random = False,
                             total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
-                                TeamType.SELF_PLAY_ADVERSARY: 0.5,
+                                (TeamType.SELF_PLAY_ADVERSARY): 0.5,
                             },
                             rest_of_the_training_probabilities={
                                 TeamType.SELF_PLAY_MEDIUM: 0.3,
@@ -141,9 +139,9 @@ def SPN_XSPCKP(args) -> None:
                             is_random=False,
                             total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
-                                TeamType.SELF_PLAY_LOW: 0.5,
-                                TeamType.SELF_PLAY_MEDIUM: 0.125,
-                                TeamType.SELF_PLAY_HIGH: 0.125,
+                                (TeamType.SELF_PLAY_LOW): 0.5,
+                                (TeamType.SELF_PLAY_MEDIUM): 0.125,
+                                (TeamType.SELF_PLAY_HIGH): 0.125,
                             },
                             rest_of_the_training_probabilities={
                                 TeamType.SELF_PLAY_LOW: 0.4,
@@ -177,9 +175,9 @@ def FCP_mhri(args):
                                 is_random=False,
                                 total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
                                 training_phases_durations_in_order={
-                                    TeamType.LOW_FIRST: 0.5,
-                                    TeamType.MEDIUM_FIRST: 0.125,
-                                    TeamType.HIGH_FIRST: 0.125,
+                                    (TeamType.LOW_FIRST): 0.5,
+                                    (TeamType.MEDIUM_FIRST): 0.125,
+                                    (TeamType.HIGH_FIRST): 0.125,
                                 },
                                 rest_of_the_training_probabilities={
                                     TeamType.LOW_FIRST: 0.4,
