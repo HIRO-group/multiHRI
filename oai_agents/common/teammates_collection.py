@@ -267,9 +267,9 @@ def generate_TC(args,
 
 
 def get_best_SP_agent(args, population):
+    # all_agents = [agent for agent in population[args.layout_names[0]]]
+    all_agents = get_all_agents( args.layout_names[0], population)
     agents_scores_averaged_over_layouts = []
-
-    all_agents = [agent for agent in population[args.layout_names[0]]]
 
     for agent in all_agents:
         scores = [agent.layout_scores[layout_name] for layout_name in args.layout_names]
@@ -277,7 +277,9 @@ def get_best_SP_agent(args, population):
     best_agent = max(agents_scores_averaged_over_layouts, key=lambda x: x[1])
     return best_agent[0]
 
-
+def get_all_agents(layout_name, population):
+    all_agents = [agent for agent in population[layout_name]]
+    return all_agents
 
 def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammates_len, eval_types, eval_collection):
     for teammates in eval_types:
