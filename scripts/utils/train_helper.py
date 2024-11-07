@@ -5,10 +5,10 @@ from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agen
 from oai_agents.common.curriculum import Curriculum
 from .common import load_agents, generate_name
 from oai_agents.common.tags import Prefix
-from oai_agents.common.tags import CheckedPoints
+from oai_agents.common.tags import KeyCheckpoints
 
 
-def get_SP_agent(args, train_types, eval_types, curriculum, tag=None):
+def get_SP_agent(args, train_types, eval_types, curriculum, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     name = generate_name(args,
                          prefix=Prefix.SELF_PLAY,
                          seed=args.SP_seed,
@@ -34,7 +34,7 @@ def get_SP_agent(args, train_types, eval_types, curriculum, tag=None):
         checkpoint_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
     )
 
-    selfplay_trainer.train_agents(total_train_timesteps=args.pop_total_training_timesteps)
+    selfplay_trainer.train_agents(total_train_timesteps=args.pop_total_training_timesteps, tag=tag)
     return selfplay_trainer.get_agents()[0]
 
 
@@ -43,7 +43,7 @@ def get_N_X_SP_agents(args,
                         n_x_sp_train_types:list,
                         n_x_sp_eval_types:list,
                         curriculum:Curriculum,
-                        tag:str=None,
+                        tag:str=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
                         attack_rounds:int=-1,
                         adversary_play_config:str=None) -> tuple:
 
@@ -83,7 +83,7 @@ def get_N_X_SP_agents(args,
         unseen_teammates_len = unseen_teammates_len,
         num_SPs_to_train=args.num_SPs_to_train,
         force_training=args.pop_force_training,
-        tag = tag
+        tag=tag
     )
 
 
@@ -105,7 +105,7 @@ def get_N_X_SP_agents(args,
                            )
 
 
-def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types):
+def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
     agent_to_be_attacked = get_best_SP_agent(args=args, population=population)
@@ -126,7 +126,7 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
                             suffix=args.primary_learner_type + '_attack' + str(attack_round),
                             )
 
-        agents = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=args.adversary_force_training)
+        agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
         if agents:
             agent_to_be_attacked = agents[0]
             continue
@@ -169,11 +169,11 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
                                             checkpoint_rate=total_train_timesteps // args.num_of_ckpoints,
                                             )
 
-        n_x_sp_types_trainer.train_agents(total_train_timesteps=total_train_timesteps)
+        n_x_sp_types_trainer.train_agents(total_train_timesteps=total_train_timesteps, tag=tag)
         agent_to_be_attacked = n_x_sp_types_trainer.get_agents()[0]
 
 
-def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types):
+def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     assert TeamType.SELF_PLAY_ADVERSARY not in curriculum.train_types
 
     name = generate_name(args,
@@ -185,7 +185,7 @@ def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eva
                          suffix=args.primary_learner_type,
                         )
 
-    agents = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=args.primary_force_training)
+    agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
     if agents:
         return agents[0]
 
@@ -215,11 +215,11 @@ def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eva
                                         learner_type=args.primary_learner_type,
                                         checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
                                         )
-    n_x_sp_types_trainer.train_agents(total_train_timesteps=args.n_x_sp_total_training_timesteps)
+    n_x_sp_types_trainer.train_agents(total_train_timesteps=args.n_x_sp_total_training_timesteps, tag=tag)
 
 
 
-def get_adversary_agent(args, agent_to_be_attacked, attack_round):
+def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     # It doesn't matter what we set the variable, adversary_teammates_teamtype,
     # the purpose of it is to maintain consistent naming and correct TC/curriculum creation
     adversary_teammates_teamtype = TeamType.HIGH_FIRST
@@ -236,7 +236,7 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round):
                         has_curriculum=False,
                         suffix=args.adversary_learner_type +'_attack'+ str(attack_round))
 
-    agents = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=args.adversary_force_training)
+    agents = load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=args.adversary_force_training)
     if agents:
         return agents[0]
 
@@ -251,7 +251,7 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round):
                                         hidden_dim=args.ADV_h_dim,
                                         learner_type=args.adversary_learner_type,
                                         checkpoint_rate=args.adversary_total_training_timesteps // args.num_of_ckpoints)
-    adversary_trainer.train_agents(total_train_timesteps=args.adversary_total_training_timesteps)
+    adversary_trainer.train_agents(total_train_timesteps=args.adversary_total_training_timesteps, tag=tag)
     return adversary_trainer.get_agents()[0]
 
 
@@ -259,7 +259,7 @@ def get_FCP_agent_w_pop(args,
                         fcp_train_types,
                         fcp_eval_types,
                         fcp_curriculum,
-                        tag=None):
+                        tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
 
     name = generate_name(args,
                          prefix=Prefix.FICTITIOUS_CO_PLAY,
@@ -276,7 +276,7 @@ def get_FCP_agent_w_pop(args,
         eval_types=fcp_eval_types['generate'],
         num_SPs_to_train=args.num_SPs_to_train,
         force_training=args.pop_force_training,
-        tag = tag
+        tag=tag
     )
 
     teammates_collection = generate_TC(args=args,
@@ -288,7 +288,6 @@ def get_FCP_agent_w_pop(args,
     agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
     if agents:
         return agents[0], population
-
 
     fcp_trainer = RLAgentTrainer(
         name=name,
@@ -304,7 +303,7 @@ def get_FCP_agent_w_pop(args,
         checkpoint_rate=args.fcp_total_training_timesteps // args.num_of_ckpoints,
     )
 
-    fcp_trainer.train_agents(total_train_timesteps=args.fcp_total_training_timesteps)
+    fcp_trainer.train_agents(total_train_timesteps=args.fcp_total_training_timesteps, tag=tag)
     return fcp_trainer.get_agents()[0], population
 
 
@@ -317,7 +316,7 @@ def get_N_X_FCP_agents(args,
                         fcp_curriculum,
                         n_1_fcp_curriculum,
                         unseen_teammates_len,
-                        tag=None):
+                        tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
 
     n_1_fcp_curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
                                                   unallowed_types= TeamType.ALL_TYPES_BESIDES_SP)
@@ -360,8 +359,5 @@ def get_N_X_FCP_agents(args,
         checkpoint_rate=args.n_x_fcp_total_training_timesteps // args.num_of_ckpoints,
     )
 
-    fcp_trainer.train_agents(total_train_timesteps=args.n_x_fcp_total_training_timesteps)
+    fcp_trainer.train_agents(total_train_timesteps=args.n_x_fcp_total_training_timesteps, tag=tag)
     return fcp_trainer.get_agents()[0], teammates_collection
-
-def get_randomly_initialized_agent(args, n_env=200, h_dim=256, seed=13):
-    return RLAgentTrainer.generate_randomly_initialized_agent(args=args, n_env=n_env, h_dim=h_dim, seed=seed)

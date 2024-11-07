@@ -6,6 +6,7 @@ from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType
 from oai_agents.common.learner import LearnerType
+from oai_agents.common.tags import KeyCheckpoints
 
 def fix_ck_list(initial_run_root, continued_run_root, corrected_run_root, ck_starts_from):
     ck_regex = re.compile(r'ck_(\d+)(.*)')
@@ -20,7 +21,7 @@ def fix_ck_list(initial_run_root, continued_run_root, corrected_run_root, ck_sta
         if os.path.isdir(initial_SP_path):
             os.makedirs(corrected_SP_path, exist_ok=True)
             for SP_tag in os.listdir(initial_SP_path):
-                if pop_regex.match(sp_folder) or SP_tag == 'best' or SP_tag == 'aamas25': # does not copy the content of pop as well
+                if pop_regex.match(sp_folder) or SP_tag == 'best' or SP_tag == KeyCheckpoints.MOST_RECENT_TRAINED_MODEL: # does not copy the content of pop as well
                     print(f"Skipping {SP_tag} in {initial_SP_path}")
                     continue
                 else:
@@ -33,7 +34,7 @@ def fix_ck_list(initial_run_root, continued_run_root, corrected_run_root, ck_sta
 
             if os.path.isdir(continued_SP_path):
                 for SP_tag in os.listdir(continued_SP_path):
-                    if not pop_regex.match(sp_folder) and (SP_tag == 'best' or SP_tag == 'aamas25'):
+                    if not pop_regex.match(sp_folder) and (SP_tag == 'best' or SP_tag == KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
                         continued_SP_tag_folder = os.path.join(continued_SP_path, SP_tag)
                         corrected_SP_tag_folder = os.path.join(corrected_SP_path, SP_tag)
                         if os.path.isdir(continued_SP_tag_folder):
@@ -64,18 +65,18 @@ def fix_pop(args, initial_run_root, continued_run_root, corrected_run_root):
     corrected_run_exp = re.search(r'agent_models/(.*)', corrected_run_root).group(1)
 
     population_initial = {layout_name: [] for layout_name in args.layout_names}
-    population_continued = {layout_name: [] for layout_name in args.layout_names}    
+    population_continued = {layout_name: [] for layout_name in args.layout_names}
 
     for layout_name in args.layout_names:
         name = f'pop_{layout_name}'
         args.exp_dir = initial_run_exp
-        population_initial[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag='aamas25')
+        population_initial[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         print(f"Loaded {name} in {initial_run_exp}, size: {len(population_initial[layout_name])}")
 
         args.exp_dir = continued_run_exp
-        population_continued[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag='aamas25')
+        population_continued[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         print(f"Loaded {name} in {continued_run_exp}, size: {len(population_continued[layout_name])}")
-        
+
         all_agents = population_initial[layout_name] + population_continued[layout_name]
 
         rt = RLAgentTrainer(
@@ -91,14 +92,14 @@ def fix_pop(args, initial_run_root, continued_run_root, corrected_run_root):
         )
         rt.agents = all_agents
         args.exp_dir = corrected_run_exp
-        rt.save_agents(tag='aamas25')
+        rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         print(f"Saved {name} in {corrected_run_root}, size: {len(all_agents)}")
 
 
 def set_input():
     args = get_arguments()
     args.teammates_len = 4
-    args.num_players = args.teammates_len + 1 
+    args.num_players = args.teammates_len + 1
     args.layout_names = ['selected_5_chefs_counter_circuit',
                          'selected_5_chefs_secret_coordination_ring',
                          'selected_5_chefs_storage_room']
