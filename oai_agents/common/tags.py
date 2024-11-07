@@ -81,17 +81,9 @@ class TeammatesCollection:
     TRAIN = 'train'
     EVAL = 'eval'
 
-class KeyCheckpoints():
-    # During training, we saved models if it reaches the best eval/training reward, worst eval/training reward.
-    # In addition, we also save the very last one.
-    # For all of them, we assign them a tag so that we can use them in the future.
-    # For example, if the training reaches best evaluation reward, we saved it with a tag BEST_EVAL_REWARD.
-    BEST_EVAL_REWARD = 'best'
-    WORST_EVAL_REWARD ='worst'
-    BEST_TRAIN_REWARD = 'best_train_reward'
-    WORST_TRAIN_REWARD ='worst_train_reward'
-    MOST_RECENT_TRAINED_MODEL = 'last'
-    FIRST_CHECKED_MODEL = 'ck_0'
+class KeyCheckpoints: # Tags to identify the type of model checkpoint to save/load
+    BEST_EVAL_REWARD = 'best' # Use only for evaluation
+    MOST_RECENT_TRAINED_MODEL = 'last' # Use only for training
 
 class Prefix:
     SELF_PLAY = 'SP'

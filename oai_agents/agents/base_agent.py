@@ -489,7 +489,7 @@ class OAITrainer(ABC):
         return path, tag
 
     @staticmethod
-    def load_agents(args, name: str=None, path: Union[Path, None] = None, tag: Union[str, None] = None):
+    def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):
         ''' Loads each agent that the trainer is training '''
         if not path:
             if args.exp_dir:

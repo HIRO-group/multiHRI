@@ -34,7 +34,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
 
-    rlat.train_agents(total_train_timesteps=total_training_timesteps)
+    rlat.train_agents(total_train_timesteps=total_training_timesteps, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
     checkpoints_list = rlat.ck_list
 
     if serialize:

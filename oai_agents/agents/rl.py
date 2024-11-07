@@ -60,7 +60,6 @@ class RLAgentTrainer(OAITrainer):
                                                                                                    train_types = train_types,
                                                                                                    eval_types = eval_types)
         self.best_score, self.best_training_rew = -1, float('-inf')
-        self.worst_score, self.worst_training_rew = float('inf'), float('inf')
 
     @classmethod
     def generate_randomly_initialized_agent(cls,
@@ -280,13 +279,13 @@ class RLAgentTrainer(OAITrainer):
         print(f"Number of environments: {self.n_envs}")
         print(f"Hidden dimension: {self.hidden_dim}")
         print(f"Seed: {self.seed}")
-        print(f"Checkpoint rate: {self.checkpoint_rate}")
+        print(f"Checkpoint rate: {self.checkpoint_rate * total_train_timesteps if self.checkpoint_rate else None}")
         print(f"Learner type: {self.learner_type}")
         print("Dynamic Reward: ", self.args.dynamic_reward)
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
 
-    def train_agents(self, total_train_timesteps, exp_name=None):
+    def train_agents(self, total_train_timesteps, tag, exp_name=None):
         experiment_name = self.get_experiment_name(exp_name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
@@ -341,7 +340,7 @@ class RLAgentTrainer(OAITrainer):
                     self.best_score = mean_reward
             steps += 1
         self.save_agents()
-        self.agents = RLAgentTrainer.load_agents(self.args, self.name, best_path, best_tag)
+        self.agents = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag)
         run.finish()
 
     @staticmethod

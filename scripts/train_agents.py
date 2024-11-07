@@ -13,23 +13,6 @@ from scripts.utils import (get_SP_agent,
                     get_N_X_SP_agents,
                     )
 
-def SP(args, pop_force_training):
-    args.primary_train_types = [TeamType.SELF_PLAY]
-    args.primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY],
-        'load': []
-    }
-    curriculum = Curriculum(train_types=args.primary_train_types, is_random=True)
-
-    agent = get_SP_agent(args=args,
-                train_types=curriculum.train_types,
-                eval_types=args.primary_eval_types,
-                total_training_timesteps=args.pop_total_training_timesteps,
-                force_training=pop_force_training,
-                curriculum=curriculum)
-    return agent[0]
-
-
 def SP(args):
     primary_train_types = [TeamType.SELF_PLAY]
     primary_eval_types = {
@@ -44,41 +27,6 @@ def SP(args):
                 curriculum=curriculum
                 )
 
-
-def N_X_SP(args) -> None:
-    '''
-    It is similar to SPN_XSPCKP. We may want to delete N_X_SP function.
-    '''
-    unseen_teammates_len = 1 # This is the X in N_X_SP
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
-    primary_eval_types = {
-                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
-                            'load': []
-                            }
-
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random=False,
-                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-                            training_phases_durations_in_order={
-                                TeamType.SELF_PLAY_LOW: 0.5,
-                                TeamType.SELF_PLAY_MEDIUM: 0.125,
-                                TeamType.SELF_PLAY_HIGH: 0.125,
-                            },
-                            rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_LOW: 0.4,
-                                TeamType.SELF_PLAY_MEDIUM: 0.3,
-                                TeamType.SELF_PLAY_HIGH: 0.3,
-                            },
-                            probabilities_decay_over_time=0
-                            )
-
-    get_N_X_SP_agents(
-        args,
-        n_x_sp_train_types=curriculum.train_types,
-        n_x_sp_eval_types=primary_eval_types,
-        curriculum=curriculum,
-        unseen_teammates_len=unseen_teammates_len,
-        )
 
 def SPN_1ADV(args) -> None:
     '''
@@ -108,6 +56,7 @@ def SPN_1ADV(args) -> None:
         adversary_play_config=adversary_play_config,
         attack_rounds=attack_rounds
     )
+
 
 def SPN_1ADV_XSPCKP(args) -> None:
     '''
@@ -373,15 +322,15 @@ def set_input(args):
         args.exp_dir = f'Final/{args.num_players}'
 
     else: # Used for doing quick tests
-        args.num_of_ckpoints = 2
+        args.num_of_ckpoints = 10
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
         args.n_envs = 2
         args.epoch_timesteps = 2
 
         args.pop_total_training_timesteps = 3500
-        args.n_x_sp_total_training_timesteps = 1500
-        args.adversary_total_training_timesteps = 1500
+        args.n_x_sp_total_training_timesteps = 1000
+        args.adversary_total_training_timesteps = 1000
 
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
@@ -392,21 +341,21 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
 
-    args.pop_force_training = True
-    args.adversary_force_training = True
-    args.primary_force_training = True
+    args.pop_force_training = False
+    args.adversary_force_training = False
+    args.primary_force_training = False
 
-    args.teammates_len = 3
+    args.teammates_len = 2
     args.how_long = 6 # not effective when quick_test is True
 
     set_input(args=args)
 
-    # SP(args)
+    SPN_1ADV_XSPCKP(args=args)
 
-    # N_X_SP(args=args)
+    # SP(args)
 
     # FCP_traditional(args=args)
 
@@ -415,7 +364,5 @@ if __name__ == '__main__':
     # SPN_1ADV(args=args)
 
     # SPN_XSPCKP(args=args)
-
-    SPN_1ADV_XSPCKP(args=args)
 
     # N_1_FCP(args=args)
