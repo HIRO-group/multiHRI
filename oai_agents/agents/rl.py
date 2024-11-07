@@ -265,7 +265,7 @@ class RLAgentTrainer(OAITrainer):
         steps_divisable_by_15 = (steps + 1) % 15 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
-    
+
         return steps_divisable_by_15 or mean_rew_greater_than_best or checkpoint_rate_reached
 
     def log_details(self, experiment_name, total_train_timesteps):
@@ -295,7 +295,7 @@ class RLAgentTrainer(OAITrainer):
 
         if self.checkpoint_rate is not None:
             self.ck_list = []
-            path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
+            path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}')
             self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
         best_path, best_tag = None, None
@@ -331,7 +331,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
+                        path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}{KeyCheckpoints.REWARD_SUBSTR}{mean_reward}')
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:
