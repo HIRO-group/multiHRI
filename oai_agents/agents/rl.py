@@ -389,7 +389,7 @@ class RLAgentTrainer(OAITrainer):
         return all_agents
 
     @staticmethod
-    def get_KeyCheckpoints_agents(args, ck_list, layout_name):
+    def get_checkedpoints_agents(args, ck_list, layout_name):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH
