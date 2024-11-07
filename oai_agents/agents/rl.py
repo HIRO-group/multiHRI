@@ -311,8 +311,9 @@ class RLAgentTrainer(OAITrainer):
                 self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
             else:
                 self.ck_list = []
-                path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
+                path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}')
                 self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+
 
         best_path, best_tag = None, None
 
@@ -379,7 +380,7 @@ class RLAgentTrainer(OAITrainer):
         return all_agents
 
     @staticmethod
-    def get_checkedpoints_agents(args, ck_list, layout_name):
+    def get_KeyCheckpoints_agents(args, ck_list, layout_name):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH

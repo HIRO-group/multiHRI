@@ -1,6 +1,6 @@
 from oai_agents.agents.base_agent import OAITrainer
 from pathlib import Path
-from oai_agents.common.tags import CheckedPoints
+from oai_agents.common.tags import KeyCheckpoints
 import shutil
 
 def test_list_agent_checked_tags():
@@ -38,7 +38,7 @@ def test_list_agent_checked_tags():
         "ck_10_rew_336.8888888888889",
         "ck_3_invalid",               # Invalid because it doesn't have a valid float after the integer
         "ck_4_rew_invalid",            # Invalid because reward value is not a float
-        "unrelated_tag",                # Invalid because it doesn't start with `CheckedPoints.CHECKED_MODEL_PREFIX`
+        "unrelated_tag",                # Invalid because it doesn't start with `KeyCheckpoints.CHECKED_MODEL_PREFIX`
         "best",
         "last"
     ]

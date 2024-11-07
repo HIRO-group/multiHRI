@@ -527,8 +527,8 @@ class OAITrainer(ABC):
     @staticmethod
     def list_agent_checked_tags(args, name: str=None, path: Union[Path, None] = None) -> List[str]:
         '''
-        Lists only tags that start with CheckedPoints.CHECKED_MODEL_PREFIX, followed by an integer.
-        If the integer is greater than 0, it must be followed by CheckedPoints.REWARD_SUBSTR and a floating-point number.
+        Lists only tags that start with KeyCheckpoints.CHECKED_MODEL_PREFIX, followed by an integer.
+        If the integer is greater than 0, it must be followed by KeyCheckpoints.REWARD_SUBSTR and a floating-point number.
 
         Parameters:
         - args: Experiment arguments containing base directory info and experiment directory info.
