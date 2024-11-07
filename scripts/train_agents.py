@@ -289,7 +289,7 @@ def set_input(args):
         args.fcp_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.SP_seed, args.SP_h_dim = 68, 256
+        args.SP_seed, args.SP_h_dim = 1010, 256
         args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
