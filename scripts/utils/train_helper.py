@@ -219,7 +219,7 @@ def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eva
 
 
 
-def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=None):
+def get_adversary_agent(args, agent_to_be_attacked, attack_round):
     # It doesn't matter what we set the variable, adversary_teammates_teamtype,
     # the purpose of it is to maintain consistent naming and correct TC/curriculum creation
     adversary_teammates_teamtype = TeamType.HIGH_FIRST
@@ -236,7 +236,7 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=None):
                         has_curriculum=False,
                         suffix=args.adversary_learner_type +'_attack'+ str(attack_round))
 
-    agents = load_agents(args, name=name, tag=tag, force_training=args.adversary_force_training)
+    agents = load_agents(args, name=name, tag=CheckedPoints.FINAL_TRAINED_MODEL, force_training=args.adversary_force_training)
     if agents:
         return agents[0]
 
