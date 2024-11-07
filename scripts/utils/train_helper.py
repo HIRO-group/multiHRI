@@ -236,7 +236,7 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=KeyCheckpo
                         has_curriculum=False,
                         suffix=args.adversary_learner_type +'_attack'+ str(attack_round))
 
-    agents = load_agents(args, name=name, tag=tag, force_training=args.adversary_force_training)
+    agents = load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=args.adversary_force_training)
     if agents:
         return agents[0]
 

@@ -401,30 +401,23 @@ class OAITrainer(ABC):
         rew_per_layout_per_teamtype = {}
         rew_per_layout = {}
 
-        '''
-        dict
-        teammates_collection = {
-            'layout_name': {
-                'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
-                'TeamType.MEDIUM_FIRST': [[agent3, agent4], ...],
-                'TeamType.LOW_FIRST': [[agent5, agent6], ...],
-                'TeamType.RANDOM': [[agent7, agent8], ...],
-            },
-        }
-        '''
-        for _, env in enumerate(self.eval_envs):
+        # To reduce evaluation time: instead of evaluating all players, we randomly select three of player positions for evaluation
+        # This is outside of the for loop, meaning that each time we evaluate the same player positions across all layouts for a fair comparison
+        selected_p_indexes = random.sample(range(self.args.num_players), min(3, self.args.num_players))
+
+        for _, env in enumerate(self.eval_envs): 
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
             }
             rew_per_layout[env.layout_name] = 0
 
             teamtypes_population = self.eval_teammates_collection[env.layout_name]
+
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
-
                 env.set_teammates(teammates)
-                for p_idx in range(env.mdp.num_players):
 
+                for p_idx in selected_p_indexes:
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
                                                               deterministic=deterministic, warn=False, render=visualize)

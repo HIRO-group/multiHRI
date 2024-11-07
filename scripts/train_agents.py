@@ -349,7 +349,7 @@ if __name__ == '__main__':
     args.primary_force_training = False
 
     args.teammates_len = 2
-    args.how_long = 6 # not effective when quick_test is True
+    args.how_long = 6 # Not effective in quick_test mode
 
     set_input(args=args)
 
