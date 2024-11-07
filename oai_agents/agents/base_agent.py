@@ -402,24 +402,10 @@ class OAITrainer(ABC):
         rew_per_layout_per_teamtype = {}
         rew_per_layout = {}
 
-<<<<<<< HEAD
         # To reduce evaluation time: instead of evaluating all players, we randomly select three of player positions for evaluation
         # This is outside of the for loop, meaning that each time we evaluate the same player positions across all layouts for a fair comparison
         selected_p_indexes = random.sample(range(self.args.num_players), min(3, self.args.num_players))
 
-=======
-        '''
-        dict
-        teammates_collection = {
-            'layout_name': {
-                'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
-                'TeamType.MEDIUM_FIRST': [[agent3, agent4], ...],
-                'TeamType.LOW_FIRST': [[agent5, agent6], ...],
-                'TeamType.RANDOM': [[agent7, agent8], ...],
-            },
-        }
-        '''
->>>>>>> 4bf7932b797e1170e6f5fc0d39c77e538e313d63
         for _, env in enumerate(self.eval_envs):
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
@@ -544,13 +530,8 @@ class OAITrainer(ABC):
             raise FileNotFoundError(f"Agent directory not found: {path}")
 
         # Define the prefix and the regular expression to match the pattern
-<<<<<<< HEAD
         prefix = KeyCheckpoints.CHECKED_MODEL_PREFIX
         reward_substr = KeyCheckpoints.REWARD_SUBSTR
-=======
-        prefix = KeyCheckpoints.CHECKED_MODEL_PREFIX
-        reward_substr = KeyCheckpoints.REWARD_SUBSTR
->>>>>>> 4bf7932b797e1170e6f5fc0d39c77e538e313d63
         pattern = re.compile(f"^{re.escape(prefix)}(\\d+)(?:{re.escape(reward_substr)}[\\d.]+)?$")
 
         # List all subdirectories (tags) that match the pattern
