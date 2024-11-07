@@ -401,9 +401,9 @@ class OAITrainer(ABC):
         rew_per_layout_per_teamtype = {}
         rew_per_layout = {}
 
-        # To reduce evaluation time: instead of evaluating all players, we randomly select either two or three of player positions for evaluation
+        # To reduce evaluation time: instead of evaluating all players, we randomly select three of player positions for evaluation
         # This is outside of the for loop, meaning that each time we evaluate the same player positions across all layouts for a fair comparison
-        selected_p_indexes = random.sample(range(self.args.num_players), min(random.choice([2, 3]), self.args.num_players))
+        selected_p_indexes = random.sample(range(self.args.num_players), min(3, self.args.num_players))
 
         for _, env in enumerate(self.eval_envs): 
             rew_per_layout_per_teamtype[env.layout_name] = {
