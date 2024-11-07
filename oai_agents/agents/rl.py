@@ -263,11 +263,11 @@ class RLAgentTrainer(OAITrainer):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
         self.best_training_rew *= 0.98
 
-        steps_divisable_by_5 = (steps + 1) % 5 == 0
+        steps_divisable_by_15 = (steps + 1) % 15 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
     
-        return steps_divisable_by_5 or mean_rew_greater_than_best or checkpoint_rate_reached
+        return steps_divisable_by_15 or mean_rew_greater_than_best or checkpoint_rate_reached
 
     def log_details(self, experiment_name, total_train_timesteps):
         print("Training agent: " + self.name + ", for experiment: " + experiment_name)

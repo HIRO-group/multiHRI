@@ -399,10 +399,12 @@ if __name__ == '__main__':
     args.adversary_force_training = True
     args.primary_force_training = True
 
-    args.teammates_len = 3
+    args.teammates_len = 2
     args.how_long = 6 # not effective when quick_test is True
 
     set_input(args=args)
+
+    SPN_1ADV_XSPCKP(args=args)
 
     # SP(args)
 
@@ -415,7 +417,5 @@ if __name__ == '__main__':
     # SPN_1ADV(args=args)
 
     # SPN_XSPCKP(args=args)
-
-    SPN_1ADV_XSPCKP(args=args)
 
     # N_1_FCP(args=args)
