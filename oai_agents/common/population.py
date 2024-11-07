@@ -204,7 +204,7 @@ def get_categorized_population(args,
             for dilled_res in dilled_results:
                 checkpoints_list = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_KeyCheckpoints_agents(args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
         else:
             for inp in inputs:
@@ -215,7 +215,7 @@ def get_categorized_population(args,
                                                    h_dim=inp[4],
                                                    serialize=False)
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_KeyCheckpoints_agents(args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
 
         save_categorized_population(args=args, population=population)
