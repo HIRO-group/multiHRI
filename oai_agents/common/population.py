@@ -12,7 +12,7 @@ from .curriculum import Curriculum
 import random
 
 
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
+def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, force_training):
     '''
         Returns ckeckpoints_list
         either serialized or not based on serialize flag

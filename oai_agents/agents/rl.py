@@ -61,7 +61,7 @@ class RLAgentTrainer(OAITrainer):
         self.start_step = start_step
         self.steps = self.start_step
         # Cumm. timestep to start training from (usually 0 unless restarted)
-        self.start_timestep = start_timestep        
+        self.start_timestep = start_timestep
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
@@ -342,7 +342,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=ckname_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
+                        path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}{KeyCheckpoints.REWARD_SUBSTR}{mean_reward}')
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:
