@@ -12,7 +12,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
 
     :param agents_perftag_score: The population of agents to select from represented as a list of tuples (agent, performance tag, score for this layout)
     :param teamtypes: The list of TeamTypes to use to select teammates for each team
-    :param teammates_len: Total number of players on each team
+    :param teammates_len: Total number teammates (i.e. totoal number of players - 1)
     :param unseen_teammates_len: For NXSP experiments, this is X, the number of unseen players that an SP agent is playing with
     :param agent: The agent that the teammates will play with
     :param use_entire_population: Flag inidicating if the entire population should be used, if False, this function will only generate one team for each teamtype
@@ -23,9 +23,12 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
         # If we want to use the entire population, we must check that the population is evenly divisible by the number of required agents
         required_population_size = 0
         for team_type in teamtypes:
-            if team_type in TeamType.ALL_TYPES_BESIDES_SP:
-                required_population_size += (teammates_len - 1)
-            elif team_type in TeamType.SELF_PLAY_X_TYPES:
+            if (team_type in TeamType.ALL_TYPES_BESIDES_SP):
+                required_population_size += teammates_len
+            elif (team_type == TeamType.SELF_PLAY_ADVERSARY):
+                # Adversary teammates are not added in this function so we don't need to require the population to have an agent for this type
+                continue
+            elif (team_type in TeamType.SELF_PLAY_X_TYPES):
                 required_population_size += unseen_teammates_len
 
         assert len(agents_perftag_score) % required_population_size == 0, \
@@ -51,34 +54,16 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
         # {layout_name: {'SPH' : [[team1], [team2]] }, 'SPM' : [...]}
         assert num_perf_categories == 3, f'Current TC generation assumes only three performance types are present in the population'
         
-        PART_KEYS = ['H', 'M', 'L']
-        catagorized_agents = {p_key : [] for p_key in PART_KEYS} 
-        start_idx = 0
+        PERFORMANCE_LEVELS = ['H', 'M', 'L']
         # Number of elements in each partition
         part_size = len(agents_perftag_score) // num_perf_categories
-        for cat in range(num_perf_categories):
-            part_key = PART_KEYS[cat]
-            end_idx = start_idx + part_size
-            catagorized_agents[part_key] = sorted_agents_perftag_score[start_idx:end_idx]
-            start_idx = end_idx
+        catagorized_agents = {
+            PERFORMANCE_LEVELS[i] : sorted_agents_perftag_score[i*part_size : (i + 1) * part_size]
+            for i in range(num_perf_categories)
+        }
 
         for teamtype in teamtypes:
-            if teamtype == TeamType.HIGH_FIRST:
-                raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
-
-            elif teamtype == TeamType.MEDIUM_FIRST:
-                raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
-
-            elif teamtype == TeamType.MIDDLE_FIRST:
-                raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
-
-            elif teamtype == TeamType.LOW_FIRST:
-                raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
-
-            elif teamtype == TeamType.RANDOM:
-                raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
-
-            elif teamtype == TeamType.ALL_MIX:
+            if teamtype in TeamType.ALL_TYPES_BESIDES_SP:
                 raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
 
             elif teamtype == TeamType.SELF_PLAY:
@@ -87,26 +72,33 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
 
             elif teamtype == TeamType.SELF_PLAY_HIGH:
                 assert agent is not None
-                part_key = PART_KEYS[0]
+                perf_level = PERFORMANCE_LEVELS[0]
+                agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
+                agent_perftag_score_of_category = catagorized_agents[perf_level]
+                # Extract the agent from each tuple in the list
+                agents_of_category = [a[0] for a in agent_perftag_score_of_category]
+                all_teammates[teamtype] = [agents_of_category[i:i + unseen_teammates_len] + agents_itself for i in range(0, len(agents_of_category), unseen_teammates_len)]
 
             elif teamtype == TeamType.SELF_PLAY_MEDIUM:
                 assert agent is not None
-                part_key = PART_KEYS[1]
+                perf_level = PERFORMANCE_LEVELS[1]
+                agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
+                agent_perftag_score_of_category = catagorized_agents[perf_level]
+                # Extract the agent from each tuple in the list
+                agents_of_category = [a[0] for a in agent_perftag_score_of_category]
+                all_teammates[teamtype] = [agents_of_category[i:i + unseen_teammates_len] + agents_itself for i in range(0, len(agents_of_category), unseen_teammates_len)]
 
             elif teamtype == TeamType.SELF_PLAY_MIDDLE:
-                assert agent is not None
                 raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
 
             elif teamtype == TeamType.SELF_PLAY_LOW:
                 assert agent is not None
-                part_key = PART_KEYS[2]
-
-            agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
-            agent_perftag_score_of_category = catagorized_agents[part_key]
-            # Extract the agent from each tuple in the list
-            agents_of_category = [a[0] for a in agent_perftag_score_of_category]
-            all_teammates[teamtype] = [agents_of_category[i:i + unseen_teammates_len] + agents_itself for i in range(0, len(agents_of_category), unseen_teammates_len)]
-
+                perf_level = PERFORMANCE_LEVELS[2]
+                agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
+                agent_perftag_score_of_category = catagorized_agents[perf_level]
+                # Extract the agent from each tuple in the list
+                agents_of_category = [a[0] for a in agent_perftag_score_of_category]
+                all_teammates[teamtype] = [agents_of_category[i:i + unseen_teammates_len] + agents_itself for i in range(0, len(agents_of_category), unseen_teammates_len)]
 
     else:
         used_agents = set()  # To keep track of used agents

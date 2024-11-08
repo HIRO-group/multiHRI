@@ -137,7 +137,9 @@ def SPN_1ADV_XSPCKP(args) -> None:
                             is_random = False,
                             total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
                             training_phases_durations_in_order={
-                                TeamType.SELF_PLAY_ADVERSARY: 0.5,
+                                TeamType.SELF_PLAY_HIGH: 0.1,
+                                TeamType.SELF_PLAY_MEDIUM: 0.1,
+                                TeamType.SELF_PLAY_ADVERSARY: 0.3,
                             },
                             rest_of_the_training_probabilities={
                                 TeamType.SELF_PLAY_MEDIUM: 0.3,
@@ -387,7 +389,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
 
     args.pop_force_training = True
