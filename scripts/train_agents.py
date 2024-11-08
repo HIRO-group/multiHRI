@@ -6,7 +6,6 @@ from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
-
 from scripts.utils import (get_SP_agent,
                     get_FCP_agent_w_pop,
                     get_N_X_FCP_agents,
@@ -76,9 +75,7 @@ def SPN_1ADV_XSPCKP(args) -> None:
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
-                           TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
-                           TeamType.SELF_PLAY_ADVERSARY]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_ADVERSARY]
 
     primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
                           'load': []}
@@ -125,11 +122,9 @@ def SPN_XSPCKP(args) -> None:
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
     :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file.
     '''
+
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
-                                TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
-                                TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
-                                ]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
     primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
                             'load': []
@@ -168,7 +163,7 @@ def FCP_mhri(args):
     decided to add different types for teammates_collection.
     '''
     primary_train_types = [TeamType.LOW_FIRST, TeamType.MEDIUM_FIRST, TeamType.HIGH_FIRST]
-    primary_eval_types = {'generate' : [],
+    primary_eval_types = {'generate' : [TeamType.HIGH_FIRST],
                           'load': []}
 
     fcp_curriculum = Curriculum(train_types = primary_train_types,

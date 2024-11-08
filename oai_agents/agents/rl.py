@@ -396,20 +396,14 @@ class RLAgentTrainer(OAITrainer):
         highest_score = all_score_path_tag_sorted[0][0]
         lowest_score = all_score_path_tag_sorted[-1][0]
         middle_score = (highest_score + lowest_score) // 2
-        high_middle_score = (highest_score + middle_score) //2
-        middle_low_score = (middle_score + lowest_score) // 2
 
         high_score_path_tag = all_score_path_tag_sorted[0]
-        high_score_medium_path_tag = RLAgentTrainer.find_closest_score_path_tag(high_middle_score, all_score_path_tag_sorted)
         medium_score_path_tag = RLAgentTrainer.find_closest_score_path_tag(middle_score, all_score_path_tag_sorted)
-        medium_score_low_path_tag = RLAgentTrainer.find_closest_score_path_tag(middle_low_score, all_score_path_tag_sorted)
         low_score_path_tag = all_score_path_tag_sorted[-1]
 
         H_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, high_score_path_tag, AgentPerformance.HIGH, ck_list=ck_list)
-        HM_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, high_score_medium_path_tag, AgentPerformance.HIGH_MEDIUM, ck_list=ck_list)
         M_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_path_tag, AgentPerformance.MEDIUM, ck_list=ck_list)
-        ML_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_low_path_tag, AgentPerformance.MEDIUM_LOW, ck_list=ck_list)
         L_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, low_score_path_tag, AgentPerformance.LOW, ck_list=ck_list)
 
-        all_agents = H_agents + HM_agents + M_agents + ML_agents + L_agents
+        all_agents = H_agents + M_agents + L_agents
         return all_agents
