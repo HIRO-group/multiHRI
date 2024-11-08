@@ -336,14 +336,14 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
 
-    args.teammates_len = 2
+    args.teammates_len = 1
     args.how_long = 6 # Not effective in quick_test mode
 
     set_input(args=args)
