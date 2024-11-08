@@ -1,4 +1,4 @@
-from oai_agents.common.tags import TeamType, CheckedPoints
+from oai_agents.common.tags import TeamType, KeyCheckpoints
 
 class EvalMembersToBeLoaded:
     def __init__(self, load_from_pop_structure, names, team_type, tags, layout_name):
@@ -11,7 +11,7 @@ class EvalMembersToBeLoaded:
         if load_from_pop_structure:
             assert len(names) == 1, 'Only one name should be provided if reading from pop structure'
             assert len(tags) == 1, 'Only one tag should be provided if reading from pop structure'
-        
+
         assert len(names) == len(tags), 'Number of names and tags should be the same'
 
 
@@ -19,7 +19,7 @@ def get_eval_types_to_load():
     '''
     Instructions:
 
-    If load_from_pop_structure is False, it means that we are reading independent agents from files.    
+    If load_from_pop_structure is False, it means that we are reading independent agents from files.
     t1 = EvalMembersToBeLoaded(
         load_from_pop_structure = False,
         names = ['eval/3_chefs/fcp_hd256_seed26', 'eval/3_chefs/fcp_hd256_seed39'],
@@ -27,13 +27,13 @@ def get_eval_types_to_load():
         tags = ['best', 'best'],
         layout_name = '3_chefs_small_kitchen',
     )
-    
-    Pop structure holds the population of agent used for FCP training. 
+
+    Pop structure holds the population of agent used for FCP training.
     t2 = EvalMembersToBeLoaded(
         load_from_pop_structure = True,
         names = ['eval/3_chefs/fcp_pop_3_chefs_small_kitchen'],
         team_type = TeamType.HIGH_FIRST,
-        tags = ['aamas25'],
+        tags = ['last'],
         layout_name = '3_chefs_small_kitchen',
     )
     '''
@@ -42,7 +42,7 @@ def get_eval_types_to_load():
             load_from_pop_structure = True,
             names = ['eval/3_chefs/fcp_pop_3_chefs_small_kitchen'],
             team_type = TeamType.HIGH_FIRST,
-            tags = ['aamas25'],
+            tags = ['last'],
             layout_name = '3_chefs_small_kitchen',
         )
 
@@ -50,7 +50,7 @@ def get_eval_types_to_load():
         load_from_pop_structure = True,
         names = ['eval/3_chefs/fcp_pop_3_chefs_small_kitchen'],
         team_type = TeamType.LOW_FIRST,
-        tags = ['aamas25'],
+        tags = ['last'],
         layout_name = '3_chefs_small_kitchen',
     )
 
@@ -66,7 +66,7 @@ def get_eval_types_to_load():
         load_from_pop_structure = True,
         names = ['eval/3_chefs/fcp_pop_3_chefs_small_kitchen'],
         team_type = TeamType.HIGH_MEDIUM,
-        tags = ['aamas25'],
+        tags = ['last'],
         layout_name = '3_chefs_small_kitchen',
     )
 
@@ -74,7 +74,7 @@ def get_eval_types_to_load():
         load_from_pop_structure = True,
         names = ['eval/3_chefs/fcp_pop_3_chefs_small_kitchen'],
         team_type = TeamType.HIGH_LOW,
-        tags = ['aamas25'],
+        tags = ['last'],
         layout_name = '3_chefs_small_kitchen',
     )
 
@@ -125,7 +125,7 @@ def get_eval_types_to_load():
         team_type = "SP_H",
         tags = ['best', 'best'],
         layout_name = '3_chefs_small_kitchen')
-    
+
     t_fcp_hl_hm = EvalMembersToBeLoaded(
         load_from_pop_structure = False,
         names = ['eval/3_chefs/fcp_HL_HM', 'eval/3_chefs/fcp_HL_HM'],
@@ -133,7 +133,7 @@ def get_eval_types_to_load():
         tags = ['best', 'best'],
         layout_name = '3_chefs_small_kitchen',
     )
-    
+
     t_fcp_h_mid_l = EvalMembersToBeLoaded(
         load_from_pop_structure = False,
         names = ['eval/3_chefs/fcp_H_MID_L', 'eval/3_chefs/fcp_H_MID_L'],
@@ -149,6 +149,3 @@ def get_eval_types_to_load():
         layout_name = '3_chefs_small_kitchen',
     )
     return [t_sp_h, t_pop_m, t_fcp_h, t_fcp_h_mid, t_fcp_h_l, t_fcp_hl, t_fcp_hl_hm, t_fcp_h_mid_l, t_fcp_ml]
-
-
-

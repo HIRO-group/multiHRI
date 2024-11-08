@@ -35,7 +35,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--N-X-FCP-seed', type=int, default=1010, help='seed used in train_helper')
     parser.add_argument('--N-X-FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
 
-    parser.add_argument('--exp-name', type=str, default='aamas25',
+    parser.add_argument('--exp-name', type=str, default='last',
                         help='Name of experiment. Used to tag save files.')
     parser.add_argument('--base-dir', type=str, default=Path.cwd(),
                         help='Base directory to save all models, data, wandbai.')

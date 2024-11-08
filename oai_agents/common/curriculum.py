@@ -7,9 +7,9 @@ class Curriculum:
     '''
     Example:
         training_phases_durations_in_order = {
-            TeamType.LOW_FIRST: 0.5,  first 50% of the training time
-            TeamType.MEDIUM_FIRST: 0.125,  next 12.5% of the training time
-            TeamType.HIGH_FIRST: 0.125,   next 12.5% of the training time
+            (TeamType.LOW_FIRST, TeamType.SELF_PLAY_ADVERSARY): 0.5,  first 50% of the training time randomly select between low_first and self_play_adversary
+            (TeamType.MEDIUM_FIRST): 0.125,                           next 12.5% of the training time
+            (TeamType.HIGH_FIRST): 0.125,                             next 12.5% of the training time
         },
     
     For the rest of the training time (12.55%)
@@ -50,7 +50,10 @@ class Curriculum:
             assert self.rest_of_the_training_probabilities is None, "rest_of_the_training_probabilities should be None for random curriculums"
             assert self.probabilities_decay_over_time is None, "probabilities_decay_over_time should be None for random curriculums"
         else:
-            assert set(self.train_types) == set(list(self.training_phases_durations_in_order.keys()) + list(self.rest_of_the_training_probabilities.keys())), "Invalid training types"
+
+            phase_team_types = {team for teams in self.training_phases_durations_in_order.keys() for team in (teams if isinstance(teams, tuple) else (teams,))}
+            rest_team_types = set(self.rest_of_the_training_probabilities.keys())
+            assert set(self.train_types) == phase_team_types.union(rest_team_types), "Invalid training types"
             assert sum(self.training_phases_durations_in_order.values()) <= 1, "Sum of training_phases_durations_in_order should be <= 1"
             assert 0 <= self.probabilities_decay_over_time <= 1, "probabilities_decay_over_time should be between 0 and 1"
             if sum(self.training_phases_durations_in_order.values()) < 1:
@@ -58,8 +61,6 @@ class Curriculum:
 
     def update(self, current_step):
         self.current_step = current_step
-
-    # def should_agent_be_created()
 
     
     def select_teammates(self, population_teamtypes):
@@ -81,9 +82,15 @@ class Curriculum:
     def select_teammates_based_on_curriculum(self, population_teamtypes):
         # Calculate the current phase based on current_step and total_steps
         cumulative_duration = 0
-        for team_type, duration in self.training_phases_durations_in_order.items():
+        for team_type_tuple, duration in self.training_phases_durations_in_order.items():
             cumulative_duration += duration
             if self.current_step / self.total_steps <= cumulative_duration:
+                
+                if type(team_type_tuple) is tuple:
+                    team_type = random.choice(team_type_tuple)
+                else:
+                    team_type = team_type_tuple
+
                 teammates_per_type = population_teamtypes[team_type]
                 wandb.log({"team_type_index": TeamType.map_to_index(team_type)})
                 return random.choice(teammates_per_type)
@@ -102,18 +109,16 @@ class Curriculum:
         wandb.log({"team_type_index": TeamType.map_to_index(team_type)})
         teammates_per_type = population_teamtypes[team_type]
         return random.choice(teammates_per_type)
-    
+
     def print_curriculum(self):
-        print("----------------")
         print("Curriculum:")
         if self.is_random:
-            print("Random curriculum")
+            print("Random curriculum: ", self.train_types)
         else:
             print("Total steps:", self.total_steps)
             print("Training phases durations in order:", self.training_phases_durations_in_order)
             print("Rest of the training probabilities:", self.rest_of_the_training_probabilities)
             print("Probabilities decay over time:", self.probabilities_decay_over_time)
-        print("---------------")
 
 
     def validate_curriculum_types(self, expected_types:list, unallowed_types:list) -> None:

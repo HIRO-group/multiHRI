@@ -2,7 +2,7 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_args_to_save, set_args_from_load, get_arguments
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
-from oai_agents.common.tags import AgentPerformance, TeamType, CheckedPoints
+from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints
 from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
@@ -46,7 +46,7 @@ class OAIAgent(nn.Module, ABC):
         self.prev_subtask = Subtasks.SUBTASKS_TO_IDS['unknown']
         self.use_hrl_obs = False
         self.on_reset = True
-        
+
         self.layout_scores = {
             layout_name: -1 for layout_name in args.layout_names
         }
@@ -180,7 +180,7 @@ class OAIAgent(nn.Module, ABC):
 
 
 class SB3Wrapper(OAIAgent):
-    
+
     def __init__(self, agent, name, args):
         super(SB3Wrapper, self).__init__(name, args)
         self.agent = agent
@@ -363,7 +363,7 @@ class OAITrainer(ABC):
             if th.cuda.is_available():
                 th.cuda.manual_seed_all(seed)
             th.backends.cudnn.deterministic = True
-        
+
         self.eval_teammates_collection = {}
         self.teammates_collection = {}
 
@@ -395,23 +395,16 @@ class OAITrainer(ABC):
 
     def evaluate(self, eval_agent, num_eps_per_layout_per_tm=5, visualize=False, timestep=None, log_wandb=True,
                  deterministic=False):
-        
+
         timestep = timestep if timestep is not None else eval_agent.num_timesteps
         tot_mean_reward = []
         rew_per_layout_per_teamtype = {}
         rew_per_layout = {}
 
-        '''
-        dict 
-        teammates_collection = {
-            'layout_name': {
-                'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
-                'TeamType.MEDIUM_FIRST': [[agent3, agent4], ...],
-                'TeamType.LOW_FIRST': [[agent5, agent6], ...],
-                'TeamType.RANDOM': [[agent7, agent8], ...],
-            },
-        }
-        '''
+        # To reduce evaluation time: instead of evaluating all players, we randomly select three of player positions for evaluation
+        # This is outside of the for loop, meaning that each time we evaluate the same player positions across all layouts for a fair comparison
+        selected_p_indexes = random.sample(range(self.args.num_players), min(3, self.args.num_players))
+
         for _, env in enumerate(self.eval_envs): 
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in self.eval_teammates_collection[env.layout_name]
@@ -419,19 +412,19 @@ class OAITrainer(ABC):
             rew_per_layout[env.layout_name] = 0
 
             teamtypes_population = self.eval_teammates_collection[env.layout_name]
+
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
-
                 env.set_teammates(teammates)
-                for p_idx in range(env.mdp.num_players):
 
+                for p_idx in selected_p_indexes:
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(eval_agent, env, n_eval_episodes=num_eps_per_layout_per_tm,
                                                               deterministic=deterministic, warn=False, render=visualize)
                     tot_mean_reward.append(mean_reward)
                     rew_per_layout_per_teamtype[env.layout_name][teamtype].append(mean_reward)
-                    
-            
+
+
             rew_per_layout_per_teamtype[env.layout_name] = {teamtype: np.mean(rew_per_layout_per_teamtype[env.layout_name][teamtype]) for teamtype in rew_per_layout_per_teamtype[env.layout_name]}
             rew_per_layout[env.layout_name] = np.mean([rew_per_layout_per_teamtype[env.layout_name][teamtype] for teamtype in rew_per_layout_per_teamtype[env.layout_name]])
 
@@ -439,7 +432,7 @@ class OAITrainer(ABC):
                 wandb.log({f'eval_mean_reward_{env.layout_name}': rew_per_layout[env.layout_name], 'timestep': timestep})
                 for teamtype in rew_per_layout_per_teamtype[env.layout_name]:
                     wandb.log({f'eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype], 'timestep': timestep})
-                
+
         if log_wandb:
             wandb.log({f'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
         return np.mean(tot_mean_reward), rew_per_layout
@@ -451,13 +444,13 @@ class OAITrainer(ABC):
             population_teamtypes = self.teammates_collection[layout_name]
 
             teammates = curriculum.select_teammates(population_teamtypes=population_teamtypes)
-            
+
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
 
             for teammate in teammates:
                 assert isinstance(teammate, SB3Wrapper)
-            
+
             self.env.env_method('set_teammates', teammates, indices=i)
 
 
@@ -475,7 +468,7 @@ class OAITrainer(ABC):
                 path = self.args.base_dir / 'agent_models' / self.args.exp_dir / self.name
             else:
                 path = self.args.base_dir / 'agent_models'/ self.name
-        
+
         tag = tag or self.args.exp_name
         save_path = path / tag / 'trainer_file'
         agent_path = path / tag / 'agents_dir'
@@ -489,7 +482,7 @@ class OAITrainer(ABC):
         return path, tag
 
     @staticmethod
-    def load_agents(args, name: str=None, path: Union[Path, None] = None, tag: Union[str, None] = None):
+    def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):
         ''' Loads each agent that the trainer is training '''
         if not path:
             if args.exp_dir:
