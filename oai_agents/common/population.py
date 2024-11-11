@@ -154,7 +154,7 @@ def generate_hdim_and_seed(num_of_required_agents):
 
     return selected_seeds, selected_hdims
 
-def save_population(args, population):
+def save_categorized_population(args, population):
     name_prefix = 'pop'
     for layout_name in args.layout_names:
         rt = RLAgentTrainer(
@@ -229,6 +229,6 @@ def get_categorized_population(args,
                     layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
 
-        save_population(args=args, population=population)
+        save_categorized_population(args=args, population=population)
 
     return population
