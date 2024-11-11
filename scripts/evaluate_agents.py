@@ -455,10 +455,13 @@ def get_5_player_input(args):
                     'selected_5_chefs_storage_room']
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
-        'N-1-SP FCP CUR':  'agent_models/Result/5/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
-        'N-1-SP FCP RAN':  'agent_models/Result/5/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
         'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
-        'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best'}
+        'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best',
+        'ALMH CUR 1A':     'agent_models/ALMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        'ALMH RAN 1A':     'agent_models/ALMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        'AMH CUR 1A':      'agent_models/AMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        'AMH RAN 1A':      'agent_models/AMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
+        }
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
