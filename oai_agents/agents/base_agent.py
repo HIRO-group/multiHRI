@@ -546,4 +546,4 @@ class OAITrainer(ABC):
                 path = args.base_dir / 'agent_models' / name
 
         handler = CheckedModelNameHandler()
-        return handler.get_checked_model_tags(path=path)
+        return handler.get_all_checked_tags(path=path)
