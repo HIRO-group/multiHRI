@@ -210,6 +210,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
             ax.set_xlabel('Number of Unseen Teammates')
             ax.set_xticks(x_values)
             ax.set_xticklabels(unseen_counts)
+            ax.set_yticks(np.arange(0, 20, 1))
             ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
         # Average plot across all teamsets
@@ -225,6 +226,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
         ax.set_xlabel('Number of Unseen Teammates')
         ax.set_xticks(x_values)
         ax.set_xticklabels(unseen_counts)
+        ax.set_yticks(np.arange(0, 20, 1))
         ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
     # Set y-axis label based on display_delivery
