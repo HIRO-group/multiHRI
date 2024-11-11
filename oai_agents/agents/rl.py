@@ -5,6 +5,7 @@ from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
 from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
 import random
@@ -300,6 +301,7 @@ class RLAgentTrainer(OAITrainer):
 
         self.log_details(experiment_name, total_train_timesteps)
 
+        ckname_handler = CheckedModelNameHandler()
         if self.checkpoint_rate is not None:
             if self.args.resume:
                 path = self.args.base_dir / 'agent_models' / experiment_name
@@ -340,7 +342,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}{KeyCheckpoints.REWARD_SUBSTR}{mean_reward}')
+                        path, tag = self.save_agents(tag=ckname_handler.generate_checked_model_name(id=len(self.ck_list), mean_reward=mean_reward))
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:
