@@ -340,7 +340,7 @@ class RLAgentTrainer(OAITrainer):
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
             steps += 1
-        self.save_agents()
+        self.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         self.agents = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag)
         run.finish()
 
