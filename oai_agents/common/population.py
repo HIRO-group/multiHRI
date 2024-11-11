@@ -173,7 +173,7 @@ def save_population(args, population):
         rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
 
-def get_population(args,
+def get_categorized_population(args,
                    ck_rate,
                    total_training_timesteps,
                    train_types,

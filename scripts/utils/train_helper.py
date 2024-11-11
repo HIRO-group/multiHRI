@@ -1,7 +1,7 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
-from oai_agents.common.population import get_population
-from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
+from oai_agents.common.population import get_categorized_population, generate_hdim_and_seed
+from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
 from oai_agents.agents.agent_utils import CustomAgent
@@ -80,7 +80,7 @@ def get_N_X_SP_agents(args,
     if agents:
         return agents[0]
 
-    population = get_population(
+    population = get_categorized_population(
         args=args,
         ck_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
         total_training_timesteps=args.pop_total_training_timesteps,
@@ -354,7 +354,7 @@ def get_FCP_agent_w_pop(args,
                          train_types=fcp_train_types,
                          has_curriculum = not fcp_curriculum.is_random)
 
-    population = get_population(
+    population = get_categorized_population(
         args=args,
         ck_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
         total_training_timesteps=args.pop_total_training_timesteps,
