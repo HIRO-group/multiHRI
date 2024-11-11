@@ -270,7 +270,6 @@ def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names
                     cross_exp_mean[agent_name][unseen_count] += mean_values[-1]
                     cross_exp_mean[agent_name][unseen_count] += std_values[-1]
 
-
                 ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o',
                             label=f'Agent: {agent_name}', capsize=5)
             team_name_print = team_name.strip("[]'\"")
@@ -373,7 +372,6 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
                                                 deterministic=deterministic,
                                                 number_of_eps=number_of_eps)
 
-
         Path('eval_cache').mkdir(parents=True, exist_ok=True)
         with open(cached_eval, "wb") as f:
             pkl.dump((teammate_lvl_set, mean_rewards, std_rewards), f)
@@ -435,11 +433,12 @@ def get_3_player_input(args):
                     'selected_3_chefs_cramped_room']
     p_idxes = [0, 1, 2]
     all_agents_paths = {
-        'N-1-SP FCP CUR':  'agent_models/Result/3/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
-        'N-1-SP FCP RAN':  'agent_models/Result/3/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
-        'SP':              'agent_models/Result/3/SP_hd64_seed14/best',
-        'FCP':             'agent_models/Result/3/FCP_s2020_h256_tr(AMX)_ran/best',
-        'N-1-SP FCP + ADV CUR [attack 0]': 'agent_models/Result/3/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack0/best'
+        'SP':          'agent_models/Result/3/SP_hd64_seed14/best',
+        'FCP':         'agent_models/Result/3/FCP_s2020_h256_tr(AMX)_ran/best',
+        'ALMH CUR 1A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        'ALMH RAN 1A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        'AMH CUR 1A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        'AMH RAN 1A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -470,8 +469,8 @@ def get_5_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
