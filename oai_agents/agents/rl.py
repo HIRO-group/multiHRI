@@ -350,7 +350,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=ckname_handler.generate_checked_model_name(id=len(self.ck_list), mean_reward=mean_reward))
+                        path, tag = self.save_agents(tag=ckname_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:
