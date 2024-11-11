@@ -286,7 +286,7 @@ class RLAgentTrainer(OAITrainer):
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
 
-    def train_agents(self, total_train_timesteps, tag, exp_name=None):
+    def train_agents(self, total_train_timesteps, exp_name=None):
         experiment_name = self.get_experiment_name(exp_name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
