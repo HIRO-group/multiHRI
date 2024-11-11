@@ -203,7 +203,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
 
                 # Plot bars for each agent
                 x = x_values + idx * width - width * (num_agents - 1) / 2
-                ax.bar(x, mean_values, width, yerr=std_values, label=f'Agent: {agent_name}', capsize=5)
+                ax.bar(x, mean_values, width, yerr=std_values, label=f'{agent_name}', capsize=5)
 
             team_name_print = team_name.strip("[]'\"")
             ax.set_title(f'{layout_name}\n{team_name_print}')
@@ -338,21 +338,20 @@ def evaluate_agent(args,
 
 
 def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set: Sequence[Eval]):
-    fn_args = (agent_name, path, tuple(layout_names), tuple(p_idxes), tuple([(k, tuple(v) if isinstance(v, list) else v) for k,v in vars(args).items()]), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
+    fn_args = (args.num_players, path, tuple(layout_names), tuple(p_idxes), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
     m = hashlib.md5()
     for s in fn_args:
         m.update(str(s).encode())
     arg_hash = m.hexdigest()
-
-    print(f"Eval Hash: {arg_hash}")
-    cache_file_path = f"eval_cache/eval_{arg_hash}.pkl"
-    cached_eval = Path(cache_file_path)
+    cached_eval = Path(f"eval_cache/eval_{arg_hash}.pkl")
+    
     if cached_eval.is_file():
-        print(f"Loading cached evaluation from {cached_eval}")
+        print(f"Loading cached evaluation for agent {agent_name}")
         with open(cached_eval, "rb") as f:
-            agent_name, teammate_lvl_set, mean_rewards, std_rewards = pkl.load(f)
+            teammate_lvl_set, mean_rewards, std_rewards = pkl.load(f)
 
     else:
+        print(f"Evaluating agent: {agent_name}")
         agent = load_agent(Path(path), args)
         agent.deterministic = deterministic
 
@@ -375,14 +374,17 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
 
         Path('eval_cache').mkdir(parents=True, exist_ok=True)
         with open(cached_eval, "wb") as f:
-            pkl.dump((agent_name, teammate_lvl_set, mean_rewards, std_rewards), f)
+            pkl.dump((teammate_lvl_set, mean_rewards, std_rewards), f)
 
     return agent_name, str(teammate_lvl_set), mean_rewards, std_rewards
 
 
 def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_sets: Sequence[Sequence[Eval]]):
+    for path in all_agents_paths.values():
+        assert Path(path).is_dir(), f"Dir {path} does not exist"
+
     all_mean_rewards, all_std_rewards = {}, {}
-    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
         futures = [
             executor.submit(evaluate_agent_for_layout, name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set)
             for (name, path), teammate_lvl_set in itertools.product(all_agents_paths.items(), teammate_lvl_sets)
@@ -408,20 +410,13 @@ def get_2_player_input(args):
                     'selected_2_chefs_cramped_room']
     p_idxes = [0, 1]
 
-    all_agents_paths = {
-        # 'N-1-SP FCP CUR':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_cur/best',
-        # 'N-1-SP FCP RAN':  'agent_models/Result/2/N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL)_ran/best',
-        'SP':              'agent_models/Result/2/SP_hd64_seed14/best',
-        'FCP corrected':   'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
-        # 'N-1-SP ADV':      'agent_models/Result/2/MAP_SP_hd64_seed14/originaler-selfisherplay/2/pwadv_s14_h64_tr(SP_SPADV)_ran/best',
-        
-        # 'N-1-SP FCP + ADV CUR [attack 2]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack2/best',
-        # These reuse CH's ADV, the first one has SP, the second one doesn't
-        # 'N-1-SP FCP + ADV RAN CH [attack 2]': 'agent_models/Result/2/adv_reused_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV_SP)_ran_originaler_attack2/best',
-        # 'N-1-SP FCP + ADV CUR CH NO SP [attack 2]': 'agent_models/Result/2/adv_reused_no_sp/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_originaler_attack2/best',
-        'N-1-SP SPCKP + ADV MAP [attack 2]': 'agent_models/Result/2/rerun/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        # 'N-1-SP FCP + ADV CUR [attack 0]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack0/best',
-        # 'N-1-SP FCP + ADV CUR [attack 1]': 'agent_models/Result/2/PWADV-N-1-SP_s1010_h256_tr(SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV)_cur_supporter_attack1/best',
+    all_agents_paths = {    
+        'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
+        'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
+        'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2',
+        'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2',
+        'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2',
+        'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2'
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -477,9 +472,12 @@ if __name__ == "__main__":
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
-    deterministic = False
+    deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
     number_of_eps = 5
+
+    # Number of parallel workers for evaluation
+    args.max_workers = 4
 
     # For display_purposes
     unseen_counts = [1]
@@ -492,12 +490,6 @@ if __name__ == "__main__":
                                     max_num_teams=max_num_teams_per_layout_per_x,
                                     teammate_lvl_sets=teammate_lvl_sets)
 
-    # pre_evaluated_results_file = Path(f"data/plots/{plot_name}.pkl")
-
-    # if pre_evaluated_results_file.is_file():
-    #     with open(pre_evaluated_results_file, "rb") as f:
-    #         all_mean_rewards, all_std_rewards = pkl.load(f)
-    # else:
     all_mean_rewards, all_std_rewards = run_parallel_evaluation(
             args=args,
             all_agents_paths=all_agents_paths,
@@ -508,24 +500,21 @@ if __name__ == "__main__":
             number_of_eps=number_of_eps,
             teammate_lvl_sets=teammate_lvl_sets
     )
-    # with open(pre_evaluated_results_file, "wb") as f:
-    #     pkl.dump((all_mean_rewards, all_std_rewards), f)
-
 
     plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
                            all_std_rewards=all_std_rewards,
                            layout_names=layout_names,
                            teammate_lvl_sets=teammate_lvl_sets,
                            unseen_counts=unseen_counts,
-                        #    display_delivery=show_delivery_num,
+                           display_delivery=show_delivery_num,
                            plot_name=plot_name)
     
 
-    # plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
-    #                                  all_std_rewards=all_std_rewards,
-    #                                  layout_names=layout_names,
-    #                                  teammate_lvl_sets=teammate_lvl_sets,
-    #                                  num_players=args.num_players,
-    #                                  plot_name=plot_name)
+    plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
+                                     all_std_rewards=all_std_rewards,
+                                     layout_names=layout_names,
+                                     teammate_lvl_sets=teammate_lvl_sets,
+                                     num_players=args.num_players,
+                                     plot_name=plot_name)
     
 
