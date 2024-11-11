@@ -532,7 +532,7 @@ class OAITrainer(ABC):
 
         Parameters:
         - args: Experiment arguments containing base directory info and experiment directory info.
-        - name: The name of the agent for which tags should be listed.
+        - name: The name of the agent, for which tags should be listed.
         - path: Optional. If provided, it overrides the default path to the agents directory.
 
         Returns:
