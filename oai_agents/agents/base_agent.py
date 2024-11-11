@@ -3,6 +3,7 @@ from oai_agents.common.arguments import get_args_to_save, set_args_from_load, ge
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
 from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints
+from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
@@ -541,23 +542,5 @@ class OAITrainer(ABC):
             else:
                 path = args.base_dir / 'agent_models' / name
 
-        # Ensure the directory exists
-        if not path.exists() or not path.is_dir():
-            raise FileNotFoundError(f"Agent directory not found: {path}")
-
-        # Define the prefix and the regular expression to match the pattern
-        prefix = KeyCheckpoints.CHECKED_MODEL_PREFIX
-        reward_substr = KeyCheckpoints.REWARD_SUBSTR
-        pattern = re.compile(f"^{re.escape(prefix)}(\\d+)(?:{re.escape(reward_substr)}[\\d.]+)?$")
-
-        # List all subdirectories (tags) that match the pattern
-        tags = []
-        for tag in path.iterdir():
-            if tag.is_dir() and pattern.match(tag.name):
-                match = pattern.match(tag.name)
-                integer_part = int(match.group(1))
-                # Only add tags that either have no reward substring for integer 0, or have it when integer > 0
-                if integer_part == 0 or (integer_part > 0 and reward_substr in tag.name):
-                    tags.append(tag.name)
-
-        return tags
+        handler = CheckedModelNameHandler()
+        return handler.get_checked_model_tags(path=path)
