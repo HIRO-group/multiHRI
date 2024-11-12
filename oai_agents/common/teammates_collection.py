@@ -56,7 +56,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
 
         # TODO: Update this to support any number of performance tags and train types
         assert num_perf_categories == 3, f'Current TC generation assumes only three performance types are present in the population'
-        
+
         PERFORMANCE_LEVELS = ['H', 'M', 'L']
         # Number of elements in each partition
         part_size = len(agents_perftag_score) // num_perf_categories
@@ -179,7 +179,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
                 used_agents.update([tm[0] for tm in low_p_agents])
 
-    return all_teammates 
+    return all_teammates
 
 
 
@@ -228,7 +228,7 @@ def generate_TC(args,
         layout_population = population[layout_name]
 
         agents_perftag_score_all = [(layout_agent,
-                                     layout_agent.layout_performance_tags[layout_name], 
+                                     layout_agent.layout_performance_tags[layout_name],
                                      layout_agent.layout_scores[layout_name]) for layout_agent in layout_population]
 
         # Generate the train TC using the entire population of SP agents
@@ -250,7 +250,7 @@ def generate_TC(args,
                                                      unseen_teammates_len=unseen_teammates_len,
                                                      use_entire_population=False
                                                      )
-    
+
     update_eval_collection_with_eval_types_from_file(args=args,
                                                      eval_types=eval_types_to_read_from_file,
                                                      eval_collection=eval_collection,
@@ -286,7 +286,7 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
             eval_collection[teammates.layout_name][teammates.team_type] = []
         tms_path = Path.cwd() / 'agent_models' / teammates.names[0]
         if teammates.load_from_pop_structure:
-            layout_population = RLAgentTrainer.load_agents(args, path=tms_path, tag=teammates.tags[0])
+            layout_population, _, _ = RLAgentTrainer.load_agents(args, path=tms_path, tag=teammates.tags[0])
             agents_perftag_score_all = [(agent,
                                          agent.layout_performance_tags[teammates.layout_name],
                                          agent.layout_scores[teammates.layout_name]) for agent in layout_population]
@@ -304,7 +304,7 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
             group = []
             for (name, tag) in zip(teammates.names, teammates.tags):
                 try:
-                    agents = RLAgentTrainer.load_agents(args, name=name, path=tms_path, tag=tag)
+                    agents, _, _ = RLAgentTrainer.load_agents(args, name=name, path=tms_path, tag=tag)
                 except FileNotFoundError as e:
                     print(f'Could not find saved {name} agent \nFull Error: {e}')
                     agents = []

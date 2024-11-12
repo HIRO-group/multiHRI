@@ -35,7 +35,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--N-X-FCP-seed', type=int, default=1010, help='seed used in train_helper')
     parser.add_argument('--N-X-FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
 
-    parser.add_argument('--exp-name', type=str, default='last',
+    parser.add_argument('--exp-name', type=str, default='aamas25',
                         help='Name of experiment. Used to tag save files.')
     parser.add_argument('--base-dir', type=str, default=Path.cwd(),
                         help='Base directory to save all models, data, wandbai.')
@@ -75,8 +75,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--max-concurrent-jobs", type=int, default=None)
 
     parser.add_argument("--num-of-ckpoints", type=int, default=10)
-    parser.add_argument("--resume", action="store_true", help="Restart from last checkpoint")
-    parser.set_defaults(resume=False)
+    parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint")
 
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)

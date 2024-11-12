@@ -480,12 +480,16 @@ class OAITrainer(ABC):
             agent_path_i = agent_path / f'agent_{i}'
             agent.save(agent_path_i)
             save_dict['agent_fns'].append(f'agent_{i}')
+            save_dict["ck_list"] = self.ck_list
         th.save(save_dict, save_path)
         with open(env_path, "wb") as f:
             step_counts = self.env.get_attr("step_count")
             # Should be the same but to be safe save the min
-            step_count = min(step_counts)
-            pkl.dump({"step_count": step_count}, f)
+            timestep_count = min(step_counts)
+            pkl.dump({
+                "timestep_count": timestep_count,
+                "step_count": self.steps
+            }, f)
         return path, tag
 
     @staticmethod
@@ -515,4 +519,4 @@ class OAITrainer(ABC):
         with open(env_path, "rb") as f:
             env_info = pkl.load(f)
 
-        return agents, env_info
+        return agents, env_info, saved_variables

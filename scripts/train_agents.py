@@ -321,22 +321,22 @@ def set_input(args):
         args.n_envs = 2
         args.epoch_timesteps = 2
 
-        args.pop_total_training_timesteps = 3500
-        args.n_x_sp_total_training_timesteps = 1000
-        args.adversary_total_training_timesteps = 1000
+        args.pop_total_training_timesteps = 3500 * 10
+        args.n_x_sp_total_training_timesteps = 1000 * 10
+        args.adversary_total_training_timesteps = 1000 * 10
 
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = f'Test/{args.num_players}'
-        args.resume = True
+        args.exp_dir = f'test/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
     args.quick_test = True
     args.parallel = True
+    args.resume = True
 
     args.pop_force_training = False
     args.adversary_force_training = False
@@ -347,9 +347,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_1ADV_XSPCKP(args=args)
+    #SPN_1ADV_XSPCKP(args=args)
 
-    # SP(args)
+    #SP(args)
 
     # FCP_traditional(args=args)
 
@@ -359,4 +359,4 @@ if __name__ == '__main__':
 
     # SPN_XSPCKP(args=args)
 
-    # N_1_FCP(args=args)
+    N_1_FCP(args=args)

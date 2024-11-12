@@ -35,7 +35,7 @@ class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
-                 shape_rewards=False, enc_fn=None, full_init=True, args=None, num_enc_channels=27, deterministic=False, start_step: int = 0,
+                 shape_rewards=False, enc_fn=None, full_init=True, args=None, num_enc_channels=27, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
         self.args = args
@@ -82,7 +82,7 @@ class OvercookedGymEnv(Env):
 
         self.shape_rewards = shape_rewards
         self.visualization_enabled = False
-        self.step_count = start_step
+        self.step_count = start_timestep
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
@@ -252,10 +252,10 @@ class OvercookedGymEnv(Env):
         self.state, reward, done, info = self.env.step(joint_action)
         if self.shape_rewards and not self.is_eval_env:
             if self.dynamic_reward:
-                r_ratio = min(self.step_count * self.args.n_envs / 1e7, self.final_sparse_r_ratio)
+                ratio = min(self.step_count * self.args.n_envs / 1e7, self.final_sparse_r_ratio)
             else:
-                r_ratio = self.final_sparse_r_ratio
-            reward = self.learner.calculate_reward(p_idx=self.p_idx, env_info=info, ratio=r_ratio, num_players=self.mdp.num_players)
+                ratio = self.final_sparse_r_ratio
+            reward = self.learner.calculate_reward(p_idx=self.p_idx, env_info=info, ratio=ratio, num_players=self.mdp.num_players)
         self.step_count += 1
         return self.get_obs(self.p_idx, done=done), reward, done, info
 
