@@ -70,11 +70,11 @@ def fix_pop(args, initial_run_root, continued_run_root, corrected_run_root):
     for layout_name in args.layout_names:
         name = f'pop_{layout_name}'
         args.exp_dir = initial_run_exp
-        population_initial[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        population_initial[layout_name], _, _ = RLAgentTrainer.load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         print(f"Loaded {name} in {initial_run_exp}, size: {len(population_initial[layout_name])}")
 
         args.exp_dir = continued_run_exp
-        population_continued[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        population_continued[layout_name], _, _ = RLAgentTrainer.load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         print(f"Loaded {name} in {continued_run_exp}, size: {len(population_continued[layout_name])}")
 
         all_agents = population_initial[layout_name] + population_continued[layout_name]

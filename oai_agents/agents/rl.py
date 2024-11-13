@@ -12,6 +12,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
 import wandb
+import os
 
 VEC_ENV_CLS = DummyVecEnv #
 
@@ -24,7 +25,8 @@ class RLAgentTrainer(OAITrainer):
                 curriculum=None, num_layers=2, hidden_dim=256,
                 checkpoint_rate=None, name=None, env=None, eval_envs=None,
                 use_cnn=False, use_lstm=False, use_frame_stack=False,
-                taper_layers=False, use_policy_clone=False, deterministic=False):
+                taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0):
+
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
@@ -52,7 +54,12 @@ class RLAgentTrainer(OAITrainer):
         self.use_policy_clone = use_policy_clone
 
         self.learner_type = learner_type
-        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type)
+        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type, start_timestep)
+        # Episode to start training from (usually 0 unless restarted)
+        self.start_step = start_step
+        self.steps = self.start_step
+        # Cumm. timestep to start training from (usually 0 unless restarted)
+        self.start_timestep = start_timestep
 
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
@@ -174,10 +181,10 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
 
 
-    def get_envs(self, _env, _eval_envs, deterministic, learner_type):
+    def get_envs(self, _env, _eval_envs, deterministic, learner_type, start_timestep: int = 0):
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
-                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type}
+                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep}
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
                                     vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
@@ -265,7 +272,7 @@ class RLAgentTrainer(OAITrainer):
         steps_divisable_by_15 = (steps + 1) % 15 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
-    
+
         return steps_divisable_by_15 or mean_rew_greater_than_best or checkpoint_rate_reached
 
     def log_details(self, experiment_name, total_train_timesteps):
@@ -285,7 +292,7 @@ class RLAgentTrainer(OAITrainer):
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
 
-    def train_agents(self, total_train_timesteps, tag, exp_name=None):
+    def train_agents(self, total_train_timesteps, tag_for_returning_agent, exp_name=None, resume_ck_list=None):
         experiment_name = self.get_experiment_name(exp_name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
@@ -294,18 +301,27 @@ class RLAgentTrainer(OAITrainer):
         self.log_details(experiment_name, total_train_timesteps)
 
         if self.checkpoint_rate is not None:
-            self.ck_list = []
-            path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
-            self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+            if self.args.resume:
+                path = self.args.base_dir / 'agent_models' / experiment_name
+
+                ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
+                ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+                sorted_idxs = np.argsort(ckpts_nums)
+                ckpts = [ckpts[i] for i in sorted_idxs]
+                self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
+            else:
+                self.ck_list = []
+                path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
+                self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
         best_path, best_tag = None, None
 
-        steps = 0
-        curr_timesteps = 0
+        self.steps = self.start_step
+        curr_timesteps = self.start_timestep
         prev_timesteps = self.learning_agent.num_timesteps
 
         while curr_timesteps < total_train_timesteps:
-            self.curriculum.update(current_step=steps)
+            self.curriculum.update(current_step=self.steps)
 
             # TODO: eventually, teammates_collection should be turned into its own class with 'select'
             # and 'update' functions that can be leveraged during training so the teammates_collection
@@ -322,7 +338,7 @@ class RLAgentTrainer(OAITrainer):
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
 
-            if self.should_evaluate(steps=steps):
+            if self.should_evaluate(steps=self.steps):
                 mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew
@@ -338,9 +354,9 @@ class RLAgentTrainer(OAITrainer):
                     best_path, best_tag = self.save_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
-            steps += 1
-        self.save_agents()
-        self.agents = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag)
+            self.steps += 1
+        self.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        self.agents, _, _ = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag_for_returning_agent)
         run.finish()
 
     @staticmethod
@@ -356,7 +372,7 @@ class RLAgentTrainer(OAITrainer):
     @staticmethod
     def get_agents_and_set_score_and_perftag(args, layout_name, scores_path_tag, performance_tag, ck_list):
         score, path, tag = scores_path_tag
-        all_agents = RLAgentTrainer.load_agents(args, path=path, tag=tag)
+        all_agents, _, _ = RLAgentTrainer.load_agents(args, path=path, tag=tag)
         for agent in all_agents:
             agent.layout_scores[layout_name] = score
             agent.layout_performance_tags[layout_name] = performance_tag

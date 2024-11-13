@@ -329,7 +329,7 @@ def set_input(args):
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
         args.num_SPs_to_train = 2
-        args.exp_dir = f'Test/{args.num_players}'
+        args.exp_dir = f'test/{args.num_players}'
 
 
 if __name__ == '__main__':
@@ -348,7 +348,7 @@ if __name__ == '__main__':
 
     SPN_1ADV_XSPCKP(args=args)
 
-    # SP(args)
+    #SP(args)
 
     # FCP_traditional(args=args)
 

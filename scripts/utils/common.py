@@ -6,7 +6,7 @@ def load_agents(args, name, tag, path=None, force_training=False):
     if force_training:
         return []
     try:
-        agents = RLAgentTrainer.load_agents(args, name=name, path=path, tag=tag)
+        agents, _, _ = RLAgentTrainer.load_agents(args, name=name, path=path, tag=tag)
         return agents
     except FileNotFoundError as e:
         print(f'Could not find saved {name} agent \nFull Error: {e}')

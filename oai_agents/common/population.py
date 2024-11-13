@@ -1,6 +1,7 @@
 
 import concurrent
 import dill
+import os
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
@@ -8,18 +9,43 @@ from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
 from .curriculum import Curriculum
 
 
+def _get_most_recent_checkpoint(args, name: str) -> str:
+    if args.exp_dir:
+        path = args.base_dir / 'agent_models' / args.exp_dir / name
+    else:
+        path = args.base_dir / 'agent_models' / name
+
+
+    ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
+    ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+    last_ckpt_num = max(ckpts_nums)
+    return [c for c in ckpts if c.startswith(f"ck_{last_ckpt_num}")][0]
+
 def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
         Returns ckeckpoints_list
         either serialized or not based on serialize flag
     '''
-
     name = f'SP_hd{h_dim}_seed{seed}'
+
+    agent_ckpt = None
+    start_step = 0
+    start_timestep = 0
+    ck_rewards = None
+    if args.resume:
+        last_ckpt = _get_most_recent_checkpoint(args, name)
+        agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
+        agent_ckpt = agent_ckpt_info[0]
+        start_step = env_info["step_count"]
+        start_timestep = env_info["timestep_count"]
+        ck_rewards = training_info["ck_list"]
+        print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
+
 
     rlat = RLAgentTrainer(
         name=name,
         args=args,
-        agent=None,
+        agent=agent_ckpt,
         teammates_collection={}, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
@@ -27,14 +53,16 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         seed=seed,
         checkpoint_rate=ck_rate,
         learner_type=args.pop_learner_type,
-        curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True)
+        curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True),
+        start_step=start_step,
+        start_timestep=start_timestep
     )
     '''
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
 
-    rlat.train_agents(total_train_timesteps=total_training_timesteps, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+    rlat.train_agents(total_train_timesteps=total_training_timesteps, tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, resume_ck_list=ck_rewards)
     checkpoints_list = rlat.ck_list
 
     if serialize:
@@ -137,7 +165,7 @@ def get_population(args,
             raise FileNotFoundError
         for layout_name in args.layout_names:
             name = f'pop_{layout_name}'
-            population[layout_name] = RLAgentTrainer.load_agents(args, name=name, tag=tag)
+            population[layout_name], _, _ = RLAgentTrainer.load_agents(args, name=name, tag=tag)
             print(f'Loaded pop with {len(population[layout_name])} agents.')
     except FileNotFoundError as e:
         print(f'Could not find saved population, creating them from scratch...\nFull Error: {e}')

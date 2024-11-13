@@ -75,7 +75,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--max-concurrent-jobs", type=int, default=None)
 
     parser.add_argument("--num-of-ckpoints", type=int, default=10)
-
+    parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint for population training only")
 
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
