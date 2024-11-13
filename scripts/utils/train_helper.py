@@ -34,7 +34,7 @@ def get_SP_agent(args, train_types, eval_types, curriculum, tag=KeyCheckpoints.M
         checkpoint_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
     )
 
-    selfplay_trainer.train_agents(total_train_timesteps=args.pop_total_training_timesteps, tag=tag)
+    selfplay_trainer.train_agents(total_train_timesteps=args.pop_total_training_timesteps, tag_for_returning_agent=tag)
     return selfplay_trainer.get_agents()[0]
 
 
@@ -169,7 +169,7 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
                                             checkpoint_rate=total_train_timesteps // args.num_of_ckpoints,
                                             )
 
-        n_x_sp_types_trainer.train_agents(total_train_timesteps=total_train_timesteps, tag=tag)
+        n_x_sp_types_trainer.train_agents(total_train_timesteps=total_train_timesteps, tag_for_returning_agent=tag)
         agent_to_be_attacked = n_x_sp_types_trainer.get_agents()[0]
 
 
@@ -216,7 +216,7 @@ def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eva
                                         learner_type=args.primary_learner_type,
                                         checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
                                         )
-    n_x_sp_types_trainer.train_agents(total_train_timesteps=args.n_x_sp_total_training_timesteps, tag=tag)
+    n_x_sp_types_trainer.train_agents(total_train_timesteps=args.n_x_sp_total_training_timesteps, tag_for_returning_agent=tag)
 
 
 
@@ -252,7 +252,7 @@ def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=KeyCheckpo
                                         hidden_dim=args.ADV_h_dim,
                                         learner_type=args.adversary_learner_type,
                                         checkpoint_rate=args.adversary_total_training_timesteps // args.num_of_ckpoints)
-    adversary_trainer.train_agents(total_train_timesteps=args.adversary_total_training_timesteps, tag=tag)
+    adversary_trainer.train_agents(total_train_timesteps=args.adversary_total_training_timesteps, tag_for_returning_agent=tag)
     return adversary_trainer.get_agents()[0]
 
 
@@ -305,7 +305,7 @@ def get_FCP_agent_w_pop(args,
         checkpoint_rate=args.fcp_total_training_timesteps // args.num_of_ckpoints,
     )
 
-    fcp_trainer.train_agents(total_train_timesteps=args.fcp_total_training_timesteps, tag=tag)
+    fcp_trainer.train_agents(total_train_timesteps=args.fcp_total_training_timesteps, tag_for_returning_agent=tag)
     return fcp_trainer.get_agents()[0], population
 
 
@@ -362,5 +362,5 @@ def get_N_X_FCP_agents(args,
         checkpoint_rate=args.n_x_fcp_total_training_timesteps // args.num_of_ckpoints,
     )
 
-    fcp_trainer.train_agents(total_train_timesteps=args.n_x_fcp_total_training_timesteps, tag=tag)
+    fcp_trainer.train_agents(total_train_timesteps=args.n_x_fcp_total_training_timesteps, tag_for_returning_agent=tag)
     return fcp_trainer.get_agents()[0], teammates_collection

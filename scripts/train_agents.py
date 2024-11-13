@@ -321,9 +321,9 @@ def set_input(args):
         args.n_envs = 2
         args.epoch_timesteps = 2
 
-        args.pop_total_training_timesteps = 3500 * 10
-        args.n_x_sp_total_training_timesteps = 1000 * 10
-        args.adversary_total_training_timesteps = 1000 * 10
+        args.pop_total_training_timesteps = 3500
+        args.n_x_sp_total_training_timesteps = 1000
+        args.adversary_total_training_timesteps = 1000
 
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
@@ -334,9 +334,8 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
-    args.resume = True
 
     args.pop_force_training = False
     args.adversary_force_training = False
@@ -347,7 +346,7 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    #SPN_1ADV_XSPCKP(args=args)
+    SPN_1ADV_XSPCKP(args=args)
 
     #SP(args)
 
@@ -359,4 +358,4 @@ if __name__ == '__main__':
 
     # SPN_XSPCKP(args=args)
 
-    N_1_FCP(args=args)
+    # N_1_FCP(args=args)

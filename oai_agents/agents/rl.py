@@ -12,6 +12,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
 import wandb
+import os
 
 VEC_ENV_CLS = DummyVecEnv #
 
@@ -54,8 +55,10 @@ class RLAgentTrainer(OAITrainer):
 
         self.learner_type = learner_type
         self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type, start_timestep)
+        # Episode to start training from (usually 0 unless restarted)
         self.start_step = start_step
         self.steps = self.start_step
+        # Cumm. timestep to start training from (usually 0 unless restarted)
         self.start_timestep = start_timestep
 
         self.learning_agent, self.agents = self.get_learning_agent(agent)
@@ -289,7 +292,7 @@ class RLAgentTrainer(OAITrainer):
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
 
-    def train_agents(self, total_train_timesteps, tag, exp_name=None, resume_ck_list=None):
+    def train_agents(self, total_train_timesteps, tag_for_returning_agent, exp_name=None, resume_ck_list=None):
         experiment_name = self.get_experiment_name(exp_name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
@@ -299,8 +302,6 @@ class RLAgentTrainer(OAITrainer):
 
         if self.checkpoint_rate is not None:
             if self.args.resume:
-                import os
-
                 path = self.args.base_dir / 'agent_models' / experiment_name
 
                 ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
@@ -354,8 +355,8 @@ class RLAgentTrainer(OAITrainer):
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
             self.steps += 1
-        self.save_agents()
-        self.agents, _, _ = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag)
+        self.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        self.agents, _, _ = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag_for_returning_agent)
         run.finish()
 
     @staticmethod
