@@ -379,7 +379,8 @@ def evaluate_agent(args,
 
 
 def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set: Sequence[Eval]):
-    fn_args = (args.num_players, path, tuple(layout_names), tuple(p_idxes), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
+    # Including the file content in hash generation to avoid incorrect cache reuse
+    fn_args = (agent_name, tuple(layout_names), tuple(p_idxes), tuple([(k, tuple(v) if isinstance(v, list) else v) for k,v in vars(args).items()]), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
     m = hashlib.md5()
     for s in fn_args:
         m.update(str(s).encode())
