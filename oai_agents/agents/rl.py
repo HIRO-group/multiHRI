@@ -15,6 +15,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
 import wandb
 import os
+from typing import Optional
 
 VEC_ENV_CLS = DummyVecEnv #
 
@@ -262,9 +263,6 @@ class RLAgentTrainer(OAITrainer):
             return SB3LSTMWrapper(sb3_agent, name, self.args)
         return SB3Wrapper(sb3_agent, name, self.args)
 
-    def get_experiment_name(self, exp_name):
-        return exp_name or str(self.args.exp_dir) + '/' + self.name
-
 
     def should_evaluate(self, steps):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
@@ -302,10 +300,11 @@ class RLAgentTrainer(OAITrainer):
 
         self.log_details(experiment_name, total_train_timesteps)
 
-        ckname_handler = CheckedModelNameHandler()
         if self.checkpoint_rate is not None:
             if self.args.resume:
-                path = self.args.base_dir / 'agent_models' / experiment_name
+                path = RLAgentTrainer.get_model_path(base_dir=self.args_base_dir,
+                                                     exp_folder=self.args.exp_dir,
+                                                     model_name=self.name)
 
                 ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
                 ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
@@ -349,7 +348,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=ckname_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
+                        path, tag = self.save_agents(tag=CheckedModelNameHandler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:

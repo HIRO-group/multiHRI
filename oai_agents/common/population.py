@@ -24,7 +24,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     start_timestep = 0
     ck_rewards = None
     if args.resume:
-        last_ckpt = _get_most_recent_checkpoint(args, name)
+        last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args, name=name)
         agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
         agent_ckpt = agent_ckpt_info[0]
         start_step = env_info["step_count"]

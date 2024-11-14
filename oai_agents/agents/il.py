@@ -185,7 +185,7 @@ class BehavioralCloningTrainer(OAITrainer):
         self.agents[agent_idx].eval()
         return np.mean(losses)
 
-    def train_agents(self, epochs=100, exp_name=None):
+    def train_agents(self, epochs=100):
         """ Training routine """
         if self.datasets is None:
             self.setup_datasets()

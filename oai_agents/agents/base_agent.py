@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 import torch as th
 import torch.nn as nn
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 import stable_baselines3.common.distributions as sb3_distributions
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
@@ -469,11 +469,9 @@ class OAITrainer(ABC):
 
     def save_agents(self, path: Union[Path, None] = None, tag: Union[str, None] = None):
         ''' Saves each agent that the trainer is training '''
-        if not path:
-            if self.args.exp_dir:
-                path = self.args.base_dir / 'agent_models' / self.args.exp_dir / self.name
-            else:
-                path = self.args.base_dir / 'agent_models'/ self.name
+        path = path or OAITrainer.get_model_path(base_dir=self.args.base_dir,
+                                                 exp_folder=self.args.exp_dir,
+                                                 model_name=self.name)
 
         tag = tag or self.args.exp_name
         save_path = path / tag / 'trainer_file'
@@ -500,11 +498,9 @@ class OAITrainer(ABC):
     @staticmethod
     def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):
         ''' Loads each agent that the trainer is training '''
-        if not path:
-            if args.exp_dir:
-                path = args.base_dir / 'agent_models' / args.exp_dir / name
-            else:
-                path = args.base_dir / 'agent_models'/ name
+        path = path or OAITrainer.get_model_path(base_dir=args.base_dir,
+                                                 exp_folder=args.exp_dir,
+                                                 model_name=name)
 
         tag = tag or args.exp_name
         load_path = path / tag / 'trainer_file'
@@ -539,11 +535,46 @@ class OAITrainer(ABC):
         Returns:
         - A list of tags (directories) that match the specified pattern.
         '''
-        if not path:
-            if args.exp_dir:
-                path = args.base_dir / 'agent_models' / args.exp_dir / name
-            else:
-                path = args.base_dir / 'agent_models' / name
+        path = path or OAITrainer.get_model_path(base_dir=args.base_dir,
+                                                 exp_folder=args.exp_dir,
+                                                 model_name=name)
 
         handler = CheckedModelNameHandler()
         return handler.get_all_checked_tags(path=path)
+
+    @staticmethod
+    def get_most_recent_checkpoint(args, name: str) -> str:
+        path = OAITrainer.get_model_path(base_dir=args.base_dir,
+                                         exp_folder=args.exp_dir,
+                                         model_name=name)
+
+        ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
+        ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+        last_ckpt_num = max(ckpts_nums)
+        return [c for c in ckpts if c.startswith(f"{KeyCheckpoints.CHECKED_MODEL_PREFIX}{last_ckpt_num}")][0]
+
+    @staticmethod
+    def get_model_path(base_dir: Union[str, Path], exp_folder: Optional[str], model_name: str) -> Path:
+        """
+        Constructs a path for saving or loading an agent model.
+
+        Parameters:
+            base_dir (str or Path): The base directory where models are stored.
+            exp_folder (str or None): The experiment folder name, or None if not applicable.
+            model_name (str): The name of the model.
+
+        Returns:
+            Path: A Path object representing the constructed path.
+        """
+        # Ensure base_dir is a Path object
+        base_dir = Path(base_dir) if isinstance(base_dir, str) else base_dir
+
+        experiment_name = OAITrainer.get_experiment_name(exp_folder=exp_folder, model_name=model_name)
+
+        path = base_dir / 'agent_models' /experiment_name
+
+        return path
+
+    @staticmethod
+    def get_experiment_name(self, exp_folder: Optional[str], model_name: str):
+        return f"{exp_folder}/{model_name}" if exp_folder else model_name
