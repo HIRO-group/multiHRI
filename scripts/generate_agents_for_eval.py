@@ -3,7 +3,7 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.tags import TeamType, TeammatesCollection
+from oai_agents.common.tags import TeamType, TeammatesCollection, KeyCheckpoints
 from scripts.utils import get_fcp_population
 
 
@@ -18,7 +18,7 @@ def train_FCP(args, name, teammates_collection, train_types, total_training_time
         train_types=train_types,
         seed=2602,
     )
-    fcp_trainer.train_agents(total_train_timesteps=total_training_timesteps)
+    fcp_trainer.train_agents(total_train_timesteps=total_training_timesteps, tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
 
 def set_input(args, quick_test=False):
@@ -26,8 +26,8 @@ def set_input(args, quick_test=False):
     args.teammates_len = 2
     args.num_players = args.teammates_len + 1  # 3 players = 1 agent + 2 teammates
     args.exp_dir = f'eval/{args.teammates_len+1}_chefs'
-    
-    if not quick_test: 
+
+    if not quick_test:
         args.n_envs = 50
         args.epoch_timesteps = 1e5
         args.pop_total_training_timesteps = 5e6
@@ -76,7 +76,7 @@ if __name__ == "__main__":
                                               )
 
     teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]
-    
+
     # TODO: run this in parallel
     for fcp_train_types in all_FCP_train_types:
         vb = '_'.join(fcp_train_types)
