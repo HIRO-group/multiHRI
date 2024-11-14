@@ -23,7 +23,7 @@ def _get_most_recent_checkpoint(args, name: str) -> str:
     last_ckpt_num = max(ckpts_nums)
     return [c for c in ckpts if c.startswith(f"ck_{last_ckpt_num}")][0]
 
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
+def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, force_training):
     '''
         Returns ckeckpoints_list
         either serialized or not based on serialize flag
