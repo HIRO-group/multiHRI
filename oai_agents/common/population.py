@@ -11,18 +11,6 @@ from .curriculum import Curriculum
 import random
 
 
-def _get_most_recent_checkpoint(args, name: str) -> str:
-    if args.exp_dir:
-        path = args.base_dir / 'agent_models' / args.exp_dir / name
-    else:
-        path = args.base_dir / 'agent_models' / name
-
-
-    ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
-    ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
-    last_ckpt_num = max(ckpts_nums)
-    return [c for c in ckpts if c.startswith(f"ck_{last_ckpt_num}")][0]
-
 def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, force_training):
     '''
         Returns ckeckpoints_list
@@ -35,7 +23,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     start_timestep = 0
     ck_rewards = None
     if args.resume:
-        last_ckpt = _get_most_recent_checkpoint(args, name)
+        last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args, name=name)
         agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
         agent_ckpt = agent_ckpt_info[0]
         start_step = env_info["step_count"]

@@ -285,7 +285,7 @@ def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammat
     for teammates in eval_types:
         if teammates.team_type not in eval_collection[teammates.layout_name]:
             eval_collection[teammates.layout_name][teammates.team_type] = []
-        tms_path = Path.cwd() / 'agent_models' / teammates.names[0]
+        tms_path = RLAgentTrainer.get_model_path(base_dir=Path.cwd(), model_name=teammates.names[0])
         if teammates.load_from_pop_structure:
             layout_population, _, _ = RLAgentTrainer.load_agents(args, path=tms_path, tag=teammates.tags[0])
             agents_perftag_score_all = [(agent,
