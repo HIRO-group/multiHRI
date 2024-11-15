@@ -11,7 +11,7 @@ from .curriculum import Curriculum
 import random
 
 
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
+def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
         Returns ckeckpoints_list
         either serialized or not based on serialize flag
@@ -62,7 +62,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     return checkpoints_list
 
 
-def ensure_we_will_have_enough_agents_in_population(teammates_len,
+def ensure_enough_SP_agents(teammates_len,
                                                     train_types,
                                                     eval_types,
                                                     num_SPs_to_train,
@@ -161,7 +161,7 @@ def generate_hdim_and_seed(for_training: bool, num_of_required_agents: int):
 
     return selected_seeds, selected_hdims
 
-def save_categorized_population(args, population):
+def save_categorized_SP_population(args, population):
     name_prefix = 'pop'
     for layout_name in args.layout_names:
         rt = RLAgentTrainer(
@@ -180,7 +180,7 @@ def save_categorized_population(args, population):
         rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
 
-def get_categorized_population( args,
+def get_categorized_SP_population(args,
                                 ck_rate,
                                 total_training_timesteps,
                                 train_types,
@@ -203,7 +203,7 @@ def get_categorized_population( args,
     except FileNotFoundError as e:
         print(f'Could not find saved population, creating them from scratch...\nFull Error: {e}')
 
-        ensure_we_will_have_enough_agents_in_population(teammates_len=args.teammates_len,
+        ensure_enough_SP_agents(teammates_len=args.teammates_len,
                                                         unseen_teammates_len=unseen_teammates_len,
                                                         train_types=train_types,
                                                         eval_types=eval_types,
@@ -218,7 +218,7 @@ def get_categorized_population( args,
         if args.parallel:
             with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_concurrent_jobs) as executor:
                 arg_lists = list(zip(*inputs))
-                dilled_results = list(executor.map(train_agent_with_checkpoints, *arg_lists))
+                dilled_results = list(executor.map(train_SP_with_checkpoints, *arg_lists))
             for dilled_res in dilled_results:
                 checkpoints_list = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
@@ -226,7 +226,7 @@ def get_categorized_population( args,
                     population[layout_name].extend(layout_pop)
         else:
             for inp in inputs:
-                checkpoints_list = train_agent_with_checkpoints(args=inp[0],
+                checkpoints_list = train_SP_with_checkpoints(args=inp[0],
                                                                 total_training_timesteps = inp[1],
                                                                 ck_rate=inp[2],
                                                                 seed=inp[3],
@@ -236,6 +236,6 @@ def get_categorized_population( args,
                     layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
 
-        save_categorized_population(args=args, population=population)
+        save_categorized_SP_population(args=args, population=population)
 
     return population
