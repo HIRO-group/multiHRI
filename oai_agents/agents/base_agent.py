@@ -544,8 +544,13 @@ class OAITrainer(ABC):
         path = OAITrainer.get_model_path(base_dir=args.base_dir,
                                          exp_folder=args.exp_dir,
                                          model_name=name)
-
+        if not path.exists():
+            print(f"Warning: The directory {path} does not exist.")
+            return None
         ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
+        if not ckpts:
+            print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
+            return None
         ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
         last_ckpt_num = max(ckpts_nums)
         return [c for c in ckpts if c.startswith(f"{KeyCheckpoints.CHECKED_MODEL_PREFIX}{last_ckpt_num}")][0]

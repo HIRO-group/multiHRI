@@ -24,12 +24,13 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
     ck_rewards = None
     if args.resume:
         last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args, name=name)
-        agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
-        agent_ckpt = agent_ckpt_info[0]
-        start_step = env_info["step_count"]
-        start_timestep = env_info["timestep_count"]
-        ck_rewards = training_info["ck_list"]
-        print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
+        if last_ckpt:
+            agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
+            agent_ckpt = agent_ckpt_info[0]
+            start_step = env_info["step_count"]
+            start_timestep = env_info["timestep_count"]
+            ck_rewards = training_info["ck_list"]
+            print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
 
 
     rlat = RLAgentTrainer(
