@@ -11,7 +11,7 @@ from .curriculum import Curriculum
 import random
 
 
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize, force_training):
+def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
         Returns ckeckpoints_list
         either serialized or not based on serialize flag
@@ -52,7 +52,9 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
 
-    rlat.train_agents(total_train_timesteps=total_training_timesteps, tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, resume_ck_list=ck_rewards)
+    rlat.train_agents(total_train_timesteps=total_training_timesteps,
+                      tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+                      resume_ck_list=ck_rewards)
     checkpoints_list = rlat.ck_list
 
     if serialize:
@@ -95,9 +97,9 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
                                                                         f" num_SPs_to_train: {num_SPs_to_train}."
 
 
-def generate_hdim_and_seed(num_of_required_agents):
+def generate_hdim_and_seed(for_training: bool, num_of_required_agents: int):
     '''
-    Generates lists of seeds and hidden dimensions for a given number of agents.
+    Generates lists of seeds and hidden dimensions for a given number of agents for training or evaluation.
 
     Each setting is a pair (hidden_dim, seed). If the number of required agents
     is less than or equal to the number of predefined settings, it selects from
@@ -105,6 +107,7 @@ def generate_hdim_and_seed(num_of_required_agents):
     seeds and hidden dimensions to fill the remaining number of agents.
 
     Arguments:
+    for_training -- a boolean indicating whether to generate settings for training (True) or evaluation (False).
     num_of_required_agents -- the number of (hidden_dim, seed) pairs to generate.
 
     Returns:
@@ -112,9 +115,25 @@ def generate_hdim_and_seed(num_of_required_agents):
     selected_hdims -- list of selected hidden dimensions
     '''
 
-    # Predefined seeds and hidden dimensions
-    seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
-    hdims = [256] * len(seeds)
+    # Predefined seeds and hidden dimensions for training
+    training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
+    training_hdims = [256] * len(training_seeds)
+
+    # Predefined seeds and hidden dimensions for evaluation
+    evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
+    evaluation_hdims = [256] * len(evaluation_seeds)
+
+    # Select appropriate predefined settings based on the input setting
+    if for_training:
+        seeds = training_seeds
+        hdims = training_hdims
+        min_seed = 0
+        max_seed = 2999
+    else:
+        seeds = evaluation_seeds
+        hdims = evaluation_hdims
+        min_seed, max_seed = 3000, 5999
+
 
     # Initialize selected lists
     selected_seeds = []
@@ -132,9 +151,9 @@ def generate_hdim_and_seed(num_of_required_agents):
 
         # Generate additional random settings if more agents are needed
         remaining = num_of_required_agents - len(seeds)
-        available_seeds = set(range(0, 5000)) - set(selected_seeds)
+        available_seeds = list(set(range(min_seed, max_seed)) - set(selected_seeds))
         random_seeds = random.sample(available_seeds, remaining)  # Generate random seeds
-        random_hdims = random.choices([256, 512], k=remaining)  # Generate random hidden dimensions
+        random_hdims = [256] * remaining # Generate random hidden dimensions
 
         # Append randomly generated settings to selected lists
         selected_seeds += random_seeds
@@ -161,16 +180,16 @@ def save_categorized_population(args, population):
         rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
 
-def get_categorized_population(args,
-                   ck_rate,
-                   total_training_timesteps,
-                   train_types,
-                   eval_types,
-                   num_SPs_to_train,
-                   unseen_teammates_len=0,
-                   force_training=False,
-                   tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
-                   ):
+def get_categorized_population( args,
+                                ck_rate,
+                                total_training_timesteps,
+                                train_types,
+                                eval_types,
+                                num_SPs_to_train,
+                                unseen_teammates_len=0,
+                                force_training=False,
+                                tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+                                ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
 
@@ -190,7 +209,7 @@ def get_categorized_population(args,
                                                         eval_types=eval_types,
                                                         num_SPs_to_train=num_SPs_to_train)
 
-        seed, h_dim = generate_hdim_and_seed(num_SPs_to_train)
+        seed, h_dim = generate_hdim_and_seed(for_training=True, num_of_required_agents=num_SPs_to_train)
         inputs = [
             (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
         ]
@@ -208,11 +227,11 @@ def get_categorized_population(args,
         else:
             for inp in inputs:
                 checkpoints_list = train_agent_with_checkpoints(args=inp[0],
-                                                   total_training_timesteps = inp[1],
-                                                   ck_rate=inp[2],
-                                                   seed=inp[3],
-                                                   h_dim=inp[4],
-                                                   serialize=False)
+                                                                total_training_timesteps = inp[1],
+                                                                ck_rate=inp[2],
+                                                                seed=inp[3],
+                                                                h_dim=inp[4],
+                                                                serialize=False)
                 for layout_name in args.layout_names:
                     layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
