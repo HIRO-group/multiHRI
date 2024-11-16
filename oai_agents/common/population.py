@@ -65,11 +65,11 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
 
 
 def ensure_enough_SP_agents(teammates_len,
-                                                    train_types,
-                                                    eval_types,
-                                                    num_SPs_to_train,
-                                                    unseen_teammates_len=0, # only used for SPX teamtypes
-                                                ):
+                            train_types,
+                            eval_types,
+                            num_SPs_to_train,
+                            unseen_teammates_len=0, # only used for SPX teamtypes
+                        ):
 
     total_population_len = len(AgentPerformance.ALL) * num_SPs_to_train
 
@@ -86,8 +86,8 @@ def ensure_enough_SP_agents(teammates_len,
     for eval_type in eval_types:
         if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
             eval_agents_len += teammates_len
-        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
-            train_agents_len += 0
+        elif eval_type == TeamType.SELF_PLAY or eval_type == TeamType.SELF_PLAY_ADVERSARY:
+            eval_agents_len += 0
         else:
             eval_agents_len += unseen_teammates_len
 
@@ -206,10 +206,10 @@ def get_categorized_SP_population(args,
         print(f'Could not find saved population, creating them from scratch...\nFull Error: {e}')
 
         ensure_enough_SP_agents(teammates_len=args.teammates_len,
-                                                        unseen_teammates_len=unseen_teammates_len,
-                                                        train_types=train_types,
-                                                        eval_types=eval_types,
-                                                        num_SPs_to_train=num_SPs_to_train)
+                                unseen_teammates_len=unseen_teammates_len,
+                                train_types=train_types,
+                                eval_types=eval_types,
+                                num_SPs_to_train=num_SPs_to_train)
 
         seed, h_dim = generate_hdim_and_seed(for_training=True, num_of_required_agents=num_SPs_to_train)
         inputs = [
