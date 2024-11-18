@@ -21,6 +21,8 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
 
     if use_entire_population:
 
+
+
         # NOTE: Right now, this assumes that number of train_types is less than or equal to 3 and they are all unique,
         # If train types are duplicated, only 1 set of teammates will be provided e.g. if TrainTypes = [SPH, SPH, SPM]
         # The TC will only have one list for SPH
@@ -74,7 +76,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 all_teammates[teamtype] = [agent for _ in range(teammates_len)]
 
             elif teamtype == TeamType.SELF_PLAY_HIGH:
-                assert agent is not None
+                # assert agent is not None
                 perf_level = PERFORMANCE_LEVELS[0]
                 agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
                 agent_perftag_score_of_category = catagorized_agents[perf_level]
@@ -83,11 +85,9 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 all_teammates[teamtype] = [agents_of_category[i:i + unseen_teammates_len] + agents_itself for i in range(0, len(agents_of_category), unseen_teammates_len)]
 
             elif teamtype == TeamType.SELF_PLAY_MEDIUM:
-                assert agent is not None
                 perf_level = PERFORMANCE_LEVELS[1]
                 agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
                 agent_perftag_score_of_category = catagorized_agents[perf_level]
-                # Extract the agent from each tuple in the list
                 agents_of_category = [a[0] for a in agent_perftag_score_of_category]
                 all_teammates[teamtype] = [agents_of_category[i:i + unseen_teammates_len] + agents_itself for i in range(0, len(agents_of_category), unseen_teammates_len)]
 
@@ -95,7 +95,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 raise NotImplementedError(f'TeamType {teamtype} not yet supported when using full population to generate TC')
 
             elif teamtype == TeamType.SELF_PLAY_LOW:
-                assert agent is not None
+                # assert agent is not None
                 perf_level = PERFORMANCE_LEVELS[2]
                 agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
                 agent_perftag_score_of_category = catagorized_agents[perf_level]
@@ -213,7 +213,7 @@ def generate_TC(args,
             }
         }
     '''
-    if unseen_teammates_len > 0 and agent is None:
+    if unseen_teammates_len > 0 and agent is None and unseen_teammates_len != args.num_players - 1:
         raise ValueError('Unseen teammates length is greater than 0 but agent is not provided')
 
     eval_collection = {
@@ -230,6 +230,9 @@ def generate_TC(args,
         agents_perftag_score_all = [(layout_agent,
                                      layout_agent.layout_performance_tags[layout_name],
                                      layout_agent.layout_scores[layout_name]) for layout_agent in layout_population]
+    
+        agents_perftag_score_all.append(agents_perftag_score_all[0])
+    
 
         # Generate the train TC using the entire population of SP agents
         train_collection[layout_name] = get_teammates(agents_perftag_score=agents_perftag_score_all,

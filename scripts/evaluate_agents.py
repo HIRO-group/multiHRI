@@ -16,9 +16,12 @@ from pathlib import Path
 import numpy as np
 import pickle as pkl
 
+from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
+from oai_agents.common.teammates_collection import generate_TC
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+from oai_agents.common.tags import TeamType, TeammatesCollection
 
 from utils import (
     TWO_PLAYERS_LOW_EVAL,
@@ -31,7 +34,8 @@ from utils import (
     FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
     FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
     FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
-    FIVE_PLAYERS_HIGH_STORAGE_EVAL
+    FIVE_PLAYERS_HIGH_STORAGE_EVAL,
+    LAYOUT_SPECIFIC_EVAL_AGENTS,
 )
 
 class Eval:
@@ -45,55 +49,55 @@ eval_key_lut = {
     'h': "HIGH"
 }
 
-LAYOUT_NAMES_PATHs = {
-    'selected_2_chefs_coordination_ring': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
-    'selected_2_chefs_counter_circuit': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
-    'selected_2_chefs_cramped_room': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
+# LAYOUT_NAMES_PATHs = {
+#     'selected_2_chefs_coordination_ring': {
+#         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
+#         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
+#         Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
+#     },
+#     'selected_2_chefs_counter_circuit': {
+#         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
+#         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
+#         Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
+#     },
+#     'selected_2_chefs_cramped_room': {
+#         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
+#         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
+#         Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
+#     },
 
-    'selected_3_chefs_coordination_ring': {
-        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
-    },
-    'selected_3_chefs_counter_circuit': {
-        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
-    },
-    'selected_3_chefs_cramped_room': {
-        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
-    },
+    # 'selected_3_chefs_coordination_ring': {
+    #     Eval.LOW: THREE_PLAYERS_LOW_EVAL,
+    #     Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
+    #     Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+    # },
+    # 'selected_3_chefs_counter_circuit': {
+    #     Eval.LOW: THREE_PLAYERS_LOW_EVAL,
+    #     Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
+    #     Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+    # },
+    # 'selected_3_chefs_cramped_room': {
+    #     Eval.LOW: THREE_PLAYERS_LOW_EVAL,
+    #     Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
+    #     Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+    # },
 
-    'selected_5_chefs_counter_circuit': {
-        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-        Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    },
-    'selected_5_chefs_secret_coordination_ring': {
-        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-        Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    },
-    'selected_5_chefs_storage_room': {
-        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
-        Eval.HIGH: FIVE_PLAYERS_HIGH_STORAGE_EVAL,
-    },
-}
+    # 'selected_5_chefs_counter_circuit': {
+    #     Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
+    #     Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    #     Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    # },
+    # 'selected_5_chefs_secret_coordination_ring': {
+    #     Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
+    #     Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    #     Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    # },
+    # 'selected_5_chefs_storage_room': {
+    #     Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
+    #     Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
+    #     Eval.HIGH: FIVE_PLAYERS_HIGH_STORAGE_EVAL,
+    # },
+# }
 
 def print_all_teammates(all_teammates):
     for layout_name in all_teammates:
@@ -102,7 +106,7 @@ def print_all_teammates(all_teammates):
             print([agent.name for agent in teammates])
         print()
 
-def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_names, deterministic, max_num_teams_per_layout_per_x, teammate_lvl_set: Sequence[Eval]=[Eval.LOW, Eval.MEDIUM, Eval.HIGH]):
+def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_names, deterministic, max_num_teams_per_layout_per_x, teammate_lvl_set):
     '''
     x = 0 means all N-1 teammates are primary_agent
     x = 1 means 1 teammate out of N-1 is unseen agent
@@ -122,8 +126,9 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
 
     for layout_name in layout_names:
         for lvl in teammate_lvl_set:
-            for path in LAYOUT_NAMES_PATHs[layout_name][lvl]:
-                agent = load_agent(Path(path), args)
+            for agent in LAYOUTNAMES[layout_name][lvl]:
+                # agent = load_agent(Path(path), args)
+                # print('agent:', agent.name, 'score: ', agent.layout_scores[layout_name], 'lvl:', lvl, ', layout: ', layout_name)
                 agent.deterministic = deterministic
                 all_agents[layout_name].append(agent)
 
@@ -338,13 +343,13 @@ def evaluate_agent(args,
     return all_mean_rewards, all_std_rewards
 
 
-def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set: Sequence[Eval]):
+def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set):
     fn_args = (args.num_players, path, tuple(layout_names), tuple(p_idxes), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
     m = hashlib.md5()
     for s in fn_args:
         m.update(str(s).encode())
     arg_hash = m.hexdigest()
-    cached_eval = Path(f"eval_cache/eval_{arg_hash}.pkl")
+    cached_eval = Path(f"eval_cache/eval_pop_{arg_hash}.pkl")
     
     if cached_eval.is_file():
         print(f"Loading cached evaluation for agent {agent_name}")
@@ -352,7 +357,7 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
             teammate_lvl_set, mean_rewards, std_rewards = pkl.load(f)
 
     else:
-        print(f"Evaluating agent: {agent_name}")
+        print(f"Evaluating agent: {agent_name} for teammate_lvl_set: {teammate_lvl_set}")
         agent = load_agent(Path(path), args)
         agent.deterministic = deterministic
 
@@ -362,7 +367,8 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
                                                         layout_names=layout_names,
                                                         deterministic=deterministic,
                                                         max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
-                                                        teammate_lvl_set=teammate_lvl_set)
+                                                        teammate_lvl_set=teammate_lvl_set,
+                                                        )
 
         mean_rewards, std_rewards = evaluate_agent(args=args,
                                                 primary_agent=agent,
@@ -389,7 +395,6 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
             executor.submit(evaluate_agent_for_layout, name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set)
             for (name, path), teammate_lvl_set in itertools.product(all_agents_paths.items(), teammate_lvl_sets)
         ]
-
         for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Evaluating Agents"):
             name, teammate_lvl_set_str, mean_rewards, std_rewards = future.result()
             if name not in all_mean_rewards:
@@ -404,30 +409,32 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
 
 
 def get_2_player_input(args):
+    args.teammates_len = 1
     args.num_players = 2
     layout_names = ['selected_2_chefs_coordination_ring',
                     'selected_2_chefs_counter_circuit',
                     'selected_2_chefs_cramped_room']
+    args.layout_names = layout_names
     p_idxes = [0, 1]
 
     all_agents_paths = {    
         'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
         'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
 
-        'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
-        'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
-        'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2/best',
+        # 'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
+        # 'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
+        # 'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
+        # 'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2/best',
 
-        'ALMH CUR 2A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
-        'ALMH RAN 2A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
-        'AMH CUR 2A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        'AMH RAN 2A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best',
+        # 'ALMH CUR 2A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
+        # 'ALMH RAN 2A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
+        # 'AMH CUR 2A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
+        # 'AMH RAN 2A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best',
 
         'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        'ALMH RAN 1A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        'AMH CUR 1A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'AMH RAN 1A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
+        # 'ALMH RAN 1A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        # 'AMH CUR 1A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        # 'AMH RAN 1A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -486,31 +493,114 @@ def get_5_player_input(args):
     ]
     return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
+def ensure_unique_agents(teammates_collection, layout_name):
+    for tag in teammates_collection[layout_name]:
+        unique_agents = set()
+        updated_teammates = []
+        for teammates in teammates_collection[layout_name][tag]:
+            filtered_teammates = []
+            for agent in teammates:
+                agent_tuple = (agent.name, agent.layout_scores[layout_name])
+                # Skip agents with score 0 if the tag is not SPL
+                if tag != "SPL" and agent.layout_scores[layout_name] == 0:
+                    continue
+                if agent_tuple not in unique_agents:
+                    unique_agents.add(agent_tuple)
+                    filtered_teammates.append(agent)
+            if filtered_teammates:  # Only add non-empty teammate lists
+                updated_teammates.append(filtered_teammates)
+        teammates_collection[layout_name][tag] = updated_teammates
 
+
+def print_tc_helper(teammates_collection, message=None):
+    print("-------------------")
+    if message:
+        print(message)
+    for layout_name in teammates_collection:
+        for tag in teammates_collection[layout_name]:
+            print(f'\t{tag}:')
+            teammates_c = teammates_collection[layout_name][tag]
+            for teammates in teammates_c:
+                for agent in teammates:
+                    print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
+    print("-------------------")
+
+
+def replace_layout_names_with_teammates(teammates_collection):
+    updated_layout_names_paths = {}
+    for layout_name, tags in teammates_collection.items():
+        updated_layout_names_paths[layout_name] = {}
+        for tag, teammates in tags.items():
+            # print(tag)
+            # print(teammates)
+            # print(len(teammates[0]))
+            # print (teammates[0][0].name)
+
+            if tag == TeamType.SELF_PLAY_LOW:
+                u_tag = Eval.LOW
+            elif tag == TeamType.SELF_PLAY_MEDIUM:
+                u_tag = Eval.MEDIUM
+            elif tag == TeamType.SELF_PLAY_HIGH:
+                u_tag = Eval.HIGH
+
+            updated_layout_names_paths[layout_name][u_tag] = [tm[0] for tm in teammates]
+    return updated_layout_names_paths
+
+
+# if __name__ == "__main__":
+args = get_arguments()
+layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+# layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+# layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
+
+deterministic = False # deterministic = True does not actually work :sweat_smile:
+max_num_teams_per_layout_per_x = 4
+number_of_eps = 5
+args.max_workers = 1 # Number of parallel workers for evaluation
+
+unseen_counts = [1] # For display_purposes
+show_delivery_num = True  # //
+
+population = {layout_name: [] for layout_name in args.layout_names}
+for layout_name in layout_names:
+    name = f'Result/Eval/2/pop_{layout_name}'
+    population[layout_name], _, _ = RLAgentTrainer.load_agents(args, name=name, tag='last')
+
+teammates_collection = generate_TC(args=args,
+                                    population=population,
+                                    agent=None,
+                                    train_types=[TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH],
+                                    eval_types_to_generate=[],
+                                    eval_types_to_read_from_file=[],
+                                    unseen_teammates_len=args.num_players-1,
+                                    use_entire_population_for_train_types_teammates=True)
+
+for layout_name in layout_names:
+    ensure_unique_agents(teammates_collection[TeammatesCollection.TRAIN], layout_name)
+
+LAYOUTNAMES = replace_layout_names_with_teammates(teammates_collection['train'])
+# print("???????")
+# print layout names path
+# print(LAYOUT_NAMES_PATHs)
+# for layout_name in LAYOUT_NAMES_PATHs:
+#     for tag in LAYOUT_NAMES_PATHs[layout_name]:
+#         print("tag:", tag)
+#         for agent in LAYOUT_NAMES_PATHs[layout_name][tag]:
+#             print('Layout:', layout_name, 'Agent:', agent.name, ' score: ', agent.layout_scores[layout_name])            
+#         print("--")
+    
+
+# print_tc_helper(teammates_collection[TeammatesCollection.TRAIN], message="Teammates Collection")
+
+
+# raise ValueError("This is a test")
+plot_name = generate_plot_name(num_players=args.num_players,
+                                deterministic=deterministic,
+                                p_idxes=p_idxes,
+                                num_eps=number_of_eps,
+                                max_num_teams=max_num_teams_per_layout_per_x,
+                                teammate_lvl_sets=teammate_lvl_sets)
 if __name__ == "__main__":
-    args = get_arguments()
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
-
-    deterministic = False # deterministic = True does not actually work :sweat_smile:
-    max_num_teams_per_layout_per_x = 4
-    number_of_eps = 5
-
-    # Number of parallel workers for evaluation
-    args.max_workers = 4
-
-    # For display_purposes
-    unseen_counts = [1]
-    show_delivery_num = True
-
-    plot_name = generate_plot_name(num_players=args.num_players,
-                                    deterministic=deterministic,
-                                    p_idxes=p_idxes,
-                                    num_eps=number_of_eps,
-                                    max_num_teams=max_num_teams_per_layout_per_x,
-                                    teammate_lvl_sets=teammate_lvl_sets)
-
     all_mean_rewards, all_std_rewards = run_parallel_evaluation(
             args=args,
             all_agents_paths=all_agents_paths,
@@ -519,23 +609,24 @@ if __name__ == "__main__":
             deterministic=deterministic,
             max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
             number_of_eps=number_of_eps,
-            teammate_lvl_sets=teammate_lvl_sets
+            teammate_lvl_sets=teammate_lvl_sets,
+            # layout_names_paths=layout_names_paths
     )
 
     plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
-                           all_std_rewards=all_std_rewards,
-                           layout_names=layout_names,
-                           teammate_lvl_sets=teammate_lvl_sets,
-                           unseen_counts=unseen_counts,
-                           display_delivery=show_delivery_num,
-                           plot_name=plot_name)
-    
+                            all_std_rewards=all_std_rewards,
+                            layout_names=layout_names,
+                            teammate_lvl_sets=teammate_lvl_sets,
+                            unseen_counts=unseen_counts,
+                            display_delivery=show_delivery_num,
+                            plot_name=plot_name)
+
 
     plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
-                                     all_std_rewards=all_std_rewards,
-                                     layout_names=layout_names,
-                                     teammate_lvl_sets=teammate_lvl_sets,
-                                     num_players=args.num_players,
-                                     plot_name=plot_name)
-    
+                                        all_std_rewards=all_std_rewards,
+                                        layout_names=layout_names,
+                                        teammate_lvl_sets=teammate_lvl_sets,
+                                        num_players=args.num_players,
+                                        plot_name=plot_name)
+
 

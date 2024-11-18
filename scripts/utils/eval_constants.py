@@ -1,3 +1,8 @@
+LAYOUT_SPECIFIC_EVAL_AGENTS = {
+    'selected_2_chefs_coordination_ring': 'multiHRI/agent_models/Result/Eval/2/pop_selected_2_chefs_coordination_ring',
+    'selected_2_chefs_counter_circuit':   'multiHRI/agent_models/Result/Eval/2/pop_selected_2_chefs_counter_circuit',
+    'selected_2_chefs_cramped_room':      'multiHRI/agent_models/Result/Eval/2/pop_selected_2_chefs_cramped_room',
+}
 
 TWO_PLAYERS_LOW_EVAL = [
     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
