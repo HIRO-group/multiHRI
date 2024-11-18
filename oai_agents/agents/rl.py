@@ -4,6 +4,7 @@ from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
 import random
@@ -13,6 +14,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
 import wandb
 import os
+from typing import Optional
 
 VEC_ENV_CLS = DummyVecEnv #
 
@@ -30,6 +32,7 @@ class RLAgentTrainer(OAITrainer):
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
+
 
         self.args = args
         self.device = args.device
@@ -261,9 +264,6 @@ class RLAgentTrainer(OAITrainer):
             return SB3LSTMWrapper(sb3_agent, name, self.args)
         return SB3Wrapper(sb3_agent, name, self.args)
 
-    def get_experiment_name(self, exp_name):
-        return exp_name or str(self.args.exp_dir) + '/' + self.name
-
 
     def should_evaluate(self, steps):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
@@ -292,8 +292,8 @@ class RLAgentTrainer(OAITrainer):
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
 
-    def train_agents(self, total_train_timesteps, tag_for_returning_agent, exp_name=None, resume_ck_list=None):
-        experiment_name = self.get_experiment_name(exp_name)
+    def train_agents(self, total_train_timesteps, tag_for_returning_agent, resume_ck_list=None):
+        experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name=self.name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")
@@ -302,7 +302,9 @@ class RLAgentTrainer(OAITrainer):
 
         if self.checkpoint_rate is not None:
             if self.args.resume:
-                path = self.args.base_dir / 'agent_models' / experiment_name
+                path = RLAgentTrainer.get_model_path(base_dir=self.args_base_dir,
+                                                     exp_folder=self.args.exp_dir,
+                                                     model_name=self.name)
 
                 ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
                 ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
@@ -311,8 +313,9 @@ class RLAgentTrainer(OAITrainer):
                 self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
             else:
                 self.ck_list = []
-                path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
+                path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}')
                 self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+
 
         best_path, best_tag = None, None
 
@@ -347,7 +350,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
+                        path, tag = self.save_agents(tag=CheckedModelNameHandler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:

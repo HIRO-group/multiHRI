@@ -83,6 +83,8 @@ class TeammatesCollection:
 class KeyCheckpoints: # Tags to identify the type of model checkpoint to save/load
     BEST_EVAL_REWARD = 'best' # Use only for evaluation
     MOST_RECENT_TRAINED_MODEL = 'last' # Use only for training
+    CHECKED_MODEL_PREFIX = 'ck_'
+    REWARD_SUBSTR = '_rew_'
 
 class Prefix:
     SELF_PLAY = 'SP'

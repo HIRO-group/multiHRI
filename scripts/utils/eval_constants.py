@@ -1,24 +1,98 @@
 
+# TWO_PLAYERS_LOW_EVAL = [
+#     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
+#     'agent_models/Result/Eval/2/SP_hd256_seed42/ck_1_rew_18.666666666666668',
+#     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_1_rew_22.0',
+#     'agent_models/Result/Eval/2/SP_hd256_seed7/ck_1_rew_38.0',
+#     'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_0',
+# ]
+# TWO_PLAYERS_MEDIUM_EVAL = [
+#     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_2_rew_108.66666666666667',
+#     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_3_rew_170.66666666666666',
+#     'agent_models/Result/Eval/2/SP_hd256_seed7/ck_2_rew_106.66666666666667',
+#     'agent_models/Result/Eval/2/SP_hd256_seed7/ck_3_rew_192.66666666666666',
+#     'agent_models/Result/Eval/2/SP_hd256_seed42/ck_2_rew_110.66666666666667',
+# ]
+# TWO_PLAYERS_HIGH_EVAL = [
+#     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_24_rew_298.0',
+#     'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_20_rew_286.6666666666667',
+#     'agent_models/Result/Eval/2/SP_hd256_seed7/ck_24_rew_258.0',
+#     'agent_models/Result/Eval/2/SP_hd256_seed42/ck_22_rew_262.0',
+#     'agent_models/Result/Eval/2/SP_hd256_seed42/ck_13_rew_274.0',
+# ]
+
 TWO_PLAYERS_LOW_EVAL = [
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_1_rew_18.666666666666668',
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_1_rew_22.0',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_1_rew_38.0',
-    'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_0',
+    "agent_models/Final/2/SP_hd64_seed0/ck_0",
+    "agent_models/Final/2/SP_hd64_seed14/ck_0",
+    "agent_models/Final/2/SP_hd256_seed13/ck_0",
+    "agent_models/Final/2/SP_hd256_seed68/ck_0",
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_0",
+    "agent_models/Final/2/SP_hd64_seed14/ck_1_rew_18.4",
+    "agent_models/Final/2/SP_hd64_seed0/ck_1_rew_28.8",
+    "agent_models/Final/2/SP_hd256_seed13/ck_1_rew_30.8",
+    "agent_models/Final/2/SP_hd256_seed68/ck_1_rew_56.8"
 ]
+
 TWO_PLAYERS_MEDIUM_EVAL = [
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_2_rew_108.66666666666667',
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_3_rew_170.66666666666666',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_2_rew_106.66666666666667',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_3_rew_192.66666666666666',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_2_rew_110.66666666666667',
+    "agent_models/Final/2/SP_hd64_seed14/ck_2_rew_88.4",
+    "agent_models/Final/2/SP_hd64_seed0/ck_2_rew_122.8",
+    "agent_models/Final/2/SP_hd256_seed13/ck_2_rew_128.8",
+    "agent_models/Final/2/SP_hd256_seed68/ck_2_rew_156.0",
+    "agent_models/Final/2/SP_hd64_seed14/ck_3_rew_152.8",
+    "agent_models/Final/2/SP_hd64_seed0/ck_3_rew_171.6"
 ]
+
 TWO_PLAYERS_HIGH_EVAL = [
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_24_rew_298.0',
-    'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_20_rew_286.6666666666667',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_24_rew_258.0',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_22_rew_262.0',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_13_rew_274.0',
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_10_rew_238.0",
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_9_rew_232.8",
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_8_rew_234.0",
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_7_rew_230.8",
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_6_rew_230.8",
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_5_rew_230.8",
+    "agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/ck_4_rew_224.8",
+    "agent_models/Final/2/SP_hd64_seed14/ck_10_rew_226.8",
+    "agent_models/Final/2/SP_hd64_seed14/ck_9_rew_224.0",
+    "agent_models/Final/2/SP_hd256_seed13/ck_5_rew_217.2",
+    "agent_models/Final/2/SP_hd64_seed0/ck_10_rew_221.6",
+    "agent_models/Final/2/SP_hd256_seed68/ck_10_rew_209.2",
+    "agent_models/Final/2/SP_hd64_seed14/ck_5_rew_212.0",
+    "agent_models/Final/2/SP_hd256_seed68/ck_9_rew_213.6"
+]
+
+# Define the paths for four-player evaluation in three different lists
+FOUR_PLAYERS_LOW_EVAL = [
+    "agent_models/Final/4/SP_s1010_h256_tr[SP]_ran/ck_0",
+    "agent_models/Final/4/SP_hd64_seed0/ck_0",
+    "agent_models/Final/4/SP_hd64_seed14/ck_0",
+    "agent_models/Final/4/SP_hd256_seed13/ck_0",
+    "agent_models/Final/4/SP_hd256_seed68/ck_0",
+    "agent_models/Final/4/SP_hd64_seed0/ck_1_rew_54.2",
+    "agent_models/Final/4/SP_hd256_seed68/ck_1_rew_66.0",
+    "agent_models/Final/4/SP_hd256_seed13/ck_1_rew_79.0",
+    "agent_models/Final/4/SP_hd64_seed14/ck_1_rew_44.0",
+    "agent_models/Final/4/SP_hd256_seed68/ck_2_rew_142.0"
+]
+
+FOUR_PLAYERS_MEDIUM_EVAL = [
+    "agent_models/Final/4/SP_hd64_seed14/ck_2_rew_122.2",
+    "agent_models/Final/4/SP_hd256_seed13/ck_2_rew_197.2",
+    "agent_models/Final/4/SP_hd64_seed0/ck_3_rew_168.0",
+    "agent_models/Final/4/SP_hd256_seed68/ck_3_rew_214.0",
+    "agent_models/Final/4/SP_hd64_seed0/ck_4_rew_204.6",
+    "agent_models/Final/4/SP_hd64_seed14/ck_4_rew_243.6"
+]
+
+FOUR_PLAYERS_HIGH_EVAL = [
+    "agent_models/Final/4/SP_s1010_h256_tr[SP]_ran/ck_8_rew_308.0",
+    "agent_models/Final/4/SP_s1010_h256_tr[SP]_ran/ck_6_rew_309.6",
+    "agent_models/Final/4/SP_s1010_h256_tr[SP]_ran/ck_5_rew_299.7",
+    "agent_models/Final/4/SP_hd64_seed0/ck_10_rew_302.4",
+    "agent_models/Final/4/SP_hd64_seed14/ck_10_rew_295.6",
+    "agent_models/Final/4/SP_hd256_seed68/ck_9_rew_296.8",
+    "agent_models/Final/4/SP_hd256_seed68/ck_8_rew_296.2",
+    "agent_models/Final/4/SP_hd64_seed14/ck_9_rew_289.0",
+    "agent_models/Final/4/SP_hd256_seed13/ck_9_rew_299.2",
+    "agent_models/Final/4/SP_hd256_seed13/ck_10_rew_290.8"
 ]
 
 THREE_PLAYERS_LOW_EVAL = [
