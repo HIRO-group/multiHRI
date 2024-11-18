@@ -6,11 +6,12 @@ from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
-from scripts.utils import (get_SP_agent,
-                    get_FCP_agent_w_pop,
-                    get_N_X_FCP_agents,
-                    get_N_X_SP_agents,
-                    )
+from scripts.utils import (
+    get_SP_agent,
+    get_FCP_agent_w_pop,
+    get_N_X_FCP_agents,
+    get_N_X_SP_agents,
+)
 
 def SP(args):
     primary_train_types = [TeamType.SELF_PLAY]
@@ -20,11 +21,12 @@ def SP(args):
     }
     curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    get_SP_agent(args=args,
-                train_types=curriculum.train_types,
-                eval_types=primary_eval_types,
-                curriculum=curriculum
-                )
+    get_SP_agent(
+        args=args,
+        train_types=curriculum.train_types,
+        eval_types=primary_eval_types,
+        curriculum=curriculum
+    )
 
 
 def SPN_1ADV(args) -> None:
@@ -41,8 +43,14 @@ def SPN_1ADV(args) -> None:
     adversary_play_config = AdversaryPlayConfig.MAP
     primary_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
-                          'load': []}
+    primary_eval_types = {
+        'generate': [
+            TeamType.SELF_PLAY_HIGH,
+            TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_ADVERSARY
+        ],
+        'load': []
+    }
 
     curriculum = Curriculum(train_types = primary_train_types,
                             is_random = True)
@@ -77,21 +85,29 @@ def SPN_1ADV_XSPCKP(args) -> None:
     adversary_play_config = AdversaryPlayConfig.MAP
     primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_ADVERSARY]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
-                          'load': []}
+    primary_eval_types = {
+        'generate': [
+            TeamType.SELF_PLAY_HIGH,
+            TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_ADVERSARY
+        ],
+        'load': []
+    }
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random = False,
-                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-                            training_phases_durations_in_order={
-                                (TeamType.SELF_PLAY_ADVERSARY): 0.5,
-                            },
-                            rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_MEDIUM: 0.3,
-                                TeamType.SELF_PLAY_HIGH: 0.3,
-                                TeamType.SELF_PLAY_ADVERSARY: 0.4,
-                            },
-                            probabilities_decay_over_time=0)
+    curriculum = Curriculum(
+        train_types = primary_train_types,
+        is_random = False,
+        total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
+        training_phases_durations_in_order={
+            (TeamType.SELF_PLAY_ADVERSARY): 0.5,
+        },
+        rest_of_the_training_probabilities={
+            TeamType.SELF_PLAY_MEDIUM: 0.3,
+            TeamType.SELF_PLAY_HIGH: 0.3,
+            TeamType.SELF_PLAY_ADVERSARY: 0.4,
+        },
+        probabilities_decay_over_time=0
+    )
     get_N_X_SP_agents(
         args,
         n_x_sp_train_types=curriculum.train_types,
@@ -126,9 +142,9 @@ def SPN_XSPCKP(args) -> None:
     unseen_teammates_len = 1
     primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
     primary_eval_types = {
-                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
-                            'load': []
-                            }
+        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
+        'load': []
+    }
 
     curriculum = Curriculum(train_types = primary_train_types,
                             is_random=False,
@@ -154,46 +170,6 @@ def SPN_XSPCKP(args) -> None:
         unseen_teammates_len=unseen_teammates_len,
     )
 
-def SPN_XSPCKP_HP_TYPE(args) -> None:
-    '''
-    In N-agents games, a randomly initialized agent will be trained with N-X copies of itself
-    and X homogeneous unseen teammates, which are checkpoints saved during a previous self-play process.
-    These saved checkpoints are cateogorized into High, Medium, Low performance.
-    e.g.
-    when N is 4 and X is 1, the team can be composed by [SP, SP, SP, H], [SP, SP, SP, M], [SP, SP, SP, L] in a 4-chef layout.
-    when N is 4 and X is 2, the team can be composed [SP, SP, H, H], [SP, SP, M, M], [SP, SP, L, L] in a 4-chef layout.
-
-
-    Please note that
-    - X is the number of unseen teammate.
-    - X is assigned by the variable, unseen_teammates_len, in the funciton.
-
-
-    :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
-    :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file.
-    '''
-    unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_HIGH,
-                                # TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MEDIUM,
-                                # TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_LOW,
-                                ]
-    primary_eval_types = {
-                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
-                            'load': []
-                            }
-
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random=True,
-                            )
-
-    get_N_X_SP_agents(
-        args,
-        n_x_sp_train_types = curriculum.train_types,
-        n_x_sp_eval_types=primary_eval_types,
-        curriculum=curriculum,
-        unseen_teammates_len=unseen_teammates_len,
-    )
-
 
 def FCP_mhri(args):
     '''
@@ -206,26 +182,29 @@ def FCP_mhri(args):
     primary_eval_types = {'generate' : [TeamType.HIGH_FIRST],
                           'load': []}
 
-    fcp_curriculum = Curriculum(train_types = primary_train_types,
-                                is_random=False,
-                                total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
-                                training_phases_durations_in_order={
-                                    (TeamType.LOW_FIRST): 0.5,
-                                    (TeamType.MEDIUM_FIRST): 0.125,
-                                    (TeamType.HIGH_FIRST): 0.125,
-                                },
-                                rest_of_the_training_probabilities={
-                                    TeamType.LOW_FIRST: 0.4,
-                                    TeamType.MEDIUM_FIRST: 0.3,
-                                    TeamType.HIGH_FIRST: 0.3,
-                                },
-                                probabilities_decay_over_time=0
-                            )
+    fcp_curriculum = Curriculum(
+        train_types = primary_train_types,
+        is_random=False,
+        total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
+        training_phases_durations_in_order={
+            (TeamType.LOW_FIRST): 0.5,
+            (TeamType.MEDIUM_FIRST): 0.125,
+            (TeamType.HIGH_FIRST): 0.125,
+        },
+        rest_of_the_training_probabilities={
+            TeamType.LOW_FIRST: 0.4,
+            TeamType.MEDIUM_FIRST: 0.3,
+            TeamType.HIGH_FIRST: 0.3,
+        },
+        probabilities_decay_over_time=0
+    )
 
-    _, _ = get_FCP_agent_w_pop(args,
-                                fcp_train_types = fcp_curriculum.train_types,
-                                fcp_eval_types=primary_eval_types,
-                                fcp_curriculum=fcp_curriculum)
+    _, _ = get_FCP_agent_w_pop(
+        args,
+        fcp_train_types = fcp_curriculum.train_types,
+        fcp_eval_types=primary_eval_types,
+        fcp_curriculum=fcp_curriculum
+    )
 
 
 
@@ -236,15 +215,18 @@ def FCP_traditional(args):
     '''
 
     primary_train_types = [TeamType.ALL_MIX]
-    primary_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
-                            'load': []}
+    primary_eval_types = {
+        'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
+        'load': []
+    }
     fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    _, _ = get_FCP_agent_w_pop(args,
-                                fcp_train_types=fcp_curriculum.train_types,
-                                fcp_eval_types=primary_eval_types,
-                                fcp_curriculum=fcp_curriculum,
-                                )
+    _, _ = get_FCP_agent_w_pop(
+        args,
+        fcp_train_types=fcp_curriculum.train_types,
+        fcp_eval_types=primary_eval_types,
+        fcp_curriculum=fcp_curriculum,
+    )
 
 
 def N_1_FCP(args):
@@ -254,19 +236,31 @@ def N_1_FCP(args):
     fcp_eval_types = {'generate' : [], 'load': []}
     fcp_curriculum = Curriculum(train_types=fcp_train_types, is_random=True)
 
-    primary_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH],
-                                'load': []}
+    primary_train_types = [
+        TeamType.SELF_PLAY_LOW,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_HIGH
+    ]
+    primary_eval_types = {
+        'generate': [
+            TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_MEDIUM,
+            TeamType.SELF_PLAY_HIGH
+        ],
+        'load': []
+    }
     n_1_fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    get_N_X_FCP_agents(args=args,
-                        fcp_train_types=fcp_curriculum.train_types,
-                        fcp_eval_types=fcp_eval_types,
-                        n_1_fcp_train_types=n_1_fcp_curriculum.train_types,
-                        n_1_fcp_eval_types=primary_eval_types,
-                        fcp_curriculum=fcp_curriculum,
-                        n_1_fcp_curriculum=n_1_fcp_curriculum,
-                        unseen_teammates_len=unseen_teammates_len)
+    get_N_X_FCP_agents(
+        args=args,
+        fcp_train_types=fcp_curriculum.train_types,
+        fcp_eval_types=fcp_eval_types,
+        n_1_fcp_train_types=n_1_fcp_curriculum.train_types,
+        n_1_fcp_eval_types=primary_eval_types,
+        fcp_curriculum=fcp_curriculum,
+        n_1_fcp_curriculum=n_1_fcp_curriculum,
+        unseen_teammates_len=unseen_teammates_len
+    )
 
 
 def set_input(args):
@@ -385,8 +379,6 @@ if __name__ == '__main__':
     args.how_long = 6*4 # Not effective in quick_test mode
 
     set_input(args=args)
-
-    SPN_XSPCKP_HP_TYPE(args=args)
 
     # SPN_1ADV_XSPCKP(args=args)
 
