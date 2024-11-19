@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # tm_path = 'agent_models/Result/2/SP_hd64_seed14/best'
     blue =  load_agent(Path(tm_path), args)
 
-    dc = OvercookedGUI(args, agent=blue, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=20,
+    dc = OvercookedGUI(args, agent=blue, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
                        horizon=400)
     dc.on_execute()
     # print(dc.trajectory)

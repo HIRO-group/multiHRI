@@ -1,8 +1,29 @@
-LAYOUT_SPECIFIC_EVAL_AGENTS = {
-    'selected_2_chefs_coordination_ring': 'multiHRI/agent_models/Result/Eval/2/pop_selected_2_chefs_coordination_ring',
-    'selected_2_chefs_counter_circuit':   'multiHRI/agent_models/Result/Eval/2/pop_selected_2_chefs_counter_circuit',
-    'selected_2_chefs_cramped_room':      'multiHRI/agent_models/Result/Eval/2/pop_selected_2_chefs_cramped_room',
+class Eval:
+    LOW = 'low'
+    MEDIUM = 'medium'
+    HIGH = 'high'
+    ALL = [LOW, MEDIUM, HIGH]
+
+POPULATION_EVAL_AGENTS = {
+    'selected_2_chefs_coordination_ring': 'agent_models/Result/Eval/2/pop_selected_2_chefs_coordination_ring',
+    'selected_2_chefs_counter_circuit':   'agent_models/Result/Eval/2/pop_selected_2_chefs_counter_circuit',
+    'selected_2_chefs_cramped_room':      'agent_models/Result/Eval/2/pop_selected_2_chefs_cramped_room',
 }
+
+
+def print_selected_agents_for_evaluation(selected_agents_for_evaluation):
+    for primary_agent, layouts in selected_agents_for_evaluation.items():
+        print(f"\nPrimary Agent: {primary_agent.name}")
+        for layout_name, unseen_counts in layouts.items():
+            print(f"  Layout: {layout_name}")
+            for unseen_count, levels in unseen_counts.items():
+                print(f"    Unseen Count: {unseen_count}")
+                for teammate_lvl, teams in levels.items():
+                    print(f"      Teammate Level: {teammate_lvl}")
+                    for i, team in enumerate(teams):
+                        team_members = [(member.name, member.layout_scores[layout_name]) for member in team]
+                        print(f"        Team {i + 1}: {team_members}")
+
 
 TWO_PLAYERS_LOW_EVAL = [
     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
