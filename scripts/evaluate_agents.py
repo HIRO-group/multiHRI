@@ -537,5 +537,3 @@ if __name__ == "__main__":
                                      teammate_lvl_sets=teammate_lvl_sets,
                                      num_players=args.num_players,
                                      plot_name=plot_name)
-    
-
