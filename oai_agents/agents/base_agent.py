@@ -515,10 +515,7 @@ class OAITrainer(ABC):
             agent.to(device)
             agents.append(agent)
 
-        try: 
-            with open(env_path, "rb") as f:
-                env_info = pkl.load(f)
-        except FileNotFoundError:
-            env_info = 1
+        with open(env_path, "rb") as f:
+            env_info = pkl.load(f)
 
         return agents, env_info, saved_variables
