@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     args = get_arguments(additional_args)
     args.num_players = 2
-    args.layout ='selected_2_chefs_coordination_ring'
+    args.layout ='forced_coordination'
     args.p_idx = 1
 
     # tm_path = 'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0'
@@ -35,7 +35,8 @@ if __name__ == "__main__":
 
     tm_path = 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best'
     # tm_path = 'agent_models/Result/2/SP_hd64_seed14/best'
-    blue =  load_agent(Path(tm_path), args)
+    # blue =  load_agent(Path(tm_path), args)
+    blue = 'human'
 
     dc = OvercookedGUI(args, agent=blue, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
                        horizon=400)

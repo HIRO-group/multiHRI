@@ -1,253 +1,540 @@
+import multiprocessing as mp
+import os
 from pathlib import Path
-from concurrent.futures import ProcessPoolExecutor, as_completed
+mp.set_start_method('spawn', force=True) 
 
-from oai_agents.common.arguments import get_arguments
-from oai_agents.common.tags import TeamType, TeammatesCollection, KeyCheckpoints
-from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.agents.agent_utils import load_agent
-from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
-
+import hashlib
+import sys
+from typing import Sequence
+import itertools
+import concurrent.futures
+from tqdm import tqdm
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from utils import Eval, POPULATION_EVAL_AGENTS, print_selected_agents_for_evaluation
+import matplotlib.pyplot as plt
+from pathlib import Path
+import numpy as np
+import pickle as pkl
+
+from oai_agents.agents.agent_utils import load_agent
+from oai_agents.common.arguments import get_arguments
+from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+
+from utils import (
+    TWO_PLAYERS_LOW_EVAL,
+    TWO_PLAYERS_MEDIUM_EVAL,
+    TWO_PLAYERS_HIGH_EVAL,
+    THREE_PLAYERS_LOW_EVAL,
+    THREE_PLAYERS_MEDIUM_EVAL,
+    THREE_PLAYERS_HIGH_EVAL,
+    FIVE_PLAYERS_LOW_EVAL,
+    FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
+    FIVE_PLAYERS_HIGH_STORAGE_EVAL
+)
+
+class Eval:
+    LOW = 'l'
+    MEDIUM = 'm'
+    HIGH = 'h'
+
+eval_key_lut = {
+    'l': "LOW",
+    'm': "MEDIUM",
+    'h': "HIGH"
+}
+
+LAYOUT_NAMES_PATHs = {
+    'selected_2_chefs_coordination_ring': {
+        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
+        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
+    },
+    'selected_2_chefs_counter_circuit': {
+        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
+        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
+    },
+    'selected_2_chefs_cramped_room': {
+        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
+        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
+    },
+
+    'selected_3_chefs_coordination_ring': {
+        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
+        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+    },
+    'selected_3_chefs_counter_circuit': {
+        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
+        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+    },
+    'selected_3_chefs_cramped_room': {
+        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
+        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+    },
+
+    'selected_5_chefs_counter_circuit': {
+        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+        Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    },
+    'selected_5_chefs_secret_coordination_ring': {
+        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+        Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
+    },
+    'selected_5_chefs_storage_room': {
+        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
+        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
+        Eval.HIGH: FIVE_PLAYERS_HIGH_STORAGE_EVAL,
+    },
+}
+
+def print_all_teammates(all_teammates):
+    for layout_name in all_teammates:
+        print('Layout:', layout_name)
+        for teammates in all_teammates[layout_name]:
+            print([agent.name for agent in teammates])
+        print()
+
+def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_names, deterministic, max_num_teams_per_layout_per_x, teammate_lvl_set: Sequence[Eval]=[Eval.LOW, Eval.MEDIUM, Eval.HIGH]):
+    '''
+    x = 0 means all N-1 teammates are primary_agent
+    x = 1 means 1 teammate out of N-1 is unseen agent
+    x = 2 means 2 teammates out of N-1- are unseen agents
+    '''
+
+    N = num_players
+    X = list(range(N))
+
+    # Contains all the agents which are later used to create all_teammates
+    all_agents = {layout_name: [] for layout_name in layout_names}
+    # Containts teams for each layout and each x up to MAX_NUM_TEAMS_PER_LAYOUT_PER_X
+    all_teammates = {
+        layout_name: {
+            unseen_count: [] for unseen_count in X}
+        for layout_name in layout_names}
+
+    for layout_name in layout_names:
+        for lvl in teammate_lvl_set:
+            for path in LAYOUT_NAMES_PATHs[layout_name][lvl]:
+                agent = load_agent(Path(path), args)
+                agent.deterministic = deterministic
+                all_agents[layout_name].append(agent)
+
+    for layout_name in layout_names:
+        agents = all_agents[layout_name]
+
+        for unseen_count in X:
+            teammates_list = []
+            for num_teams in range(max_num_teams_per_layout_per_x):
+                teammates = [primary_agent] * (N-1-unseen_count)
+                for i in range(unseen_count):
+                    try:
+                        teammates.append(agents[i + (num_teams)])
+                    except:
+                        continue
+                if len(teammates) == N-1:
+                    teammates_list.append(teammates)
+            all_teammates[layout_name][unseen_count] = teammates_list
+    return all_teammates
+
+
+def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams, teammate_lvl_sets):
+    plot_name = f'{num_players}-players'
+    plot_name += '-det' if deterministic else '-stoch'
+    p_idexes_str = ''.join([str(p_idx) for p_idx in p_idxes])
+    plot_name += f'-pidx{p_idexes_str}'
+    plot_name += f'-eps{num_eps}'
+    plot_name += f'-maxteams{str(max_num_teams)}'
+    teams = ''.join([str(t[0]) for t in teammate_lvl_sets])
+    plot_name += f"-teams({str(teams)})"
+    return plot_name
+
+
+def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False):
+    plot_name = plot_name + "_delivery" if display_delivery else plot_name
+    uc = ''.join([str(u) for u in unseen_counts])
+    plot_name += f"_uc{uc}"
+
+    num_layouts = len(layout_names)
+    team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
+    team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
+    num_teamsets = len(team_lvl_set_names)
+    fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
+
+    if num_layouts == 1:
+        axes = [[axes]]
+
+    x_values = np.arange(len(unseen_counts))
+    num_agents = len(all_mean_rewards)
+    width = 0.8 / num_agents  # Adjust bar width based on number of agents
+
+    # Function to process rewards (divide by 20 if display_delivery is True)
+    def process_reward(reward):
+        return reward / 20 if display_delivery else reward
+
+    for i, layout_name in enumerate(layout_names):
+        cross_exp_mean = {}
+        cross_exp_std = {}
+        for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
+            ax = axes[j][i]
+            for idx, agent_name in enumerate(all_mean_rewards):
+                mean_values = []
+                std_values = []
+
+                for unseen_count in unseen_counts:
+                    mean_rewards = [process_reward(r) for r in all_mean_rewards[agent_name][team][layout_name][unseen_count]]
+                    std_rewards = [process_reward(r) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
+
+                    mean_values.append(np.mean(mean_rewards))
+                    std_values.append(np.mean(std_rewards))
+                    if agent_name not in cross_exp_mean:
+                        cross_exp_mean[agent_name] = [0] * len(unseen_counts)
+                    if agent_name not in cross_exp_std:
+                        cross_exp_std[agent_name] = [0] * len(unseen_counts)
+                    cross_exp_mean[agent_name][unseen_counts.index(unseen_count)] += mean_values[-1]
+                    cross_exp_std[agent_name][unseen_counts.index(unseen_count)] += std_values[-1]
+
+                # Plot bars for each agent
+                x = x_values + idx * width - width * (num_agents - 1) / 2
+                ax.bar(x, mean_values, width, yerr=std_values, label=f'{agent_name}', capsize=5)
+
+            team_name_print = team_name.strip("[]'\"")
+            ax.set_title(f'{layout_name}\n{team_name_print}')
+            ax.set_xlabel('Number of Unseen Teammates')
+            ax.set_xticks(x_values)
+            ax.set_xticklabels(unseen_counts)
+            ax.set_yticks(np.arange(0, 20, 1))
+            ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+        # Average plot across all teamsets
+        ax = axes[-1][i]
+        for idx, agent_name in enumerate(all_mean_rewards):
+            mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
+            std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
+            
+            x = x_values + idx * width - width * (num_agents - 1) / 2
+            ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
+
+        ax.set_title(f"Avg. {layout_name}")
+        ax.set_xlabel('Number of Unseen Teammates')
+        ax.set_xticks(x_values)
+        ax.set_xticklabels(unseen_counts)
+        ax.set_yticks(np.arange(0, 20, 1))
+        ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+    # Set y-axis label based on display_delivery
+    fig.text(0.04, 0.5, 'Number of Deliveries' if display_delivery else 'Reward', va='center', rotation='vertical')
+
+    plt.tight_layout()
+    plt.savefig(f'data/plots/{plot_name}_{"deliveries" if display_delivery else "rewards"}_bar.png')
+
+
+def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name):
+    num_layouts = len(layout_names)
+    team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
+    team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
+    num_teamsets = len(team_lvl_set_names)
+    fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
+
+    if num_layouts == 1:
+        axes = [[axes]]
+
+    x_values = np.arange(num_players)
+
+    for i, layout_name in enumerate(layout_names):
+        cross_exp_mean = {}
+        cross_exp_std = {}
+        for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
+            ax = axes[j][i]
+            for agent_name in all_mean_rewards:
+                mean_values = []
+                std_values = []
+
+                for unseen_count in range(num_players):
+                    mean_rewards = all_mean_rewards[agent_name][team][layout_name][unseen_count]
+                    std_rewards = all_std_rewards[agent_name][team][layout_name][unseen_count]
+
+                    mean_values.append(np.mean(mean_rewards))
+                    std_values.append(np.mean(std_rewards))
+                    if agent_name not in cross_exp_mean:
+                        cross_exp_mean[agent_name] = [0] * num_players
+                    if agent_name not in cross_exp_std:
+                        cross_exp_std[agent_name] = [0] * num_players
+                    cross_exp_mean[agent_name][unseen_count] += mean_values[-1]
+                    cross_exp_mean[agent_name][unseen_count] += std_values[-1]
+
+                ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o',
+                            label=f'Agent: {agent_name}', capsize=5)
+            team_name_print = team_name.strip("[]'\"")
+            ax.set_title(f'{layout_name}\n{team_name_print}')
+            ax.set_xlabel('Number of Unseen Teammates')
+            ax.set_xticks(x_values)
+            ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+        ax = axes[-1][i]
+        for agent_name in all_mean_rewards:
+            mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
+            std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
+            ax.errorbar(x_values, mean_values, yerr=std_values, fmt="-o", label=f"Agent: {agent_name}", capsize=5)
+
+        ax.set_title(f"Avg. {layout_name}")
+        ax.set_xlabel('Number of Unseen Teammates')
+        ax.set_xticks(x_values)
+        ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+
+    plt.tight_layout()
+    plt.savefig(f'data/plots/{plot_name}_line.png')
+    # plt.show()
+
+
+
+def evaluate_agent(args,
+                   primary_agent,
+                   p_idxes,
+                   layout_names,
+                   all_teammates,
+                   deterministic,
+                   number_of_eps):
+
+    all_mean_rewards = {
+        layout_name: {unseen_count: [] for unseen_count in range(args.num_players)}
+        for layout_name in layout_names
+    }
+    all_std_rewards = {
+        layout_name: {unseen_count: [] for unseen_count in range(args.num_players)}
+        for layout_name in layout_names
+    }
+
+    for layout_name in layout_names:
+        for unseen_count in range(args.num_players):
+            for teammates in all_teammates[layout_name][unseen_count]:
+                env = OvercookedGymEnv(args=args,
+                                       layout_name=layout_name,
+                                       ret_completed_subtasks=False,
+                                       is_eval_env=True,
+                                       horizon=400,
+                                       deterministic=deterministic,
+                                       learner_type='originaler'
+                                       )
+                env.set_teammates(teammates)
+                for p_idx in p_idxes:
+                    env.reset(p_idx=p_idx)
+                    mean_reward, std_reward = evaluate_policy(primary_agent, env,
+                                                              n_eval_episodes=number_of_eps,
+                                                              deterministic=deterministic,
+                                                              warn=False,
+                                                              render=False)
+                    all_mean_rewards[layout_name][unseen_count].append(mean_reward)
+                    all_std_rewards[layout_name][unseen_count].append(std_reward)
+
+    return all_mean_rewards, all_std_rewards
+
+
+def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set: Sequence[Eval]):
+    fn_args = (args.num_players, path, tuple(layout_names), tuple(p_idxes), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
+    m = hashlib.md5()
+    for s in fn_args:
+        m.update(str(s).encode())
+    arg_hash = m.hexdigest()
+    cached_eval = Path(f"eval_cache/eval_{arg_hash}.pkl")
+    
+    if cached_eval.is_file():
+        print(f"Loading cached evaluation for agent {agent_name}")
+        with open(cached_eval, "rb") as f:
+            teammate_lvl_set, mean_rewards, std_rewards = pkl.load(f)
+
+    else:
+        print(f"Evaluating agent: {agent_name}")
+        agent = load_agent(Path(path), args)
+        agent.deterministic = deterministic
+
+        all_teammates = get_all_teammates_for_evaluation(args=args,
+                                                        primary_agent=agent,
+                                                        num_players=args.num_players,
+                                                        layout_names=layout_names,
+                                                        deterministic=deterministic,
+                                                        max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
+                                                        teammate_lvl_set=teammate_lvl_set)
+
+        mean_rewards, std_rewards = evaluate_agent(args=args,
+                                                primary_agent=agent,
+                                                p_idxes=p_idxes,
+                                                layout_names=layout_names,
+                                                all_teammates=all_teammates,
+                                                deterministic=deterministic,
+                                                number_of_eps=number_of_eps)
+
+        Path('eval_cache').mkdir(parents=True, exist_ok=True)
+        with open(cached_eval, "wb") as f:
+            pkl.dump((teammate_lvl_set, mean_rewards, std_rewards), f)
+
+    return agent_name, str(teammate_lvl_set), mean_rewards, std_rewards
+
+
+def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_sets: Sequence[Sequence[Eval]]):
+    for path in all_agents_paths.values():
+        assert Path(path+'/trainer_file').is_file(), f"File {path+'/trainer_file'} does not exist"
+
+    all_mean_rewards, all_std_rewards = {}, {}
+    with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
+        futures = [
+            executor.submit(evaluate_agent_for_layout, name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set)
+            for (name, path), teammate_lvl_set in itertools.product(all_agents_paths.items(), teammate_lvl_sets)
+        ]
+
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Evaluating Agents"):
+            name, teammate_lvl_set_str, mean_rewards, std_rewards = future.result()
+            if name not in all_mean_rewards:
+                all_mean_rewards[name] = {}
+            if name not in all_std_rewards:
+                all_std_rewards[name] = {}
+            all_mean_rewards[name][teammate_lvl_set_str] = mean_rewards
+            all_std_rewards[name][teammate_lvl_set_str] = std_rewards
+
+    return all_mean_rewards, all_std_rewards
+
+
 
 def get_2_player_input(args):
-    args.teammates_len = 1
-    args.num_players = args.teammates_len + 1
-    args.layout_names = ['selected_2_chefs_coordination_ring',
-                        'selected_2_chefs_counter_circuit',
-                        'selected_2_chefs_cramped_room']
+    args.num_players = 2
+    layout_names = ['selected_2_chefs_coordination_ring',
+                    'selected_2_chefs_counter_circuit',
+                    'selected_2_chefs_cramped_room']
+    p_idxes = [0, 1]
 
-    args.p_idxes = [0, 1]
     all_agents_paths = {    
         'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
         'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
+
+        'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
+        'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
+        'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
+        'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2/best',
+
+        'ALMH CUR 2A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
+        'ALMH RAN 2A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
+        'AMH CUR 2A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
+        'AMH RAN 2A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best',
+
         'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        'ALMH RAN 1A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        'AMH CUR 1A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        'AMH RAN 1A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
     }
-
     teammate_lvl_sets = [
-        Eval.LOW,
-        Eval.MEDIUM,
-        Eval.HIGH
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
     ]
-
-    return args, all_agents_paths, teammate_lvl_sets
-
-
-def get_all_players_and_teammates(args, teammate_lvl_sets, all_players):
-    all_teammates = {layout_name: {teammate_lvl: [] for teammate_lvl in Eval.ALL} for layout_name in args.layout_names}
-
-    for layout_name in args.layout_names:
-        layout_population, _, _ = RLAgentTrainer.load_agents(args,
-                                                            path=Path(POPULATION_EVAL_AGENTS[layout_name]),
-                                                            tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
-
-        sorted_agents = sorted(layout_population, key=lambda x: x.layout_scores[layout_name], reverse=False)
-        unique_agents = {}
-        for agent in layout_population:
-            agent_pair = (agent.name, agent.layout_scores[layout_name])
-            if agent_pair not in unique_agents:
-                unique_agents[agent_pair] = agent
-
-        sorted_agents = sorted(unique_agents.values(), key=lambda x: x.layout_scores[layout_name], reverse=False)
-        part_size = len(sorted_agents) // 3
-        all_teammates[layout_name][Eval.LOW] = sorted_agents[:part_size]
-        all_teammates[layout_name][Eval.MEDIUM] = sorted_agents[part_size:2 * part_size]
-        all_teammates[layout_name][Eval.HIGH] = sorted_agents[2 * part_size:]
+    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
 
-    selected_agents_for_evaluation = {
-        primary_agent: {
-            layout_name: {
-                unseen_count: {
-                    teammate_lvl: [] for teammate_lvl in Eval.ALL}
-                         for unseen_count in range(args.num_players)} 
-                            for layout_name in args.layout_names} 
-                                for primary_agent in all_players}
+def get_3_player_input(args):
+    args.num_players = 3
+    layout_names = ['selected_3_chefs_coordination_ring',
+                    'selected_3_chefs_counter_circuit',
+                    'selected_3_chefs_cramped_room']
+    p_idxes = [0, 1, 2]
+    all_agents_paths = {
+        'SP':          'agent_models/Result/3/SP_hd64_seed14/best',
+        'FCP':         'agent_models/Result/3/FCP_s2020_h256_tr(AMX)_ran/best',
 
-    for primary_agent in all_players:
-        for teammate_lvl in teammate_lvl_sets:
-            for layout_name in args.layout_names:
-                for unseen_count in range(args.num_players):
-                    seen_members = [primary_agent for _ in range(args.teammates_len - unseen_count)]
-                    if unseen_count == 0:
-                        selected_agents_for_evaluation[primary_agent][layout_name][unseen_count][teammate_lvl] = [seen_members]
-                    elif unseen_count == 1:
-                        teams = [seen_members + [tm] for tm in all_teammates[layout_name][teammate_lvl]]
-                        selected_agents_for_evaluation[primary_agent][layout_name][unseen_count][teammate_lvl] = teams
-                    else:
-                        raise NotImplementedError
-    return selected_agents_for_evaluation
+        'ALMH CUR 1A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        'ALMH RAN 1A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        'AMH CUR 1A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        'AMH RAN 1A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best',
 
-
-def get_all_players(args, all_agents_paths):
-    all_players = {agent_name: load_agent(Path(all_agents_paths[agent_name]), args) for agent_name in all_agents_paths}
-    for agent_name in all_agents_paths:
-        all_players[agent_name].name = agent_name
-    all_players = [all_players[agent_name] for agent_name in all_agents_paths]
-    return all_players
-
-
-def evaluate_on_layout_with_teammates(args, primary_agent, layout_name, unseen_count, teammate_lvl, all_teammates):
-    print(f"Evaluating {primary_agent.name} on layout {layout_name} with {unseen_count} unseen teammates at level {teammate_lvl}")
-
-    mean_rewards = []
-    std_rewards = []
-    for teammates in all_teammates[:args.max_teammates_for_eval]:
-        env = OvercookedGymEnv(
-            args=args,
-            layout_name=layout_name,
-            ret_completed_subtasks=False,
-            is_eval_env=True,
-            horizon=400,
-            deterministic=False,
-            learner_type='originaler'
-        )
-        env.set_teammates(teammates)
-        for p_idx in args.p_idxes:
-            env.reset(p_idx=p_idx)
-            mean_reward, std_reward = evaluate_policy(
-                primary_agent,
-                env,
-                n_eval_episodes=args.max_num_eval_episodes,
-                deterministic=False,
-                warn=False,
-                render=False
-            )
-            mean_rewards.append(mean_reward)
-            std_rewards.append(std_reward)
-
-    return {
-        "primary_agent_name": primary_agent.name,
-        "layout_name": layout_name,
-        "unseen_count": unseen_count,
-        "teammate_lvl": teammate_lvl,
-        "mean_rewards": sum(mean_rewards) / len(mean_rewards) if mean_rewards else 0,
-        "std_rewards": sum(std_rewards) / len(std_rewards) if std_rewards else 0
+        'ALMH CUR 2A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
+        'ALMH RAN 2A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
+        'AMH CUR 2A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
+        'AMH RAN 2A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best'
     }
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
+    ]
+    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
 
-def evaluate_all_agents(args, all_players_and_their_teammates):
-    # Nested dictionary to store results
-    mean_rewards = {
-        primary_agent.name: {
-            layout_name: {
-                unseen_count: {teammate_lvl: -1 for teammate_lvl in Eval.ALL}
-                    for unseen_count in range(args.num_players)}
-            for layout_name in args.layout_names}
-        for primary_agent in all_players_and_their_teammates.keys()}
+def get_5_player_input(args):
+    args.num_players = 5
+    layout_names = ['selected_5_chefs_counter_circuit',
+                    'selected_5_chefs_secret_coordination_ring',
+                    'selected_5_chefs_storage_room']
+    p_idxes = [0, 1, 2, 3, 4]
+    all_agents_paths = {
+        'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
+        'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best',
+        'ALMH CUR 1A':     'agent_models/ALMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        'ALMH RAN 1A':     'agent_models/ALMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        'AMH CUR 1A':      'agent_models/AMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        'AMH RAN 1A':      'agent_models/AMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
+        }
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
+    ]
+    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
-    std_rewards = {
-        primary_agent.name: {
-            layout_name: {
-                unseen_count: {teammate_lvl: -1 for teammate_lvl in Eval.ALL}
-                for unseen_count in range(args.num_players)}
-            for layout_name in args.layout_names}
-        for primary_agent in all_players_and_their_teammates.keys()}
-
-    for primary_agent, player_data in all_players_and_their_teammates.items():
-        for layout_name, teammates_data in player_data.items():
-            for unseen_count, teammates_by_lvl in teammates_data.items():
-                if unseen_count == 0:
-                    continue
-                for teammate_lvl, all_teammates in teammates_by_lvl.items():
-                    result = evaluate_on_layout_with_teammates(args, primary_agent, layout_name, unseen_count, teammate_lvl, all_teammates)
-                    mean_rewards[primary_agent.name][layout_name][unseen_count][teammate_lvl] = result["mean_rewards"]
-                    std_rewards[primary_agent.name][layout_name][unseen_count][teammate_lvl] = result["std_rewards"]
-    return mean_rewards, std_rewards
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-def plot_performance_grid(mean_rewards, std_rewards, layout_names, skill_levels):
-    # Number of layouts and skill levels
-    n_layouts = len(layout_names)
-    n_skills = len(skill_levels) + 1  # +1 for the average row
-    
-    # Create figure and axes grid
-    fig, axes = plt.subplots(n_skills, n_layouts, figsize=(5*n_layouts, 4*n_skills))
-    fig.suptitle('Agent Performance Comparison', fontsize=16, y=1.02)
-    
-    # If only one layout, wrap axes in a list for consistent indexing
-    if n_layouts == 1:
-        axes = axes[:, np.newaxis]
-    
-    # Colors for different agents
-    colors = plt.cm.Set3(np.linspace(0, 1, len(mean_rewards)))
-    
-    # Plot for each layout and skill level
-    for layout_idx, layout in enumerate(layout_names):
-        # Plot for each skill level
-        for skill_idx, skill in enumerate(skill_levels):
-            ax = axes[skill_idx, layout_idx]
-            
-            # Plot data for each primary agent
-            x = np.arange(len(mean_rewards))
-            width = 0.35
-            
-            for agent_idx, (agent_name, agent_data) in enumerate(mean_rewards.items()):
-                reward = agent_data[layout][1][skill]  # unseen_count = 1
-                std = std_rewards[agent_name][layout][1][skill]
-                
-                ax.bar(agent_idx, reward, width, 
-                      yerr=std, 
-                      label=agent_name,
-                      color=colors[agent_idx],
-                      capsize=5)
-            
-            # Customize subplot
-            ax.set_title(f'{layout} - {skill}')
-            ax.set_xticks(x)
-            ax.set_xticklabels([name[:10] for name in mean_rewards.keys()], 
-                              rotation=45, ha='right')
-            ax.set_ylabel('Reward')
-            if skill_idx == 0:
-                ax.legend(bbox_to_anchor=(0.5, 1.15), 
-                         loc='center', 
-                         ncol=len(mean_rewards))
-        
-        # Plot averages in the last row
-        ax = axes[-1, layout_idx]
-        for agent_idx, (agent_name, agent_data) in enumerate(mean_rewards.items()):
-            # Calculate average across all skill levels
-            avg_reward = np.mean([agent_data[layout][1][skill] 
-                                for skill in skill_levels])
-            avg_std = np.mean([std_rewards[agent_name][layout][1][skill] 
-                             for skill in skill_levels])
-            
-            ax.bar(agent_idx, avg_reward, width,
-                  yerr=avg_std,
-                  color=colors[agent_idx],
-                  capsize=5)
-        
-        # Customize average subplot
-        ax.set_title(f'{layout} - Average')
-        ax.set_xticks(x)
-        ax.set_xticklabels([name[:10] for name in mean_rewards.keys()],
-                          rotation=45, ha='right')
-        ax.set_ylabel('Average Reward')
-    
-    # Adjust layout to prevent overlap
-    plt.tight_layout()
-    # plt.show()
-    plt.savefig('performance_grid.png')
-    return fig
 
 if __name__ == "__main__":
     args = get_arguments()
-    args, all_agents_paths, teammate_lvl_sets = get_2_player_input(args)
-    args.max_teammates_for_eval = 1
-    args.max_num_eval_episodes = 4
-    args.max_parallel_workers = 5
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
-    all_players = get_all_players(args=args, all_agents_paths=all_agents_paths)
-    all_players_and_their_teammates = get_all_players_and_teammates(args=args, teammate_lvl_sets=teammate_lvl_sets, all_players=all_players)
+    deterministic = False # deterministic = True does not actually work :sweat_smile:
+    max_num_teams_per_layout_per_x = 4
+    number_of_eps = 5
 
-    # print_selected_agents_for_evaluation(all_players_and_their_teammates)
+    # Number of parallel workers for evaluation
+    args.max_workers = 4
 
-    mean_rewards, std_rewards = evaluate_all_agents(args, all_players_and_their_teammates)
+    # For display_purposes
+    unseen_counts = [1]
+    show_delivery_num = True
 
-    print(mean_rewards)
-    print(std_rewards)
+    plot_name = generate_plot_name(num_players=args.num_players,
+                                    deterministic=deterministic,
+                                    p_idxes=p_idxes,
+                                    num_eps=number_of_eps,
+                                    max_num_teams=max_num_teams_per_layout_per_x,
+                                    teammate_lvl_sets=teammate_lvl_sets)
 
-    plot_performance_grid(mean_rewards, std_rewards, args.layout_names, teammate_lvl_sets)
+    all_mean_rewards, all_std_rewards = run_parallel_evaluation(
+            args=args,
+            all_agents_paths=all_agents_paths,
+            layout_names=layout_names,
+            p_idxes=p_idxes,
+            deterministic=deterministic,
+            max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
+            number_of_eps=number_of_eps,
+            teammate_lvl_sets=teammate_lvl_sets
+    )
+
+    plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
+                           all_std_rewards=all_std_rewards,
+                           layout_names=layout_names,
+                           teammate_lvl_sets=teammate_lvl_sets,
+                           unseen_counts=unseen_counts,
+                           display_delivery=show_delivery_num,
+                           plot_name=plot_name)
+    
+
+    plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
+                                     all_std_rewards=all_std_rewards,
+                                     layout_names=layout_names,
+                                     teammate_lvl_sets=teammate_lvl_sets,
+                                     num_players=args.num_players,
+                                     plot_name=plot_name)
+    

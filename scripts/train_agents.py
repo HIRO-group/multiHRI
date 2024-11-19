@@ -346,9 +346,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_1ADV_XSPCKP(args=args)
+    # SPN_1ADV_XSPCKP(args=args)
 
-    #SP(args)
+    SP(args)
 
     # FCP_traditional(args=args)
 
