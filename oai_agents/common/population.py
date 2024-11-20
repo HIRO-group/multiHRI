@@ -53,9 +53,11 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
 
-    rlat.train_agents(total_train_timesteps=total_training_timesteps,
-                      tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
-                      resume_ck_list=ck_rewards)
+    rlat.train_agents(
+        total_train_timesteps=total_training_timesteps,
+        tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+        resume_ck_list=ck_rewards
+    )
     checkpoints_list = rlat.ck_list
 
     if serialize:
@@ -181,16 +183,17 @@ def save_categorized_SP_population(args, population):
         rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
 
-def get_categorized_SP_population(args,
-                                ck_rate,
-                                total_training_timesteps,
-                                train_types,
-                                eval_types,
-                                num_SPs_to_train,
-                                unseen_teammates_len=0,
-                                force_training=False,
-                                tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
-                                ):
+def get_categorized_SP_population(
+        args,
+        ck_rate,
+        total_training_timesteps,
+        train_types,
+        eval_types,
+        num_SPs_to_train,
+        unseen_teammates_len=0,
+        force_training=False,
+        tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+    ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
 
@@ -204,15 +207,19 @@ def get_categorized_SP_population(args,
     except FileNotFoundError as e:
         print(f'Could not find saved population, creating them from scratch...\nFull Error: {e}')
 
-        ensure_enough_SP_agents(teammates_len=args.teammates_len,
-                                unseen_teammates_len=unseen_teammates_len,
-                                train_types=train_types,
-                                eval_types=eval_types,
-                                num_SPs_to_train=num_SPs_to_train)
+        ensure_enough_SP_agents(
+            teammates_len=args.teammates_len,
+            unseen_teammates_len=unseen_teammates_len,
+            train_types=train_types,
+            eval_types=eval_types,
+            num_SPs_to_train=num_SPs_to_train
+        )
 
-        seed, h_dim = generate_hdim_and_seed(for_training=True, num_of_required_agents=num_SPs_to_train)
+        seed, h_dim = generate_hdim_and_seed(
+            for_training=True, num_of_required_agents=num_SPs_to_train)
         inputs = [
-            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
+            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True)
+            for i in range(num_SPs_to_train)
         ]
 
 
@@ -223,18 +230,22 @@ def get_categorized_SP_population(args,
             for dilled_res in dilled_results:
                 checkpoints_list = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(
+                        args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
         else:
             for inp in inputs:
-                checkpoints_list = train_SP_with_checkpoints(args=inp[0],
-                                                                total_training_timesteps = inp[1],
-                                                                ck_rate=inp[2],
-                                                                seed=inp[3],
-                                                                h_dim=inp[4],
-                                                                serialize=False)
+                checkpoints_list = train_SP_with_checkpoints(
+                    args=inp[0],
+                    total_training_timesteps = inp[1],
+                    ck_rate=inp[2],
+                    seed=inp[3],
+                    h_dim=inp[4],
+                    serialize=False
+                )
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(
+                        args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
 
         save_categorized_SP_population(args=args, population=population)

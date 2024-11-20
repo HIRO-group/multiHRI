@@ -77,6 +77,9 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--num-of-ckpoints", type=int, default=10)
     parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint for population training only")
 
+    parser.add_argument("--for-evaluation", action="store_true", default=False, help="The trained agents are used for evaluating other agents. Please note that seeds and h_dim are different when agents are trained for evaluating others.)")
+    parser.add_argument("--num-of-training-variants", type=int, default=4)
+
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
 

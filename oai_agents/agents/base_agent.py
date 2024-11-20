@@ -541,9 +541,11 @@ class OAITrainer(ABC):
 
     @staticmethod
     def get_most_recent_checkpoint(args, name: str) -> str:
-        path = OAITrainer.get_model_path(base_dir=args.base_dir,
-                                         exp_folder=args.exp_dir,
-                                         model_name=name)
+        path = OAITrainer.get_model_path(
+            base_dir=args.base_dir,
+            exp_folder=args.exp_dir,
+            model_name=name
+        )
         if not path.exists():
             print(f"Warning: The directory {path} does not exist.")
             return None
@@ -578,5 +580,5 @@ class OAITrainer(ABC):
         return path
 
     @staticmethod
-    def get_experiment_name(self, exp_folder: Optional[str], model_name: str):
+    def get_experiment_name(exp_folder: Optional[str], model_name: str):
         return f"{exp_folder}/{model_name}" if exp_folder else model_name
