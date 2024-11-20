@@ -1,43 +1,38 @@
 from pathlib import Path
 
 from oai_agents.agents.agent_utils import DummyAgent, load_agent
-from oai_agents.agents.hrl import HierarchicalRL
-from oai_agents.agents.il import BehavioralCloningTrainer
-from oai_agents.agents.human_agents import HumanManagerHRL, HumanPlayer
+from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
 
 
+def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
+    population, _, _ = RLAgentTrainer.load_agents(args, path=Path(pop_path), tag='last')
+    for tm in population:
+        if tm.layout_scores[layout_name] == tm_score and tm.name == tm_name:
+            return tm
+
+
 if __name__ == "__main__":
-    # TEAMMATE and POP(TODO): replace --teammate by --teammates after figuring out how to assign multiple teammates in an argument.
-    """
-    Sample commands
-    python scripts/run_overcooked_game.py --agent human --teammate agent_models/HAHA
-    """
-    additional_args = [
-        ('--agent', {'type': str, 'default': 'human', 'help': '"human" to used keyboard inputs or a path to a saved agent'}),
-        ('--teammate', {'type': str, 'default': 'agent_models/HAHA', 'help': 'Path to saved agent to use as teammate'}),
-        ('--layout', {'type': str, 'default': 'counter_circuit_o_1order', 'help': 'Layout to play on'}),
-        ('--p-idx', {'type': int, 'default': 0, 'help': 'Player idx of agent (teammate will have other player idx), Can be 0 or 1.'})
-    ]
-
-
-    args = get_arguments(additional_args)
+    args = get_arguments()
     args.num_players = 3
-    args.layout = '3_chefs_small_kitchen'
+    args.layout = f'selected_{args.num_players}_chefs_counter_circuit'
     args.p_idx = 0
 
-    tm_path = 'agent_models/eval/3_chefs/fcp_hd256_seed68/best'
-    agent =  load_agent(Path(tm_path), args)
-    
-    orange = agent
-    green = agent
-    teammates = [orange, green]
+    teammates_path = [
+        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green 
+        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
+        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
+        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
+        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
+    ]
 
-    blue = agent
-    # blue = 'human'
+    teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
-    dc = OvercookedGUI(args, agent=blue, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
-                       horizon=400)
+    player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
+    player = load_agent(Path(player_path), args)
+
+    # player = 'human' # blue
+
+    dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
     dc.on_execute()
-    print(dc.trajectory)
