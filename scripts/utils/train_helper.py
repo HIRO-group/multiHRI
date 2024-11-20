@@ -3,13 +3,20 @@ from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_categorized_SP_population, generate_hdim_and_seed
 from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
-from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
-from oai_agents.agents.agent_utils import CustomAgent
-
-from oai_agents.common.tags import Prefix
-from oai_agents.common.tags import KeyCheckpoints
 from .common import load_agents, generate_name
+from oai_agents.common.tags import Prefix, KeyCheckpoints
+from oai_agents.common.multi_setup_trainer import MultiSetupSPTrainer
 
+
+def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_agent):
+    sp_trainer = MultiSetupSPTrainer(
+        args=args,
+        train_types=train_types,
+        eval_types=eval_types,
+        curriculum=curriculum,
+        tag_for_returning_agent=tag_for_returning_agent,
+    )
+    return sp_trainer.get_multiple_trained_agents()
 
 def get_SP_agent(
         args,
@@ -18,12 +25,14 @@ def get_SP_agent(
         curriculum,
         tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
     ):
-    name = generate_name(args,
-                         prefix=Prefix.SELF_PLAY,
-                         seed=args.SP_seed,
-                         h_dim=args.SP_h_dim,
-                         train_types=train_types,
-                         has_curriculum= not curriculum.is_random)
+    name = generate_name(
+        args,
+        prefix=Prefix.SELF_PLAY,
+        seed=args.SP_seed,
+        h_dim=args.SP_h_dim,
+        train_types=train_types,
+        has_curriculum=not curriculum.is_random
+    )
 
     agents = load_agents(args, name=name, tag=tag, force_training=args.pop_force_training)
     if agents:

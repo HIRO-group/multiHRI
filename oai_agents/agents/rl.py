@@ -21,14 +21,16 @@ VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
-    def __init__(self, teammates_collection, args,
-                agent, epoch_timesteps, n_envs,
-                seed, learner_type,
-                train_types=[], eval_types=[],
-                curriculum=None, num_layers=2, hidden_dim=256,
-                checkpoint_rate=None, name=None, env=None, eval_envs=None,
-                use_cnn=False, use_lstm=False, use_frame_stack=False,
-                taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0):
+    def __init__(
+            self, teammates_collection, args,
+            agent, epoch_timesteps, n_envs,
+            seed, learner_type,
+            train_types=[], eval_types=[],
+            curriculum=None, num_layers=2, hidden_dim=256,
+            checkpoint_rate=None, name=None, env=None, eval_envs=None,
+            use_cnn=False, use_lstm=False, use_frame_stack=False,
+            taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0
+        ):
 
 
         name = name or 'rl_agent'
@@ -65,20 +67,23 @@ class RLAgentTrainer(OAITrainer):
         # Cumm. timestep to start training from (usually 0 unless restarted)
         self.start_timestep = start_timestep
         self.learning_agent, self.agents = self.get_learning_agent(agent)
-        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
-                                                                                                   learning_agent = self.learning_agent,
-                                                                                                   train_types = train_types,
-                                                                                                   eval_types = eval_types)
+        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(
+            _tms_clctn = teammates_collection,
+            learning_agent = self.learning_agent,
+            train_types = train_types,
+            eval_types = eval_types
+        )
         self.best_score, self.best_training_rew = -1, float('-inf')
 
     @classmethod
-    def generate_randomly_initialized_agent(cls,
-                                            args,
-                                            learner_type:str,
-                                            name:str,
-                                            seed:int,
-                                            hidden_dim:int,
-                                            ) -> OAIAgent:
+    def generate_randomly_initialized_agent(
+            cls,
+            args,
+            learner_type:str,
+            name:str,
+            seed:int,
+            hidden_dim:int,
+        ) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
         This function does not perform any learning
@@ -87,16 +92,17 @@ class RLAgentTrainer(OAITrainer):
         :param seed: Random seed
         :returns: An untrained, randomly inititalized RL agent
         '''
-        trainer = cls(name=name,
-                        args=args,
-                        agent=None,
-                        teammates_collection={},
-                        epoch_timesteps=args.epoch_timesteps,
-                        n_envs=args.n_envs,
-                        seed=seed,
-                        hidden_dim=hidden_dim,
-                        learner_type=learner_type,
-                        )
+        trainer = cls(
+            name=name,
+            args=args,
+            agent=None,
+            teammates_collection={},
+            epoch_timesteps=args.epoch_timesteps,
+            n_envs=args.n_envs,
+            seed=seed,
+            hidden_dim=hidden_dim,
+            learner_type=learner_type,
+        )
 
         learning_agent, _ = trainer.get_learning_agent(None)
         return learning_agent
@@ -268,11 +274,11 @@ class RLAgentTrainer(OAITrainer):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
         self.best_training_rew *= 1
 
-        steps_divisable_by_15 = (steps + 1) % 15 == 0
+        steps_divisible_by_x = (steps + 1) % 15 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
 
-        return steps_divisable_by_15 or mean_rew_greater_than_best or checkpoint_rate_reached
+        return steps_divisible_by_x or mean_rew_greater_than_best or checkpoint_rate_reached
 
     def log_details(self, experiment_name, total_train_timesteps):
         print("Training agent: " + self.name + ", for experiment: " + experiment_name)
@@ -302,15 +308,23 @@ class RLAgentTrainer(OAITrainer):
 
         if self.checkpoint_rate is not None:
             if self.args.resume:
-                path = RLAgentTrainer.get_model_path(base_dir=self.args_base_dir,
-                                                     exp_folder=self.args.exp_dir,
-                                                     model_name=self.name)
-
-                ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
+                path = RLAgentTrainer.get_model_path(
+                    base_dir=self.args.base_dir,
+                    exp_folder=self.args.exp_dir,
+                    model_name=self.name
+                )
+                if not path.exists():
+                    print(f"Warning: The directory {path} does not exist.")
+                    return None
+                ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
+                if not ckpts:
+                    print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
+                    return None
                 ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
                 sorted_idxs = np.argsort(ckpts_nums)
                 ckpts = [ckpts[i] for i in sorted_idxs]
-                self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
+                self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [
+                        ({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
             else:
                 self.ck_list = []
                 path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}')
@@ -322,6 +336,7 @@ class RLAgentTrainer(OAITrainer):
         self.steps = self.start_step
         curr_timesteps = self.start_timestep
         prev_timesteps = self.learning_agent.num_timesteps
+        ck_name_handler = CheckedModelNameHandler()
 
         while curr_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=steps)
@@ -348,7 +363,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=CheckedModelNameHandler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
+                        path, tag = self.save_agents(tag=ck_name_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
                         self.ck_list.append((rew_per_layout, path, tag))
 
                 if mean_reward >= self.best_score:

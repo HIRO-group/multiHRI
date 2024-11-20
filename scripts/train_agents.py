@@ -7,6 +7,7 @@ from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
 from scripts.utils import (
+    get_SP_agents,
     get_SP_agent,
     get_FCP_agent_w_pop,
     get_N_X_FCP_agents,
@@ -21,12 +22,20 @@ def SP(args):
     }
     curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    get_SP_agent(
+    get_SP_agents(
         args=args,
         train_types=curriculum.train_types,
         eval_types=primary_eval_types,
-        curriculum=curriculum
+        curriculum=curriculum,
+        tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
     )
+
+    # get_SP_agent(
+    #     args=args,
+    #     train_types=curriculum.train_types,
+    #     eval_types=primary_eval_types,
+    #     curriculum=curriculum
+    # )
 
 
 def SPN_1ADV(args) -> None:
@@ -52,8 +61,8 @@ def SPN_1ADV(args) -> None:
         'load': []
     }
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random = True)
+    curriculum = Curriculum(
+        train_types = primary_train_types, is_random = True)
     get_N_X_SP_agents(
         args,
         n_x_sp_train_types=curriculum.train_types,
@@ -83,7 +92,11 @@ def SPN_1ADV_XSPCKP(args) -> None:
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_ADVERSARY]
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_ADVERSARY
+    ]
 
     primary_eval_types = {
         'generate': [
@@ -352,7 +365,8 @@ def set_input(args):
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
         args.sb_verbose = 1
-        args.wandb_mode = 'disabled'
+        # args.wandb_mode = 'disabled'
+        args.wandb_mode = 'online'
         args.n_envs = 2
         args.epoch_timesteps = 2
 
@@ -371,6 +385,8 @@ if __name__ == '__main__':
     args = get_arguments()
     args.quick_test = False
     args.parallel = True
+    args.num_of_training_variants = 4
+    args.device = 'cpu'
 
     args.pop_force_training = False
     args.adversary_force_training = False
