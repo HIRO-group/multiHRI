@@ -267,7 +267,7 @@ class RLAgentTrainer(OAITrainer):
 
     def should_evaluate(self, steps):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
-        self.best_training_rew *= 0.98
+        self.best_training_rew *= 1
 
         steps_divisable_by_15 = (steps + 1) % 15 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
