@@ -51,7 +51,9 @@ def get_N_X_SP_agents(args,
                                                            TeamType.SELF_PLAY_MEDIUM,
                                                            TeamType.SELF_PLAY_LOW,
                                                            TeamType.SELF_PLAY,
-                                                           TeamType.SELF_PLAY_ADVERSARY],
+                                                           TeamType.SELF_PLAY_ADVERSARY,
+                                                           TeamType.SELF_PLAY_DUMMY
+                                                           ],
                                          unallowed_types = TeamType.ALL_TYPES_BESIDES_SP)
 
 

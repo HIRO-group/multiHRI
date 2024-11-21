@@ -33,12 +33,15 @@ class DummyPolicy:
         self.observation_space = obs_space
 
 class DummyAgent():
-    def __init__(self, action=Action.STAY):
-        self.name = f'{action}_agent'
+    def __init__(self, action=Action.STAY, args=None):
+        self.name = f'dummy_agent'
         self.action = action if 'random' in action else Action.ACTION_TO_INDEX[action]
         self.policy = DummyPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
         self.encoding_fn = lambda *args, **kwargs: {}
         self.use_hrl_obs = False
+        self.layout_scores = {
+            layout : -1 for layout in args.layout_names
+        }
 
     def predict(self, x, state=None, episode_start=None, deterministic=False):
         add_dim = len(x) == 1
