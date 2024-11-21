@@ -1,12 +1,13 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, AdversaryPlayConfig
+from oai_agents.agents.agent_utils import DummyAgent
 
 from itertools import permutations
 import random
 from pathlib import Path
 
 
-def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, unseen_teammates_len:int, agent:RLAgentTrainer=None, use_entire_population:bool=False):
+def get_teammates(args, agents_perftag_score:list, teamtypes:list, teammates_len:int, unseen_teammates_len:int, agent:RLAgentTrainer=None, use_entire_population:bool=False):
     '''
     Get the teammates for an agent to populate a TeammatesCollection
 
@@ -32,13 +33,13 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
         for team_type in teamtypes:
             if (team_type in TeamType.ALL_TYPES_BESIDES_SP):
                 required_population_size += teammates_len
-            elif (team_type == TeamType.SELF_PLAY_ADVERSARY):
+            elif (team_type == TeamType.SELF_PLAY_ADVERSARY or team_type == TeamType.SELF_PLAY_DUMMY):
                 # Adversary teammates are not added in this function so we don't need to require the population to have an agent for this type
                 continue
             elif (team_type in TeamType.SELF_PLAY_X_TYPES):
                 required_population_size += unseen_teammates_len
-
-        assert len(agents_perftag_score) % required_population_size == 0, \
+        if required_population_size > 0:
+            assert len(agents_perftag_score) % required_population_size == 0, \
                 f"Requested use of entire population for teammate generation but provided population size is not evenly divisible by the minimum number of required agents\n"\
                 f"Population size: {len(agents_perftag_score)}\n"\
                 f"Minimum number of agents required for teammate generation: {required_population_size}\n"
@@ -102,6 +103,11 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 # Extract the agent from each tuple in the list
                 agents_of_category = [a[0] for a in agent_perftag_score_of_category]
                 all_teammates[teamtype] = [agents_of_category[i:i + unseen_teammates_len] + agents_itself for i in range(0, len(agents_of_category), unseen_teammates_len)]
+
+            elif teamtype == TeamType.SELF_PLAY_DUMMY:
+                agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
+                dummy_agents = [DummyAgent(args=args) for _ in range(unseen_teammates_len)]
+                all_teammates[teamtype] = [dummy_agents + agents_itself]
 
     else:
         used_agents = set()  # To keep track of used agents
@@ -178,6 +184,11 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
                 all_teammates[teamtype].append([tm[0] for tm in low_p_agents] + agents_itself)
                 used_agents.update([tm[0] for tm in low_p_agents])
+            
+            elif teamtype == TeamType.SELF_PLAY_DUMMY:
+                agents_itself = [agent for _ in range(teammates_len - unseen_teammates_len)]
+                dummy_agents = [DummyAgent(args=args) for _ in range(unseen_teammates_len)]
+                all_teammates[teamtype] = [dummy_agents + agents_itself]
 
     return all_teammates
 
@@ -232,7 +243,8 @@ def generate_TC(args,
                                      layout_agent.layout_scores[layout_name]) for layout_agent in layout_population]
 
         # Generate the train TC using the entire population of SP agents
-        train_collection[layout_name] = get_teammates(agents_perftag_score=agents_perftag_score_all,
+        train_collection[layout_name] = get_teammates(args=args,
+                                                      agents_perftag_score=agents_perftag_score_all,
                                                       teamtypes=train_types,
                                                       teammates_len=args.teammates_len,
                                                       agent=agent,
@@ -243,7 +255,8 @@ def generate_TC(args,
         # Generate the eval TC using the same population of agents that were used to generate the training TC
         # This is ok because these evaluation agents are used to find the best performance agent and for wandb plots
         # In this case though, we won't use the entire population, we'll just make sure that each TeamType has a team
-        eval_collection[layout_name] = get_teammates(agents_perftag_score=agents_perftag_score_all,
+        eval_collection[layout_name] = get_teammates(args=args,
+                                                     agents_perftag_score=agents_perftag_score_all,
                                                      teamtypes=eval_types_to_generate,
                                                      teammates_len=args.teammates_len,
                                                      agent=agent,

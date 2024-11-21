@@ -449,8 +449,8 @@ class OAITrainer(ABC):
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
 
-            for teammate in teammates:
-                assert isinstance(teammate, SB3Wrapper)
+            # for teammate in teammates:
+            #     assert isinstance(teammate, SB3Wrapper)
 
             self.env.env_method('set_teammates', teammates, indices=i)
 

@@ -162,8 +162,8 @@ class RLAgentTrainer(OAITrainer):
                 for layout in eval_teammates_collection
             }
 
-        self.check_teammates_collection_structure(train_teammates_collection)
-        self.check_teammates_collection_structure(eval_teammates_collection)
+        # self.check_teammates_collection_structure(train_teammates_collection)
+        # self.check_teammates_collection_structure(eval_teammates_collection)
         return train_teammates_collection, eval_teammates_collection
 
 

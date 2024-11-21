@@ -84,7 +84,7 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
     for train_type in train_types:
         if train_type in TeamType.ALL_TYPES_BESIDES_SP:
             train_agents_len += teammates_len
-        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
+        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY or train_type == TeamType.SELF_PLAY_DUMMY:
             train_agents_len += 0
         else:
             train_agents_len += unseen_teammates_len
@@ -92,7 +92,7 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
     for eval_type in eval_types:
         if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
             eval_agents_len += teammates_len
-        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
+        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY or train_type == TeamType.SELF_PLAY_DUMMY:
             train_agents_len += 0
         else:
             eval_agents_len += unseen_teammates_len
