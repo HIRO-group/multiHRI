@@ -438,8 +438,9 @@ def get_2_player_input(args):
     p_idxes = [0, 1]
 
     all_agents_paths = {
-        'SP':     'agent_models/DummyADV/2/SP_hd256_seed13/best',
-        'DLMH R': 'agent_models/DummyADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+        'SP_hd256_seed13':    'agent_models/DummyADV/2/SP_hd256_seed13/best',
+        'SP_hd64_seed14':     'agent_models/DummyADV/2/SP_hd64_seed14/best',
+        'DLMH R':             'agent_models/DummyADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
 
         # 'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
         # 'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
