@@ -24,6 +24,26 @@ def print_selected_agents_for_evaluation(selected_agents_for_evaluation):
                         team_members = [(member.name, member.layout_scores[layout_name]) for member in team]
                         print(f"        Team {i + 1}: {team_members}")
 
+TWO_PLAYERS_DUMMY_ADV_LOW = [
+    'agent_models/DummyADV/2/SP_hd64_seed14/ck_0',
+    'agent_models/DummyADV/2/SP_hd64_seed0/ck_0',
+    'agent_models/DummyADV/2/SP_hd256_seed68/ck_0',
+    'agent_models/DummyADV/2/SP_hd256_seed13/ck_0',
+]
+
+TWO_PLAYERS_DUMMY_ADV_MEDIUM = [
+    'agent_models/DummyADV/2/SP_hd64_seed14/ck_1_rew_108.5',
+    'agent_models/DummyADV/2/SP_hd64_seed0/ck_1_rew_118.0',
+    'agent_models/DummyADV/2/SP_hd256_seed68/ck_1_rew_152.0',
+    'agent_models/DummyADV/2/SP_hd256_seed13/ck_1_rew_152.0',
+]
+
+TWO_PLAYERS_DUMMY_ADV_HIGH = [
+    'agent_models/DummyADV/2/SP_hd64_seed14/best',
+    'agent_models/DummyADV/2/SP_hd64_seed0/best',
+    'agent_models/DummyADV/2/SP_hd256_seed68/best',
+    'agent_models/DummyADV/2/SP_hd256_seed68/ck_8_rew_235.0',
+]
 
 TWO_PLAYERS_LOW_EVAL = [
     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
