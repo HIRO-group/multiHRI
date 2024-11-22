@@ -235,36 +235,42 @@ def set_input(args):
 
 
     three_chefs_layouts = [
+        '3_chefs_coordination_ring_adv',
+        '3_chefs_counter_circuit_adv',
+        '3_chefs_cramped_room_adv',
         # 'selected_3_chefs_coordination_ring',
         # 'selected_3_chefs_counter_circuit',
         # 'selected_3_chefs_cramped_room',
-        'selected_3_chefs_double_counter_circuit',
-        'selected_3_chefs_secret_coordination_ring',
-        'selected_3_chefs_spacious_room_few_resources',
-        'selected_3_chefs_spacious_room_no_counter_space',
-        'selected_3_chefs_storage_room'
+        # 'selected_3_chefs_double_counter_circuit',
+        # 'selected_3_chefs_secret_coordination_ring',
+        # 'selected_3_chefs_spacious_room_few_resources',
+        # 'selected_3_chefs_spacious_room_no_counter_space',
+        # 'selected_3_chefs_storage_room'
     ]
 
-    four_chefs_layouts = [
-        # 'selected_4_chefs_coordination_ring',
-        # 'selected_4_chefs_counter_circuit',
-        # 'selected_4_chefs_cramped_room',
-        'selected_4_chefs_double_counter_circuit',
-        'selected_4_chefs_secret_coordination_ring',
-        'selected_4_chefs_spacious_room_few_resources',
-        'selected_4_chefs_spacious_room_no_counter_space',
-        'selected_4_chefs_storage_room'
-    ]
+    # four_chefs_layouts = [
+    #     # 'selected_4_chefs_coordination_ring',
+    #     # 'selected_4_chefs_counter_circuit',
+    #     # 'selected_4_chefs_cramped_room',
+    #     'selected_4_chefs_double_counter_circuit',
+    #     'selected_4_chefs_secret_coordination_ring',
+    #     'selected_4_chefs_spacious_room_few_resources',
+    #     'selected_4_chefs_spacious_room_no_counter_space',
+    #     'selected_4_chefs_storage_room'
+    # ]
 
     five_chefs_layouts = [
+        '5_chefs_double_counter_circuit_adv',
+        '5_chefs_secret_coordination_ring_adv',
+        '5_chefs_storage_room_adv',
         # 'selected_5_chefs_coordination_ring',
         # 'selected_5_chefs_counter_circuit',
         # 'selected_5_chefs_cramped_room',
-        'selected_5_chefs_double_counter_circuit',
-        'selected_5_chefs_secret_coordination_ring',
-        'selected_5_chefs_spacious_room_few_resources',
-        'selected_5_chefs_spacious_room_no_counter_space',
-        'selected_5_chefs_storage_room'
+        # 'selected_5_chefs_double_counter_circuit',
+        # 'selected_5_chefs_secret_coordination_ring',
+        # 'selected_5_chefs_spacious_room_few_resources',
+        # 'selected_5_chefs_spacious_room_no_counter_space',
+        # 'selected_5_chefs_storage_room'
     ]
 
 
@@ -272,8 +278,8 @@ def set_input(args):
         args.layout_names = two_chefs_layouts
     elif args.num_players == 3:
         args.layout_names = three_chefs_layouts
-    elif args.num_players == 4:
-        args.layout_names = four_chefs_layouts
+    # elif args.num_players == 4:
+    #     args.layout_names = four_chefs_layouts
     elif args.num_players == 5:
         args.layout_names = five_chefs_layouts
 
@@ -331,8 +337,12 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
 
-    args.teammates_len = 1
-    args.how_long = 6 # Not effective in quick_test mode
+    args.teammates_len = 2
+
+    if args.teammates_len == 2:
+        args.how_long = 8
+    elif args.teammates_len == 4:
+        args.how_long = 11
 
     set_input(args=args)
 
