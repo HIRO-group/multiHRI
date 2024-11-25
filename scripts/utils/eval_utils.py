@@ -45,6 +45,28 @@ TWO_PLAYERS_DUMMY_ADV_HIGH = [
     'agent_models/DummyADV/2/SP_hd256_seed68/ck_8_rew_235.0',
 ]
 
+THREE_PLAYERS_DUMMY_ADV_LOW = [
+    'agent_models/DummyADV/3/SP_hd64_seed14/ck_0',
+    'agent_models/DummyADV/3/SP_hd64_seed0/ck_0',
+    'agent_models/DummyADV/3/SP_hd256_seed68/ck_0',
+    'agent_models/DummyADV/3/SP_hd256_seed13/ck_0',
+]
+
+THREE_PLAYERS_DUMMY_ADV_MEDIUM = [
+    'agent_models/DummyADV/3/SP_hd64_seed14/ck_1_rew_175.11111111111111',
+    'agent_models/DummyADV/3/SP_hd64_seed0/ck_1_rew_137.77777777777777',
+    'agent_models/DummyADV/3/SP_hd256_seed68/ck_1_rew_207.11111111111111',
+    'agent_models/DummyADV/3/SP_hd256_seed13/ck_1_rew_214.66666666666666',
+]
+
+THREE_PLAYERS_DUMMY_ADV_HIGH = [
+    'agent_models/DummyADV/3/SP_hd64_seed14/best',
+    'agent_models/DummyADV/3/SP_hd256_seed68/best',
+    'agent_models/DummyADV/3/SP_hd256_seed13/best',
+    'agent_models/DummyADV/3/SP_hd64_seed14/ck_10_rew_320.0',
+]
+
+
 TWO_PLAYERS_LOW_EVAL = [
     'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
     'agent_models/Result/Eval/2/SP_hd256_seed42/ck_1_rew_18.666666666666668',

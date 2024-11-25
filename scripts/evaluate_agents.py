@@ -35,6 +35,9 @@ from utils import (
     TWO_PLAYERS_DUMMY_ADV_LOW,
     TWO_PLAYERS_DUMMY_ADV_MEDIUM,
     TWO_PLAYERS_DUMMY_ADV_HIGH,
+    THREE_PLAYERS_DUMMY_ADV_HIGH,
+    THREE_PLAYERS_DUMMY_ADV_MEDIUM,
+    THREE_PLAYERS_DUMMY_ADV_LOW
 )
 
 class Eval:
@@ -69,6 +72,24 @@ LAYOUT_NAMES_PATHs = {
         Eval.MEDIUM: TWO_PLAYERS_DUMMY_ADV_MEDIUM,
         Eval.HIGH: TWO_PLAYERS_DUMMY_ADV_HIGH,
     },
+
+
+    '3_chefs_coordination_ring_adv': {
+        Eval.LOW: THREE_PLAYERS_DUMMY_ADV_LOW,
+        Eval.MEDIUM: THREE_PLAYERS_DUMMY_ADV_MEDIUM,
+        Eval.HIGH: THREE_PLAYERS_DUMMY_ADV_HIGH,
+    },
+    '3_chefs_counter_circuit_adv': {
+        Eval.LOW: THREE_PLAYERS_DUMMY_ADV_LOW,
+        Eval.MEDIUM: THREE_PLAYERS_DUMMY_ADV_MEDIUM,
+        Eval.HIGH: THREE_PLAYERS_DUMMY_ADV_HIGH,
+    },
+    '3_chefs_cramped_room_adv': {
+        Eval.LOW: THREE_PLAYERS_DUMMY_ADV_LOW,
+        Eval.MEDIUM: THREE_PLAYERS_DUMMY_ADV_MEDIUM,
+        Eval.HIGH: THREE_PLAYERS_DUMMY_ADV_HIGH,
+    },
+
 
     'selected_2_chefs_coordination_ring': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
@@ -387,6 +408,7 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
                                                         deterministic=deterministic,
                                                         max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
                                                         teammate_lvl_set=teammate_lvl_set)
+                                                        # mow
 
         mean_rewards, std_rewards = evaluate_agent(args=args,
                                                 primary_agent=agent,
@@ -470,23 +492,32 @@ def get_2_player_input(args):
 
 def get_3_player_input(args):
     args.num_players = 3
-    layout_names = ['selected_3_chefs_coordination_ring',
-                    'selected_3_chefs_counter_circuit',
-                    'selected_3_chefs_cramped_room']
+    layout_names = [
+        '3_chefs_coordination_ring_adv',
+        '3_chefs_counter_circuit_adv',
+        '3_chefs_cramped_room_adv',
+        # 'selected_3_chefs_coordination_ring',
+        #             'selected_3_chefs_counter_circuit',
+        #             'selected_3_chefs_cramped_room'
+]
     p_idxes = [0, 1, 2]
     all_agents_paths = {
-        'SP':          'agent_models/Result/3/SP_hd64_seed14/best',
-        'FCP':         'agent_models/Result/3/FCP_s2020_h256_tr(AMX)_ran/best',
+        'SP_hd256_seed13':    'agent_models/DummyADV/3/SP_hd256_seed13/best',
+        'SP_hd64_seed0':     'agent_models/DummyADV/3/SP_hd64_seed0/best',
+        'DLMH R':             'agent_models/DummyADV/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+        
+        # 'SP':          'agent_models/Result/3/SP_hd64_seed14/best',
+        # 'FCP':         'agent_models/Result/3/FCP_s2020_h256_tr(AMX)_ran/best',
 
-        'ALMH CUR 1A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        'ALMH RAN 1A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        'AMH CUR 1A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'AMH RAN 1A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best',
+        # 'ALMH CUR 1A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        # 'ALMH RAN 1A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        # 'AMH CUR 1A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        # 'AMH RAN 1A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best',
 
-        'ALMH CUR 2A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
-        'ALMH RAN 2A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
-        'AMH CUR 2A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        'AMH RAN 2A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best'
+        # 'ALMH CUR 2A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
+        # 'ALMH RAN 2A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
+        # 'AMH CUR 2A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
+        # 'AMH RAN 2A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best'
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -520,8 +551,8 @@ def get_5_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
