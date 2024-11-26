@@ -37,7 +37,10 @@ from utils import (
     TWO_PLAYERS_DUMMY_ADV_HIGH,
     THREE_PLAYERS_DUMMY_ADV_HIGH,
     THREE_PLAYERS_DUMMY_ADV_MEDIUM,
-    THREE_PLAYERS_DUMMY_ADV_LOW
+    THREE_PLAYERS_DUMMY_ADV_LOW,
+    FIVE_PLAYERS_DUMMY_ADV_HIGH,
+    FIVE_PLAYERS_DUMMY_ADV_MEDIUM,
+    FIVE_PLAYERS_DUMMY_ADV_LOW
 )
 
 class Eval:
@@ -90,6 +93,21 @@ LAYOUT_NAMES_PATHs = {
         Eval.HIGH: THREE_PLAYERS_DUMMY_ADV_HIGH,
     },
 
+    '5_chefs_double_counter_circuit_adv': {
+        Eval.LOW: FIVE_PLAYERS_DUMMY_ADV_LOW,
+        Eval.MEDIUM: FIVE_PLAYERS_DUMMY_ADV_MEDIUM,
+        Eval.HIGH: FIVE_PLAYERS_DUMMY_ADV_HIGH,
+    },
+    '5_chefs_storage_room_adv': {
+        Eval.LOW: FIVE_PLAYERS_DUMMY_ADV_LOW,
+        Eval.MEDIUM: FIVE_PLAYERS_DUMMY_ADV_MEDIUM,
+        Eval.HIGH: FIVE_PLAYERS_DUMMY_ADV_HIGH,
+    },
+    '5_chefs_secret_coordination_ring_adv': {
+        Eval.LOW: FIVE_PLAYERS_DUMMY_ADV_LOW,
+        Eval.MEDIUM: FIVE_PLAYERS_DUMMY_ADV_MEDIUM,
+        Eval.HIGH: FIVE_PLAYERS_DUMMY_ADV_HIGH,
+    },
 
     'selected_2_chefs_coordination_ring': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
@@ -529,17 +547,20 @@ def get_3_player_input(args):
 
 def get_5_player_input(args):
     args.num_players = 5
-    layout_names = ['selected_5_chefs_counter_circuit',
-                    'selected_5_chefs_secret_coordination_ring',
-                    'selected_5_chefs_storage_room']
+    layout_names = ['5_chefs_double_counter_circuit_adv',
+                    '5_chefs_storage_room_adv',
+                    '5_chefs_secret_coordination_ring_adv']
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
-        'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
-        'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best',
-        'ALMH CUR 1A':     'agent_models/ALMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        'ALMH RAN 1A':     'agent_models/ALMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        'AMH CUR 1A':      'agent_models/AMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'AMH RAN 1A':      'agent_models/AMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
+        'SP':     'agent_models/DummyADV/5/SP_hd64_seed14/best',
+        'DLMH R': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+
+        # 'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
+        # 'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best',
+        # 'ALMH CUR 1A':     'agent_models/ALMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        # 'ALMH RAN 1A':     'agent_models/ALMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        # 'AMH CUR 1A':      'agent_models/AMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        # 'AMH RAN 1A':      'agent_models/AMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
         }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -552,8 +573,8 @@ def get_5_player_input(args):
 if __name__ == "__main__":
     args = get_arguments()
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
