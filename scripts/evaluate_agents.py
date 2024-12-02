@@ -553,7 +553,9 @@ def get_5_player_input(args):
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
         'SP':     'agent_models/DummyADV/5/SP_hd64_seed14/best',
-        'DLMH R': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+        'DLMH R 55M': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+        'DLMH R 150M Best': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler_new/best',
+        'DLMH R 150M Last': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler_new/last',
 
         # 'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
         # 'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best',
