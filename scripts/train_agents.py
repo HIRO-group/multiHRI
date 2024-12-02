@@ -385,8 +385,8 @@ if __name__ == '__main__':
     args = get_arguments()
     args.quick_test = False
     args.parallel = True
-    args.num_of_training_variants = 4
-    args.device = 'cpu'
+    args.num_of_training_variants = 2
+    # args.device = 'cpu'
 
     args.pop_force_training = False
     args.adversary_force_training = False
