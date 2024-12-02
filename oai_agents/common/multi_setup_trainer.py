@@ -78,14 +78,19 @@ class MultiSetupTrainer:
             with concurrent.futures.ProcessPoolExecutor(
                 max_workers=self.args.max_concurrent_jobs) as executor:
                 arg_lists = list(zip(*inputs))
-                executor.map(self.get_trained_agent, *arg_lists)
-                # dilled_results = list(executor.map(self.get_trained_agent, *arg_lists))
+                # executor.map(self.get_trained_agent, *arg_lists)
+                dilled_results = list(executor.map(self.get_trained_agent, *arg_lists))
+            for dilled_res in dilled_results:
+                checkpoints_list = dill.loads(dilled_res)
             # for dilled_res in dilled_results:
             #     agent = dill.loads(dilled_res)
             #     agents.append(agent)
         else:
-            for i in range(self.num_of_training_variants):
-                agents.append(self.get_trained_agent(seed=seeds[i], h_dim=hdims[i]))
+            for inp in inputs:
+                checkpoints_list = self.get_trained_agent(seed=seeds[i], h_dim=hdims[i])
+
+            # for i in range(self.num_of_training_variants):
+            #     agents.append(self.get_trained_agent(seed=seeds[i], h_dim=hdims[i]))
 
         # return agents
 
@@ -137,11 +142,12 @@ class MultiSetupTrainer:
         )
 
         agent = rlat.get_agents()[0]
+        checkpoint_list = rlat.ck_list
 
-        # if self.parallel:
-        #     dill.dumps(agent)
+        if self.parallel:
+            return dill.dumps(checkpoint_list)
 
-        # return agent
+        return checkpoint_list
 
 
 class MultiSetupSPTrainer(MultiSetupTrainer):
