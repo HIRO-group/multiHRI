@@ -233,7 +233,10 @@ class OvercookedGUI:
             self.outlet.push_sample([trans_str])
 
         if self.collect_trajectory:
-            self.trajectory.append(self.env.get_joint_action())
+            # self.trajectory.append(self.env.get_joint_action())
+            player_positions = [p.position for p in self.env.state.players]
+            self.trajectory.append(player_positions)
+
         return done
 
     def on_render(self, pidx=None):
