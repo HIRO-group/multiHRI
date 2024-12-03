@@ -16,23 +16,42 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 3
-    args.layout = f'selected_{args.num_players}_chefs_counter_circuit'
+    args.layout = f'{args.num_players}_chefs_counter_circuit_adv'
     args.p_idx = 0
 
-    teammates_path = [
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green 
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
+    hmld_teammates_path = [
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best', # green
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best', # orange
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+    ]
+    hmld_teammates = [load_agent(Path(tm_path), args) for tm_path in hmld_teammates_path[:args.num_players - 1]]
+
+    hml_teammates_path = [
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best', # green
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best', # orange
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     ]
 
-    teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
+    hml_teammates = [load_agent(Path(tm_path), args) for tm_path in hml_teammates_path[:args.num_players - 1]]
 
-    player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
-    player = load_agent(Path(player_path), args)
+    sp_teammates_path = [
+        f'agent_models/DummyADV/{args.num_players}/SP_hd64_seed0/best', # green
+        f'agent_models/DummyADV/{args.num_players}/SP_hd64_seed0/best', # orange
+        f'agent_models/DummyADV/{args.num_players}/SP_hd64_seed0/best',
+        f'agent_models/DummyADV/{args.num_players}/SP_hd64_seed0/best',
+        f'agent_models/DummyADV/{args.num_players}/SP_hd64_seed0/best',
+    ]
 
-    # player = 'human' # blue
+    sp_teammates = [load_agent(Path(tm_path), args) for tm_path in sp_teammates_path[:args.num_players - 1]]
 
-    dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
+    # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
+    # player = load_agent(Path(player_path), args)
+
+    player = 'human' # blue
+
+    dc = OvercookedGUI(args, agent=player, teammates=sp_teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
     dc.on_execute()
