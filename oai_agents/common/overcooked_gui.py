@@ -68,7 +68,7 @@ class OvercookedGUI:
             kwargs = {'single_subtask_id': 10, 'args': args, 'is_eval_env': True}
             self.env = OvercookedSubtaskGymEnv(**p_kwargs, **kwargs)
         else:
-            self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=True,
+            self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=False,
                                         is_eval_env=True, horizon=horizon, learner_type='originaler')
         self.agent = agent
         self.p_idx = p_idx
@@ -103,7 +103,11 @@ class OvercookedGUI:
         self.outlet = outlet
         # Currently unused, but keeping in case we need it in the future.
         self.collect_trajectory = True
-        self.trajectory = []
+        self.trajectory = {
+            'positions': [],
+            'actions': [],
+            'observations': []
+        }
 
         self.gif_name = gif_name
         if not os.path.exists(f'data/screenshots/{self.gif_name}'):
@@ -233,7 +237,13 @@ class OvercookedGUI:
             self.outlet.push_sample([trans_str])
 
         if self.collect_trajectory:
-            self.trajectory.append(self.env.get_joint_action())
+            player_positions = [p.position for p in self.env.state.players]
+            obs_copy = {k: np.copy(v) for k, v in obs.items()}
+
+            self.trajectory['positions'].append(player_positions)
+            self.trajectory['actions'].append(self.env.get_joint_action())
+            self.trajectory['observations'].append(obs_copy)
+
         return done
 
     def on_render(self, pidx=None):
