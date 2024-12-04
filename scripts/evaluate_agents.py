@@ -27,6 +27,7 @@ from utils import (
     THREE_PLAYERS_LOW_EVAL,
     THREE_PLAYERS_MEDIUM_EVAL,
     THREE_PLAYERS_HIGH_EVAL,
+    THREE_PLAYERS_HIGH_PREF_EVAL,
     FIVE_PLAYERS_LOW_EVAL,
     FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
     FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
@@ -38,11 +39,13 @@ class Eval:
     LOW = 'l'
     MEDIUM = 'm'
     HIGH = 'h'
+    HIGH_PREF = 'hp'
 
 eval_key_lut = {
     'l': "LOW",
     'm': "MEDIUM",
-    'h': "HIGH"
+    'h': "HIGH",
+    'hp': "HIGH_PREF"
 }
 
 LAYOUT_NAMES_PATHs = {
@@ -66,16 +69,19 @@ LAYOUT_NAMES_PATHs = {
         Eval.LOW: THREE_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
         Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+        Eval.HIGH_PREF: THREE_PLAYERS_HIGH_PREF_EVAL
     },
     'selected_3_chefs_counter_circuit': {
         Eval.LOW: THREE_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
         Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+        Eval.HIGH_PREF: THREE_PLAYERS_HIGH_PREF_EVAL
     },
     'selected_3_chefs_cramped_room': {
         Eval.LOW: THREE_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
         Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
+        Eval.HIGH_PREF: THREE_PLAYERS_HIGH_PREF_EVAL
     },
 
     'selected_5_chefs_counter_circuit': {
@@ -380,8 +386,8 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
 
 
 def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_sets: Sequence[Sequence[Eval]]):
-    for path in all_agents_paths.values():
-        assert Path(path+'/trainer_file').is_file(), f"File {path+'/trainer_file'} does not exist"
+    # for path in all_agents_paths.values():
+        # assert Path(path+'/trainer_file').is_file(), f"File {path+'/trainer_file'} does not exist"
 
     all_mean_rewards, all_std_rewards = {}, {}
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
@@ -447,20 +453,21 @@ def get_3_player_input(args):
         'SP':          'agent_models/Result/3/SP_hd64_seed14/best',
         'FCP':         'agent_models/Result/3/FCP_s2020_h256_tr(AMX)_ran/best',
 
-        'ALMH CUR 1A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        'ALMH RAN 1A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        'AMH CUR 1A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'AMH RAN 1A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best',
+        'ALMH CUR 1A': 'agent_models/Result/3/ALMH_CUR/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        'ALMH RAN 1A': 'agent_models/Result/3/ALMH_RAN/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        'AMH CUR 1A':  'agent_models/Result/3/AMH_CUR/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        'AMH RAN 1A':  'agent_models/Result/3/AMH_RAN/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best',
 
-        'ALMH CUR 2A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
-        'ALMH RAN 2A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
-        'AMH CUR 2A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        'AMH RAN 2A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best'
+        # 'ALMH CUR 2A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
+        # 'ALMH RAN 2A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
+        # 'AMH CUR 2A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
+        # 'AMH RAN 2A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best'
     }
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
-        [Eval.HIGH]
+        [Eval.HIGH],
+        [Eval.HIGH_PREF]
     ]
     return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 

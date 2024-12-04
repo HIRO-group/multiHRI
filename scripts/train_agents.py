@@ -245,14 +245,14 @@ def set_input(args):
 
 
     three_chefs_layouts = [
-        # 'selected_3_chefs_coordination_ring',
-        # 'selected_3_chefs_counter_circuit',
-        # 'selected_3_chefs_cramped_room',
-        'selected_3_chefs_double_counter_circuit',
-        'selected_3_chefs_secret_coordination_ring',
-        'selected_3_chefs_spacious_room_few_resources',
-        'selected_3_chefs_spacious_room_no_counter_space',
-        'selected_3_chefs_storage_room'
+        'selected_3_chefs_coordination_ring_one_pot',
+        'selected_3_chefs_counter_circuit_one_pot',
+        'selected_3_chefs_cramped_room_one_pot',
+        'selected_3_chefs_double_counter_circuit_one_pot',
+        'selected_3_chefs_secret_coordination_ring_one_pot',
+        'selected_3_chefs_spacious_room_few_resources_one_pot',
+        'selected_3_chefs_spacious_room_no_counter_space_one_pot',
+        'selected_3_chefs_storage_room_one_pot'
     ]
 
     four_chefs_layouts = [
@@ -312,7 +312,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 4
-        args.exp_dir = f'Final/{args.num_players}'
+        args.exp_dir = f'Final/preferences/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -346,7 +346,7 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_1ADV_XSPCKP(args=args)
+    # SPN_1ADV_XSPCKP(args=args)
 
     # SP(args)
 
@@ -356,6 +356,6 @@ if __name__ == '__main__':
 
     # SPN_1ADV(args=args)
 
-    # SPN_XSPCKP(args=args)
+    SPN_XSPCKP(args=args)
 
     # N_1_FCP(args=args)

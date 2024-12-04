@@ -2,6 +2,7 @@ class Eval:
     LOW = 'low'
     MEDIUM = 'medium'
     HIGH = 'high'
+    HIGH_PREF = 'high_pref'
     ALL = [LOW, MEDIUM, HIGH]
 
 POPULATION_EVAL_AGENTS = {
@@ -76,6 +77,17 @@ THREE_PLAYERS_HIGH_EVAL = [
     'agent_models/Result/Eval/3/SP_hd256_seed7/ck_24_rew_324.8888888888889',
     'agent_models/Result/Eval/3/SP_hd256_seed42/ck_18_rew_332.8888888888889',
     'agent_models/Result/Eval/3/SP_hd256_seed42/ck_19_rew_327.55555555555554'
+]
+
+THREE_PLAYERS_HIGH_PREF_EVAL = [
+    'agent_models/Result/preferences/3/SP_hd256_seed13/ck_6_rew_170.83333333333334',
+    'agent_models/Result/preferences/3/SP_hd256_seed13/ck_9_rew_168.0',
+    'agent_models/Result/preferences/3/SP_hd256_seed13/ck_5_rew_166.83333333333334',
+    'agent_models/Result/preferences/3/SP_hd256_seed13/ck_8_rew_166.33333333333334',
+    'agent_models/Result/preferences/3/SP_hd256_seed68/ck_9_rew_169.5',
+    'agent_models/Result/preferences/3/SP_hd256_seed68/ck_4_rew_168.66666666666666',
+    'agent_models/Result/preferences/3/SP_hd256_seed68/ck_5_rew_165.16666666666666',
+    'agent_models/Result/preferences/3/SP_hd256_seed68/ck_10_rew_164.83333333333334',
 ]
 
 FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL = [
