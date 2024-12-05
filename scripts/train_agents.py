@@ -308,7 +308,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 4
-        args.exp_dir = f'DummyADV/{args.num_players}'
+        args.exp_dir = f'DummyADV_correct_collision_checker/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -337,9 +337,11 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
 
-    args.teammates_len = 2
+    args.teammates_len = 1
 
-    if args.teammates_len == 2:
+    if args.teammates_len == 1:
+        args.how_long = 6
+    elif args.teammates_len == 2:
         args.how_long = 8
     elif args.teammates_len == 4:
         args.how_long = 11
