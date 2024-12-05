@@ -1,11 +1,13 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_population
-from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates
+from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
-from .common import load_agents, generate_name
+from oai_agents.common.adversaries import generate_adversaries_based_on_heatmap
+
 from oai_agents.common.tags import Prefix
 from oai_agents.common.tags import KeyCheckpoints
+from .common import load_agents, generate_name
 
 
 def get_SP_agent(args, train_types, eval_types, curriculum, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
@@ -87,24 +89,104 @@ def get_N_X_SP_agents(args,
     )
 
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
-        joint_ADV_N_X_SP(args=args,
-                      population=population,
-                      curriculum=curriculum,
-                      unseen_teammates_len=unseen_teammates_len,
-                      adversary_play_config=adversary_play_config,
-                      attack_rounds=attack_rounds,
-                      n_x_sp_eval_types=n_x_sp_eval_types
-                      )
+        train_ADV_and_N_X_SP(args=args,
+                            population=population,
+                            curriculum=curriculum,
+                            unseen_teammates_len=unseen_teammates_len,
+                            adversary_play_config=adversary_play_config,
+                            attack_rounds=attack_rounds,
+                            n_x_sp_eval_types=n_x_sp_eval_types
+                            )
+    elif TeamType.SELF_PLAY_STATIC_ADV or TeamType.SELF_PLAY_DYNAMIC_ADV in n_x_sp_train_types:
+        gen_ADV_train_N_X_SP(args=args,
+                            population=population,
+                            curriculum=curriculum,
+                            unseen_teammates_len=unseen_teammates_len,
+                            n_x_sp_eval_types=n_x_sp_eval_types)
     else:
-        no_ADV_N_X_SP(args=args,
-                           population=population,
-                           curriculum=curriculum,
-                           unseen_teammates_len=unseen_teammates_len,
-                           n_x_sp_eval_types=n_x_sp_eval_types
-                           )
+        N_X_SP(args=args,
+                population=population,
+                curriculum=curriculum,
+                unseen_teammates_len=unseen_teammates_len,
+                n_x_sp_eval_types=n_x_sp_eval_types
+                )
 
 
-def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
+def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
+    adv_ck_rate_generation = args.num_players + 1
+    
+    name = generate_name(args,
+                        prefix = f'N-{unseen_teammates_len}-SP',
+                        seed = args.N_X_SP_seed,
+                        h_dim = args.N_X_SP_h_dim,
+                        train_types = curriculum.train_types,
+                        has_curriculum = not curriculum.is_random,
+                        suffix=args.primary_learner_type + '_attack' + str(adv_ck_rate_generation))
+
+    agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
+    if agents:
+        return agents[0]
+
+    init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args,
+                                                                            name=name,
+                                                                            learner_type=args.primary_learner_type,
+                                                                            hidden_dim=args.N_X_SP_h_dim,
+                                                                            seed=args.N_X_SP_seed)
+    teammates_collection = generate_TC(args=args,
+                                        population=population,
+                                        agent=init_agent,
+                                        train_types=curriculum.train_types,
+                                        eval_types_to_generate=n_x_sp_eval_types['generate'],
+                                        eval_types_to_read_from_file=n_x_sp_eval_types['load'],
+                                        unseen_teammates_len=unseen_teammates_len,
+                                        use_entire_population_for_train_types_teammates=True)
+    
+    
+    heatmap_source = get_best_SP_agent(args=args, population=population)
+    adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, train_types=curriculum.train_types)
+    
+    total_train_timesteps = args.n_x_sp_total_training_timesteps // adv_ck_rate_generation
+    ck_rate = (args.n_x_sp_total_training_timesteps // args.num_of_ckpoints) // adv_ck_rate_generation
+    
+    for round in range(adv_ck_rate_generation):
+        name = generate_name(args,
+                        prefix = f'N-{unseen_teammates_len}-SP',
+                        seed = args.N_X_SP_seed,
+                        h_dim = args.N_X_SP_h_dim,
+                        train_types = curriculum.train_types,
+                        has_curriculum = not curriculum.is_random,
+                        suffix=args.primary_learner_type + '_attack' + str(round))
+        agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
+        if agents:
+            init_agent = agents[0]
+            continue
+       
+        teammates_collection = update_TC_w_dynamic_and_static_ADV_teammates(args=args,
+                                                                            train_types=curriculum.train_types, 
+                                                                            teammates_collection=teammates_collection,
+                                                                            primary_agent=init_agent,
+                                                                            adversaries=adversaries)    
+        n_x_sp_types_trainer = RLAgentTrainer(name=name,
+                                                args=args,
+                                                agent=init_agent,
+                                                teammates_collection=teammates_collection,
+                                                epoch_timesteps=args.epoch_timesteps,
+                                                n_envs=args.n_envs,
+                                                curriculum=curriculum,
+                                                seed=args.N_X_SP_seed,
+                                                hidden_dim=args.N_X_SP_h_dim,
+                                                learner_type=args.primary_learner_type,
+                                                checkpoint_rate=ck_rate)
+        
+        agents = n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps * (round + 1),
+                                                    tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        init_agent = agents[0]
+        new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, train_types=curriculum.train_types)
+        adversaries = adversaries + new_adversaries
+    return init_agent
+
+
+def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
     agent_to_be_attacked = get_best_SP_agent(args=args, population=population)
@@ -173,7 +255,7 @@ def joint_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, adversa
         agent_to_be_attacked = n_x_sp_types_trainer.get_agents()[0]
 
 
-def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
+def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     assert TeamType.SELF_PLAY_ADVERSARY not in curriculum.train_types
 
     name = generate_name(args,
@@ -221,7 +303,7 @@ def no_ADV_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eva
 
 
 def get_adversary_agent(args, agent_to_be_attacked, attack_round, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
-    # It doesn't matter what we set the variable, adversary_teammates_teamtype,
+    # It doesn't matter what we set adversary_teammates_teamtype
     # the purpose of it is to maintain consistent naming and correct TC/curriculum creation
     adversary_teammates_teamtype = TeamType.HIGH_FIRST
 

@@ -53,7 +53,10 @@ class TeamType:
     SELF_PLAY_HIGH = 'SPH'
     SELF_PLAY_ADVERSARY = 'SPADV'
 
-    SELF_PLAY_X_TYPES = [SELF_PLAY_LOW, SELF_PLAY_MEDIUM, SELF_PLAY_MIDDLE, SELF_PLAY_HIGH, SELF_PLAY_ADVERSARY]
+    SELF_PLAY_STATIC_ADV = 'SPSA' # Sits still
+    SELF_PLAY_DYNAMIC_ADV = 'SPDA' # Moves around
+
+    SELF_PLAY_X_TYPES = [SELF_PLAY_LOW, SELF_PLAY_MEDIUM, SELF_PLAY_MIDDLE, SELF_PLAY_HIGH, SELF_PLAY_ADVERSARY, SELF_PLAY_STATIC_ADV, SELF_PLAY_DYNAMIC_ADV]
 
     def map_to_index(teamtype):
         tt_map = {
@@ -73,6 +76,8 @@ class TeamType:
             TeamType.SELF_PLAY_HIGH: 12,
             TeamType.SELF_PLAY_ADVERSARY: 13,
             TeamType.ALL_MIX: 14,
+            TeamType.SELF_PLAY_STATIC_ADV: 15,
+            TeamType.SELF_PLAY_DYNAMIC_ADV: 16
         }
         return tt_map[teamtype]
 
