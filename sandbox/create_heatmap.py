@@ -9,6 +9,7 @@ from stable_baselines3.common.utils import obs_as_tensor
 from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
+from oai_agents.common.overcooked_simulation import OvercookedSimulation
 
 
 def get_value_function(args, observation):
@@ -79,8 +80,14 @@ if __name__ == "__main__":
     ]
     teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
-    dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=1000, horizon=400)
-    dc.on_execute()
+    # If you want to see the agent play then the heatmap
+    # dc = OvercookedGUI(args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=1000, horizon=400)
+    # dc.on_execute()
+    # trajectory = dc.trajectory
 
-    tiles_v, tiles_p = get_tile_map(args, dc.trajectory)
+    # if you just care about the heatmap
+    simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, horizon=400)
+    trajectory = simulation.run_simulation()
+
+    tiles_v, tiles_p = get_tile_map(args, trajectory)
     plot_heatmap(tiles_v, tiles_p, title='dlmh')
