@@ -1,1 +1,0 @@
-def generate_adversaries_based_on_heatmap(args, heatmap_source, train_types): pass

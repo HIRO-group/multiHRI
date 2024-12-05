@@ -4,42 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from stable_baselines3.common.utils import obs_as_tensor
-
+from oai_agents.common.heatmap import get_tile_map
 from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
-
-
-def get_value_function(args, observation):
-    obs_tensor = obs_as_tensor(observation, args.device)
-    visual_obs = obs_tensor['visual_obs'].clone().detach()
-    repeated_obs = visual_obs.unsqueeze(0).repeat(args.n_envs, 1, 1, 1)
-    obs_tensor['visual_obs'] = repeated_obs
-    with th.no_grad():
-        values = agent.policy.predict_values(obs_tensor)
-    return values[0].item()
-
-
-def get_tile_map(args, trajectory):
-    observations = trajectory['observations']
-    joint_trajectory = trajectory['positions']
-    agent1_trajectory = [tr[0] for tr in joint_trajectory]
-
-    tiles_v = np.zeros((5,  7)) # value function
-    tiles_p = np.zeros((5,  7)) # position counter
-    for i in range(0, len(agent1_trajectory)):
-        y, x = agent1_trajectory[i]
-        value = get_value_function(args, observations[i])
-        tiles_v[x, y] += value
-        tiles_p[x, y] += 1
-    
-    # normalize tiles_v
-    tiles_v = tiles_v / tiles_p
-    tiles_v = np.nan_to_num(tiles_v)
-
-    return tiles_v, tiles_p
 
 
 def plot_heatmap(tiles_v, tiles_p, title=''):
@@ -67,7 +36,7 @@ if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
     args.layout = f'{args.num_players}_chefs_counter_circuit_adv'
-    args.p_idx = 0
+    args.p_idx = 1
     args.n_envs = 200
     
     path = 'agent_models/DummyADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best'
@@ -87,7 +56,18 @@ if __name__ == "__main__":
 
     # if you just care about the heatmap
     simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, horizon=400)
+
     trajectory = simulation.run_simulation()
 
-    tiles_v, tiles_p = get_tile_map(args, trajectory)
+    tiles_v, tiles_p = get_tile_map(args=args, trajectory=trajectory, agent=agent)
+    # print(tiles_p.shape)
+    
+    top_2_indices = np.argsort(tiles_p.ravel())[-2:][::-1]
+
+    # Convert flattened indices back to 2D coordinates
+    top_2_coords = np.column_stack(np.unravel_index(top_2_indices, tiles_p.shape))
+
+    print(top_2_coords)
+    for y, x in top_2_coords:
+        print(f"Top tile at coordinates ({x}, {y}) with value {tiles_p[y, x]}")
     plot_heatmap(tiles_v, tiles_p, title='dlmh')

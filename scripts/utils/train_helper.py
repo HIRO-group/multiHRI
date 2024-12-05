@@ -3,7 +3,7 @@ from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_population
 from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
-from oai_agents.common.adversaries import generate_adversaries_based_on_heatmap
+from multiHRI.oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
 
 from oai_agents.common.tags import Prefix
 from oai_agents.common.tags import KeyCheckpoints
@@ -143,7 +143,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
     
     
     heatmap_source = get_best_SP_agent(args=args, population=population)
-    adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, train_types=curriculum.train_types)
+    adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, teammates_collection=teammates_collection, train_types=curriculum.train_types)
     
     total_train_timesteps = args.n_x_sp_total_training_timesteps // adv_ck_rate_generation
     ck_rate = (args.n_x_sp_total_training_timesteps // args.num_of_ckpoints) // adv_ck_rate_generation
