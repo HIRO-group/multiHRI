@@ -2,9 +2,11 @@
 
 ## Set up guide
 1. Follow setup instrcution for overcooked_ai from [here](https://github.com/HIRO-group/overcooked_ai)
-3. Clone this repository: `git clone git@github.com:HIRO-group/multiHRI.git`
-2. Activate conda env: `conda activate mhri`
-3. cd into the repo and run: `pip install -e .`. If step 3 did not work, try commenting the liblsl in setup.py and install liblsl either from conda or pip. 
+2. Clone this repository: `git clone git@github.com:HIRO-group/multiHRI.git`
+3. Activate conda env: `conda activate mHRI`
+4. Run: `pip install pip==24.0 wheel==0.38.4 setuptools==65.5.0`
+4. cd into the repo and run: `pip install -e .`.
+5. Install liblsl using conda 
 
 
 <!-- # Hierarchical Ad Hoc Agents (HAHA)
@@ -20,7 +22,7 @@ Code for [Hierarchical Reinforcement Learning for Ad Hoc Teaming](https://www.so
 6. Move to repo dir: `cd HAHA`
 7. Install this package: `pip install -e .`--> 
 
-## General Structure
+<!-- ## General Structure
 - `oai_agents`: Main directory
   - `/agents`: Contains code related to creating and training agents: 
     - `/il.py`, `/rl.py`, and `/hrl.py` contain code for training an imitation learning, reinforcement learning, and hierarchical reinforcement learning respectively. 
@@ -38,7 +40,7 @@ Code for [Hierarchical Reinforcement Learning for Ad Hoc Teaming](https://www.so
 - `scripts`: Generally useful scripts
   - `/colosseum.py`: Have agents play with other agents for evaluation
   - `/run_overcooked_game.py`: Visualize agent-agent or human-agent team playing with each other
-  - `/train_agents.py`: Functions to train different kinds of agents
+  - `/train_agents.py`: Functions to train different kinds of agents -->
 
 ## Training agents
 Refer to scripts/train_agents.py for examples on how to train different agent trainings.
