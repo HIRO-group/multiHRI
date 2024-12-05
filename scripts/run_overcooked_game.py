@@ -15,9 +15,37 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 
 if __name__ == "__main__":
     args = get_arguments()
-    args.num_players = 3
-    args.layout = f'{args.num_players}_chefs_counter_circuit_adv'
+    args.num_players = 2
+
+    args.layout = f'coordination_ring_dummy'
     args.p_idx = 0
+
+    hmlda1_teammates_path = [
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack1/best', # green
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack1/best', # orange
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack1/best',
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack1/best',
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack1/best',
+    ]
+    hmlda1_teammates = [load_agent(Path(tm_path), args) for tm_path in hmlda1_teammates_path[:args.num_players - 1]]
+
+    hmlda0_teammates_path = [
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack0/best', # green
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack0/best', # orange
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack0/best',
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack0/best',
+        f'agent_models/DummyADV/{args.num_players}/PWADV-N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SPADV]_ran_originaler_attack0/best',
+    ]
+    hmlda0_teammates = [load_agent(Path(tm_path), args) for tm_path in hmlda0_teammates_path[:args.num_players - 1]]
+
+    hmldsp_teammates_path = [
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SP]_ran_originaler/best', # green
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SP]_ran_originaler/best', # orange
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SP]_ran_originaler/best',
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SP]_ran_originaler/best',
+        f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM_SP]_ran_originaler/best',
+    ]
+    hmldsp_teammates = [load_agent(Path(tm_path), args) for tm_path in hmldsp_teammates_path[:args.num_players - 1]]
 
     hmld_teammates_path = [
         f'agent_models/DummyADV/{args.num_players}/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best', # green
@@ -52,6 +80,7 @@ if __name__ == "__main__":
     # player = load_agent(Path(player_path), args)
 
     player = 'human' # blue
+    # player = sp_teammates[0]
 
-    dc = OvercookedGUI(args, agent=player, teammates=sp_teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
+    dc = OvercookedGUI(args, agent=player, teammates=hmlda1_teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
     dc.on_execute()

@@ -75,23 +75,29 @@ def SPN_1ADV_XSPCKP(args) -> None:
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_ADVERSARY]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DUMMY, TeamType.SELF_PLAY_ADVERSARY]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DUMMY, TeamType.SELF_PLAY_ADVERSARY],
                           'load': []}
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random = False,
-                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-                            training_phases_durations_in_order={
-                                (TeamType.SELF_PLAY_ADVERSARY): 0.5,
-                            },
-                            rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_MEDIUM: 0.3,
-                                TeamType.SELF_PLAY_HIGH: 0.3,
-                                TeamType.SELF_PLAY_ADVERSARY: 0.4,
-                            },
-                            probabilities_decay_over_time=0)
+    # curriculum = Curriculum(train_types = primary_train_types,
+    #                         is_random = False,
+    #                         total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
+    #                         training_phases_durations_in_order={
+    #                             (TeamType.SELF_PLAY_ADVERSARY): 0.5,
+    #                         },
+    #                         rest_of_the_training_probabilities={
+    #                             TeamType.SELF_PLAY_MEDIUM: 0.3,
+    #                             TeamType.SELF_PLAY_HIGH: 0.3,
+    #                             TeamType.SELF_PLAY_ADVERSARY: 0.4,
+    #                         },
+    #                         probabilities_decay_over_time=0)
+
+    curriculum = Curriculum(
+        train_types = primary_train_types,
+        is_random = True,
+    )
+
     get_N_X_SP_agents(
         args,
         n_x_sp_train_types=curriculum.train_types,
@@ -124,7 +130,7 @@ def SPN_XSPCKP(args) -> None:
     '''
 
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DUMMY]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DUMMY, TeamType.SELF_PLAY]
     primary_eval_types = {
                             'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DUMMY],
                             'load': []
@@ -227,10 +233,14 @@ def set_input(args):
         # 'selected_2_chefs_spacious_room_few_resources',
         # 'selected_2_chefs_spacious_room_no_counter_space',
         # 'selected_2_chefs_storage_room'
-        '2_chefs_coordination_ring_adv',
-        '2_chefs_counter_circuit_adv',
-        '2_chefs_cramped_room_adv',
-        '2_chefs_storage_room_adv',
+        # '2_chefs_coordination_ring_adv',
+        # '2_chefs_counter_circuit_adv',
+        # '2_chefs_cramped_room_adv',
+        # '2_chefs_storage_room_adv',
+        'coordination_ring_dummy',
+        'counter_circuit_dummy',
+        'cramped_room_dummy',
+        'asymmetric_advantages'
     ]
 
 
@@ -301,7 +311,7 @@ def set_input(args):
         args.fcp_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.SP_seed, args.SP_h_dim = 68, 256
+        args.SP_seed, args.SP_h_dim = 1010, 256
         args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
@@ -337,16 +347,17 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
 
-    args.teammates_len = 2
-
-    if args.teammates_len == 2:
+    args.teammates_len = 1
+    if args.teammates_len == 1:
+        args.how_long = 6
+    elif args.teammates_len == 2:
         args.how_long = 8
     elif args.teammates_len == 4:
         args.how_long = 11
 
     set_input(args=args)
 
-    # SPN_1ADV_XSPCKP(args=args)
+    SPN_1ADV_XSPCKP(args=args)
 
     # SP(args)
 
@@ -356,6 +367,6 @@ if __name__ == '__main__':
 
     # SPN_1ADV(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
     # N_1_FCP(args=args)
