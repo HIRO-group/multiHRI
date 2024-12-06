@@ -56,18 +56,7 @@ if __name__ == "__main__":
 
     # if you just care about the heatmap
     simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, horizon=400)
-
     trajectory = simulation.run_simulation()
 
     tiles_v, tiles_p = get_tile_map(args=args, trajectory=trajectory, agent=agent)
-    # print(tiles_p.shape)
-    
-    top_2_indices = np.argsort(tiles_p.ravel())[-2:][::-1]
-
-    # Convert flattened indices back to 2D coordinates
-    top_2_coords = np.column_stack(np.unravel_index(top_2_indices, tiles_p.shape))
-
-    print(top_2_coords)
-    for y, x in top_2_coords:
-        print(f"Top tile at coordinates ({x}, {y}) with value {tiles_p[y, x]}")
     plot_heatmap(tiles_v, tiles_p, title='dlmh')

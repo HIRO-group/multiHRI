@@ -56,7 +56,6 @@ class OvercookedSimulation:
     def run_simulation(self):
         """
         Run the Overcooked simulation and collect trajectory data.
-        
         Returns:
             dict: Collected trajectory data
         """

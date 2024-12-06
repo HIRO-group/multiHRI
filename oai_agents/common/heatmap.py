@@ -6,6 +6,8 @@ from stable_baselines3.common.utils import obs_as_tensor
 
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 from oai_agents.common.tags import TeammatesCollection, TeamType
+from oai_agents.agents.agent_utils import DummyAgent
+
 
 def get_value_function(args, agent, observation):
     obs_tensor = obs_as_tensor(observation, args.device)
