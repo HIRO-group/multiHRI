@@ -54,7 +54,6 @@ class RLAgentTrainer(OAITrainer):
         self.use_policy_clone = use_policy_clone
 
         self.learner_type = learner_type
-        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type, start_timestep)
         # Episode to start training from (usually 0 unless restarted)
         self.start_step = start_step
         self.steps = self.start_step
@@ -66,6 +65,9 @@ class RLAgentTrainer(OAITrainer):
                                                                                                    learning_agent = self.learning_agent,
                                                                                                    train_types = train_types,
                                                                                                    eval_types = eval_types)
+        self.env, self.eval_envs = self.get_envs(_env=env, _eval_envs=eval_envs, deterministic=deterministic, learner_type=learner_type,
+                                                  start_timestep=start_timestep, teammates_collection=self.teammates_collection)
+
         self.best_score, self.best_training_rew = -1, float('-inf')
 
     @classmethod
@@ -181,15 +183,15 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
 
 
-    def get_envs(self, _env, _eval_envs, deterministic, learner_type, start_timestep: int = 0):
+    def get_envs(self, _env, _eval_envs, deterministic, learner_type, teammates_collection, start_timestep: int = 0):
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
-                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep}
-            env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
-                                    vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
+                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep, 
+                        'teammates_collection': teammates_collection}
+            env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed, vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
-                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
+                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type, 'teammates_collection': teammates_collection}
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
         else:
             env = _env

@@ -34,7 +34,7 @@ USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'as
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+    def __init__(self, learner_type, teammates_collection, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, enc_fn=None, full_init=True, args=None, num_enc_channels=27, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
@@ -86,6 +86,7 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
+        self.teammates_collection = teammates_collection
 
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
@@ -126,9 +127,14 @@ class OvercookedGymEnv(Env):
                 'same_motion_goals': True
             }
 
+            kwargs = {
+                'teammates_collection': self.teammates_collection
+            }
+
+            print(kwargs)
+
             self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False, info=self.args.overcooked_verbose)
-            self.env = OvercookedEnv.from_mdp(self.mdp, horizon=(
-                        horizon or self.args.horizon))  # , **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
+            self.env = OvercookedEnv.from_mdp(self.mdp, horizon=(horizon or self.args.horizon))  # , **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
         else:
             self.env = base_env
             self.layout_name = self.env.mdp.layout_name
