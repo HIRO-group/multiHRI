@@ -124,27 +124,10 @@ def SPN_XSPCKP(args) -> None:
     '''
 
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
-    primary_eval_types = {
-                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
-                            'load': []
-                            }
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV, TeamType.SELF_PLAY_STATIC_ADV]
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW], 'load': []}
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random=False,
-                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-                            training_phases_durations_in_order={
-                                (TeamType.SELF_PLAY_LOW): 0.5,
-                                (TeamType.SELF_PLAY_MEDIUM): 0.125,
-                                (TeamType.SELF_PLAY_HIGH): 0.125,
-                            },
-                            rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_LOW: 0.4,
-                                TeamType.SELF_PLAY_MEDIUM: 0.3,
-                                TeamType.SELF_PLAY_HIGH: 0.3,
-                            },
-                            probabilities_decay_over_time=0
-                            )
+    curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
     get_N_X_SP_agents(
         args,
@@ -346,7 +329,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_1ADV_XSPCKP(args=args)
+    SPN_XSPCKP(args=args)
+
+    # SPN_1ADV_XSPCKP(args=args)
 
     # SP(args)
 
@@ -355,7 +340,5 @@ if __name__ == '__main__':
     # FCP_mhri(args=args)
 
     # SPN_1ADV(args=args)
-
-    # SPN_XSPCKP(args=args)
 
     # N_1_FCP(args=args)

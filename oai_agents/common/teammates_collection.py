@@ -343,3 +343,6 @@ def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_a
         teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
         teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
     return teammates_collection
+
+def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, teammates_collection, primary_agent, adversaries):
+    pass
