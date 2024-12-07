@@ -83,6 +83,7 @@ class RLAgentTrainer(OAITrainer):
             name:str,
             seed:int,
             hidden_dim:int,
+            n_envs: int
         ) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
@@ -98,7 +99,7 @@ class RLAgentTrainer(OAITrainer):
             agent=None,
             teammates_collection={},
             epoch_timesteps=args.epoch_timesteps,
-            n_envs=args.n_envs,
+            n_envs=n_envs,
             seed=seed,
             hidden_dim=hidden_dim,
             learner_type=learner_type,
@@ -296,10 +297,12 @@ class RLAgentTrainer(OAITrainer):
         print("Dynamic Reward: ", self.args.dynamic_reward)
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
-
-    def train_agents(self, total_train_timesteps, tag_for_returning_agent, exp_name=None, resume_ck_list=None):
-        experiment_name = self.get_experiment_name(exp_name)
-        os.makedirs(str(self.args.base_dir / 'wandb'), exist_ok=True)
+    def save_init_model_and_cklist(self):
+        self.ck_list = []
+        path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{0}')
+        self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+    def train_agents(self, total_train_timesteps, tag_for_returning_agent, resume_ck_list=None):
+        experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name=self.name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")
@@ -315,27 +318,30 @@ class RLAgentTrainer(OAITrainer):
                 )
                 if not path.exists():
                     print(f"Warning: The directory {path} does not exist.")
-                    return None
-                ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
-                if not ckpts:
-                    print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
-                    return None
-                ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
-                sorted_idxs = np.argsort(ckpts_nums)
-                ckpts = [ckpts[i] for i in sorted_idxs]
-                self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [
-                        ({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
+                    self.save_init_model_and_cklist()
+                else:
+                    ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
+                    if not ckpts:
+                        print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
+                        self.save_init_model_and_cklist()
+                    else:
+                        ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+                        sorted_idxs = np.argsort(ckpts_nums)
+                        ckpts = [ckpts[i] for i in sorted_idxs]
+                        self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [
+                                ({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
             else:
-                self.ck_list = []
-                path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{len(self.ck_list)}')
-                self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+                self.save_init_model_and_cklist()
 
 
         best_path, best_tag = None, None
 
         self.steps = self.start_step
-        curr_timesteps = self.start_timestep
+        self.learning_agent.num_timesteps = self.n_envs*self.start_timestep
+        curr_timesteps = self.n_envs*self.start_timestep
         prev_timesteps = self.learning_agent.num_timesteps
+        print(f"curr_timesteps: {curr_timesteps}")
+        print(f"prev_timesteps: {prev_timesteps}")
         ck_name_handler = CheckedModelNameHandler()
 
         while curr_timesteps < total_train_timesteps:
@@ -354,6 +360,8 @@ class RLAgentTrainer(OAITrainer):
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
 
+            self.steps += 1
+
             if self.should_evaluate(steps=self.steps):
                 mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
                 if mean_training_rew >= self.best_training_rew:
@@ -363,14 +371,23 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=ck_name_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward))
+                        print(f"len(self.ck_list): {len(self.ck_list)}")
+                        print(f"self.learning_agent.num_timesteps: {self.learning_agent.num_timesteps}")
+                        print(f"curr_timesteps: {curr_timesteps}")
+                        path = OAITrainer.get_model_path(
+                            base_dir=self.args.base_dir,
+                            exp_folder=self.args.exp_dir,
+                            model_name=self.name
+                        )
+                        tag = ck_name_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward)
                         self.ck_list.append((rew_per_layout, path, tag))
+                        path, tag = self.save_agents(path=path, tag=tag)
+
 
                 if mean_reward >= self.best_score:
                     best_path, best_tag = self.save_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
-            self.steps += 1
         self.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         self.agents, _, _ = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag_for_returning_agent)
         run.finish()

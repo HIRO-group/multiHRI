@@ -361,6 +361,7 @@ class OAITrainer(ABC):
         self.name = name
         self.args = args
         self.ck_list = []
+        self.n_envs = args.n_envs
         if seed is not None:
             os.environ['PYTHONASHSEED'] = str(seed)
             th.manual_seed(seed)
@@ -469,9 +470,11 @@ class OAITrainer(ABC):
 
     def save_agents(self, path: Union[Path, None] = None, tag: Union[str, None] = None):
         ''' Saves each agent that the trainer is training '''
-        path = path or OAITrainer.get_model_path(base_dir=self.args.base_dir,
-                                                 exp_folder=self.args.exp_dir,
-                                                 model_name=self.name)
+        path = path or OAITrainer.get_model_path(
+            base_dir=self.args.base_dir,
+            exp_folder=self.args.exp_dir,
+            model_name=self.name
+        )
 
         tag = tag or self.args.exp_name
         save_path = path / tag / 'trainer_file'
@@ -484,6 +487,7 @@ class OAITrainer(ABC):
             agent.save(agent_path_i)
             save_dict['agent_fns'].append(f'agent_{i}')
             save_dict["ck_list"] = self.ck_list
+            save_dict["n_envs"] = self.n_envs
         th.save(save_dict, save_path)
         with open(env_path, "wb") as f:
             step_counts = self.env.get_attr("step_count")
@@ -493,6 +497,7 @@ class OAITrainer(ABC):
                 "timestep_count": timestep_count,
                 "step_count": self.steps
             }, f)
+            print(f"we saved timestep_count: {timestep_count} and step_count:{self.steps}")
         return path, tag
 
     @staticmethod
