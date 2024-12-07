@@ -362,14 +362,15 @@ def set_input(args):
         args.exp_dir = f'Final/{args.num_players}'
 
     else: # Used for doing quick tests
-        args.num_of_ckpoints = 10
+        args.num_of_ckpoints = 5
         args.sb_verbose = 1
         # args.wandb_mode = 'disabled'
         args.wandb_mode = 'online'
         args.n_envs = 2
         args.epoch_timesteps = 2
 
-        args.pop_total_training_timesteps = 3500
+        # args.pop_total_training_timesteps = 3500
+        args.pop_total_training_timesteps = 1000*5
         args.n_x_sp_total_training_timesteps = 1000
         args.adversary_total_training_timesteps = 1000
 
@@ -382,9 +383,9 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
-    args.num_of_training_variants = 2
+    args.num_of_training_variants = 1
     # args.device = 'cpu'
 
     args.pop_force_training = False

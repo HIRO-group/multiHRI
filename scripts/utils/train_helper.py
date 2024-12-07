@@ -182,7 +182,8 @@ def joint_ADV_N_X_SP(
             name=name,
             learner_type=args.primary_learner_type,
             hidden_dim=args.N_X_SP_h_dim,
-            seed=args.N_X_SP_seed
+            seed=args.N_X_SP_seed,
+            n_envs=args.n_envs
         )
 
         teammates_collection = generate_TC(
@@ -256,7 +257,8 @@ def no_ADV_N_X_SP(
         name=name,
         learner_type=args.primary_learner_type,
         hidden_dim=args.N_X_SP_h_dim,
-        seed=args.N_X_SP_seed
+        seed=args.N_X_SP_seed,
+        n_envs=args.n_envs
     )
 
     teammates_collection = generate_TC(
