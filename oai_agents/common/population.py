@@ -23,6 +23,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
     start_step = 0
     start_timestep = 0
     ck_rewards = None
+    n_envs=args.n_envs
     if args.resume:
         last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args, name=name)
         if last_ckpt:
@@ -31,6 +32,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
             start_step = env_info["step_count"]
             start_timestep = env_info["timestep_count"]
             ck_rewards = training_info["ck_list"]
+            n_envs = training_info["n_envs"]
             print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
 
 
@@ -40,7 +42,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
         agent=agent_ckpt,
         teammates_collection={}, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
+        n_envs=n_envs,
         hidden_dim=h_dim,
         seed=seed,
         checkpoint_rate=ck_rate,
