@@ -339,13 +339,12 @@ class RLAgentTrainer(OAITrainer):
 
         self.steps = self.start_step
         self.learning_agent.num_timesteps = self.n_envs*self.start_timestep
-        curr_timesteps = self.n_envs*self.start_timestep
-        prev_timesteps = self.learning_agent.num_timesteps
-        print(f"curr_timesteps: {curr_timesteps}")
-        print(f"prev_timesteps: {prev_timesteps}")
+        # curr_timesteps = self.n_envs*self.start_timestep
+        # prev_timesteps = self.learning_agent.num_timesteps
+        print(f"curr_timesteps: {self.learning_agent.num_timesteps}")
         ck_name_handler = CheckedModelNameHandler()
 
-        while curr_timesteps < total_train_timesteps:
+        while self.learning_agent.num_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=self.steps)
 
             # TODO: eventually, teammates_collection should be turned into its own class with 'select'
@@ -360,8 +359,8 @@ class RLAgentTrainer(OAITrainer):
             self.learning_agent.learn(self.epoch_timesteps)
 
 
-            curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
-            prev_timesteps = self.learning_agent.num_timesteps
+            # curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
+            # prev_timesteps = self.learning_agent.num_timesteps
 
             self.steps += 1
 
@@ -376,7 +375,7 @@ class RLAgentTrainer(OAITrainer):
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
                         print(f"len(self.ck_list): {len(self.ck_list)}")
                         print(f"self.learning_agent.num_timesteps: {self.learning_agent.num_timesteps}")
-                        print(f"curr_timesteps: {curr_timesteps}")
+                        print(f"curr_timesteps: {self.learning_agent.num_timesteps}")
                         path = OAITrainer.get_model_path(
                             base_dir=self.args.base_dir,
                             exp_folder=self.args.exp_dir,
