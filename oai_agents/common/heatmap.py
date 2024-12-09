@@ -6,7 +6,49 @@ from stable_baselines3.common.utils import obs_as_tensor
 
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 from oai_agents.common.tags import TeammatesCollection, TeamType
-from oai_agents.agents.agent_utils import DummyAgent
+
+from overcooked_ai_py.mdp.overcooked_mdp import Action
+
+from gym import spaces
+import numpy as np
+import os
+from pathlib import Path
+import torch as th
+
+
+class DummyPolicy:
+    def __init__(self, obs_space):
+        self.observation_space = obs_space
+
+class CustomAgent():
+    def __init__(self, start_state):
+        self.name = f'custom_agent'
+        # self.action = action if 'random' in action else Action.ACTION_TO_INDEX[action]
+        self.action = Action.STAY
+        self.policy = DummyPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
+        self.encoding_fn = lambda *args, **kwargs: {}
+        self.start_state = start_state
+    
+    def get_start_state(self, layout_name, constraints=None):
+        return self.start_state[layout_name]
+
+    def predict(self, x, state=None, episode_start=None, deterministic=False):
+        add_dim = len(x) == 1
+        if self.action == 'random':
+            action = np.random.randint(0, Action.NUM_ACTIONS)
+        elif self.action == 'random_dir':
+            action = np.random.randint(0, 4)
+        else:
+            action = self.action
+        if add_dim:
+            action = np.array([action])
+        return action, None
+
+    def set_encoding_params(self, *args, **kwargs):
+        pass
+
+    def set_obs_closure_fn(self, obs_closure_fn):
+        pass
 
 
 def get_value_function(args, agent, observation):

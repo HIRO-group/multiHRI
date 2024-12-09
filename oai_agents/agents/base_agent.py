@@ -54,6 +54,10 @@ class OAIAgent(nn.Module, ABC):
         self.layout_performance_tags = {
             layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
         }
+    
+    def get_start_state(self, layout, constraints):
+        # return a 
+        pass
 
     @abstractmethod
     def predict(self, obs: th.Tensor, state=None, episode_start=None, deterministic: bool = False) -> Tuple[

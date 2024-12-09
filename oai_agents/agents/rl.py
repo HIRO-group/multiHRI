@@ -59,14 +59,16 @@ class RLAgentTrainer(OAITrainer):
         self.steps = self.start_step
         # Cumm. timestep to start training from (usually 0 unless restarted)
         self.start_timestep = start_timestep
+        
+        self.env, self.eval_envs = self.get_envs(_env=env, _eval_envs=eval_envs, deterministic=deterministic, learner_type=learner_type,
+                                                  start_timestep=start_timestep, teammates_collection=self.teammates_collection)
+        
 
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
                                                                                                    train_types = train_types,
                                                                                                    eval_types = eval_types)
-        self.env, self.eval_envs = self.get_envs(_env=env, _eval_envs=eval_envs, deterministic=deterministic, learner_type=learner_type,
-                                                  start_timestep=start_timestep, teammates_collection=self.teammates_collection)
 
         self.best_score, self.best_training_rew = -1, float('-inf')
 
@@ -328,13 +330,15 @@ class RLAgentTrainer(OAITrainer):
 
             # In each iteration the agent collects n_envs * n_steps experiences
             # This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
+            print("Agent is learning")
             self.learning_agent.learn(self.epoch_timesteps)
+            print("Agent is done learning")
 
 
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps
 
-            if self.should_evaluate(steps=self.steps):
+            if 1<0 and self.should_evaluate(steps=self.steps):
                 mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew

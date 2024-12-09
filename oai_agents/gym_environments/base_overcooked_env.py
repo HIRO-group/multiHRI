@@ -86,7 +86,6 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
-        self.teammates_collection = teammates_collection
 
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
@@ -95,6 +94,7 @@ class OvercookedGymEnv(Env):
         self.teammates = []
         self.joint_action = []
         self.deterministic = deterministic
+        self.reset_info = {}
         if full_init:
             self.set_env_layout(**kwargs)
 
@@ -126,13 +126,6 @@ class OvercookedGymEnv(Env):
                 'counter_pickup': all_counters,
                 'same_motion_goals': True
             }
-
-            kwargs = {
-                'teammates_collection': self.teammates_collection
-            }
-
-            print(kwargs)
-
             self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False, info=self.args.overcooked_verbose)
             self.env = OvercookedEnv.from_mdp(self.mdp, horizon=(horizon or self.args.horizon))  # , **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
         else:
@@ -144,7 +137,7 @@ class OvercookedGymEnv(Env):
 
 
         self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'] for _ in range(self.mdp.num_players)]
-        self.env.reset()
+        self.env.reset(reset_info=self.reset_info)
         self.valid_counters = [self.env.mdp.find_free_counters_valid_for_player(self.env.state, self.mlam, i) for i in
                                range(2)]
         self.reset()
@@ -160,8 +153,12 @@ class OvercookedGymEnv(Env):
         return self.joint_action
 
     def set_teammates(self, teammates):
+        print("Set teammates is called")
         assert isinstance(teammates, list)
         self.teammates = teammates
+
+        self.reset_info['start_states'] = [tm.get_start_state() for tm in self.teammates] # orientation and position
+
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
@@ -269,6 +266,7 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = p_idx
 
     def reset(self, p_idx=None):
+        print('reset is called')
         if p_idx is not None:
             self.p_idx = p_idx
         elif self.reset_p_idx is not None:
@@ -282,7 +280,8 @@ class OvercookedGymEnv(Env):
         self.t_idxes = teammates_ids
 
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
-        self.env.reset()
+        self.env.reset(reset_info=self.reset_info)
+
         self.prev_state = None
         self.state = self.env.state
 

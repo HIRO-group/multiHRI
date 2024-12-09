@@ -301,8 +301,8 @@ def set_input(args):
         args.num_of_ckpoints = 10
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
-        args.n_envs = 2
-        args.epoch_timesteps = 2
+        args.n_envs = 1
+        args.epoch_timesteps = 1000
 
         args.pop_total_training_timesteps = 3500
         args.n_x_sp_total_training_timesteps = 1000
@@ -317,10 +317,10 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
-    args.pop_force_training = False
+    args.pop_force_training = True
     args.adversary_force_training = False
     args.primary_force_training = False
 
@@ -329,11 +329,11 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
     # SPN_1ADV_XSPCKP(args=args)
 
-    # SP(args)
+    SP(args)
 
     # FCP_traditional(args=args)
 
