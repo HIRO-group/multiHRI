@@ -44,7 +44,11 @@ class OvercookedSimulation:
         self.score = 0
         self.curr_tick = 0
 
-        self.trajectory = {
+
+    def _run_simulation(self):
+        self.env.reset(p_idx=self.p_idx)
+        done = False
+        trajectory = {
             'positions': [],
             'actions': [],
             'observations': [],
@@ -52,41 +56,36 @@ class OvercookedSimulation:
             'dones': []
         }
 
-    def run_simulation(self):
-        """
-        Run the Overcooked simulation and collect trajectory data.
-        Returns:
-            dict: Collected trajectory data
-        """
-        done = False
-        on_reset = True
-
         while not done and self.curr_tick <= self.env.env.horizon:
-            obs = self.env.get_obs(self.env.p_idx, on_reset=on_reset)
-            action = self.agent.predict(obs, state=self.env.state, 
-                                        deterministic=self.env.deterministic)[0]
-
+            obs = self.env.get_obs(self.env.p_idx)
+            action = self.agent.predict(obs, state=self.env.state, deterministic=self.env.deterministic)[0]
             obs, reward, done, info = self.env.step(action)
             
             player_positions = [p.position for p in self.env.state.players]
             obs_copy = {k: np.copy(v) for k, v in obs.items()}
             
-            self.trajectory['positions'].append(player_positions)
-            self.trajectory['actions'].append(self.env.get_joint_action())
-            self.trajectory['observations'].append(obs_copy)
-            self.trajectory['rewards'].append(reward)
-            self.trajectory['dones'].append(done)
+            trajectory['positions'].append(player_positions)
+            trajectory['actions'].append(self.env.get_joint_action())
+            trajectory['observations'].append(obs_copy)
+            trajectory['rewards'].append(reward)
+            trajectory['dones'].append(done)
             
             curr_reward = sum(info['sparse_r_by_agent'])
             self.score += curr_reward
-            
             self.curr_tick += 1
-            on_reset = False
+        
+        return trajectory
 
-        # print(f'Simulation finished in {self.curr_tick} steps with total reward {self.score}')
-        return self.trajectory
 
-    def save_trajectory(self, data_path):
-        df = pd.DataFrame(self.trajectory)
-        df.to_pickle(data_path / f'{self.layout_name}.{self.trial_id}.pickle')
-        return df
+    def run_simulation(self, how_many_times):
+        """
+        Run the Overcooked simulation and collect trajectory data.
+        Returns:
+            dict: Collected trajectory data
+        """
+        
+        trajectories = []
+        for i in range(how_many_times):
+            trajectory = self._run_simulation()
+            trajectories.append(trajectory)
+        return trajectories

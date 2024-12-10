@@ -273,6 +273,11 @@ def set_input(args):
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
 
+    args.use_value_function_for_heatmap = False
+    args.num_static_advs_per_heatmap = 2
+    args.num_dynamic_advs_per_heatmap = 2
+    args.num_eval_for_heatmap_generation = 2
+
     if not args.quick_test:
         args.num_of_ckpoints = 10
         args.n_envs = 200
