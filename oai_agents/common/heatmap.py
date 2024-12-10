@@ -6,6 +6,7 @@ from stable_baselines3.common.utils import obs_as_tensor
 
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 from oai_agents.common.tags import TeammatesCollection, TeamType
+from oai_agents.agents.agent_utils import CustomAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 
@@ -14,41 +15,6 @@ import numpy as np
 import os
 from pathlib import Path
 import torch as th
-
-
-class DummyPolicy:
-    def __init__(self, obs_space):
-        self.observation_space = obs_space
-
-class CustomAgent():
-    def __init__(self, start_state):
-        self.name = f'custom_agent'
-        # self.action = action if 'random' in action else Action.ACTION_TO_INDEX[action]
-        self.action = Action.STAY
-        self.policy = DummyPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
-        self.encoding_fn = lambda *args, **kwargs: {}
-        self.start_state = start_state
-    
-    def get_start_state(self, layout_name, constraints=None):
-        return self.start_state[layout_name]
-
-    def predict(self, x, state=None, episode_start=None, deterministic=False):
-        add_dim = len(x) == 1
-        if self.action == 'random':
-            action = np.random.randint(0, Action.NUM_ACTIONS)
-        elif self.action == 'random_dir':
-            action = np.random.randint(0, 4)
-        else:
-            action = self.action
-        if add_dim:
-            action = np.array([action])
-        return action, None
-
-    def set_encoding_params(self, *args, **kwargs):
-        pass
-
-    def set_obs_closure_fn(self, obs_closure_fn):
-        pass
 
 
 def get_value_function(args, agent, observation):
@@ -81,7 +47,7 @@ def get_tile_map(args, agent, trajectory):
 
 
 def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
-    num_adversaries_per_heatmap = 3
+    num_adversaries_per_heatmap = 1
 
     p_idxes = [i for i in range(args.num_players)]
     
@@ -92,7 +58,7 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
             for train_type in train_types:
                 if train_type not in [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MIDDLE, TeamType.SELF_PLAY_HIGH]:
                     continue
-                all_teammates = teammates_collection[TeammatesCollection.TRAIN][train_type]
+                all_teammates = teammates_collection[TeammatesCollection.TRAIN][layout][train_type]
                 selected_teammates = random.choice(all_teammates)
                 simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=selected_teammates, layout_name=layout, p_idx=p_idx, horizon=400)
                 trajectory = simulation.run_simulation()
@@ -102,6 +68,17 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
                 top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles_p.shape))
                 layout_heatmap_top_xy_coords.extend(top_n_coords)
         heatmap_xy_coords[layout] = layout_heatmap_top_xy_coords
-        
-    # create dummy agents based on heatmap: should override the agents start position somehow
-    pass
+
+    adversaries = {
+        TeamType.SELF_PLAY_STATIC_ADV: [],
+        # TeamType.SELF_PLAY_DYNAMIC_ADV: [],
+    }
+    for adv_idx in range(num_adversaries_per_heatmap):
+        start_position = {layout: (-1, -1) for layout in args.layout_names}
+        for layout in args.layout_names:
+            start_position[layout] = heatmap_xy_coords[layout][adv_idx]
+
+        static_blocker_agent = CustomAgent(args=args, start_position=start_position)
+        adversaries[TeamType.SELF_PLAY_STATIC_ADV].append(static_blocker_agent)
+    
+    return adversaries

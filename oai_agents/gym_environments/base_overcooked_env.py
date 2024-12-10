@@ -1,6 +1,8 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
 from oai_agents.common.learner import LearnerType, Learner
+# from oai_agents.agents.base_agent import SB3Wrapper
+# from oai_agents.common.heatmap import CustomAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -34,7 +36,7 @@ USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'as
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, learner_type, teammates_collection, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+    def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, enc_fn=None, full_init=True, args=None, num_enc_channels=27, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
@@ -153,11 +155,13 @@ class OvercookedGymEnv(Env):
         return self.joint_action
 
     def set_teammates(self, teammates):
-        print("Set teammates is called")
         assert isinstance(teammates, list)
         self.teammates = teammates
 
-        self.reset_info['start_states'] = [tm.get_start_state() for tm in self.teammates] # orientation and position
+        self.reset_info['start_position'] = {}
+        for idx, tm in enumerate(self.teammates):
+            if tm.get_start_position(self.layout_name) is not None:
+                self.reset_info['start_position'][idx] = tm.get_start_state(self.layout_name)
 
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
@@ -266,7 +270,6 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = p_idx
 
     def reset(self, p_idx=None):
-        print('reset is called')
         if p_idx is not None:
             self.p_idx = p_idx
         elif self.reset_p_idx is not None:

@@ -344,5 +344,19 @@ def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_a
         teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
     return teammates_collection
 
+
 def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, teammates_collection, primary_agent, adversaries):
-    pass
+    itself = [primary_agent for _ in range(args.teammates_len-1)]
+
+    for layout_name in args.layout_names: 
+        for tr in train_types:
+            if tr == TeamType.SELF_PLAY_STATIC_ADV:
+                static_advs = adversaries[tr]
+                teammates_collection[TeammatesCollection.TRAIN][layout_name][tr] = [[static_advs[i]] + itself for i in range(len(static_advs))]
+                print(teammates_collection[TeammatesCollection.TRAIN][layout_name][tr])
+            elif tr == TeamType.SELF_PLAY_DYNAMIC_ADV:
+                raise NotImplementedError('Dynamic adversaries not yet supported')
+                # dynamic_advs = adversaries[tr]
+                # teammates_collection[TeammatesCollection.TRAIN][layout_name][tr] = [[adversary] + itself for adversary in adversaries]
+
+    return teammates_collection

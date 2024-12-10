@@ -141,7 +141,6 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                         unseen_teammates_len=unseen_teammates_len,
                                         use_entire_population_for_train_types_teammates=True)
     
-    
     heatmap_source = get_best_SP_agent(args=args, population=population)
     adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, teammates_collection=teammates_collection, train_types=curriculum.train_types)
     
@@ -165,7 +164,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                                             train_types=curriculum.train_types, 
                                                                             teammates_collection=teammates_collection,
                                                                             primary_agent=init_agent,
-                                                                            adversaries=adversaries)    
+                                                                            adversaries=adversaries)
         n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                                 args=args,
                                                 agent=init_agent,
@@ -178,11 +177,13 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                 learner_type=args.primary_learner_type,
                                                 checkpoint_rate=ck_rate)
         
-        agents = n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps * (round + 1),
+        n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps * (round + 1),
                                                     tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
-        init_agent = agents[0]
-        new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, train_types=curriculum.train_types)
-        adversaries = adversaries + new_adversaries
+        init_agent = n_x_sp_types_trainer.agents[0]
+        new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, teammates_collection=teammates_collection, train_types=curriculum.train_types)
+        # adversaries = adversaries + new_adversaries
+        adversaries = {key: adversaries.get(key, []) + new_adversaries.get(key, []) for key in set(adversaries) | set(new_adversaries)}
+
     return init_agent
 
 

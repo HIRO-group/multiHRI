@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 import time
-from oai_agents.agents.hrl import HierarchicalRL
 
 class OvercookedSimulation:
     """
@@ -30,14 +29,14 @@ class OvercookedSimulation:
         assert self.agent is not 'human'
         self.agent.set_encoding_params(self.p_idx, self.args.horizon, 
                                         env=self.env, 
-                                        is_haha=isinstance(self.agent, HierarchicalRL), 
+                                        is_haha=False,
                                         tune_subtasks=False)
         self.env.encoding_fn = self.agent.encoding_fn
 
         for t_idx, teammate in enumerate(self.env.teammates):
             teammate.set_encoding_params(t_idx+1, self.args.horizon, 
                                          env=self.env, 
-                                         is_haha=isinstance(teammate, HierarchicalRL), 
+                                         is_haha=False,
                                          tune_subtasks=True)
 
         self.env.deterministic = False
@@ -84,7 +83,7 @@ class OvercookedSimulation:
             self.curr_tick += 1
             on_reset = False
 
-        print(f'Simulation finished in {self.curr_tick} steps with total reward {self.score}')
+        # print(f'Simulation finished in {self.curr_tick} steps with total reward {self.score}')
         return self.trajectory
 
     def save_trajectory(self, data_path):
