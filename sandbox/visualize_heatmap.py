@@ -13,17 +13,17 @@ from oai_agents.common.overcooked_simulation import OvercookedSimulation
 
 def plot_heatmap(tiles_v, tiles_p, title=''):
     plt.figure(figsize=(20, 8))  # Wider figure to accommodate two plots
-
+    
     # First subplot
     plt.subplot(1, 2, 1)
-    sns.heatmap(tiles_v, annot=True, cmap='YlOrRd', fmt='.0f', cbar_kws={'label': 'Value Function'})
+    sns.heatmap(tiles_v.T, annot=True, cmap='YlOrRd', fmt='.0f', cbar_kws={'label': 'Value Function'})
     plt.title('value function normalized')
     plt.xlabel('X Coordinate')
     plt.ylabel('Y Coordinate')
 
     # Second subplot
     plt.subplot(1, 2, 2)
-    sns.heatmap(tiles_p, annot=True, cmap='YlOrRd', fmt='.0f', cbar_kws={'label': 'Visit Counter'})
+    sns.heatmap(tiles_p.T, annot=True, cmap='YlOrRd', fmt='.0f', cbar_kws={'label': 'Visit Counter'})
     plt.title('visit counter')
     plt.xlabel('X Coordinate')
     plt.ylabel('Y Coordinate')
@@ -36,10 +36,10 @@ if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
     args.layout = f'{args.num_players}_chefs_counter_circuit_adv'
-    args.p_idx = 1
+    args.p_idx = 0
     args.n_envs = 200
     
-    path = 'agent_models/DummyADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best'
+    path = 'agent_models/DummyADV/2/SP_hd64_seed14/best'
     agent = load_agent(Path(path), args) # blue
 
     teammates_path = [
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     # if you just care about the heatmap
     simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, horizon=400)
-    trajectory = simulation.run_simulation()
+    trajectories = simulation.run_simulation(how_many_times=10)
 
-    tiles_v, tiles_p = get_tile_map(args=args, trajectory=trajectory, agent=agent)
-    plot_heatmap(tiles_v, tiles_p, title='dlmh')
+    tiles_v, tiles_p = get_tile_map(args=args, p_idx=args.p_idx, trajectories=trajectories, agent=agent)
+    plot_heatmap(tiles_v, tiles_p, title='sp')

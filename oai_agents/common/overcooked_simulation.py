@@ -40,13 +40,12 @@ class OvercookedSimulation:
                                          tune_subtasks=True)
 
         self.env.deterministic = False
-    
-        self.score = 0
-        self.curr_tick = 0
+
 
 
     def _run_simulation(self):
         self.env.reset(p_idx=self.p_idx)
+        curr_tick = 0
         done = False
         trajectory = {
             'positions': [],
@@ -56,7 +55,7 @@ class OvercookedSimulation:
             'dones': []
         }
 
-        while not done and self.curr_tick <= self.env.env.horizon:
+        while not done and curr_tick <= self.env.env.horizon:
             obs = self.env.get_obs(self.env.p_idx)
             action = self.agent.predict(obs, state=self.env.state, deterministic=self.env.deterministic)[0]
             obs, reward, done, info = self.env.step(action)
@@ -69,10 +68,8 @@ class OvercookedSimulation:
             trajectory['observations'].append(obs_copy)
             trajectory['rewards'].append(reward)
             trajectory['dones'].append(done)
-            
-            curr_reward = sum(info['sparse_r_by_agent'])
-            self.score += curr_reward
-            self.curr_tick += 1
+
+            curr_tick += 1
         
         return trajectory
 
@@ -85,7 +82,7 @@ class OvercookedSimulation:
         """
         
         trajectories = []
-        for i in range(how_many_times):
+        for _ in range(how_many_times):
             trajectory = self._run_simulation()
             trajectories.append(trajectory)
         return trajectories

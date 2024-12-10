@@ -27,16 +27,16 @@ def get_value_function(args, agent, observation):
     return values[0].item()
 
 
-def get_tile_map(args, agent, trajectories, interact_actions_only=True):
+def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
     # TODO: Implement interact actions only
-    
-    tiles_v = np.zeros((100,  100)) # value function
-    tiles_p = np.zeros((100,  100)) # position counter
+
+    tiles_v = np.zeros((20,  20)) # value function
+    tiles_p = np.zeros((20,  20)) # position counter
 
     for trajectory in trajectories:
         observations = trajectory['observations']
         joint_trajectory = trajectory['positions']
-        agent1_trajectory = [tr[0] for tr in joint_trajectory]
+        agent1_trajectory = [tr[p_idx] for tr in joint_trajectory]
         for i in range(0, len(agent1_trajectory)):
             x, y = agent1_trajectory[i]
             value = get_value_function(args=args, agent=agent, observation=observations[i])
@@ -77,7 +77,7 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
                 
                 simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=selected_teammates, layout_name=layout, p_idx=p_idx, horizon=400)
                 trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_generation)
-                tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, trajectories=trajectories, interact_actions_only=True)
+                tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=True)
 
 
 
