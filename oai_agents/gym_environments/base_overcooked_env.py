@@ -1,8 +1,6 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
 from oai_agents.common.learner import LearnerType, Learner
-# from oai_agents.agents.base_agent import SB3Wrapper
-# from oai_agents.common.heatmap import CustomAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv

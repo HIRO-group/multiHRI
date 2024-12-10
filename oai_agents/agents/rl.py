@@ -3,9 +3,6 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
-# from oai_agents.common.heatmap import CustomAgent
-# from oai_agents.common.agents.utils import CustomAgent
-# from oai_agents.agents_utils import CustomAgent
 from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
@@ -58,22 +55,17 @@ class RLAgentTrainer(OAITrainer):
         self.use_policy_clone = use_policy_clone
 
         self.learner_type = learner_type
+        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type, start_timestep)
         # Episode to start training from (usually 0 unless restarted)
         self.start_step = start_step
         self.steps = self.start_step
         # Cumm. timestep to start training from (usually 0 unless restarted)
-        self.start_timestep = start_timestep
-        
-        self.env, self.eval_envs = self.get_envs(_env=env, _eval_envs=eval_envs, deterministic=deterministic, learner_type=learner_type,
-                                                  start_timestep=start_timestep)
-        
-
+        self.start_timestep = start_timestep        
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
                                                                                                    train_types = train_types,
                                                                                                    eval_types = eval_types)
-
         self.best_score, self.best_training_rew = -1, float('-inf')
 
     @classmethod
