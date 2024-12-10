@@ -55,6 +55,9 @@ class OAIAgent(nn.Module, ABC):
             layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
         }
 
+    def get_start_position(self, layout_name):
+        return None
+
     @abstractmethod
     def predict(self, obs: th.Tensor, state=None, episode_start=None, deterministic: bool = False) -> Tuple[
         int, Union[th.Tensor, None]]:

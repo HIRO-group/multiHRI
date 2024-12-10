@@ -1,5 +1,6 @@
 from oai_agents.common.arguments import get_arguments
 from overcooked_ai_py.mdp.overcooked_mdp import Action
+from oai_agents.common.tags import AgentPerformance
 
 from gym import spaces
 import numpy as np
@@ -39,6 +40,46 @@ class DummyAgent():
         self.policy = DummyPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
         self.encoding_fn = lambda *args, **kwargs: {}
         self.use_hrl_obs = False
+
+    def predict(self, x, state=None, episode_start=None, deterministic=False):
+        add_dim = len(x) == 1
+        if self.action == 'random':
+            action = np.random.randint(0, Action.NUM_ACTIONS)
+        elif self.action == 'random_dir':
+            action = np.random.randint(0, 4)
+        else:
+            action = self.action
+        if add_dim:
+            action = np.array([action])
+        return action, None
+
+    def set_encoding_params(self, *args, **kwargs):
+        pass
+
+    def set_obs_closure_fn(self, obs_closure_fn):
+        pass
+
+
+class CustomPolicy:
+    def __init__(self, obs_space):
+        self.observation_space = obs_space
+
+class CustomAgent():
+    def __init__(self, args, start_position):
+        self.name = f'custom_agent'
+        self.action = Action.STAY
+        self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
+        self.encoding_fn = lambda *args, **kwargs: {}
+        self.start_position = start_position
+        self.layout_scores = {
+            layout_name: -1 for layout_name in args.layout_names
+        }
+        self.layout_performance_tags = {
+            layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
+        }
+
+    def get_start_position(self, layout_name):
+        return self.start_position[layout_name]
 
     def predict(self, x, state=None, episode_start=None, deterministic=False):
         add_dim = len(x) == 1

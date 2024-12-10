@@ -124,27 +124,10 @@ def SPN_XSPCKP(args) -> None:
     '''
 
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
-    primary_eval_types = {
-                            'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
-                            'load': []
-                            }
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_STATIC_ADV]
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW], 'load': []}
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random=False,
-                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-                            training_phases_durations_in_order={
-                                (TeamType.SELF_PLAY_LOW): 0.5,
-                                (TeamType.SELF_PLAY_MEDIUM): 0.125,
-                                (TeamType.SELF_PLAY_HIGH): 0.125,
-                            },
-                            rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_LOW: 0.4,
-                                TeamType.SELF_PLAY_MEDIUM: 0.3,
-                                TeamType.SELF_PLAY_HIGH: 0.3,
-                            },
-                            probabilities_decay_over_time=0
-                            )
+    curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
     get_N_X_SP_agents(
         args,
@@ -318,7 +301,7 @@ def set_input(args):
         args.num_of_ckpoints = 10
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
-        args.n_envs = 2
+        args.n_envs = 1
         args.epoch_timesteps = 2
 
         args.pop_total_training_timesteps = 3500
@@ -334,19 +317,21 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
     args.pop_force_training = False
     args.adversary_force_training = False
-    args.primary_force_training = False
+    args.primary_force_training = True
 
-    args.teammates_len = 2
+    args.teammates_len = 1
     args.how_long = 6 # Not effective in quick_test mode
 
     set_input(args=args)
 
-    SPN_1ADV_XSPCKP(args=args)
+    SPN_XSPCKP(args=args)
+
+    # SPN_1ADV_XSPCKP(args=args)
 
     # SP(args)
 
@@ -355,7 +340,5 @@ if __name__ == '__main__':
     # FCP_mhri(args=args)
 
     # SPN_1ADV(args=args)
-
-    # SPN_XSPCKP(args=args)
 
     # N_1_FCP(args=args)
