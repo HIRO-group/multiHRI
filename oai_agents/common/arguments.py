@@ -77,9 +77,14 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--num-of-ckpoints", type=int, default=10)
     parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint for population training only")
 
+    parser.add_argument("--use-val-func-for-heatmap-gen", type=bool, default=False)
+    parser.add_argument("--num-eval-for-heatmap-gen", type=int, default=2)
+    parser.add_argument("--num-static-advs-per-heatmap", type=int, default=2)
+    parser.add_argument("--num-dynamic-advs-per-heatmap", type=int, default=2)
+    parser.add_argument("--custom-agent-ck-rate-generation", type=int)
+
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
-
 
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
