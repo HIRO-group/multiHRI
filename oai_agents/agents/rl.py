@@ -294,6 +294,7 @@ class RLAgentTrainer(OAITrainer):
 
     def train_agents(self, total_train_timesteps, tag_for_returning_agent, exp_name=None, resume_ck_list=None):
         experiment_name = self.get_experiment_name(exp_name)
+        os.makedirs(str(self.args.base_dir / 'wandb'), exist_ok=True)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")

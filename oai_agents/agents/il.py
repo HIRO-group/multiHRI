@@ -18,6 +18,7 @@ from torch.utils.data import DataLoader, random_split
 from torch.distributions.categorical import Categorical
 from typing import Dict, Any, Union
 import wandb
+import os
 
 
 class BehaviouralCloningPolicy(nn.Module):
@@ -189,6 +190,7 @@ class BehavioralCloningTrainer(OAITrainer):
         if self.datasets is None:
             self.setup_datasets()
         exp_name = exp_name or self.args.exp_name
+        os.makedirs(str(self.args.base_dir / 'wandb'), exist_ok=True)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent,
                          dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=exp_name + '_' + self.name, mode=self.args.wandb_mode)
