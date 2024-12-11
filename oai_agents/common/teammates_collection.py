@@ -353,10 +353,8 @@ def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, teammates_co
             if tr == TeamType.SELF_PLAY_STATIC_ADV:
                 static_advs = adversaries[tr]
                 teammates_collection[TeammatesCollection.TRAIN][layout_name][tr] = [[static_advs[i]] + itself for i in range(len(static_advs))]
-                print(teammates_collection[TeammatesCollection.TRAIN][layout_name][tr])
+                teammates_collection[TeammatesCollection.EVAL][layout_name][tr] = [[static_advs[i]] + itself for i in range(len(static_advs))]
             elif tr == TeamType.SELF_PLAY_DYNAMIC_ADV:
                 raise NotImplementedError('Dynamic adversaries not yet supported')
-                # dynamic_advs = adversaries[tr]
-                # teammates_collection[TeammatesCollection.TRAIN][layout_name][tr] = [[adversary] + itself for adversary in adversaries]
 
     return teammates_collection

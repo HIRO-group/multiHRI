@@ -4,6 +4,7 @@ from oai_agents.common.population import get_population
 from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
+from oai_agents.agents.agent_utils import CustomAgent
 
 from oai_agents.common.tags import Prefix
 from oai_agents.common.tags import KeyCheckpoints
@@ -113,15 +114,13 @@ def get_N_X_SP_agents(args,
 
 
 def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
-    adv_ck_rate_generation = args.num_players + 1
-    
     name = generate_name(args,
                         prefix = f'N-{unseen_teammates_len}-SP',
                         seed = args.N_X_SP_seed,
                         h_dim = args.N_X_SP_h_dim,
                         train_types = curriculum.train_types,
                         has_curriculum = not curriculum.is_random,
-                        suffix=args.primary_learner_type + '_attack' + str(adv_ck_rate_generation))
+                        suffix=args.primary_learner_type + '_attack' + str(args.custom_agent_ck_rate_generation))
 
     agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
     if agents:
@@ -144,10 +143,10 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
     heatmap_source = get_best_SP_agent(args=args, population=population)
     adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, teammates_collection=teammates_collection, train_types=curriculum.train_types)
     
-    total_train_timesteps = args.n_x_sp_total_training_timesteps // adv_ck_rate_generation
-    ck_rate = (args.n_x_sp_total_training_timesteps // args.num_of_ckpoints) // adv_ck_rate_generation
+    total_train_timesteps = args.n_x_sp_total_training_timesteps // args.custom_agent_ck_rate_generation
+    ck_rate = (args.n_x_sp_total_training_timesteps // args.num_of_ckpoints) // args.custom_agent_ck_rate_generation
     
-    for round in range(adv_ck_rate_generation):
+    for round in range(args.custom_agent_ck_rate_generation):
         name = generate_name(args,
                         prefix = f'N-{unseen_teammates_len}-SP',
                         seed = args.N_X_SP_seed,
@@ -155,7 +154,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                         train_types = curriculum.train_types,
                         has_curriculum = not curriculum.is_random,
                         suffix=args.primary_learner_type + '_attack' + str(round))
-        agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
+        agents = load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=args.primary_force_training)
         if agents:
             init_agent = agents[0]
             continue
@@ -181,10 +180,11 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                     tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         init_agent = n_x_sp_types_trainer.agents[0]
         new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, teammates_collection=teammates_collection, train_types=curriculum.train_types)
-        # adversaries = adversaries + new_adversaries
         adversaries = {key: adversaries.get(key, []) + new_adversaries.get(key, []) for key in set(adversaries) | set(new_adversaries)}
-
     return init_agent
+
+def merge_custom_agents(custom_agents_list1, custom_agents_list2):
+    pass
 
 
 def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):

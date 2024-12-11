@@ -3,18 +3,10 @@ import torch as th
 import numpy as np
 
 from stable_baselines3.common.utils import obs_as_tensor
-
+from overcooked_ai_py.mdp.overcooked_mdp import Action
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 from oai_agents.common.tags import TeammatesCollection, TeamType
 from oai_agents.agents.agent_utils import CustomAgent
-
-from overcooked_ai_py.mdp.overcooked_mdp import Action
-
-from gym import spaces
-import numpy as np
-import os
-from pathlib import Path
-import torch as th
 
 
 def get_value_function(args, agent, observation):
@@ -28,7 +20,8 @@ def get_value_function(args, agent, observation):
 
 
 def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
-    # TODO: Implement interact actions only
+    if interact_actions_only:
+        raise NotImplementedError
 
     tiles_v = np.zeros((20,  20)) # value function
     tiles_p = np.zeros((20,  20)) # position counter
@@ -48,54 +41,58 @@ def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
     return tiles_v, tiles_p
 
 
-def generate_static_adversaries(args, tiles_p, tiles_v):
-    pass
-
-def genereate_dynamic_adversaries(args, tiles_p, tiles_v):
-    pass
-
-
-    # args.use_value_function_for_heatmap = False
-    # args.num_static_advs_per_heatmap = 2
-    # args.num_dynamic_advs_per_heatmap = 2
-    # args.num_eval_for_heatmap_generation = 2
-    
-
-def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
-    num_adversaries_per_heatmap = 1
-    p_idxes = [i for i in range(args.num_players)]
+def generate_static_adversaries(args, all_tiles):
+    mode = 'V' if args.use_val_func_for_heatmap_gen else 'P'
     heatmap_xy_coords = {layout: [] for layout in args.layout_names}
     for layout in args.layout_names:
         layout_heatmap_top_xy_coords = []
-        for p_idx in p_idxes:
-            for train_type in train_types:
-                if train_type not in [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MIDDLE, TeamType.SELF_PLAY_HIGH]:
-                    continue
-                all_teammates = teammates_collection[TeammatesCollection.TRAIN][layout][train_type]
-                selected_teammates = random.choice(all_teammates)
-                
-                
-                simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=selected_teammates, layout_name=layout, p_idx=p_idx, horizon=400)
-                trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_generation)
-                tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=True)
-
-
-
-                top_n_indices = np.argsort(tiles_p.ravel())[-num_adversaries_per_heatmap:][::-1]
-                top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles_p.shape))
-                layout_heatmap_top_xy_coords.extend(top_n_coords)
+        for tiles in all_tiles[layout][mode]:
+            top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
+            top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
+            layout_heatmap_top_xy_coords.extend(top_n_coords)
         heatmap_xy_coords[layout] = layout_heatmap_top_xy_coords
-
-    adversaries = {
-        TeamType.SELF_PLAY_STATIC_ADV: [],
-        TeamType.SELF_PLAY_DYNAMIC_ADV: [],
-    }
-    for adv_idx in range(num_adversaries_per_heatmap):
+    
+    agents = []
+    for adv_idx in range(args.num_static_advs_per_heatmap):
         start_position = {layout: (-1, -1) for layout in args.layout_names}
         for layout in args.layout_names:
-            start_position[layout] = heatmap_xy_coords[layout][adv_idx]
+            start_position[layout] = tuple(map(int, heatmap_xy_coords[layout][adv_idx]))
+        agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', start_position=start_position, action=Action.STAY))
+    return agents
 
-        static_blocker_agent = CustomAgent(args=args, start_position=start_position)
-        adversaries[TeamType.SELF_PLAY_STATIC_ADV].append(static_blocker_agent)
+
+def generate_dynamic_adversaries(args, all_tiles):
+    raise NotImplementedError
+
+
+def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
+    all_tiles = {layout: {'V': [], 'P': []} for layout in args.layout_names}
+
+    for layout in args.layout_names:
+        for p_idx in range(args.num_players):
+            for train_type_for_teammate in train_types:
+                if train_type_for_teammate not in [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MIDDLE, TeamType.SELF_PLAY_HIGH]:
+                    continue
+                
+                all_teammates_for_train_type = teammates_collection[TeammatesCollection.TRAIN][layout][train_type_for_teammate]
+                selected_teammates = random.choice(all_teammates_for_train_type)
+
+                simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=selected_teammates, layout_name=layout, p_idx=p_idx, horizon=400)
+                trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
+                tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
+                
+                all_tiles[layout]['V'].append(tiles_v)
+                all_tiles[layout]['P'].append(tiles_p)
+
+
+    adversaries = {}
+    if TeamType.SELF_PLAY_STATIC_ADV in train_types:
+        static_advs = generate_static_adversaries(args, all_tiles)
+        adversaries[TeamType.SELF_PLAY_STATIC_ADV] = static_advs
+
+    if TeamType.SELF_PLAY_DYNAMIC_ADV in train_types:
+        raise NotImplementedError
+        dynamic_advs = genereate_dynamic_adversaries(args, all_tiles)
+        adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV] = dynamic_advs 
     
     return adversaries

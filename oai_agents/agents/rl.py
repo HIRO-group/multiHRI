@@ -177,7 +177,7 @@ class RLAgentTrainer(OAITrainer):
                 teammates_c = teammates_collection[layout_name][tag]
                 for teammates in teammates_c:
                     for agent in teammates:
-                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
+                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, start_pos: {agent.get_start_position(layout_name)}, len: {len(teammates)}')
         print("-------------------")
 
 
@@ -289,7 +289,6 @@ class RLAgentTrainer(OAITrainer):
         print(f"Learner type: {self.learner_type}")
         print("Dynamic Reward: ", self.args.dynamic_reward)
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
-        # TODO: Print the custom agents start positions
 
 
     def train_agents(self, total_train_timesteps, tag_for_returning_agent, exp_name=None, resume_ck_list=None):

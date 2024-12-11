@@ -65,9 +65,9 @@ class CustomPolicy:
         self.observation_space = obs_space
 
 class CustomAgent():
-    def __init__(self, args, start_position):
-        self.name = f'custom_agent'
-        self.action = Action.STAY
+    def __init__(self, name, args, start_position, action):
+        self.name = f'CA_{name}'
+        self.action = Action.ACTION_TO_INDEX[action]
         self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
         self.encoding_fn = lambda *args, **kwargs: {}
         self.start_position = start_position

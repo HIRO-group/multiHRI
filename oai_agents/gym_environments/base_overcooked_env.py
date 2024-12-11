@@ -159,7 +159,7 @@ class OvercookedGymEnv(Env):
         self.reset_info['start_position'] = {}
         for idx, tm in enumerate(self.teammates):
             if tm.get_start_position(self.layout_name) is not None:
-                self.reset_info['start_position'][idx] = tm.get_start_state(self.layout_name)
+                self.reset_info['start_position'][idx] = tm.get_start_position(self.layout_name)
 
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
