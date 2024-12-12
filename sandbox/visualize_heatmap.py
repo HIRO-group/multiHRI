@@ -35,7 +35,7 @@ def plot_heatmap(tiles_v, tiles_p, title=''):
 if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
-    args.layout = f'{args.num_players}_chefs_counter_circuit_adv'
+    args.layout = f'{args.num_players}_chefs_coordination_ring_adv'
     args.p_idx = 0
     args.n_envs = 200
     
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     # if you just care about the heatmap
     simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, horizon=400)
-    trajectories = simulation.run_simulation(how_many_times=10)
+    trajectories = simulation.run_simulation(how_many_times=2)
 
-    tiles_v, tiles_p = get_tile_map(args=args, p_idx=args.p_idx, trajectories=trajectories, agent=agent)
+    tiles_v, tiles_p = get_tile_map(args=args, p_idx=args.p_idx, trajectories=trajectories, agent=agent, interact_actions_only=False)
     plot_heatmap(tiles_v, tiles_p, title='sp')

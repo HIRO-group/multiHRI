@@ -66,6 +66,7 @@ def generate_dynamic_adversaries(args, all_tiles):
 
 
 def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
+    print('Heatmap source:', heatmap_source.name)
     all_tiles = {layout: {'V': [], 'P': []} for layout in args.layout_names}
 
     for layout in args.layout_names:

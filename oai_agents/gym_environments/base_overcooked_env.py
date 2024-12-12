@@ -155,11 +155,12 @@ class OvercookedGymEnv(Env):
     def set_teammates(self, teammates):
         assert isinstance(teammates, list)
         self.teammates = teammates
-
         self.reset_info['start_position'] = {}
-        for idx, tm in enumerate(self.teammates):
+
+        for t_idx in self.t_idxes:
+            tm = self.get_teammate_from_idx(t_idx)
             if tm.get_start_position(self.layout_name) is not None:
-                self.reset_info['start_position'][idx] = tm.get_start_position(self.layout_name)
+                self.reset_info['start_position'][t_idx] = tm.get_start_position(self.layout_name)
 
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
@@ -279,6 +280,11 @@ class OvercookedGymEnv(Env):
 
         if not self.is_eval_env: # To have consistent teammates for evaluation
             random.shuffle(teammates_ids)
+            if self.reset_info and 'start_position' in self.reset_info:
+                all_fixed_start_positions = list(self.reset_info['start_position'].values())
+                self.reset_info['start_position'] = {}
+                for id in range(min(len(teammates_ids), len(all_fixed_start_positions))):
+                    self.reset_info['start_position'][teammates_ids[id]] = all_fixed_start_positions[id]
 
         self.t_idxes = teammates_ids
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
