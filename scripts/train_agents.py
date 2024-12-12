@@ -283,7 +283,6 @@ def set_input(args):
         # 'selected_2_chefs_coordination_ring',
         # 'selected_2_chefs_counter_circuit',
         # 'selected_2_chefs_cramped_room',
-        'selected_2_chefs_double_counter_circuit',
         'selected_2_chefs_secret_coordination_ring',
         'selected_2_chefs_spacious_room_few_resources',
         'selected_2_chefs_spacious_room_no_counter_space',
@@ -295,7 +294,6 @@ def set_input(args):
         # 'selected_3_chefs_coordination_ring',
         # 'selected_3_chefs_counter_circuit',
         # 'selected_3_chefs_cramped_room',
-        'selected_3_chefs_double_counter_circuit',
         'selected_3_chefs_secret_coordination_ring',
         'selected_3_chefs_spacious_room_few_resources',
         'selected_3_chefs_spacious_room_no_counter_space',
@@ -306,7 +304,6 @@ def set_input(args):
         # 'selected_4_chefs_coordination_ring',
         # 'selected_4_chefs_counter_circuit',
         # 'selected_4_chefs_cramped_room',
-        'selected_4_chefs_double_counter_circuit',
         'selected_4_chefs_secret_coordination_ring',
         'selected_4_chefs_spacious_room_few_resources',
         'selected_4_chefs_spacious_room_no_counter_space',
@@ -317,7 +314,6 @@ def set_input(args):
         # 'selected_5_chefs_coordination_ring',
         # 'selected_5_chefs_counter_circuit',
         # 'selected_5_chefs_cramped_room',
-        'selected_5_chefs_double_counter_circuit',
         'selected_5_chefs_secret_coordination_ring',
         'selected_5_chefs_spacious_room_few_resources',
         'selected_5_chefs_spacious_room_no_counter_space',
@@ -336,6 +332,7 @@ def set_input(args):
 
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
+    args.for_evaluation = True
 
     if not args.quick_test:
         args.num_of_ckpoints = 10
