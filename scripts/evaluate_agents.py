@@ -141,7 +141,7 @@ LAYOUT_NAMES_PATHs = {
         Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
     },
 
-    'selected_5_chefs_counter_circuit': {
+    'selected_5_chefs_double_counter_circuit': {
         Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
         Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
@@ -366,7 +366,6 @@ def evaluate_agent(args,
                    all_teammates,
                    deterministic,
                    number_of_eps):
-
     all_mean_rewards = {
         layout_name: {unseen_count: [] for unseen_count in range(args.num_players)}
         for layout_name in layout_names
@@ -390,7 +389,8 @@ def evaluate_agent(args,
                 env.set_teammates(teammates)
                 for p_idx in p_idxes:
                     env.reset(p_idx=p_idx)
-                    mean_reward, std_reward = evaluate_policy(primary_agent, env,
+                    mean_reward, std_reward = evaluate_policy(primary_agent, 
+                                                              env,
                                                               n_eval_episodes=number_of_eps,
                                                               deterministic=deterministic,
                                                               warn=False,
@@ -547,15 +547,17 @@ def get_3_player_input(args):
 
 def get_5_player_input(args):
     args.num_players = 5
-    layout_names = ['5_chefs_double_counter_circuit_adv',
-                    '5_chefs_storage_room_adv',
-                    '5_chefs_secret_coordination_ring_adv']
+    layout_names = ['selected_5_chefs_double_counter_circuit',
+                    'selected_5_chefs_storage_room',
+                    'selected_5_chefs_secret_coordination_ring']
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
-        'SP':     'agent_models/DummyADV/5/SP_hd64_seed14/best',
-        'DLMH R 55M': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
-        'DLMH R 150M Best': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler_new/best',
-        'DLMH R 150M Last': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler_new/last',
+        'SP':               'agent_models/DummyADV/5/SP_hd64_seed14/best',
+        # 'DLMH R 55M':       'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler/best',
+        # 'DLMH R 150M':      'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler_new/best',
+        'DLMH R 150M 4x epochs': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler_new_more_epochs/best',
+
+        # 'DLMH R 150M Last': 'agent_models/DummyADV/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDUM]_ran_originaler_new/last',
 
         # 'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
         # 'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best',
