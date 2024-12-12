@@ -75,9 +75,9 @@ def SPN_1ADV_XSPCKP(args) -> None:
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DUMMY, TeamType.SELF_PLAY_ADVERSARY]
+    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DUMMY, TeamType.SELF_PLAY_ADVERSARY],
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
                           'load': []}
 
     # curriculum = Curriculum(train_types = primary_train_types,
@@ -225,22 +225,22 @@ def set_input(args):
     args.num_players = args.teammates_len + 1
 
     two_chefs_layouts = [
-        # 'selected_2_chefs_coordination_ring',
-        # 'selected_2_chefs_counter_circuit',
-        # 'selected_2_chefs_cramped_room',
+        'selected_2_chefs_coordination_ring',
+        'selected_2_chefs_counter_circuit',
+        'selected_2_chefs_cramped_room',
         # 'selected_2_chefs_double_counter_circuit',
-        # 'selected_2_chefs_secret_coordination_ring',
+        'selected_2_chefs_secret_coordination_ring',
         # 'selected_2_chefs_spacious_room_few_resources',
         # 'selected_2_chefs_spacious_room_no_counter_space',
-        # 'selected_2_chefs_storage_room'
+        'selected_2_chefs_storage_room'
         # '2_chefs_coordination_ring_adv',
         # '2_chefs_counter_circuit_adv',
         # '2_chefs_cramped_room_adv',
         # '2_chefs_storage_room_adv',
-        'coordination_ring_dummy',
-        'counter_circuit_dummy',
-        'cramped_room_dummy',
-        'asymmetric_advantages'
+        # 'coordination_ring_dummy',
+        # 'counter_circuit_dummy',
+        # 'cramped_room_dummy',
+        # 'asymmetric_advantages'
     ]
 
 
@@ -318,7 +318,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 4
-        args.exp_dir = f'DummyADV/{args.num_players}'
+        args.exp_dir = f'Final_Again/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
