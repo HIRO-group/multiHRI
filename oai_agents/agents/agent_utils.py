@@ -81,8 +81,8 @@ class CustomAgent():
     def get_start_position(self, layout_name):
         return self.start_position[layout_name]
 
-    def predict(self, x, state=None, episode_start=None, deterministic=False):
-        add_dim = len(x) == 1
+    def predict(self, obs, state=None, episode_start=None, deterministic=False):
+        add_dim = len(obs) == 1
         if self.action == 'random':
             action = np.random.randint(0, Action.NUM_ACTIONS)
         elif self.action == 'random_dir':

@@ -125,7 +125,7 @@ def SPN_XSPCKP(args) -> None:
 
     unseen_teammates_len = 1
     primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_STATIC_ADV]
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_STATIC_ADV], 'load': []}
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW], 'load': []}
 
     curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 

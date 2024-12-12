@@ -54,7 +54,10 @@ def get_N_X_SP_agents(args,
                                                            TeamType.SELF_PLAY_MEDIUM,
                                                            TeamType.SELF_PLAY_LOW,
                                                            TeamType.SELF_PLAY,
-                                                           TeamType.SELF_PLAY_ADVERSARY],
+                                                           TeamType.SELF_PLAY_ADVERSARY,
+                                                           TeamType.SELF_PLAY_STATIC_ADV,
+                                                           TeamType.SELF_PLAY_DYNAMIC_ADV
+                                                           ],
                                          unallowed_types = TeamType.ALL_TYPES_BESIDES_SP)
 
 
@@ -90,6 +93,7 @@ def get_N_X_SP_agents(args,
     )
 
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
+        # Trains the adversaries 
         train_ADV_and_N_X_SP(args=args,
                             population=population,
                             curriculum=curriculum,
@@ -98,7 +102,8 @@ def get_N_X_SP_agents(args,
                             attack_rounds=attack_rounds,
                             n_x_sp_eval_types=n_x_sp_eval_types
                             )
-    elif TeamType.SELF_PLAY_STATIC_ADV or TeamType.SELF_PLAY_DYNAMIC_ADV in n_x_sp_train_types:
+    elif (TeamType.SELF_PLAY_STATIC_ADV or TeamType.SELF_PLAY_DYNAMIC_ADV in n_x_sp_train_types):
+        # Adversaries are not trained, it is generated using a heatmap
         gen_ADV_train_N_X_SP(args=args,
                             population=population,
                             curriculum=curriculum,
@@ -182,9 +187,6 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
         new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, teammates_collection=teammates_collection, train_types=curriculum.train_types)
         adversaries = {key: adversaries.get(key, []) + new_adversaries.get(key, []) for key in set(adversaries) | set(new_adversaries)}
     return init_agent
-
-def merge_custom_agents(custom_agents_list1, custom_agents_list2):
-    pass
 
 
 def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
