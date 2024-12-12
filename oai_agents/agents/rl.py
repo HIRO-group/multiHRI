@@ -3,6 +3,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
+from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
@@ -59,8 +60,7 @@ class RLAgentTrainer(OAITrainer):
         self.start_step = start_step
         self.steps = self.start_step
         # Cumm. timestep to start training from (usually 0 unless restarted)
-        self.start_timestep = start_timestep
-
+        self.start_timestep = start_timestep        
         self.learning_agent, self.agents = self.get_learning_agent(agent)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
                                                                                                    learning_agent = self.learning_agent,
@@ -177,7 +177,7 @@ class RLAgentTrainer(OAITrainer):
                 teammates_c = teammates_collection[layout_name][tag]
                 for teammates in teammates_c:
                     for agent in teammates:
-                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, len: {len(teammates)}')
+                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, start_pos: {agent.get_start_position(layout_name)}, len: {len(teammates)}')
         print("-------------------")
 
 
@@ -185,8 +185,7 @@ class RLAgentTrainer(OAITrainer):
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
                         'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep}
-            env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed,
-                                    vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
+            env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed, vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
                                  'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
@@ -248,7 +247,7 @@ class RLAgentTrainer(OAITrainer):
                     assert len(teammates) == self.teammates_len,\
                             f"Teammates length in collection: {len(teammates)} must be equal to self.teammates_len: {self.teammates_len}"
                     for teammate in teammates:
-                        assert type(teammate) == SB3Wrapper, f"All teammates must be of type SB3Wrapper, but got: {type(teammate)}"
+                        assert type(teammate) in [SB3Wrapper, CustomAgent], f"All teammates must be of type SB3Wrapper, but got: {type(teammate)}"
 
 
     def _get_constructor_parameters(self):
@@ -323,18 +322,10 @@ class RLAgentTrainer(OAITrainer):
 
         while curr_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=self.steps)
-
-            # TODO: eventually, teammates_collection should be turned into its own class with 'select'
-            # and 'update' functions that can be leveraged during training so the teammates_collection
-            # doesn't need to be created before training begins, this would allow us to generate a random
-            # TC each round of training (like in the original FCP paper), until then, we have to leverage
-            # the ALL_MIX TeamType to achieve random teammate selection
             self.set_new_teammates(curriculum=self.curriculum)
 
-            # In each iteration the agent collects n_envs * n_steps experiences
-            # This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
+            # In each iteration the agent collects n_envs * n_steps experiences. This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)
-
 
             curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
             prev_timesteps = self.learning_agent.num_timesteps

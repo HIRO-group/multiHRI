@@ -94,6 +94,7 @@ class OvercookedGymEnv(Env):
         self.teammates = []
         self.joint_action = []
         self.deterministic = deterministic
+        self.reset_info = {}
         if full_init:
             self.set_env_layout(**kwargs)
 
@@ -125,10 +126,8 @@ class OvercookedGymEnv(Env):
                 'counter_pickup': all_counters,
                 'same_motion_goals': True
             }
-
             self.mlam = MediumLevelActionManager.from_pickle_or_compute(self.mdp, COUNTERS_PARAMS, force_compute=False, info=self.args.overcooked_verbose)
-            self.env = OvercookedEnv.from_mdp(self.mdp, horizon=(
-                        horizon or self.args.horizon))  # , **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
+            self.env = OvercookedEnv.from_mdp(self.mdp, horizon=(horizon or self.args.horizon))  # , **self.get_overcooked_from_mdp_kwargs(horizon=horizon))
         else:
             self.env = base_env
             self.layout_name = self.env.mdp.layout_name
@@ -138,7 +137,7 @@ class OvercookedGymEnv(Env):
 
 
         self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'] for _ in range(self.mdp.num_players)]
-        self.env.reset()
+        self.env.reset(reset_info=self.reset_info)
         self.valid_counters = [self.env.mdp.find_free_counters_valid_for_player(self.env.state, self.mlam, i) for i in
                                range(2)]
         self.reset()
@@ -156,6 +155,13 @@ class OvercookedGymEnv(Env):
     def set_teammates(self, teammates):
         assert isinstance(teammates, list)
         self.teammates = teammates
+        self.reset_info['start_position'] = {}
+
+        for t_idx in self.t_idxes:
+            tm = self.get_teammate_from_idx(t_idx)
+            if tm.get_start_position(self.layout_name) is not None:
+                self.reset_info['start_position'][t_idx] = tm.get_start_position(self.layout_name)
+
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
@@ -274,10 +280,16 @@ class OvercookedGymEnv(Env):
 
         if not self.is_eval_env: # To have consistent teammates for evaluation
             random.shuffle(teammates_ids)
+            if self.reset_info and 'start_position' in self.reset_info:
+                all_fixed_start_positions = list(self.reset_info['start_position'].values())
+                self.reset_info['start_position'] = {}
+                for id in range(min(len(teammates_ids), len(all_fixed_start_positions))):
+                    self.reset_info['start_position'][teammates_ids[id]] = all_fixed_start_positions[id]
 
         self.t_idxes = teammates_ids
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
-        self.env.reset()
+        self.env.reset(reset_info=self.reset_info)
+
         self.prev_state = None
         self.state = self.env.state
 

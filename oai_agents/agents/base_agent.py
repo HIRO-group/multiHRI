@@ -1,4 +1,4 @@
-from oai_agents.agents.agent_utils import load_agent
+from oai_agents.agents.agent_utils import load_agent, CustomAgent
 from oai_agents.common.arguments import get_args_to_save, set_args_from_load, get_arguments
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
@@ -54,6 +54,9 @@ class OAIAgent(nn.Module, ABC):
         self.layout_performance_tags = {
             layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
         }
+
+    def get_start_position(self, layout_name):
+        return None
 
     @abstractmethod
     def predict(self, obs: th.Tensor, state=None, episode_start=None, deterministic: bool = False) -> Tuple[
@@ -450,7 +453,7 @@ class OAITrainer(ABC):
             assert type(teammates) == list
 
             for teammate in teammates:
-                assert isinstance(teammate, SB3Wrapper)
+                assert type(teammate) in [SB3Wrapper, CustomAgent]
 
             self.env.env_method('set_teammates', teammates, indices=i)
 

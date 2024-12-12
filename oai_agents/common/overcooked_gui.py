@@ -55,6 +55,7 @@ from overcooked_ai_py.planning.planners import MediumLevelActionManager
 class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
+    
     def __init__(self, args, layout_name=None, agent=None, teammates=None, p_idx=0, horizon=400,
                  trial_id=None, user_id=None, stream=None, outlet=None, fps=5, gif_name='gif'):
         self.x = None
