@@ -223,7 +223,6 @@ class OvercookedGymEnv(Env):
         return obs
 
     def get_teammate_from_idx(self, idx):
-        # p_idx(DONE): bring back the randomized id system and adapt it to be in multi-teammates systems.
         assert idx in self.t_idxes
         id = self.t_idxes.index(idx)
         return self.teammates[id]
@@ -277,9 +276,11 @@ class OvercookedGymEnv(Env):
 
         teammates_ids = list(range(self.mdp.num_players))
         teammates_ids.remove(self.p_idx)
-        random.shuffle(teammates_ids)
-        self.t_idxes = teammates_ids
 
+        if not self.is_eval_env: # To have consistent teammates for evaluation
+            random.shuffle(teammates_ids)
+
+        self.t_idxes = teammates_ids
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
 

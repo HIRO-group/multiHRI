@@ -150,3 +150,4 @@ data/questionnaires/
 data/layouts/
 data/
 eval_cache/
+wandb/
