@@ -30,13 +30,6 @@ def SP(args):
         tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
     )
 
-    # get_SP_agent(
-    #     args=args,
-    #     train_types=curriculum.train_types,
-    #     eval_types=primary_eval_types,
-    #     curriculum=curriculum
-    # )
-
 
 def SPN_1ADV(args) -> None:
     '''
@@ -78,8 +71,8 @@ def SPN_1ADV_XSPCKP(args) -> None:
     '''
     In N-agents games, a randomly initialized agent will be trained with N-X copies of itself and X unseen teammates.
     X unseen teammates can be composed by either one of the two conditions:
-    (a) 1 adversary and X-1 self-play KeyCheckpoints.
-    (b) X self-play KeyCheckpoints.
+    (a) 1 adversary and X-1 self-play checkpoints.
+    (b) X self-play checkpoints.
     e.g.
     when N is 4 and X is 1, the team can be composed by [SP, SP, SP, ADV] or [SP, SP, SP, H] or [SP, SP, SP, M] or [SP, SP, SP, L] in a 4-chef layout.
     when N is 4 and X is 2, the team can be composed
