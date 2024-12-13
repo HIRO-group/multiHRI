@@ -27,9 +27,6 @@ from utils import (
     THREE_PLAYERS_LOW_EVAL,
     THREE_PLAYERS_MEDIUM_EVAL,
     THREE_PLAYERS_HIGH_EVAL,
-    FOUR_PLAYERS_LOW_EVAL,
-    FOUR_PLAYERS_MEDIUM_EVAL,
-    FOUR_PLAYERS_HIGH_EVAL,
     FIVE_PLAYERS_LOW_EVAL,
     FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
     FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
@@ -49,27 +46,17 @@ eval_key_lut = {
 }
 
 LAYOUT_NAMES_PATHs = {
-    'selected_2_chefs_double_counter_circuit': {
+    'selected_2_chefs_coordination_ring': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
         Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
     },
-    'selected_2_chefs_secret_coordination_ring': {
+    'selected_2_chefs_counter_circuit': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
         Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
     },
-    'selected_2_chefs_spacious_room_few_resources': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
-    'selected_2_chefs_spacious_room_no_counter_space': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
-    'selected_2_chefs_storage_room': {
+    'selected_2_chefs_cramped_room': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
         Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
@@ -90,33 +77,6 @@ LAYOUT_NAMES_PATHs = {
         Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
         Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
     },
-
-    'selected_4_chefs_double_counter_circuit': {
-        Eval.LOW: FOUR_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FOUR_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: FOUR_PLAYERS_HIGH_EVAL
-    },
-    'selected_4_chefs_secret_coordination_ring': {
-        Eval.LOW: FOUR_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FOUR_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: FOUR_PLAYERS_HIGH_EVAL
-    },
-    'selected_4_chefs_spacious_room_few_resources': {
-        Eval.LOW: FOUR_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FOUR_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: FOUR_PLAYERS_HIGH_EVAL
-    },
-    'selected_4_chefs_spacious_room_no_counter_space': {
-        Eval.LOW: FOUR_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FOUR_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: FOUR_PLAYERS_HIGH_EVAL
-    },
-    'selected_4_chefs_storage_room': {
-        Eval.LOW: FOUR_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FOUR_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: FOUR_PLAYERS_HIGH_EVAL
-    },
-
 
     'selected_5_chefs_counter_circuit': {
         Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
@@ -379,8 +339,7 @@ def evaluate_agent(args,
 
 
 def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_set: Sequence[Eval]):
-    # Including the file content in hash generation to avoid incorrect cache reuse
-    fn_args = (agent_name, tuple(layout_names), tuple(p_idxes), tuple([(k, tuple(v) if isinstance(v, list) else v) for k,v in vars(args).items()]), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
+    fn_args = (args.num_players, path, tuple(layout_names), tuple(p_idxes), deterministic, max_num_teams_per_layout_per_x, number_of_eps, tuple(teammate_lvl_set))
     m = hashlib.md5()
     for s in fn_args:
         m.update(str(s).encode())
@@ -446,124 +405,37 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
 
 def get_2_player_input(args):
     args.num_players = 2
-    layout_names = [
-        # 'selected_2_chefs_coordination_ring',
-        # 'selected_2_chefs_counter_circuit',
-        # 'selected_2_chefs_cramped_room',
-        'selected_2_chefs_double_counter_circuit',
-        'selected_2_chefs_secret_coordination_ring',
-        'selected_2_chefs_spacious_room_few_resources',
-        'selected_2_chefs_spacious_room_no_counter_space',
-        'selected_2_chefs_storage_room'
-    ]
-
+    layout_names = ['selected_2_chefs_coordination_ring',
+                    'selected_2_chefs_counter_circuit',
+                    'selected_2_chefs_cramped_room']
     p_idxes = [0, 1]
 
     all_agents_paths = {
-        'SP':              'agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/best',
-        'LMH CUR': 'agent_models/Final/2/N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL]_cur_originaler/best',
-        'LAST ALMH RAN REUSED 3A 60M': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
-        'LAST ALMH CUR REUSED 3A 60M': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
-        # 'LAST ALMH-SP RAN REUSED 3A': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV_SP]_cur_originaler_attack2/best',
-        # 'LAST A-SP RAN REUSED 3A': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SP_SPADV]_ran_originaler_attack2/best',
-        'LAST AMH CUR 3A':'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        # 'LAST AMH CUR 2A':'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        # 'LAST AMH CUR 1A':'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'BEST AMH CUR 3A':'agent_models/Final/2-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        # 'BEST AMH CUR 2A':'agent_models/Final/2-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        # 'BEST AMH CUR 1A':'agent_models/Final/2-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'H': 'agent_models/Final/2/N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH]_ran_originaler/best',
+        'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
+        'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
 
+        'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
+        'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
+        'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
+        'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2/best',
+
+        'ALMH CUR 2A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
+        'ALMH RAN 2A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
+        'AMH CUR 2A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
+        'AMH RAN 2A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best',
+
+        'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        'ALMH RAN 1A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        'AMH CUR 1A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        'AMH RAN 1A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
     }
-
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
         [Eval.HIGH]
     ]
-
     return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
-
-def get_2_player_input(args):
-    args.num_players = 2
-    layout_names = [
-        # 'selected_2_chefs_coordination_ring',
-        # 'selected_2_chefs_counter_circuit',
-        # 'selected_2_chefs_cramped_room',
-        'selected_2_chefs_double_counter_circuit',
-        'selected_2_chefs_secret_coordination_ring',
-        'selected_2_chefs_spacious_room_few_resources',
-        'selected_2_chefs_spacious_room_no_counter_space',
-        'selected_2_chefs_storage_room'
-    ]
-
-    p_idxes = [0, 1]
-
-    all_agents_paths = {
-        'SP':              'agent_models/Final/2/SP_s1010_h256_tr[SP]_ran/best',
-        'LMH CUR': 'agent_models/Final/2/N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL]_cur_originaler/best',
-        'LAST ALMH RAN REUSED 3A 60M': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
-        'LAST ALMH CUR REUSED 3A 60M': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
-        # 'LAST ALMH-SP RAN REUSED 3A': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV_SP]_cur_originaler_attack2/best',
-        # 'LAST A-SP RAN REUSED 3A': 'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SP_SPADV]_ran_originaler_attack2/best',
-        'LAST AMH CUR 3A':'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        # 'LAST AMH CUR 2A':'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        # 'LAST AMH CUR 1A':'agent_models/Final/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'BEST AMH CUR 3A':'agent_models/Final/2-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        # 'BEST AMH CUR 2A':'agent_models/Final/2-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        # 'BEST AMH CUR 1A':'agent_models/Final/2-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'H': 'agent_models/Final/2/N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH]_ran_originaler/best',
-
-    }
-
-    teammate_lvl_sets = [
-        [Eval.LOW],
-        [Eval.MEDIUM],
-        [Eval.HIGH]
-    ]
-
-    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
-
-def get_4_player_input(args):
-    args.num_players = 4
-    layout_names = [
-        # 'selected_4_chefs_coordination_ring',
-        # 'selected_4_chefs_counter_circuit',
-        # 'selected_4_chefs_cramped_room',
-        'selected_4_chefs_double_counter_circuit',
-        'selected_4_chefs_secret_coordination_ring',
-        'selected_4_chefs_spacious_room_few_resources',
-        'selected_4_chefs_spacious_room_no_counter_space',
-        'selected_4_chefs_storage_room'
-    ]
-
-    p_idxes = [0, 1, 2, 3]
-
-    all_agents_paths = {
-        'SP':              'agent_models/Final/4/SP_s1010_h256_tr[SP]_ran/best',
-        'LMH CUR': 'agent_models/Final/4/N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL]_cur_originaler/best',
-        # 'LAST ALMH RAN REUSED 3A 60M': 'agent_models/Final/4/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
-        # 'LAST ALMH CUR REUSED 3A 60M': 'agent_models/Final/4/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
-        # 'LAST ALMH-SP RAN REUSED 3A': 'agent_models/Final/4/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV_SP]_cur_originaler_attack2/best',
-        # 'LAST A-SP RAN REUSED 3A': 'agent_models/Final/4/PWADV-N-1-SP_s1010_h256_tr[SP_SPADV]_ran_originaler_attack2/best',
-        # 'LAST AMH CUR 3A':'agent_models/Final/4/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        'LAST AMH CUR 2A':'agent_models/Final/4/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        'LAST AMH CUR 1A':'agent_models/Final/4/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'BEST AMH CUR 3A':'agent_models/Final/4-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        # 'BEST AMH CUR 2A':'agent_models/Final/4-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        # 'BEST AMH CUR 1A':'agent_models/Final/4-ego-play-with-best-adv/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        # 'H': 'agent_models/Final/4/N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH]_ran_originaler/best',
-
-    }
-
-    teammate_lvl_sets = [
-        [Eval.LOW],
-        [Eval.MEDIUM],
-        [Eval.HIGH]
-    ]
-
-    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
 def get_3_player_input(args):
     args.num_players = 3
@@ -617,8 +489,8 @@ def get_5_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_4_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
@@ -665,4 +537,3 @@ if __name__ == "__main__":
                                      teammate_lvl_sets=teammate_lvl_sets,
                                      num_players=args.num_players,
                                      plot_name=plot_name)
-
