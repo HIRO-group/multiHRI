@@ -8,7 +8,6 @@ from oai_agents.common.curriculum import Curriculum
 
 from scripts.utils import (
     get_SP_agents,
-    get_SP_agent,
     get_FCP_agent_w_pop,
     get_N_X_FCP_agents,
     get_N_X_SP_agents,

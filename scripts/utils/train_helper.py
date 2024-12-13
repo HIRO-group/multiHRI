@@ -1,9 +1,10 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
 from oai_agents.common.population import get_categorized_SP_population, generate_hdim_and_seed
-from oai_agents.common.population import get_categorized_SP_population, generate_hdim_and_seed
-from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates
+from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
+from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
+from oai_agents.agents.agent_utils import CustomAgent
 from .common import load_agents, generate_name
 from oai_agents.common.tags import Prefix, KeyCheckpoints
 from oai_agents.common.multi_setup_trainer import MultiSetupSPTrainer
@@ -18,46 +19,6 @@ def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_a
         tag_for_returning_agent=tag_for_returning_agent,
     )
     return sp_trainer.get_multiple_trained_agents()
-
-def get_SP_agent(
-        args,
-        train_types,
-        eval_types,
-        curriculum,
-        tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
-    ):
-    name = generate_name(
-        args,
-        prefix=Prefix.SELF_PLAY,
-        seed=args.SP_seed,
-        h_dim=args.SP_h_dim,
-        train_types=train_types,
-        has_curriculum=not curriculum.is_random
-    )
-
-    agents = load_agents(args, name=name, tag=tag, force_training=args.pop_force_training)
-    if agents:
-        return agents[0]
-
-    selfplay_trainer = RLAgentTrainer(
-        name=name,
-        args=args,
-        agent=None,
-        teammates_collection={},
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        curriculum=curriculum,
-        seed=args.SP_seed,
-        hidden_dim=args.SP_h_dim,
-        learner_type=args.primary_learner_type,
-        checkpoint_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
-    )
-
-    selfplay_trainer.train_agents(
-        total_train_timesteps=args.pop_total_training_timesteps,
-        tag_for_returning_agent=tag
-    )
-    return selfplay_trainer.get_agents()[0]
 
 
 def get_N_X_SP_agents(
