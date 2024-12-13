@@ -146,27 +146,18 @@ def SPN_XSPCKP(args) -> None:
     '''
 
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW]
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
+        TeamType.SELF_PLAY_STATIC_ADV
+    ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
         'load': []
     }
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random=False,
-                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-                            training_phases_durations_in_order={
-                                (TeamType.SELF_PLAY_LOW): 0.5,
-                                (TeamType.SELF_PLAY_MEDIUM): 0.125,
-                                (TeamType.SELF_PLAY_HIGH): 0.125,
-                            },
-                            rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_LOW: 0.4,
-                                TeamType.SELF_PLAY_MEDIUM: 0.3,
-                                TeamType.SELF_PLAY_HIGH: 0.3,
-                            },
-                            probabilities_decay_over_time=0
-                            )
+    curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
     get_N_X_SP_agents(
         args,
@@ -353,15 +344,13 @@ def set_input(args):
         args.exp_dir = f'Final/{args.num_players}'
 
     else: # Used for doing quick tests
-        args.num_of_ckpoints = 5
+        args.num_of_ckpoints = 10
         args.sb_verbose = 1
-        # args.wandb_mode = 'disabled'
-        args.wandb_mode = 'online'
+        args.wandb_mode = 'disabled'
         args.n_envs = 2
         args.epoch_timesteps = 2
 
-        # args.pop_total_training_timesteps = 3500
-        args.pop_total_training_timesteps = 1000*5
+        args.pop_total_training_timesteps = 3500
         args.n_x_sp_total_training_timesteps = 1000
         args.adversary_total_training_timesteps = 1000
 
@@ -374,10 +363,9 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
-    args.num_of_training_variants = 3
-    # args.device = 'cpu'
+    args.num_of_training_variants = 4
 
     args.pop_force_training = False
     args.adversary_force_training = False
