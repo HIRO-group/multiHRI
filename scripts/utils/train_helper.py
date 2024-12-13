@@ -38,19 +38,12 @@ def get_N_X_SP_agents(
             TeamType.SELF_PLAY_MEDIUM,
             TeamType.SELF_PLAY_LOW,
             TeamType.SELF_PLAY,
-            TeamType.SELF_PLAY_ADVERSARY
+            TeamType.SELF_PLAY_ADVERSARY,
+            TeamType.SELF_PLAY_STATIC_ADV,
+            TeamType.SELF_PLAY_DYNAMIC_ADV
         ],
         unallowed_types = TeamType.ALL_TYPES_BESIDES_SP
     )
-    curriculum.validate_curriculum_types(expected_types = [TeamType.SELF_PLAY_HIGH,
-                                                           TeamType.SELF_PLAY_MEDIUM,
-                                                           TeamType.SELF_PLAY_LOW,
-                                                           TeamType.SELF_PLAY,
-                                                           TeamType.SELF_PLAY_ADVERSARY,
-                                                           TeamType.SELF_PLAY_STATIC_ADV,
-                                                           TeamType.SELF_PLAY_DYNAMIC_ADV
-                                                           ],
-                                         unallowed_types = TeamType.ALL_TYPES_BESIDES_SP)
 
 
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
@@ -87,28 +80,32 @@ def get_N_X_SP_agents(
 
     if TeamType.SELF_PLAY_ADVERSARY in n_x_sp_train_types:
         # Trains the adversaries
-        train_ADV_and_N_X_SP(args=args,
-                            population=population,
-                            curriculum=curriculum,
-                            unseen_teammates_len=unseen_teammates_len,
-                            adversary_play_config=adversary_play_config,
-                            attack_rounds=attack_rounds,
-                            n_x_sp_eval_types=n_x_sp_eval_types
-                            )
+        train_ADV_and_N_X_SP(
+            args=args,
+            population=population,
+            curriculum=curriculum,
+            unseen_teammates_len=unseen_teammates_len,
+            adversary_play_config=adversary_play_config,
+            attack_rounds=attack_rounds,
+            n_x_sp_eval_types=n_x_sp_eval_types
+        )
     elif (TeamType.SELF_PLAY_STATIC_ADV or TeamType.SELF_PLAY_DYNAMIC_ADV in n_x_sp_train_types):
         # Adversaries are not trained, it is generated using a heatmap
-        gen_ADV_train_N_X_SP(args=args,
-                            population=population,
-                            curriculum=curriculum,
-                            unseen_teammates_len=unseen_teammates_len,
-                            n_x_sp_eval_types=n_x_sp_eval_types)
+        gen_ADV_train_N_X_SP(
+            args=args,
+            population=population,
+            curriculum=curriculum,
+            unseen_teammates_len=unseen_teammates_len,
+            n_x_sp_eval_types=n_x_sp_eval_types
+        )
     else:
-        N_X_SP(args=args,
-                population=population,
-                curriculum=curriculum,
-                unseen_teammates_len=unseen_teammates_len,
-                n_x_sp_eval_types=n_x_sp_eval_types
-                )
+        N_X_SP(
+            args=args,
+            population=population,
+            curriculum=curriculum,
+            unseen_teammates_len=unseen_teammates_len,
+            n_x_sp_eval_types=n_x_sp_eval_types
+        )
 
 
 def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
@@ -279,15 +276,6 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         has_curriculum = not curriculum.is_random,
         suffix=args.primary_learner_type,
     )
-    name = generate_name(
-        args,
-        prefix = f'N-{unseen_teammates_len}-SP',
-        seed = args.N_X_SP_seed,
-        h_dim = args.N_X_SP_h_dim,
-        train_types = curriculum.train_types,
-        has_curriculum = not curriculum.is_random,
-        suffix=args.primary_learner_type,
-    )
 
     agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
     if agents:
@@ -301,14 +289,6 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         seed=args.N_X_SP_seed,
         n_envs=args.n_envs
     )
-    random_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
-        args=args,
-        name=name,
-        learner_type=args.primary_learner_type,
-        hidden_dim=args.N_X_SP_h_dim,
-        seed=args.N_X_SP_seed,
-        n_envs=args.n_envs
-    )
 
     teammates_collection = generate_TC(
         args=args,
@@ -320,34 +300,7 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         unseen_teammates_len=unseen_teammates_len,
         use_entire_population_for_train_types_teammates=True
     )
-    teammates_collection = generate_TC(
-        args=args,
-        population=population,
-        agent=random_init_agent,
-        train_types=curriculum.train_types,
-        eval_types_to_generate=n_x_sp_eval_types['generate'],
-        eval_types_to_read_from_file=n_x_sp_eval_types['load'],
-        unseen_teammates_len=unseen_teammates_len,
-        use_entire_population_for_train_types_teammates=True
-    )
 
-    n_x_sp_types_trainer = RLAgentTrainer(
-        name=name,
-        args=args,
-        agent=random_init_agent,
-        teammates_collection=teammates_collection,
-        epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
-        curriculum=curriculum,
-        seed=args.N_X_SP_seed,
-        hidden_dim=args.N_X_SP_h_dim,
-        learner_type=args.primary_learner_type,
-        checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
-    )
-    n_x_sp_types_trainer.train_agents(
-        total_train_timesteps=args.n_x_sp_total_training_timesteps,
-        tag_for_returning_agent=tag
-    )
     n_x_sp_types_trainer = RLAgentTrainer(
         name=name,
         args=args,
