@@ -301,6 +301,7 @@ class RLAgentTrainer(OAITrainer):
         self.ck_list = []
         path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{0}')
         self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+
     def train_agents(self, total_train_timesteps, tag_for_returning_agent, resume_ck_list=None):
         experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name=self.name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
@@ -338,28 +339,15 @@ class RLAgentTrainer(OAITrainer):
 
         self.steps = self.start_step
         self.learning_agent.num_timesteps = self.n_envs*self.start_timestep
-        # curr_timesteps = self.n_envs*self.start_timestep
-        # prev_timesteps = self.learning_agent.num_timesteps
         print(f"curr_timesteps: {self.learning_agent.num_timesteps}")
         ck_name_handler = CheckedModelNameHandler()
 
         while self.learning_agent.num_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=self.steps)
-
-            # TODO: eventually, teammates_collection should be turned into its own class with 'select'
-            # and 'update' functions that can be leveraged during training so the teammates_collection
-            # doesn't need to be created before training begins, this would allow us to generate a random
-            # TC each round of training (like in the original FCP paper), until then, we have to leverage
-            # the ALL_MIX TeamType to achieve random teammate selection
             self.set_new_teammates(curriculum=self.curriculum)
 
             # In each iteration the agent collects n_envs * n_steps experiences. This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)
-
-
-            # curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
-            # prev_timesteps = self.learning_agent.num_timesteps
-
             self.steps += 1
 
             if self.should_evaluate(steps=self.steps):
@@ -371,9 +359,6 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        print(f"len(self.ck_list): {len(self.ck_list)}")
-                        print(f"self.learning_agent.num_timesteps: {self.learning_agent.num_timesteps}")
-                        print(f"curr_timesteps: {self.learning_agent.num_timesteps}")
                         path = OAITrainer.get_model_path(
                             base_dir=self.args.base_dir,
                             exp_folder=self.args.exp_dir,
