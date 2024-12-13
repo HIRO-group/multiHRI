@@ -78,21 +78,12 @@ class MultiSetupTrainer:
             with concurrent.futures.ProcessPoolExecutor(
                 max_workers=self.args.max_concurrent_jobs) as executor:
                 arg_lists = list(zip(*inputs))
-                # executor.map(self.get_trained_agent, *arg_lists)
                 dilled_results = list(executor.map(self.get_trained_agent, *arg_lists))
             for dilled_res in dilled_results:
                 checkpoints_list = dill.loads(dilled_res)
-            # for dilled_res in dilled_results:
-            #     agent = dill.loads(dilled_res)
-            #     agents.append(agent)
         else:
             for inp in inputs:
-                checkpoints_list = self.get_trained_agent(seed=seeds[i], h_dim=hdims[i])
-
-            # for i in range(self.num_of_training_variants):
-            #     agents.append(self.get_trained_agent(seed=seeds[i], h_dim=hdims[i]))
-
-        # return agents
+                checkpoints_list = self.get_trained_agent(seed=seeds[inp], h_dim=hdims[inp])
 
     def get_reinforcement_agent(
             self,
@@ -173,19 +164,3 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             checkpoint_rate=self.args.pop_total_training_timesteps // self.args.num_of_ckpoints,
             total_train_timesteps=self.args.pop_total_training_timesteps,
         )
-
-def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_agent):
-    sp_trainer = MultiSetupSPTrainer(
-        args=args,
-        train_types=train_types,
-        eval_types=eval_types,
-        curriculum=curriculum,
-        tag_for_returning_agent=tag_for_returning_agent,
-    )
-    return sp_trainer.get_multiple_trained_agents()
-
-# Example usage:
-# sp_trainer = MultiSetupSPTrainer(args=args, num_of_training_variants=4, train_types=train_types, eval_types=eval_types, curriculum=curriculum, tag=tag)
-# trained_agents = sp_trainer.get_multiple_trained_agents()
-# Alternatively:
-# trained_agents = get_SP_agents(args=args, num_of_training_variants=4, train_types=train_types, eval_types=eval_types, curriculum=curriculum, parallel=True, tag=tag)
