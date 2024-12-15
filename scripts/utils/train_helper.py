@@ -121,11 +121,14 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
     if agents:
         return agents[0]
 
-    init_agent = RLAgentTrainer.generate_randomly_initialized_agent(args=args,
-                                                                            name=name,
-                                                                            learner_type=args.primary_learner_type,
-                                                                            hidden_dim=args.N_X_SP_h_dim,
-                                                                            seed=args.N_X_SP_seed)
+    init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
+        args=args,
+        name=name,
+        learner_type=args.primary_learner_type,
+        hidden_dim=args.N_X_SP_h_dim,
+        seed=args.N_X_SP_seed,
+        n_envs = args.n_envs
+    )
     teammates_collection = generate_TC(args=args,
                                         population=population,
                                         agent=init_agent,

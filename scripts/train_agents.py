@@ -149,7 +149,7 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_STATIC_ADV
+        # TeamType.SELF_PLAY_STATIC_ADV
     ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
@@ -263,12 +263,15 @@ def set_input(args):
     args.num_players = args.teammates_len + 1
 
     two_chefs_layouts = [
-        # 'selected_2_chefs_coordination_ring',
-        # 'selected_2_chefs_counter_circuit',
-        # 'selected_2_chefs_cramped_room',
+        'coordination_ring',
+        'counter_circuit',
+        'cramped_room',
+        'asymmetric_advantages',
+        'forced_coordination',
+        'selected_2_chefs_coordination_ring',
+        'selected_2_chefs_counter_circuit',
+        'selected_2_chefs_cramped_room',
         'selected_2_chefs_secret_coordination_ring',
-        'selected_2_chefs_spacious_room_few_resources',
-        'selected_2_chefs_spacious_room_no_counter_space',
         'selected_2_chefs_storage_room'
     ]
 
@@ -316,11 +319,11 @@ def set_input(args):
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
     args.custom_agent_ck_rate_generation = args.num_players + 1
-    args.for_evaluation = False
+    args.for_evaluation = True
 
     if not args.quick_test:
         args.num_of_ckpoints = 10
-        args.n_envs = 200
+        args.n_envs = 210
         args.epoch_timesteps = 1e5
 
         args.primary_learner_type = LearnerType.ORIGINALER
