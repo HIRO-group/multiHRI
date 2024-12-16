@@ -216,9 +216,14 @@ def set_input(args):
     args.num_players = args.teammates_len + 1
 
     two_chefs_layouts = [
-        'selected_2_chefs_coordination_ring',
-        'selected_2_chefs_counter_circuit',
-        'selected_2_chefs_cramped_room',
+        'coordination_ring',
+        'counter_circuit',
+        'cramped_room',
+        'asymmetric_advantages',
+        'forced_coordination',
+        # 'selected_2_chefs_coordination_ring',
+        # 'selected_2_chefs_counter_circuit',
+        # 'selected_2_chefs_cramped_room',
         # 'selected_2_chefs_double_counter_circuit',
         # 'selected_2_chefs_secret_coordination_ring',
         # 'selected_2_chefs_spacious_room_few_resources',
@@ -326,7 +331,7 @@ if __name__ == '__main__':
     args.primary_force_training = False
 
     args.teammates_len = 1
-    args.how_long = 6 # Not effective in quick_test mode
+    args.how_long = 20 # Not effective in quick_test mode
 
     set_input(args=args)
 
