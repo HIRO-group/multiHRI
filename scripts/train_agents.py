@@ -125,7 +125,7 @@ def SPN_XSPCKP(args) -> None:
 
     unseen_teammates_len = 1
     primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_STATIC_ADV]
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW], 'load': []}
+    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_STATIC_ADV], 'load': []}
 
     curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
@@ -296,7 +296,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 4
-        args.exp_dir = f'Final/{args.num_players}'
+        args.exp_dir = f'StaticADV/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
