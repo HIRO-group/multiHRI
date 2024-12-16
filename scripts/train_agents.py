@@ -343,7 +343,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.num_SPs_to_train = 4
-        args.exp_dir = f'Final/{args.num_players}'
+        args.exp_dir = f'StaticADV/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
