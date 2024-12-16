@@ -411,23 +411,28 @@ def get_2_player_input(args):
     p_idxes = [0, 1]
 
     all_agents_paths = {    
-        'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
-        'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
+        'SP':       'agent_models/StaticADV/2/SP_hd64_seed14/best',
+        'sALMH 2A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 4A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 6A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
-        'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
-        'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2/best',
+        # 'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
+        # 'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
 
-        'ALMH CUR 2A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
-        'ALMH RAN 2A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
-        'AMH CUR 2A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        'AMH RAN 2A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best',
+        # 'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
+        # 'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
+        # 'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
+        # 'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2/best',
 
-        'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        'ALMH RAN 1A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        'AMH CUR 1A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'AMH RAN 1A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
+        # 'ALMH CUR 2A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
+        # 'ALMH RAN 2A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
+        # 'AMH CUR 2A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
+        # 'AMH RAN 2A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best',
+
+        # 'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+        # 'ALMH RAN 1A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
+        # 'AMH CUR 1A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
+        # 'AMH RAN 1A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -489,8 +494,8 @@ def get_5_player_input(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
