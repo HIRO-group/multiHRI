@@ -277,12 +277,10 @@ def set_input(args):
 
 
     three_chefs_layouts = [
-        # 'selected_3_chefs_coordination_ring',
-        # 'selected_3_chefs_counter_circuit',
-        # 'selected_3_chefs_cramped_room',
+        'selected_3_chefs_coordination_ring',
+        'selected_3_chefs_counter_circuit',
+        'selected_3_chefs_cramped_room',
         'selected_3_chefs_secret_coordination_ring',
-        'selected_3_chefs_spacious_room_few_resources',
-        'selected_3_chefs_spacious_room_no_counter_space',
         'selected_3_chefs_storage_room'
     ]
 
@@ -373,8 +371,11 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
 
-    args.teammates_len = 1
-    args.how_long = 6 # Not effective in quick_test mode
+    args.teammates_len = 2
+    args.how_long = 10 # Not effective in quick_test mode
+
+    # args.teammates_len = 4
+    # args.how_long = 14 # Not effective in quick_test mode
 
     set_input(args=args)
 
