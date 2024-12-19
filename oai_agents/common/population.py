@@ -6,22 +6,12 @@ import os
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
 
+
 from .curriculum import Curriculum
+import random
 
 
-def _get_most_recent_checkpoint(args, name: str) -> str:
-    if args.exp_dir:
-        path = args.base_dir / 'agent_models' / args.exp_dir / name
-    else:
-        path = args.base_dir / 'agent_models' / name
-
-
-    ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
-    ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
-    last_ckpt_num = max(ckpts_nums)
-    return [c for c in ckpts if c.startswith(f"ck_{last_ckpt_num}")][0]
-
-def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
+def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
         Returns ckeckpoints_list
         either serialized or not based on serialize flag
@@ -32,14 +22,17 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     start_step = 0
     start_timestep = 0
     ck_rewards = None
+    n_envs=args.n_envs
     if args.resume:
-        last_ckpt = _get_most_recent_checkpoint(args, name)
-        agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
-        agent_ckpt = agent_ckpt_info[0]
-        start_step = env_info["step_count"]
-        start_timestep = env_info["timestep_count"]
-        ck_rewards = training_info["ck_list"]
-        print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
+        last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args, name=name)
+        if last_ckpt:
+            agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
+            agent_ckpt = agent_ckpt_info[0]
+            start_step = env_info["step_count"]
+            start_timestep = env_info["timestep_count"]
+            ck_rewards = training_info["ck_list"]
+            n_envs = training_info["n_envs"]
+            print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
 
 
     rlat = RLAgentTrainer(
@@ -48,7 +41,7 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
         agent=agent_ckpt,
         teammates_collection={}, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
-        n_envs=args.n_envs,
+        n_envs=n_envs,
         hidden_dim=h_dim,
         seed=seed,
         checkpoint_rate=ck_rate,
@@ -62,7 +55,11 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     For SP agents, they only are trained with themselves so the order doesn't matter.
     '''
 
-    rlat.train_agents(total_train_timesteps=total_training_timesteps, tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, resume_ck_list=ck_rewards)
+    rlat.train_agents(
+        total_train_timesteps=total_training_timesteps,
+        tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+        resume_ck_list=ck_rewards
+    )
     checkpoints_list = rlat.ck_list
 
     if serialize:
@@ -70,12 +67,12 @@ def train_agent_with_checkpoints(args, total_training_timesteps, ck_rate, seed, 
     return checkpoints_list
 
 
-def ensure_we_will_have_enough_agents_in_population(teammates_len,
-                                                    train_types,
-                                                    eval_types,
-                                                    num_SPs_to_train,
-                                                    unseen_teammates_len=0, # only used for SPX teamtypes
-                                                ):
+def ensure_enough_SP_agents(teammates_len,
+                            train_types,
+                            eval_types,
+                            num_SPs_to_train,
+                            unseen_teammates_len=0, # only used for SPX teamtypes
+                        ):
 
     total_population_len = len(AgentPerformance.ALL) * num_SPs_to_train
 
@@ -92,8 +89,8 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
     for eval_type in eval_types:
         if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
             eval_agents_len += teammates_len
-        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
-            train_agents_len += 0
+        elif eval_type == TeamType.SELF_PLAY or eval_type == TeamType.SELF_PLAY_ADVERSARY:
+            eval_agents_len += 0
         else:
             eval_agents_len += unseen_teammates_len
 
@@ -105,30 +102,71 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
                                                                         f" num_SPs_to_train: {num_SPs_to_train}."
 
 
-def generate_hdim_and_seed(num_SPs_to_train):
+def generate_hdim_and_seed(for_training: bool, num_of_required_agents: int):
     '''
-    (hidden_dim, seed) = reward of selfplay
-    (256, 68)=362, (64, 14)=318
-    (256, 13)=248, (64, 0)=230
-    (256, 48)=20, (64, 30)=0
+    Generates lists of seeds and hidden dimensions for a given number of agents for training or evaluation.
+
+    Each setting is a pair (hidden_dim, seed). If the number of required agents
+    is less than or equal to the number of predefined settings, it selects from
+    the predefined seeds and hidden dimensions. Otherwise, it generates random
+    seeds and hidden dimensions to fill the remaining number of agents.
+
+    Arguments:
+    for_training -- a boolean indicating whether to generate settings for training (True) or evaluation (False).
+    num_of_required_agents -- the number of (hidden_dim, seed) pairs to generate.
+
+    Returns:
+    selected_seeds -- list of selected seeds
+    selected_hdims -- list of selected hidden dimensions
     '''
-    # Tested in 3-chefs-small-kitchen:
-    good_seeds = [68, 14, 13, 0]
-    good_hdims = [256, 64, 256, 64]
 
-    # Not tested:
-    other_seeds_copied_from_HAHA = [2907, 2907, 105, 105, 8, 32, 128, 512]
-    other_hdims_copied_from_HAHA = [64, 256, 64, 256, 16, 64, 256, 1024]
+    # Predefined seeds and hidden dimensions for training
+    training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
+    training_hdims = [256] * len(training_seeds)
 
-    all_seeds = good_seeds + other_seeds_copied_from_HAHA
-    all_hdims = good_hdims + other_hdims_copied_from_HAHA
+    # Predefined seeds and hidden dimensions for evaluation
+    evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
+    evaluation_hdims = [256] * len(evaluation_seeds)
 
-    selected_seeds = all_seeds[:num_SPs_to_train]
-    selected_hdims = all_hdims[:num_SPs_to_train]
+    # Select appropriate predefined settings based on the input setting
+    if for_training:
+        seeds = training_seeds
+        hdims = training_hdims
+        min_seed = 0
+        max_seed = 2999
+    else:
+        seeds = evaluation_seeds
+        hdims = evaluation_hdims
+        min_seed, max_seed = 3000, 5999
+
+
+    # Initialize selected lists
+    selected_seeds = []
+    selected_hdims = []
+
+    # Check if we have enough predefined pairs
+    if num_of_required_agents <= len(seeds):
+        # Select predefined seeds and hdims
+        selected_seeds = seeds[:num_of_required_agents]
+        selected_hdims = hdims[:num_of_required_agents]
+    else:
+        # Use all predefined settings
+        selected_seeds = seeds[:]
+        selected_hdims = hdims[:]
+
+        # Generate additional random settings if more agents are needed
+        remaining = num_of_required_agents - len(seeds)
+        available_seeds = list(set(range(min_seed, max_seed)) - set(selected_seeds))
+        random_seeds = random.sample(available_seeds, remaining)  # Generate random seeds
+        random_hdims = [256] * remaining # Generate random hidden dimensions
+
+        # Append randomly generated settings to selected lists
+        selected_seeds += random_seeds
+        selected_hdims += random_hdims
+
     return selected_seeds, selected_hdims
 
-
-def save_population(args, population):
+def save_categorized_SP_population(args, population):
     name_prefix = 'pop'
     for layout_name in args.layout_names:
         rt = RLAgentTrainer(
@@ -147,16 +185,17 @@ def save_population(args, population):
         rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
 
-def get_population(args,
-                   ck_rate,
-                   total_training_timesteps,
-                   train_types,
-                   eval_types,
-                   num_SPs_to_train,
-                   unseen_teammates_len=0,
-                   force_training=False,
-                   tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
-                   ):
+def get_categorized_SP_population(
+        args,
+        ck_rate,
+        total_training_timesteps,
+        train_types,
+        eval_types,
+        num_SPs_to_train,
+        unseen_teammates_len=0,
+        force_training=False,
+        tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+    ):
 
     population = {layout_name: [] for layout_name in args.layout_names}
 
@@ -170,38 +209,47 @@ def get_population(args,
     except FileNotFoundError as e:
         print(f'Could not find saved population, creating them from scratch...\nFull Error: {e}')
 
-        ensure_we_will_have_enough_agents_in_population(teammates_len=args.teammates_len,
-                                                        unseen_teammates_len=unseen_teammates_len,
-                                                        train_types=train_types,
-                                                        eval_types=eval_types,
-                                                        num_SPs_to_train=num_SPs_to_train)
+        ensure_enough_SP_agents(
+            teammates_len=args.teammates_len,
+            unseen_teammates_len=unseen_teammates_len,
+            train_types=train_types,
+            eval_types=eval_types,
+            num_SPs_to_train=num_SPs_to_train
+        )
 
-        seed, h_dim = generate_hdim_and_seed(num_SPs_to_train)
+        seed, h_dim = generate_hdim_and_seed(
+            for_training=True, num_of_required_agents=num_SPs_to_train)
         inputs = [
-            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True) for i in range(num_SPs_to_train)
+            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True)
+            for i in range(num_SPs_to_train)
         ]
+
 
         if args.parallel:
             with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_concurrent_jobs) as executor:
                 arg_lists = list(zip(*inputs))
-                dilled_results = list(executor.map(train_agent_with_checkpoints, *arg_lists))
+                dilled_results = list(executor.map(train_SP_with_checkpoints, *arg_lists))
             for dilled_res in dilled_results:
                 checkpoints_list = dill.loads(dilled_res)
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(
+                        args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
         else:
             for inp in inputs:
-                checkpoints_list = train_agent_with_checkpoints(args=inp[0],
-                                                   total_training_timesteps = inp[1],
-                                                   ck_rate=inp[2],
-                                                   seed=inp[3],
-                                                   h_dim=inp[4],
-                                                   serialize=False)
+                checkpoints_list = train_SP_with_checkpoints(
+                    args=inp[0],
+                    total_training_timesteps = inp[1],
+                    ck_rate=inp[2],
+                    seed=inp[3],
+                    h_dim=inp[4],
+                    serialize=False
+                )
                 for layout_name in args.layout_names:
-                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(args, checkpoints_list, layout_name)
+                    layout_pop = RLAgentTrainer.get_checkedpoints_agents(
+                        args, checkpoints_list, layout_name)
                     population[layout_name].extend(layout_pop)
 
-        save_population(args=args, population=population)
+        save_categorized_SP_population(args=args, population=population)
 
     return population
