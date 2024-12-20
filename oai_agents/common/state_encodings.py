@@ -37,7 +37,7 @@ OAI_feats = OAI_feats_closure()
 def OAI_encode_state(mdp: OvercookedGridworld, state: OvercookedState, grid_shape: tuple, horizon: int, p_idx=None,
                      goal_objects=None):
     """
-    Uses Overcooked-ai's RL lossless encoding by stacking 27 binary masks (27xNxM). Only returns visual_obs.
+    Uses Overcooked-ai's RL lossless encoding by stacking env.num_enc_channels binary masks (env.num_enc_channelsxNxM). Only returns visual_obs.
     """
     visual_obs = mdp.lossless_state_encoding(state, horizon=horizon, goal_objects=goal_objects, p_idx=p_idx)
     visual_obs = np.stack(visual_obs, axis=0)

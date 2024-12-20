@@ -120,7 +120,7 @@ class OAIAgent(nn.Module, ABC):
             self.obs_fn = env.get_obs
             self.valid_counters = env.valid_counters
         self.terrain = self.mdp.terrain_mtx
-        self.stack_frames = self.policy.observation_space['visual_obs'].shape[0] == (27 * self.args.num_stack)
+        self.stack_frames = self.policy.observation_space['visual_obs'].shape[0] == (env.num_enc_channels * self.args.num_stack)
         self.stackedobs = StackedObservations(1, self.args.num_stack, self.policy.observation_space['visual_obs'], 'first')
         if is_haha:
             self.set_play_params(output_message, tune_subtasks)
