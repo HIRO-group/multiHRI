@@ -399,7 +399,7 @@ if __name__ == '__main__':
     args.parallel = True
     args.num_of_training_variants = 4
 
-    # args.device = 'gpu'
+    # args.device = 'cpu'
 
     args.pop_force_training = False
     args.adversary_force_training = False
