@@ -35,7 +35,7 @@ class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
-                 shape_rewards=False, enc_fn=None, full_init=True, args=None, num_enc_channels=27, deterministic=False, start_timestep: int = 0,
+                 shape_rewards=False, enc_fn=None, full_init=True, args=None, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
         self.args = args
@@ -53,10 +53,10 @@ class OvercookedGymEnv(Env):
             self.grid_shape = (len(grid[0]), len(grid))
         else:
             self.grid_shape = grid_shape
+        
+        base_enc_channels = 17 # 'pot_loc', 'counter_loc', 'onion_disp_loc', 'tomato_disp_loc', 'dish_disp_loc', 'serve_loc', 'onions_in_pot', 'tomatoes_in_pot', 'onions_in_soup', 'tomatoes_in_soup', 'soup_cook_time_remaining', 'soup_done', 'dishes', 'onions', 'tomatoes', 'urgency', 'goal
+        self.num_enc_channels = base_enc_channels + (self.args.num_players * 5)  # 5 per player: loc', 'orientation_0', 'orientation_1', 'orientation_2', 'orientation_3'
 
-        # Set Sp Observation Space
-        # Currently 20 is the default value for recipe time (which I believe is the largest value used in encoding)
-        self.num_enc_channels = num_enc_channels  # Default channels of OAI_Lossless encoding
         self.obs_dict = {}
         if enc_fn == 'OAI_feats':
             self.obs_dict['agent_obs'] = spaces.Box(0, 400, (96,), dtype=int)
@@ -175,7 +175,7 @@ class OvercookedGymEnv(Env):
             for t_idx in self.t_idxes:
                 if c_idx == t_idx:
                     teammate = self.get_teammate_from_idx(t_idx)
-                    return teammate.policy.observation_space['visual_obs'].shape[0] == (27 * self.args.num_stack)
+                    return teammate.policy.observation_space['visual_obs'].shape[0] == (self.num_enc_channels * self.args.num_stack)
         return False
 
     def setup_visualization(self):
@@ -207,7 +207,7 @@ class OvercookedGymEnv(Env):
         if self.return_completed_subtasks:
             obs['subtask_mask'] = self.action_masks(c_idx)
 
-        elif self.teammates is not None:
+        if self.teammates is not None:
             for t_idx in self.t_idxes:
                 if c_idx == t_idx:
                     teammate = self.get_teammate_from_idx(c_idx)
