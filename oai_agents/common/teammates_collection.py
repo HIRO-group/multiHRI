@@ -32,7 +32,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
         for team_type in teamtypes:
             if (team_type in TeamType.ALL_TYPES_BESIDES_SP):
                 required_population_size += teammates_len
-            elif (team_type == TeamType.SELF_PLAY_ADVERSARY):
+            elif (team_type in [TeamType.SELF_PLAY_ADVERSARY, TeamType.SELF_PLAY_STATIC_ADV, TeamType.SELF_PLAY_DYNAMIC_ADV]):
                 # Adversary teammates are not added in this function so we don't need to require the population to have an agent for this type
                 continue
             elif (team_type in TeamType.SELF_PLAY_X_TYPES):

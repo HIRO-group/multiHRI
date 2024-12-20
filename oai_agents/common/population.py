@@ -92,7 +92,7 @@ def ensure_we_will_have_enough_agents_in_population(teammates_len,
     for eval_type in eval_types:
         if eval_type in TeamType.ALL_TYPES_BESIDES_SP:
             eval_agents_len += teammates_len
-        elif train_type == TeamType.SELF_PLAY or train_type == TeamType.SELF_PLAY_ADVERSARY:
+        elif train_type in [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY, TeamType.SELF_PLAY_STATIC_ADV, TeamType.SELF_PLAY_DYNAMIC_ADV]:
             train_agents_len += 0
         else:
             eval_agents_len += unseen_teammates_len

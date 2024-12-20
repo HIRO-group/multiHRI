@@ -102,7 +102,7 @@ def get_N_X_SP_agents(args,
                             attack_rounds=attack_rounds,
                             n_x_sp_eval_types=n_x_sp_eval_types
                             )
-    elif (TeamType.SELF_PLAY_STATIC_ADV or TeamType.SELF_PLAY_DYNAMIC_ADV in n_x_sp_train_types):
+    elif (TeamType.SELF_PLAY_STATIC_ADV in n_x_sp_train_types) or (TeamType.SELF_PLAY_DYNAMIC_ADV in n_x_sp_train_types):
         # Adversaries are not trained, it is generated using a heatmap
         gen_ADV_train_N_X_SP(args=args,
                             population=population,
