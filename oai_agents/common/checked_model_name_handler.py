@@ -47,9 +47,6 @@ class CheckedModelNameHandler:
 
         :param path: The directory path to search for valid checked model tags. Can be a Path object or None.
         :return: A list of valid checked model tag names.
-        :raises ValueError: If the path is None.
-        :raises FileNotFoundError: If the specified path does not exist.
-        :raises NotADirectoryError: If the specified path is not a directory.
         """
         if path is None:
             raise ValueError("The path cannot be None.")
