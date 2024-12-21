@@ -390,14 +390,14 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
-        args.total_ego_agents = 4
+        args.total_ego_agents = 2
         args.exp_dir = f'test/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
     args.quick_test = True
-    args.parallel = False
+    args.parallel = True
 
     args.pop_force_training = False
     args.adversary_force_training = False
