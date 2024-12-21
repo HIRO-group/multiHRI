@@ -1,6 +1,6 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
-from oai_agents.common.population import get_categorized_SP_population, generate_hdim_and_seed
+from oai_agents.common.population import get_performance_based_population_by_layouts, generate_hdim_and_seed
 from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
@@ -66,14 +66,14 @@ def get_N_X_SP_agents(
     if agents:
         return agents[0]
 
-    population = get_categorized_SP_population(
+    population = get_performance_based_population_by_layouts(
         args=args,
         ck_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
         total_training_timesteps=args.pop_total_training_timesteps,
         train_types=n_x_sp_train_types,
         eval_types=n_x_sp_eval_types['generate'],
         unseen_teammates_len = unseen_teammates_len,
-        num_SPs_to_train=args.num_SPs_to_train,
+        total_ego_agents=args.total_ego_agents,
         force_training=args.pop_force_training,
         tag=tag
     )
@@ -396,13 +396,13 @@ def get_FCP_agent_w_pop(
         has_curriculum = not fcp_curriculum.is_random
     )
 
-    population = get_categorized_SP_population(
+    population = get_performance_based_population_by_layouts(
         args=args,
         ck_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
         total_training_timesteps=args.pop_total_training_timesteps,
         train_types=fcp_train_types,
         eval_types=fcp_eval_types['generate'],
-        num_SPs_to_train=args.num_SPs_to_train,
+        total_ego_agents=args.total_ego_agents,
         force_training=args.pop_force_training,
         tag=tag
     )

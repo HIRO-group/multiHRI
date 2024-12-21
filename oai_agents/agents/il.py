@@ -189,7 +189,7 @@ class BehavioralCloningTrainer(OAITrainer):
         """ Training routine """
         if self.datasets is None:
             self.setup_datasets()
-        exp_name = exp_name or self.args.exp_name
+        exp_name = self.args.exp_name
         os.makedirs(str(self.args.base_dir / 'wandb'), exist_ok=True)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent,
                          dir=str(self.args.base_dir / 'wandb'),

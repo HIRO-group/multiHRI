@@ -23,8 +23,8 @@ class MultiSetupTrainer:
         self.tag_for_returning_agent = tag_for_returning_agent
 
         self.parallel = args.parallel
-        self.num_of_training_variants = args.num_of_training_variants
-        self.for_evaluation = args.for_evaluation
+        self.total_ego_agents = args.total_ego_agents
+        self.for_evaluation = args.gen_pop_for_eval
 
     def generate_hdim_and_seed(self):
         training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
@@ -45,14 +45,14 @@ class MultiSetupTrainer:
         selected_seeds = []
         selected_hdims = []
 
-        if self.num_of_training_variants <= len(seeds):
-            selected_seeds = seeds[:self.num_of_training_variants]
-            selected_hdims = hdims[:self.num_of_training_variants]
+        if self.total_ego_agents <= len(seeds):
+            selected_seeds = seeds[:self.total_ego_agents]
+            selected_hdims = hdims[:self.total_ego_agents]
         else:
             selected_seeds = seeds[:]
             selected_hdims = hdims[:]
 
-            remaining = self.num_of_training_variants - len(seeds)
+            remaining = self.total_ego_agents - len(seeds)
             available_seeds = list(set(range(min_seed, max_seed + 1)) - set(selected_seeds))
             random_seeds = random.sample(available_seeds, remaining)
             random_hdims = [256] * remaining
@@ -71,7 +71,7 @@ class MultiSetupTrainer:
         seeds, hdims = self.generate_hdim_and_seed()
         inputs = [
             (seeds[i], hdims[i])
-            for i in range(self.num_of_training_variants)
+            for i in range(self.total_ego_agents)
         ]
 
         if self.args.parallel:

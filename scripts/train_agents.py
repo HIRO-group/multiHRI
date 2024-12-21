@@ -349,7 +349,7 @@ def set_input(args):
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
     args.custom_agent_ck_rate_generation = args.num_players + 1
-    args.for_evaluation = True
+    args.gen_pop_for_eval = True
 
     if not args.quick_test:
         args.num_of_ckpoints = 10
@@ -372,7 +372,7 @@ def set_input(args):
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.num_SPs_to_train = 4
+        args.total_ego_agents = 4
         args.exp_dir = f'Dec/{args.num_players}'
 
     else: # Used for doing quick tests
@@ -382,22 +382,22 @@ def set_input(args):
         args.n_envs = 2
         args.epoch_timesteps = 2
 
-        args.pop_total_training_timesteps = 3500
+        # args.pop_total_training_timesteps = 3500
+        args.pop_total_training_timesteps = 10000
         args.n_x_sp_total_training_timesteps = 1000
         args.adversary_total_training_timesteps = 1000
 
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
-        args.num_SPs_to_train = 2
+        args.total_ego_agents = 4
         args.exp_dir = f'test/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
-    args.num_of_training_variants = 4
 
     args.pop_force_training = False
     args.adversary_force_training = False

@@ -365,7 +365,7 @@ class RLAgentTrainer(OAITrainer):
                         )
                         tag = ck_name_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward)
                         self.ck_list.append((rew_per_layout, path, tag))
-                        path, tag = self.save_agents(path=path, tag=tag)
+                        _, _ = self.save_agents(path=path, tag=tag)
 
 
                 if mean_reward >= self.best_score:
@@ -408,9 +408,7 @@ class RLAgentTrainer(OAITrainer):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH
-            AgentPerformance.HIGH_MEDIUM
             AgentPerformance.MEDIUM
-            AgentPerformance.MEDIUM_LOW
             AgentPerformance.LOW
         It categorizes by setting their score and performance tag:
             OAIAgent.layout_scores
