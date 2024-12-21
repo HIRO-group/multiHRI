@@ -102,7 +102,7 @@ def ensure_enough_SP_agents(teammates_len,
                                                                         f" total_ego_agents: {total_ego_agents}."
 
 
-def generate_hdim_and_seed(for_evaluation: bool, num_of_required_agents: int):
+def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
     '''
     Generates lists of seeds and hidden dimensions for a given number of agents for training or evaluation.
 
@@ -112,56 +112,43 @@ def generate_hdim_and_seed(for_evaluation: bool, num_of_required_agents: int):
     seeds and hidden dimensions to fill the remaining number of agents.
 
     Arguments:
-    for_training -- a boolean indicating whether to generate settings for training (True) or evaluation (False).
-    num_of_required_agents -- the number of (hidden_dim, seed) pairs to generate.
+    for_evaluation -- a boolean indicating whether to generate settings for evluation (True) or training (False).
+    total_ego_agents -- the number of (hidden_dim, seed) pairs to generate.
 
     Returns:
     selected_seeds -- list of selected seeds
     selected_hdims -- list of selected hidden dimensions
     '''
+    # Predefined seeds and hidden dimensions for evaluation
+    evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
+    evaluation_hdims = [256] * len(evaluation_seeds)
 
     # Predefined seeds and hidden dimensions for training
     training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
     training_hdims = [256] * len(training_seeds)
 
-    # Predefined seeds and hidden dimensions for evaluation
-    evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
-    evaluation_hdims = [256] * len(evaluation_seeds)
 
     # Select appropriate predefined settings based on the input setting
     if for_evaluation:
+        assert total_ego_agents <= len(evaluation_seeds), (
+            f"Total ego agents ({total_ego_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
+            "Please either increase the number of evaluation seeds in the `generate_hdim_and_seed` function or decrease "
+            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+        )
         seeds = evaluation_seeds
         hdims = evaluation_hdims
-        min_seed, max_seed = 3000, 5999
     else:
+        assert total_ego_agents <= len(training_seeds), (
+            f"Total ego agents ({total_ego_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
+            "Please either increase the number of training seeds in the `generate_hdim_and_seed` function or decrease "
+            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+        )
         seeds = training_seeds
         hdims = training_hdims
-        min_seed, max_seed = 0, 2999
-
 
     # Initialize selected lists
-    selected_seeds = []
-    selected_hdims = []
-
-    # Check if we have enough predefined pairs
-    if num_of_required_agents <= len(seeds):
-        # Select predefined seeds and hdims
-        selected_seeds = seeds[:num_of_required_agents]
-        selected_hdims = hdims[:num_of_required_agents]
-    else:
-        # Use all predefined settings
-        selected_seeds = seeds[:]
-        selected_hdims = hdims[:]
-
-        # Generate additional random settings if more agents are needed
-        remaining = num_of_required_agents - len(seeds)
-        available_seeds = list(set(range(min_seed, max_seed)) - set(selected_seeds))
-        random_seeds = random.sample(available_seeds, remaining)  # Generate random seeds
-        random_hdims = [256] * remaining # Generate random hidden dimensions
-
-        # Append randomly generated settings to selected lists
-        selected_seeds += random_seeds
-        selected_hdims += random_hdims
+    selected_seeds = seeds[:total_ego_agents]
+    selected_hdims = hdims[:total_ego_agents]
 
     return selected_seeds, selected_hdims
 
@@ -217,7 +204,7 @@ def get_performance_based_population_by_layouts(
         )
 
         seed, h_dim = generate_hdim_and_seed(
-            for_evaluation=args.gen_pop_for_eval, num_of_required_agents=total_ego_agents)
+            for_evaluation=args.gen_pop_for_eval, total_ego_agents=total_ego_agents)
         inputs = [
             (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True)
             for i in range(total_ego_agents)

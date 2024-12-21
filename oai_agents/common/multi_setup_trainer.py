@@ -27,38 +27,31 @@ class MultiSetupTrainer:
         self.for_evaluation = args.gen_pop_for_eval
 
     def generate_hdim_and_seed(self):
-        training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
-        training_hdims = [256] * len(training_seeds)
-
         evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
         evaluation_hdims = [256] * len(evaluation_seeds)
 
+        training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
+        training_hdims = [256] * len(training_seeds)
+
         if self.for_evaluation:
+            assert self.total_ego_agents <= len(evaluation_seeds), (
+                f"Total ego agents ({self.total_ego_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
+                "Please either increase the number of evaluation seeds in the `generate_hdim_and_seed` function or decrease "
+                f"`self.total_ego_agents` (currently set to {self.total_ego_agents}, based on `args.total_ego_agents`)."
+            )
             seeds = evaluation_seeds
             hdims = evaluation_hdims
-            min_seed, max_seed = 3000, 5999
         else:
+            assert self.total_ego_agents <= len(training_seeds), (
+                f"Total ego agents ({self.total_ego_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
+                "Please either increase the number of training seeds in the `generate_hdim_and_seed` function or decrease "
+                f"`self.total_ego_agents` (currently set to {self.total_ego_agents}, based on `args.total_ego_agents`)."
+            )
             seeds = training_seeds
             hdims = training_hdims
-            min_seed, max_seed = 0, 2999
 
-        selected_seeds = []
-        selected_hdims = []
-
-        if self.total_ego_agents <= len(seeds):
-            selected_seeds = seeds[:self.total_ego_agents]
-            selected_hdims = hdims[:self.total_ego_agents]
-        else:
-            selected_seeds = seeds[:]
-            selected_hdims = hdims[:]
-
-            remaining = self.total_ego_agents - len(seeds)
-            available_seeds = list(set(range(min_seed, max_seed + 1)) - set(selected_seeds))
-            random_seeds = random.sample(available_seeds, remaining)
-            random_hdims = [256] * remaining
-
-            selected_seeds += random_seeds
-            selected_hdims += random_hdims
+        selected_seeds = seeds[:self.total_ego_agents]
+        selected_hdims = hdims[:self.total_ego_agents]
 
         return selected_seeds, selected_hdims
 
