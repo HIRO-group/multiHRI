@@ -267,10 +267,8 @@ def generate_TC(args,
 
 
 def get_best_SP_agent(args, population):
+    all_agents = get_all_agents_for_layout( args.layout_names[0], population)
     agents_scores_averaged_over_layouts = []
-
-    for layout_name in args.layout_names:
-        all_agents = [agent for agent in population[layout_name]]
 
     for agent in all_agents:
         scores = [agent.layout_scores[layout_name] for layout_name in args.layout_names]
@@ -278,13 +276,15 @@ def get_best_SP_agent(args, population):
     best_agent = max(agents_scores_averaged_over_layouts, key=lambda x: x[1])
     return best_agent[0]
 
-
+def get_all_agents_for_layout(layout_name, population):
+    all_agents = [agent for agent in population[layout_name]]
+    return all_agents
 
 def update_eval_collection_with_eval_types_from_file(args, agent, unseen_teammates_len, eval_types, eval_collection):
     for teammates in eval_types:
         if teammates.team_type not in eval_collection[teammates.layout_name]:
             eval_collection[teammates.layout_name][teammates.team_type] = []
-        tms_path = Path.cwd() / 'agent_models' / teammates.names[0]
+        tms_path = RLAgentTrainer.get_model_path(base_dir=Path.cwd(), model_name=teammates.names[0])
         if teammates.load_from_pop_structure:
             layout_population, _, _ = RLAgentTrainer.load_agents(args, path=tms_path, tag=teammates.tags[0])
             agents_perftag_score_all = [(agent,
@@ -348,7 +348,7 @@ def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_a
 def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, teammates_collection, primary_agent, adversaries):
     itself = [primary_agent for _ in range(args.teammates_len-1)]
 
-    for layout_name in args.layout_names: 
+    for layout_name in args.layout_names:
         for tr in train_types:
             if tr == TeamType.SELF_PLAY_STATIC_ADV:
                 static_advs = adversaries[tr]

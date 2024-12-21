@@ -83,6 +83,9 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--num-dynamic-advs-per-heatmap", type=int, default=2)
     parser.add_argument("--custom-agent-ck-rate-generation", type=int)
 
+    parser.add_argument('--gen-pop-for-eval', type=bool, default=False, help="Specifies whether to generate a population of agents for evaluation purposes. Currently, this functionality is limited to self-play agents, as support for other methods has not yet been implemented..)")
+    parser.add_argument("--total-ego-agents", type=int, default=4)
+
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
 
