@@ -349,7 +349,7 @@ def set_input(args):
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
     args.custom_agent_ck_rate_generation = args.num_players + 1
-    args.gen_pop_for_eval = True
+    args.gen_pop_for_eval = False
 
     if not args.quick_test:
         args.num_of_ckpoints = 10
