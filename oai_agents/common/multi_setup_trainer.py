@@ -103,7 +103,7 @@ class MultiSetupTrainer:
                 start_timestep = env_info["timestep_count"]
                 ck_list = training_info["ck_list"]
                 n_envs = training_info["n_envs"]
-                print(f"The model with {seed} Restarting training from step: {start_step} (timestep: {start_timestep})")
+                print(f"The model with {seed} Restarting training from step: {start_step} (timestep: {n_envs*start_timestep})")
 
         rlat = RLAgentTrainer(
             args=self.args,
