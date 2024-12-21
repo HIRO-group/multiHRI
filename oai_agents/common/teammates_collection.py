@@ -267,7 +267,7 @@ def generate_TC(args,
 
 
 def get_best_SP_agent(args, population):
-    all_agents = get_all_agents( args.layout_names[0], population)
+    all_agents = get_all_agents_for_layout( args.layout_names[0], population)
     agents_scores_averaged_over_layouts = []
 
     for agent in all_agents:
@@ -276,7 +276,7 @@ def get_best_SP_agent(args, population):
     best_agent = max(agents_scores_averaged_over_layouts, key=lambda x: x[1])
     return best_agent[0]
 
-def get_all_agents(layout_name, population):
+def get_all_agents_for_layout(layout_name, population):
     all_agents = [agent for agent in population[layout_name]]
     return all_agents
 

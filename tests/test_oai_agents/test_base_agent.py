@@ -77,8 +77,9 @@ def test_list_agent_checked_tags():
     # This will remove the entire "agent_models/test_agents_folder" structure created for testing
     shutil.rmtree(base_dir / "agent_models" / "test_agents_folder")
 
-# Run the test function
-test_list_agent_checked_tags()
+if __name__ == "__main__":
+    # Run the test function
+    test_list_agent_checked_tags()
 
 
 
