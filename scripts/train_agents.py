@@ -372,7 +372,7 @@ def set_input(args):
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.total_ego_agents = 4
+        args.total_ego_agents = 8
         args.exp_dir = f'Dec/{args.num_players}'
 
     else: # Used for doing quick tests
@@ -396,15 +396,21 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
 
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
 
-    args.teammates_len = 4
+    args.teammates_len = 1
     args.how_long = 10 # Not effective in quick_test mode
+
+    # args.teammates_len = 2
+    # args.how_long = 13 # Not effective in quick_test mode
+
+    # args.teammates_len = 4
+    # args.how_long = 19 # Not effective in quick_test mode
 
     set_input(args=args)
 
