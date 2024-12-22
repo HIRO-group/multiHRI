@@ -3,6 +3,7 @@ from oai_agents.common.arguments import get_args_to_save, set_args_from_load, ge
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
 from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints
+from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
@@ -16,7 +17,7 @@ from pathlib import Path
 import numpy as np
 import torch as th
 import torch.nn as nn
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 import stable_baselines3.common.distributions as sb3_distributions
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
@@ -24,6 +25,7 @@ import wandb
 import os
 import random
 import pickle as pkl
+import re
 
 class OAIAgent(nn.Module, ABC):
     """
@@ -359,6 +361,7 @@ class OAITrainer(ABC):
         self.name = name
         self.args = args
         self.ck_list = []
+        self.n_envs = args.n_envs
         if seed is not None:
             os.environ['PYTHONASHSEED'] = str(seed)
             th.manual_seed(seed)
@@ -467,11 +470,11 @@ class OAITrainer(ABC):
 
     def save_agents(self, path: Union[Path, None] = None, tag: Union[str, None] = None):
         ''' Saves each agent that the trainer is training '''
-        if not path:
-            if self.args.exp_dir:
-                path = self.args.base_dir / 'agent_models' / self.args.exp_dir / self.name
-            else:
-                path = self.args.base_dir / 'agent_models'/ self.name
+        path = path or OAITrainer.get_model_path(
+            base_dir=self.args.base_dir,
+            exp_folder=self.args.exp_dir,
+            model_name=self.name
+        )
 
         tag = tag or self.args.exp_name
         save_path = path / tag / 'trainer_file'
@@ -484,6 +487,7 @@ class OAITrainer(ABC):
             agent.save(agent_path_i)
             save_dict['agent_fns'].append(f'agent_{i}')
             save_dict["ck_list"] = self.ck_list
+            save_dict["n_envs"] = self.n_envs
         th.save(save_dict, save_path)
         with open(env_path, "wb") as f:
             step_counts = self.env.get_attr("step_count")
@@ -493,16 +497,15 @@ class OAITrainer(ABC):
                 "timestep_count": timestep_count,
                 "step_count": self.steps
             }, f)
+            print(f"we saved timestep_count: {self.n_envs*timestep_count} and step_count:{self.steps}")
         return path, tag
 
     @staticmethod
     def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):
         ''' Loads each agent that the trainer is training '''
-        if not path:
-            if args.exp_dir:
-                path = args.base_dir / 'agent_models' / args.exp_dir / name
-            else:
-                path = args.base_dir / 'agent_models'/ name
+        path = path or OAITrainer.get_model_path(base_dir=args.base_dir,
+                                                 exp_folder=args.exp_dir,
+                                                 model_name=name)
 
         tag = tag or args.exp_name
         load_path = path / tag / 'trainer_file'
@@ -522,3 +525,68 @@ class OAITrainer(ABC):
             env_info = pkl.load(f)
 
         return agents, env_info, saved_variables
+
+    @staticmethod
+    def list_agent_checked_tags(args, name: str=None, path: Union[Path, None] = None) -> List[str]:
+        '''
+        Lists only tags that start with KeyCheckpoints.CHECKED_MODEL_PREFIX, followed by an integer.
+        If the integer is greater than 0, it must be followed by KeyCheckpoints.REWARD_SUBSTR and a floating-point number.
+
+        Parameters:
+        - args: Experiment arguments containing base directory info and experiment directory info.
+        - name: The name of the agent, for which tags should be listed.
+        - path: Optional. If provided, it overrides the default path to the agents directory.
+
+        Returns:
+        - A list of tags (directories) that match the specified pattern.
+        '''
+        path = path or OAITrainer.get_model_path(base_dir=args.base_dir,
+                                                 exp_folder=args.exp_dir,
+                                                 model_name=name)
+
+        handler = CheckedModelNameHandler()
+        return handler.get_all_checked_tags(path=path)
+
+    @staticmethod
+    def get_most_recent_checkpoint(args, name: str) -> str:
+        path = OAITrainer.get_model_path(
+            base_dir=args.base_dir,
+            exp_folder=args.exp_dir,
+            model_name=name
+        )
+        if not path.exists():
+            print(f"Warning: The directory {path} does not exist.")
+            return None
+        ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
+        if not ckpts:
+            print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
+            return None
+        ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+        last_ckpt_num = max(ckpts_nums)
+        return [c for c in ckpts if c.startswith(f"{KeyCheckpoints.CHECKED_MODEL_PREFIX}{last_ckpt_num}")][0]
+
+    @staticmethod
+    def get_model_path(base_dir: Union[str, Path], exp_folder: Optional[str], model_name: str) -> Path:
+        """
+        Constructs a path for saving or loading an agent model.
+
+        Parameters:
+            base_dir (str or Path): The base directory where models are stored.
+            exp_folder (str or None): The experiment folder name, or None if not applicable.
+            model_name (str): The name of the model.
+
+        Returns:
+            Path: A Path object representing the constructed path.
+        """
+        # Ensure base_dir is a Path object
+        base_dir = Path(base_dir) if isinstance(base_dir, str) else base_dir
+
+        experiment_name = OAITrainer.get_experiment_name(exp_folder=exp_folder, model_name=model_name)
+
+        path = base_dir / 'agent_models' /experiment_name
+
+        return path
+
+    @staticmethod
+    def get_experiment_name(exp_folder: Optional[str], model_name: str):
+        return f"{exp_folder}/{model_name}" if exp_folder else model_name

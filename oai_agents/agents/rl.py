@@ -5,6 +5,7 @@ from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
 from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
 import random
@@ -14,23 +15,27 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
 import wandb
 import os
+from typing import Optional
 
 VEC_ENV_CLS = DummyVecEnv #
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
-    def __init__(self, teammates_collection, args,
-                agent, epoch_timesteps, n_envs,
-                seed, learner_type,
-                train_types=[], eval_types=[],
-                curriculum=None, num_layers=2, hidden_dim=256,
-                checkpoint_rate=None, name=None, env=None, eval_envs=None,
-                use_cnn=False, use_lstm=False, use_frame_stack=False,
-                taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0):
+    def __init__(
+            self, teammates_collection, args,
+            agent, epoch_timesteps, n_envs,
+            seed, learner_type,
+            train_types=[], eval_types=[],
+            curriculum=None, num_layers=2, hidden_dim=256,
+            checkpoint_rate=None, name=None, env=None, eval_envs=None,
+            use_cnn=False, use_lstm=False, use_frame_stack=False,
+            taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0
+        ):
 
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
+
 
         self.args = args
         self.device = args.device
@@ -60,22 +65,26 @@ class RLAgentTrainer(OAITrainer):
         self.start_step = start_step
         self.steps = self.start_step
         # Cumm. timestep to start training from (usually 0 unless restarted)
-        self.start_timestep = start_timestep        
+        self.start_timestep = start_timestep
         self.learning_agent, self.agents = self.get_learning_agent(agent)
-        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(_tms_clctn = teammates_collection,
-                                                                                                   learning_agent = self.learning_agent,
-                                                                                                   train_types = train_types,
-                                                                                                   eval_types = eval_types)
+        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(
+            _tms_clctn = teammates_collection,
+            learning_agent = self.learning_agent,
+            train_types = train_types,
+            eval_types = eval_types
+        )
         self.best_score, self.best_training_rew = -1, float('-inf')
 
     @classmethod
-    def generate_randomly_initialized_agent(cls,
-                                            args,
-                                            learner_type:str,
-                                            name:str,
-                                            seed:int,
-                                            hidden_dim:int,
-                                            ) -> OAIAgent:
+    def generate_randomly_initialized_agent(
+            cls,
+            args,
+            learner_type:str,
+            name:str,
+            seed:int,
+            hidden_dim:int,
+            n_envs: int
+        ) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
         This function does not perform any learning
@@ -84,16 +93,17 @@ class RLAgentTrainer(OAITrainer):
         :param seed: Random seed
         :returns: An untrained, randomly inititalized RL agent
         '''
-        trainer = cls(name=name,
-                        args=args,
-                        agent=None,
-                        teammates_collection={},
-                        epoch_timesteps=args.epoch_timesteps,
-                        n_envs=args.n_envs,
-                        seed=seed,
-                        hidden_dim=hidden_dim,
-                        learner_type=learner_type,
-                        )
+        trainer = cls(
+            name=name,
+            args=args,
+            agent=None,
+            teammates_collection={},
+            epoch_timesteps=args.epoch_timesteps,
+            n_envs=n_envs,
+            seed=seed,
+            hidden_dim=hidden_dim,
+            learner_type=learner_type,
+        )
 
         learning_agent, _ = trainer.get_learning_agent(None)
         return learning_agent
@@ -260,19 +270,16 @@ class RLAgentTrainer(OAITrainer):
             return SB3LSTMWrapper(sb3_agent, name, self.args)
         return SB3Wrapper(sb3_agent, name, self.args)
 
-    def get_experiment_name(self, exp_name):
-        return exp_name or str(self.args.exp_dir) + '/' + self.name
-
 
     def should_evaluate(self, steps):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
         self.best_training_rew *= 1
 
-        steps_divisable_by_15 = (steps + 1) % 15 == 0
+        steps_divisible_by_x = (steps + 1) % 15 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
         checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
 
-        return steps_divisable_by_15 or mean_rew_greater_than_best or checkpoint_rate_reached
+        return steps_divisible_by_x or mean_rew_greater_than_best or checkpoint_rate_reached
 
     def log_details(self, experiment_name, total_train_timesteps):
         print("Training agent: " + self.name + ", for experiment: " + experiment_name)
@@ -290,10 +297,13 @@ class RLAgentTrainer(OAITrainer):
         print("Dynamic Reward: ", self.args.dynamic_reward)
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
 
+    def save_init_model_and_cklist(self):
+        self.ck_list = []
+        path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{0}')
+        self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
-    def train_agents(self, total_train_timesteps, tag_for_returning_agent, exp_name=None, resume_ck_list=None):
-        experiment_name = self.get_experiment_name(exp_name)
-        os.makedirs(str(self.args.base_dir / 'wandb'), exist_ok=True)
+    def train_agents(self, total_train_timesteps, tag_for_returning_agent, resume_ck_list=None):
+        experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name=self.name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")
@@ -302,33 +312,42 @@ class RLAgentTrainer(OAITrainer):
 
         if self.checkpoint_rate is not None:
             if self.args.resume:
-                path = self.args.base_dir / 'agent_models' / experiment_name
-
-                ckpts = [name for name in os.listdir(path) if name.startswith("ck")]
-                ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
-                sorted_idxs = np.argsort(ckpts_nums)
-                ckpts = [ckpts[i] for i in sorted_idxs]
-                self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
+                path = RLAgentTrainer.get_model_path(
+                    base_dir=self.args.base_dir,
+                    exp_folder=self.args.exp_dir,
+                    model_name=self.name
+                )
+                if not path.exists():
+                    print(f"Warning: The directory {path} does not exist.")
+                    self.save_init_model_and_cklist()
+                else:
+                    ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
+                    if not ckpts:
+                        print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
+                        self.save_init_model_and_cklist()
+                    else:
+                        ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+                        sorted_idxs = np.argsort(ckpts_nums)
+                        ckpts = [ckpts[i] for i in sorted_idxs]
+                        self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [
+                                ({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
             else:
-                self.ck_list = []
-                path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}')
-                self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+                self.save_init_model_and_cklist()
+
 
         best_path, best_tag = None, None
 
         self.steps = self.start_step
-        curr_timesteps = self.start_timestep
-        prev_timesteps = self.learning_agent.num_timesteps
+        self.learning_agent.num_timesteps = self.n_envs*self.start_timestep
+        ck_name_handler = CheckedModelNameHandler()
 
-        while curr_timesteps < total_train_timesteps:
+        while self.learning_agent.num_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=self.steps)
             self.set_new_teammates(curriculum=self.curriculum)
 
             # In each iteration the agent collects n_envs * n_steps experiences. This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)
-
-            curr_timesteps += self.learning_agent.num_timesteps - prev_timesteps
-            prev_timesteps = self.learning_agent.num_timesteps
+            self.steps += 1
 
             if self.should_evaluate(steps=self.steps):
                 mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
@@ -339,14 +358,20 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path, tag = self.save_agents(tag=f'ck_{len(self.ck_list)}_rew_{mean_reward}')
+                        path = OAITrainer.get_model_path(
+                            base_dir=self.args.base_dir,
+                            exp_folder=self.args.exp_dir,
+                            model_name=self.name
+                        )
+                        tag = ck_name_handler.generate_tag(id=len(self.ck_list), mean_reward=mean_reward)
                         self.ck_list.append((rew_per_layout, path, tag))
+                        _, _ = self.save_agents(path=path, tag=tag)
+
 
                 if mean_reward >= self.best_score:
                     best_path, best_tag = self.save_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
-            self.steps += 1
         self.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         self.agents, _, _ = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag_for_returning_agent)
         run.finish()
@@ -383,9 +408,7 @@ class RLAgentTrainer(OAITrainer):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH
-            AgentPerformance.HIGH_MEDIUM
             AgentPerformance.MEDIUM
-            AgentPerformance.MEDIUM_LOW
             AgentPerformance.LOW
         It categorizes by setting their score and performance tag:
             OAIAgent.layout_scores

@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import os
 from pathlib import Path
-mp.set_start_method('spawn', force=True) 
+mp.set_start_method('spawn', force=True)
 
 import hashlib
 import sys
@@ -218,7 +218,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
         for idx, agent_name in enumerate(all_mean_rewards):
             mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
             std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
-            
+
             x = x_values + idx * width - width * (num_agents - 1) / 2
             ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
 
@@ -345,7 +345,7 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
         m.update(str(s).encode())
     arg_hash = m.hexdigest()
     cached_eval = Path(f"eval_cache/eval_{arg_hash}.pkl")
-    
+
     if cached_eval.is_file():
         print(f"Loading cached evaluation for agent {agent_name}")
         with open(cached_eval, "rb") as f:
@@ -410,7 +410,7 @@ def get_2_player_input(args):
                     'selected_2_chefs_cramped_room']
     p_idxes = [0, 1]
 
-    all_agents_paths = {    
+    all_agents_paths = {
         'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
         'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
 
@@ -529,7 +529,7 @@ if __name__ == "__main__":
                            unseen_counts=unseen_counts,
                            display_delivery=show_delivery_num,
                            plot_name=plot_name)
-    
+
 
     plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
                                      all_std_rewards=all_std_rewards,
