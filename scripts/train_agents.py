@@ -6,11 +6,12 @@ from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
-from scripts.utils import (get_SP_agent,
-                    get_FCP_agent_w_pop,
-                    get_N_X_FCP_agents,
-                    get_N_X_SP_agents,
-                    )
+from scripts.utils import (
+    get_SP_agents,
+    get_FCP_agent_w_pop,
+    get_N_X_FCP_agents,
+    get_N_X_SP_agents,
+)
 
 def SP(args):
     primary_train_types = [TeamType.SELF_PLAY]
@@ -20,11 +21,13 @@ def SP(args):
     }
     curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    get_SP_agent(args=args,
-                train_types=curriculum.train_types,
-                eval_types=primary_eval_types,
-                curriculum=curriculum
-                )
+    get_SP_agents(
+        args=args,
+        train_types=curriculum.train_types,
+        eval_types=primary_eval_types,
+        curriculum=curriculum,
+        tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
+    )
 
 
 def SPN_1ADV(args) -> None:
@@ -41,11 +44,17 @@ def SPN_1ADV(args) -> None:
     adversary_play_config = AdversaryPlayConfig.MAP
     primary_train_types = [TeamType.SELF_PLAY, TeamType.SELF_PLAY_ADVERSARY]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
-                          'load': []}
+    primary_eval_types = {
+        'generate': [
+            TeamType.SELF_PLAY_HIGH,
+            TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_ADVERSARY
+        ],
+        'load': []
+    }
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random = True)
+    curriculum = Curriculum(
+        train_types = primary_train_types, is_random = True)
     get_N_X_SP_agents(
         args,
         n_x_sp_train_types=curriculum.train_types,
@@ -61,8 +70,8 @@ def SPN_1ADV_XSPCKP(args) -> None:
     '''
     In N-agents games, a randomly initialized agent will be trained with N-X copies of itself and X unseen teammates.
     X unseen teammates can be composed by either one of the two conditions:
-    (a) 1 adversary and X-1 self-play checkedpoints.
-    (b) X self-play checkedpoints.
+    (a) 1 adversary and X-1 self-play checkpoints.
+    (b) X self-play checkpoints.
     e.g.
     when N is 4 and X is 1, the team can be composed by [SP, SP, SP, ADV] or [SP, SP, SP, H] or [SP, SP, SP, M] or [SP, SP, SP, L] in a 4-chef layout.
     when N is 4 and X is 2, the team can be composed
@@ -75,23 +84,35 @@ def SPN_1ADV_XSPCKP(args) -> None:
     attack_rounds = 3
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_ADVERSARY]
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_ADVERSARY
+    ]
 
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_ADVERSARY],
-                          'load': []}
+    primary_eval_types = {
+        'generate': [
+            TeamType.SELF_PLAY_HIGH,
+            TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_ADVERSARY
+        ],
+        'load': []
+    }
 
-    curriculum = Curriculum(train_types = primary_train_types,
-                            is_random = False,
-                            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-                            training_phases_durations_in_order={
-                                (TeamType.SELF_PLAY_ADVERSARY): 0.5,
-                            },
-                            rest_of_the_training_probabilities={
-                                TeamType.SELF_PLAY_MEDIUM: 0.3,
-                                TeamType.SELF_PLAY_HIGH: 0.3,
-                                TeamType.SELF_PLAY_ADVERSARY: 0.4,
-                            },
-                            probabilities_decay_over_time=0)
+    curriculum = Curriculum(
+        train_types = primary_train_types,
+        is_random = False,
+        total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
+        training_phases_durations_in_order={
+            (TeamType.SELF_PLAY_ADVERSARY): 0.5,
+        },
+        rest_of_the_training_probabilities={
+            TeamType.SELF_PLAY_MEDIUM: 0.3,
+            TeamType.SELF_PLAY_HIGH: 0.3,
+            TeamType.SELF_PLAY_ADVERSARY: 0.4,
+        },
+        probabilities_decay_over_time=0
+    )
     get_N_X_SP_agents(
         args,
         n_x_sp_train_types=curriculum.train_types,
@@ -124,8 +145,16 @@ def SPN_XSPCKP(args) -> None:
     '''
 
     unseen_teammates_len = 1
-    primary_train_types = [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_STATIC_ADV]
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_STATIC_ADV], 'load': []}
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
+        TeamType.SELF_PLAY_STATIC_ADV
+    ]
+    primary_eval_types = {
+        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
+        'load': []
+    }
 
     curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
@@ -149,26 +178,29 @@ def FCP_mhri(args):
     primary_eval_types = {'generate' : [TeamType.HIGH_FIRST],
                           'load': []}
 
-    fcp_curriculum = Curriculum(train_types = primary_train_types,
-                                is_random=False,
-                                total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
-                                training_phases_durations_in_order={
-                                    (TeamType.LOW_FIRST): 0.5,
-                                    (TeamType.MEDIUM_FIRST): 0.125,
-                                    (TeamType.HIGH_FIRST): 0.125,
-                                },
-                                rest_of_the_training_probabilities={
-                                    TeamType.LOW_FIRST: 0.4,
-                                    TeamType.MEDIUM_FIRST: 0.3,
-                                    TeamType.HIGH_FIRST: 0.3,
-                                },
-                                probabilities_decay_over_time=0
-                            )
+    fcp_curriculum = Curriculum(
+        train_types = primary_train_types,
+        is_random=False,
+        total_steps = args.fcp_total_training_timesteps//args.epoch_timesteps,
+        training_phases_durations_in_order={
+            (TeamType.LOW_FIRST): 0.5,
+            (TeamType.MEDIUM_FIRST): 0.125,
+            (TeamType.HIGH_FIRST): 0.125,
+        },
+        rest_of_the_training_probabilities={
+            TeamType.LOW_FIRST: 0.4,
+            TeamType.MEDIUM_FIRST: 0.3,
+            TeamType.HIGH_FIRST: 0.3,
+        },
+        probabilities_decay_over_time=0
+    )
 
-    _, _ = get_FCP_agent_w_pop(args,
-                                fcp_train_types = fcp_curriculum.train_types,
-                                fcp_eval_types=primary_eval_types,
-                                fcp_curriculum=fcp_curriculum)
+    _, _ = get_FCP_agent_w_pop(
+        args,
+        fcp_train_types = fcp_curriculum.train_types,
+        fcp_eval_types=primary_eval_types,
+        fcp_curriculum=fcp_curriculum
+    )
 
 
 
@@ -179,15 +211,18 @@ def FCP_traditional(args):
     '''
 
     primary_train_types = [TeamType.ALL_MIX]
-    primary_eval_types = {'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
-                            'load': []}
+    primary_eval_types = {
+        'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
+        'load': []
+    }
     fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    _, _ = get_FCP_agent_w_pop(args,
-                                fcp_train_types=fcp_curriculum.train_types,
-                                fcp_eval_types=primary_eval_types,
-                                fcp_curriculum=fcp_curriculum,
-                                )
+    _, _ = get_FCP_agent_w_pop(
+        args,
+        fcp_train_types=fcp_curriculum.train_types,
+        fcp_eval_types=primary_eval_types,
+        fcp_curriculum=fcp_curriculum,
+    )
 
 
 def N_1_FCP(args):
@@ -197,74 +232,109 @@ def N_1_FCP(args):
     fcp_eval_types = {'generate' : [], 'load': []}
     fcp_curriculum = Curriculum(train_types=fcp_train_types, is_random=True)
 
-    primary_train_types = [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH]
-    primary_eval_types = {'generate': [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_HIGH],
-                                'load': []}
+    primary_train_types = [
+        TeamType.SELF_PLAY_LOW,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_HIGH
+    ]
+    primary_eval_types = {
+        'generate': [
+            TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_MEDIUM,
+            TeamType.SELF_PLAY_HIGH
+        ],
+        'load': []
+    }
     n_1_fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
-    get_N_X_FCP_agents(args=args,
-                        fcp_train_types=fcp_curriculum.train_types,
-                        fcp_eval_types=fcp_eval_types,
-                        n_1_fcp_train_types=n_1_fcp_curriculum.train_types,
-                        n_1_fcp_eval_types=primary_eval_types,
-                        fcp_curriculum=fcp_curriculum,
-                        n_1_fcp_curriculum=n_1_fcp_curriculum,
-                        unseen_teammates_len=unseen_teammates_len)
+    get_N_X_FCP_agents(
+        args=args,
+        fcp_train_types=fcp_curriculum.train_types,
+        fcp_eval_types=fcp_eval_types,
+        n_1_fcp_train_types=n_1_fcp_curriculum.train_types,
+        n_1_fcp_eval_types=primary_eval_types,
+        fcp_curriculum=fcp_curriculum,
+        n_1_fcp_curriculum=n_1_fcp_curriculum,
+        unseen_teammates_len=unseen_teammates_len
+    )
 
 
 def set_input(args):
     args.num_players = args.teammates_len + 1
 
-    two_chefs_layouts = [
-        'coordination_ring',
-        'counter_circuit',
-        'cramped_room',
-        'asymmetric_advantages',
-        'forced_coordination',
-        # 'selected_2_chefs_coordination_ring',
-        # 'selected_2_chefs_counter_circuit',
-        # 'selected_2_chefs_cramped_room',
-        # 'selected_2_chefs_double_counter_circuit',
-        # 'selected_2_chefs_secret_coordination_ring',
-        # 'selected_2_chefs_spacious_room_few_resources',
-        # 'selected_2_chefs_spacious_room_no_counter_space',
-        # 'selected_2_chefs_storage_room'
+    two_chefs_dec_layouts = [
+        'dec_2_chefs_counter_circuit',
+        'dec_2_chefs_storage_room',
+        'dec_2_chefs_cramped_room',
     ]
 
+    three_chefs_dec_layouts = [
+        'dec_3_chefs_counter_circuit',
+        'dec_3_chefs_storage_room',
+        'dec_3_chefs_cramped_room',
+    ]
 
-    three_chefs_layouts = [
+    five_chefs_dec_layouts = [
+        'dec_5_chefs_counter_circuit',
+        'dec_5_chefs_storage_room',
+        'dec_5_chefs_secret_heaven',
+    ]
+
+    two_chefs_aamas24_layouts = [
+        'selected_2_chefs_coordination_ring',
+        'selected_2_chefs_counter_circuit',
+        'selected_2_chefs_cramped_room',
+        'selected_2_chefs_secret_coordination_ring',
+        'selected_2_chefs_storage_room'
+    ]
+
+    three_chefs_aamas24_layouts = [
+        'selected_3_chefs_coordination_ring',
+        'selected_3_chefs_counter_circuit',
+        'selected_3_chefs_cramped_room',
+        'selected_3_chefs_secret_coordination_ring',
+        'selected_3_chefs_storage_room'
+    ]
+
+    three_chefs_aamas24_layouts = [
         'selected_3_chefs_coordination_ring',
         'selected_3_chefs_cramped_room',
-        '3_chefs_counter_circuit_standard',
-        # 'selected_3_chefs_double_counter_circuit',
-        # 'selected_3_chefs_secret_coordination_ring',
-        # 'selected_3_chefs_spacious_room_few_resources',
-        # 'selected_3_chefs_spacious_room_no_counter_space',
-        # 'selected_3_chefs_storage_room'
+        'selected_3_chefs_secret_coordination_ring',
+        'selected_3_chefs_storage_room'
     ]
 
-    four_chefs_layouts = [
-        # 'selected_4_chefs_coordination_ring',
-        # 'selected_4_chefs_counter_circuit',
-        # 'selected_4_chefs_cramped_room',
-        'selected_4_chefs_double_counter_circuit',
+    four_chefs_aamas24_layouts = [
+        'selected_4_chefs_coordination_ring',
+        'selected_4_chefs_counter_circuit',
+        'selected_4_chefs_cramped_room',
         'selected_4_chefs_secret_coordination_ring',
         'selected_4_chefs_spacious_room_few_resources',
         'selected_4_chefs_spacious_room_no_counter_space',
         'selected_4_chefs_storage_room'
     ]
 
-    five_chefs_layouts = [
-        # 'selected_5_chefs_coordination_ring',
-        # 'selected_5_chefs_counter_circuit',
-        # 'selected_5_chefs_cramped_room',
-        'selected_5_chefs_double_counter_circuit',
+    five_chefs_aamas24_layouts = [
+        'selected_5_chefs_coordination_ring',
+        'selected_5_chefs_counter_circuit',
+        'selected_5_chefs_cramped_room',
         'selected_5_chefs_secret_coordination_ring',
         'selected_5_chefs_spacious_room_few_resources',
-        # 'selected_5_chefs_spacious_room_no_counter_space',
-        # 'selected_5_chefs_storage_room'
+        'selected_5_chefs_spacious_room_no_counter_space',
+        'selected_5_chefs_storage_room'
     ]
 
+    classic_layouts = [
+        'coordination_ring',
+        'counter_circuit',
+        'cramped_room',
+        'asymmetric_advantages',
+        'forced_coordination',
+    ]
+
+    two_chefs_layouts = two_chefs_dec_layouts
+    three_chefs_layouts = three_chefs_dec_layouts
+    four_chefs_layouts = four_chefs_aamas24_layouts
+    five_chefs_layouts = five_chefs_dec_layouts
 
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
@@ -278,10 +348,11 @@ def set_input(args):
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
     args.custom_agent_ck_rate_generation = args.num_players + 1
+    args.gen_pop_for_eval = False
 
     if not args.quick_test:
         args.num_of_ckpoints = 10
-        args.n_envs = 200
+        args.n_envs = 210
         args.epoch_timesteps = 1e5
 
         args.primary_learner_type = LearnerType.ORIGINALER
@@ -294,14 +365,14 @@ def set_input(args):
         args.fcp_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.SP_seed, args.SP_h_dim = 68, 256
+        args.SP_seed, args.SP_h_dim = 1010, 256
         args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.num_SPs_to_train = 4
-        args.exp_dir = f'StaticADV/{args.num_players}'
+        args.total_ego_agents = 8
+        args.exp_dir = f'Dec/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -317,13 +388,13 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
-        args.num_SPs_to_train = 2
+        args.total_ego_agents = 2
         args.exp_dir = f'test/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
     args.pop_force_training = False
