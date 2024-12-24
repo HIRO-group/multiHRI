@@ -65,32 +65,24 @@ class CustomPolicy:
         self.observation_space = obs_space
 
 class CustomAgent():
-    def __init__(self, name, args, start_position, action):
+    def __init__(self, name, args, trajectories):
         self.name = f'CA_{name}'
-        self.action = Action.ACTION_TO_INDEX[action]
         self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
         self.encoding_fn = lambda *args, **kwargs: {}
-        self.start_position = start_position
-        self.layout_scores = {
-            layout_name: -1 for layout_name in args.layout_names
-        }
-        self.layout_performance_tags = {
-            layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
-        }
+        self.trajectories = trajectories
+        print('trajectories:', trajectories)
+        self.is_dynamic = len(self.trajectories[args.layout_names[0]]) > 1
+        self.layout_scores = {layout_name: -1 for layout_name in args.layout_names}
+        self.layout_performance_tags = {layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names}
 
     def get_start_position(self, layout_name):
-        return self.start_position[layout_name]
+        return self.trajectories[layout_name][0]
 
     def predict(self, obs, state=None, episode_start=None, deterministic=False):
-        add_dim = len(obs) == 1
-        if self.action == 'random':
-            action = np.random.randint(0, Action.NUM_ACTIONS)
-        elif self.action == 'random_dir':
-            action = np.random.randint(0, 4)
-        else:
-            action = self.action
-        if add_dim:
-            action = np.array([action])
+        if self.is_dynamic:
+            raise NotImplementedError
+        else: 
+            action = Action.ACTION_TO_INDEX[Action.STAY]
         return action, None
 
     def set_encoding_params(self, *args, **kwargs):
