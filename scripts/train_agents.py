@@ -396,7 +396,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
 
     args.pop_force_training = False
