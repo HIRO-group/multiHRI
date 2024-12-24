@@ -373,7 +373,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.total_ego_agents = 8
-        args.exp_dir = f'NewEnc/{args.num_players}'
+        args.exp_dir = f'Dec/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
