@@ -409,8 +409,8 @@ if __name__ == '__main__':
     # args.teammates_len = 2
     # args.how_long = 13 # Not effective in quick_test mode
 
-    # args.teammates_len = 4
-    # args.how_long = 19 # Not effective in quick_test mode
+    args.teammates_len = 4
+    args.how_long = 19 # Not effective in quick_test mode
 
     set_input(args=args)
 
