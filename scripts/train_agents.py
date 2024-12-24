@@ -373,7 +373,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.total_ego_agents = 8
-        args.exp_dir = f'Dec/{args.num_players}'
+        args.exp_dir = f'NewEnc/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -396,7 +396,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.parallel = True
 
     args.pop_force_training = False
@@ -409,8 +409,8 @@ if __name__ == '__main__':
     # args.teammates_len = 2
     # args.how_long = 13 # Not effective in quick_test mode
 
-    # args.teammates_len = 4
-    # args.how_long = 19 # Not effective in quick_test mode
+    args.teammates_len = 4
+    args.how_long = 19 # Not effective in quick_test mode
 
     set_input(args=args)
 
