@@ -119,9 +119,8 @@ def generate_dynamic_adversaries(args, all_tiles):
         heatmap_trajectories[layout] = random.choices(layout_trajectories, k=args.num_dynamic_advs_per_heatmap)
     agents = []
     for adv_idx in range(args.num_dynamic_advs_per_heatmap):
-        trajectories = {layout: [[tuple(map(int, step)) for step in trajectory] for trajectory in heatmap_trajectories[layout]] for layout in args.layout_names}
-        for layout in args.layout_names:
-            agents.append(CustomAgent(args=args, name=f'DA{adv_idx}', trajectories=trajectories))
+        trajectories = {layout: [tuple(map(int, step)) for step in heatmap_trajectories[layout][adv_idx]] for layout in args.layout_names}
+        agents.append(CustomAgent(args=args, name=f'DA{adv_idx}', trajectories=trajectories))
     return agents
 
 

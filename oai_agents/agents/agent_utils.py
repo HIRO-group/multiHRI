@@ -70,7 +70,6 @@ class CustomAgent():
         self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
         self.encoding_fn = lambda *args, **kwargs: {}
         self.trajectories = trajectories
-        print('trajectories:', trajectories)
         self.is_dynamic = len(self.trajectories[args.layout_names[0]]) > 1
         self.layout_scores = {layout_name: -1 for layout_name in args.layout_names}
         self.layout_performance_tags = {layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names}
