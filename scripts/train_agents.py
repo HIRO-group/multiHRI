@@ -382,8 +382,7 @@ def set_input(args):
         args.n_envs = 2
         args.epoch_timesteps = 2
 
-        # args.pop_total_training_timesteps = 3500
-        args.pop_total_training_timesteps = 10000
+        args.pop_total_training_timesteps = 3500
         args.n_x_sp_total_training_timesteps = 1000
         args.adversary_total_training_timesteps = 1000
 
@@ -405,12 +404,6 @@ if __name__ == '__main__':
 
     args.teammates_len = 1
     args.how_long = 10 # Not effective in quick_test mode
-
-    # args.teammates_len = 2
-    # args.how_long = 13 # Not effective in quick_test mode
-
-    args.teammates_len = 4
-    args.how_long = 19 # Not effective in quick_test mode
 
     set_input(args=args)
 
