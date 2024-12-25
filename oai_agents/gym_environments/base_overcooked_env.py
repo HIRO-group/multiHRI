@@ -53,9 +53,11 @@ class OvercookedGymEnv(Env):
             self.grid_shape = (len(grid[0]), len(grid))
         else:
             self.grid_shape = grid_shape
-        
+
         base_enc_channels = 17 # 'pot_loc', 'counter_loc', 'onion_disp_loc', 'tomato_disp_loc', 'dish_disp_loc', 'serve_loc', 'onions_in_pot', 'tomatoes_in_pot', 'onions_in_soup', 'tomatoes_in_soup', 'soup_cook_time_remaining', 'soup_done', 'dishes', 'onions', 'tomatoes', 'urgency', 'goal
-        self.num_enc_channels = base_enc_channels + (self.args.num_players * 5)  # 5 per player: loc', 'orientation_0', 'orientation_1', 'orientation_2', 'orientation_3'
+        ego_agent_pos_channels = 5 # 'ego_agent_loc', 'ego_agent_orientation_0', 'ego_agent_orientation_1', 'ego_agent_orientation_2', 'ego_agent_orientation_3'
+        teammates_pos_channels = 5 # 'teammates_loc', 'teammates_orientation_0', 'teammates_orientation_1', 'teammates_orientation_2', 'teammates_orientation_3'
+        self.num_enc_channels = base_enc_channels + ego_agent_pos_channels + teammates_pos_channels
 
         self.obs_dict = {}
         if enc_fn == 'OAI_feats':
