@@ -123,13 +123,52 @@ def SPN_1ADV_XSPCKP(args) -> None:
         attack_rounds=attack_rounds
     )
 
-
-
-def SPN_XSPCKP(args) -> None:
+def SPN_XSPCKP_LMH(args) -> None:
     '''
     In N-agents games, a randomly initialized agent will be trained with N-X copies of itself
     and X homogeneous unseen teammates, which are checkpoints saved during a previous self-play process.
     These saved checkpoints are cateogorized into High, Medium, Low performance.
+    e.g.
+    when N is 4 and X is 1, the team can be composed by [SP, SP, SP, H], [SP, SP, SP, M], [SP, SP, SP, L] in a 4-chef layout.
+    when N is 4 and X is 2, the team can be composed [SP, SP, H, H], [SP, SP, M, M], [SP, SP, L, L] in a 4-chef layout.
+
+
+    Please note that
+    - X is the number of unseen teammate.
+    - X is assigned by the variable, unseen_teammates_len, in the funciton.
+
+
+    :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
+    :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file.
+    '''
+
+    unseen_teammates_len = 1
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
+    ]
+    primary_eval_types = {
+        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW],
+        'load': []
+    }
+
+    curriculum = Curriculum(train_types=primary_train_types, is_random=True)
+
+    get_N_X_SP_agents(
+        args,
+        n_x_sp_train_types = curriculum.train_types,
+        n_x_sp_eval_types=primary_eval_types,
+        curriculum=curriculum,
+        unseen_teammates_len=unseen_teammates_len,
+    )
+
+def SPN_XSPCKP_LMHA(args) -> None:
+    '''
+    In N-agents games, a randomly initialized agent will be trained with N-X copies of itself
+    and X homogeneous unseen teammates, which are checkpoints saved during a previous self-play process.
+    These saved checkpoints are cateogorized into High, Medium, Low performance.
+    In addition, we also generate adversaries, who will occupy or reuse the prefered trajectories of current agent.
     e.g.
     when N is 4 and X is 1, the team can be composed by [SP, SP, SP, H], [SP, SP, SP, M], [SP, SP, SP, L] in a 4-chef layout.
     when N is 4 and X is 2, the team can be composed [SP, SP, H, H], [SP, SP, M, M], [SP, SP, L, L] in a 4-chef layout.
@@ -414,7 +453,7 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    SPN_XSPCKP_LMH(args=args)
 
     # SPN_1ADV_XSPCKP(args=args)
 
