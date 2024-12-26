@@ -7,6 +7,7 @@ import numpy as np
 import os
 from pathlib import Path
 import torch as th
+import random
 
 
 # Load any agent
@@ -65,23 +66,62 @@ class CustomPolicy:
         self.observation_space = obs_space
 
 class CustomAgent():
-    def __init__(self, name, args, trajectories):
+    def __init__(self, args, name, trajectories):
+        self.args = args
         self.name = f'CA_{name}'
         self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
         self.encoding_fn = lambda *args, **kwargs: {}
         self.trajectories = trajectories
         self.is_dynamic = len(self.trajectories[args.layout_names[0]]) > 1
+
+        self.current_position = {layout_name: self.trajectories[layout_name][0] for layout_name in args.layout_names}
+        self.on_the_way_to_end_of_the_trajectory = True
+
         self.layout_scores = {layout_name: -1 for layout_name in args.layout_names}
         self.layout_performance_tags = {layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names}
+        self.pos_list = []
 
     def get_start_position(self, layout_name):
         return self.trajectories[layout_name][0]
 
-    def predict(self, obs, state=None, episode_start=None, deterministic=False):
+    def reset(self):
+        self.current_position = {layout_name: self.trajectories[layout_name][0] for layout_name in self.args.layout_names}
+        self.on_the_way_to_end_of_the_trajectory = True
+
+    def predict(self, obs, info=None, state=None, episode_start=None, deterministic=False):
         if self.is_dynamic:
-            raise NotImplementedError
+            layout_name = info['layout_name']
+
+            if self.current_position[layout_name] == self.trajectories[layout_name][-1]:
+                self.on_the_way_to_end_of_the_trajectory = False
+            elif self.current_position[layout_name] == self.trajectories[layout_name][0]:
+                self.on_the_way_to_end_of_the_trajectory = True
+            
+            if self.on_the_way_to_end_of_the_trajectory:
+                next_position_idx_dx = 1
+            else:
+                next_position_idx_dx = -1
+
+            try:
+                cur_pos_idx = self.trajectories[layout_name].index(self.current_position[layout_name])
+            except:
+                print('layout name: ', layout_name) 
+                print('static adv name: ',self.name)
+                print('trajectory: ', self.trajectories[layout_name])
+                print('current_position: ', self.current_position)
+                print('pos list: ', self.pos_list)
+                print('state: ', info['state'])
+                raise EnvironmentError
+
+            next_position = self.trajectories[layout_name][cur_pos_idx + next_position_idx_dx]
+            action_to_move_forward = (next_position[0] - self.current_position[layout_name][0], next_position[1] - self.current_position[layout_name][1])
+            action_idx = random.choice([action_to_move_forward, Action.STAY, Action.INTERACT])
+            # print(pos_list.app)
+            self.pos_list.append((self.current_position[layout_name], action_idx))
         else: 
-            action = Action.ACTION_TO_INDEX[Action.STAY]
+            action_idx = Action.STAY
+
+        action = Action.ACTION_TO_INDEX[action_idx]
         return action, None
 
     def set_encoding_params(self, *args, **kwargs):

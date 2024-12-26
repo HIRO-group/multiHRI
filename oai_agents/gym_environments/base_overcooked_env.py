@@ -1,6 +1,7 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
 from oai_agents.common.learner import LearnerType, Learner
+from oai_agents.agents.agent_utils import CustomAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -240,7 +241,11 @@ class OvercookedGymEnv(Env):
             for t_idx in self.t_idxes:
                 teammate = self.get_teammate_from_idx(t_idx)
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
-                joint_action[t_idx] = teammate.predict(tm_obs, deterministic=self.deterministic)[0]
+                if type(teammate) == CustomAgent:
+                    info = {'layout_name': self.layout_name, 'state': self.prev_state}
+                    joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info=info)[0]
+                else:
+                    joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic)[0]
 
         joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
         self.joint_action = joint_action
@@ -257,6 +262,17 @@ class OvercookedGymEnv(Env):
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
         self.state, reward, done, info = self.env.step(joint_action)
+
+        for idx in self.t_idxes:
+            print(self.t_idxes)
+            tm = self.get_teammate_from_idx(idx)
+            if type(tm) == CustomAgent:
+                # idx = self.teammates.index
+                tm.current_position[self.layout_name] = self.state.players[idx].position
+                # if tm.current_position[self.layout_name] == (3, 4):
+                #     print(idx)
+                #     print(tm.name)
+
         if self.shape_rewards and not self.is_eval_env:
             if self.dynamic_reward:
                 ratio = min(self.step_count * self.args.n_envs / 1e7, self.final_sparse_r_ratio)
@@ -289,6 +305,13 @@ class OvercookedGymEnv(Env):
                     self.reset_info['start_position'][teammates_ids[id]] = all_fixed_start_positions[id]
 
         self.t_idxes = teammates_ids
+        
+        if len(self.teammates) > 0:
+            for idx in self.t_idxes:
+                tm = self.get_teammate_from_idx(idx)
+                if type(tm) == CustomAgent:
+                    tm.reset()
+        
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
 

@@ -128,8 +128,7 @@ def get_connected_positions(heatmap, start_pos):
     connected_positions = []
     rows, cols = heatmap.shape
     neighbor_offsets = [
-        (-1, 0), (1, 0), (0, -1), (0, 1), 
-        (-1, -1), (1, 1), (-1, 1), (1, -1)
+        (-1, 0), (1, 0), (0, -1), (0, 1)
     ]
     cur_step_x, cur_step_y = start_pos
     for dx, dy in neighbor_offsets:
@@ -149,7 +148,7 @@ def create_trajectory_from_heatmap(args, start_pos, heatmap):
                 if heatmap[pos[0], pos[1]] > next_connected_hottest_value:
                     next_connected_hottest_value = heatmap[pos[0], pos[1]]
                     next_connected_hottest_pos = pos
-        if next_connected_hottest_value != -1:
+        if next_connected_hottest_value not in [-1, 0]:
             trajectory.append(next_connected_hottest_pos)
     return trajectory
 
