@@ -476,7 +476,7 @@ class OAITrainer(ABC):
             model_name=self.name
         )
 
-        tag = tag or self.args.exp_name
+        tag = tag
         save_path = path / tag / 'trainer_file'
         env_path = path / tag / "env_file"
         agent_path = path / tag / 'agents_dir'
@@ -507,7 +507,7 @@ class OAITrainer(ABC):
                                                  exp_folder=args.exp_dir,
                                                  model_name=name)
 
-        tag = tag or args.exp_name
+        tag = tag
         load_path = path / tag / 'trainer_file'
         env_path = path / tag / "env_file"
         agent_path = path / tag / 'agents_dir'
