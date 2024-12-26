@@ -404,7 +404,7 @@ class RLAgentTrainer(OAITrainer):
         return all_agents
 
     @staticmethod
-    def get_checkedpoints_agents(args, ck_list, layout_name):
+    def get_HML_agents_by_layout(args, ck_list, layout_name):
         '''
         categorizes agents using performance tags based on the checkpoint list
             AgentPerformance.HIGH
@@ -413,7 +413,7 @@ class RLAgentTrainer(OAITrainer):
         It categorizes by setting their score and performance tag:
             OAIAgent.layout_scores
             OAIAgent.layout_performance_tags
-        returns all_agents = [agent1, agent2, ...]
+        returns three agents with three different performance
         '''
         if len(ck_list) < len(AgentPerformance.ALL):
             raise ValueError(f'Must have at least {len(AgentPerformance.ALL)} checkpoints saved. \
@@ -436,5 +436,21 @@ class RLAgentTrainer(OAITrainer):
         M_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_path_tag, AgentPerformance.MEDIUM, ck_list=ck_list)
         L_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, low_score_path_tag, AgentPerformance.LOW, ck_list=ck_list)
 
+        return H_agents, M_agents, L_agents
+
+
+    @staticmethod
+    def get_checkedpoints_agents(args, ck_list, layout_name):
+        '''
+        categorizes agents using performance tags based on the checkpoint list
+            AgentPerformance.HIGH
+            AgentPerformance.MEDIUM
+            AgentPerformance.LOW
+        It categorizes by setting their score and performance tag:
+            OAIAgent.layout_scores
+            OAIAgent.layout_performance_tags
+        returns all_agents = [agent1, agent2, ...]
+        '''
+        H_agents, M_agents, L_agents = RLAgentTrainer.get_HML_agents_by_layout(args=args, ck_list=ck_list, layout_name=layout_name)
         all_agents = H_agents + M_agents + L_agents
         return all_agents

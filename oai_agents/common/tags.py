@@ -14,6 +14,14 @@ class AgentPerformance:
     ALL = [HIGH, MEDIUM, LOW]
     NOTSET = 'NS'
 
+class AgentType:
+    HIGH = 0
+    MEDIUM = 1
+    LOW = 2
+    DUMMY = 3
+    FCP_ORIGINALER = 4
+    FCP_SELFISHER = 5
+
 
 class TeamType:
     '''

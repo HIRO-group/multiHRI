@@ -440,6 +440,7 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
+    # args.device = 'cpu'
 
     args.teammates_len = 1
     args.how_long = 10 # Not effective in quick_test mode
