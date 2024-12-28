@@ -22,8 +22,8 @@ class AgentCategory:
     MEDIUM_PERFORMANCE = 1
     LOW_PERFORMANCE = 2
     DUMMY = 3
-    # FCP_ORIGINALER = 4
-    # FCP_SELFISHER = 5
+    FCP_ORIGINALER = 4
+    FCP_SELFISHER = 5
 
     @staticmethod
     def to_one_hot(category):

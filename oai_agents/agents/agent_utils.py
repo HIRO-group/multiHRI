@@ -1,4 +1,4 @@
-# from oai_agents.common.arguments import get_arguments
+from oai_agents.common.arguments import get_arguments
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 from oai_agents.common.tags import AgentPerformance
 
