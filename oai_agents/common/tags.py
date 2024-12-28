@@ -17,23 +17,6 @@ class AgentPerformance:
     ALL = [HIGH, MEDIUM, LOW]
     NOTSET = 'NS'
 
-class AgentCategory:
-    HIGH_PERFORMANCE = 0
-    MEDIUM_PERFORMANCE = 1
-    LOW_PERFORMANCE = 2
-    DUMMY = 3
-    FCP_ORIGINALER = 4
-    FCP_SELFISHER = 5
-
-    @staticmethod
-    def to_one_hot(category):
-        """Convert a category to a one-hot encoded list."""
-        num_categories = len([attr for attr in dir(AgentCategory) if not callable(getattr(AgentCategory, attr)) and not attr.startswith("__")])
-        one_hot = [0] * num_categories
-        if 0 <= category < num_categories:
-            one_hot[category] = 1
-        return one_hot
-
 
 class TeamType:
     '''

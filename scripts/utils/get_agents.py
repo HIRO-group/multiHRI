@@ -52,18 +52,21 @@ class AgentProfile:
         self.feature_weights = feature_weights  # Dictionary of feature weights
 
     def __repr__(self):
-        categories = ",\n            ".join(
-            f"{k}: {v*100:.1f}%" for k, v in self.category_weights.items()
-        )
-        features = ",\n            ".join(
-            f"{k}: {v:.2f}" for k, v in self.feature_weights.items()
-        )
+        def format_dict(d):
+            return ",\n            ".join(f"{k}: {v:.2f}" for k, v in d.items())
+
+        categories = format_dict({k: v * 100 for k, v in self.category_weights.items()})
+        features = format_dict(self.feature_weights)
+
         return (
-            f"AgentProfile(model={self.model},\n"
+            f"AgentProfile(\n"
+            f"    model={self.model},\n"
             f"    category_weights={{\n        {categories}\n    }},\n"
             f"    feature_weights={{\n        {features}\n    }},\n"
-            f"    layouts={list(self.layouts)}"
+            f"    layouts={list(self.layouts)}\n"
+            f")"
         )
+
 
 
 class BasicProfileCollection:
