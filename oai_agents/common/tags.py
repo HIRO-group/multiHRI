@@ -112,10 +112,6 @@ class KeyCheckpoints: # Tags to identify the type of model checkpoint to save/lo
     REWARD_SUBSTR = '_rew_'
 
     @staticmethod
-    def get_model_path(base_dir, exp_dir, model_name):
-
-
-    @staticmethod
     def get_most_recent_checkpoint(base_dir, exp_dir, name: str) -> str:
         path = get_model_path(
             base_dir=base_dir,

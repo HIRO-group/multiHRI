@@ -304,7 +304,7 @@ class RLAgentTrainer(OAITrainer):
         self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
 
     def train_agents(self, total_train_timesteps, tag_for_returning_agent, resume_ck_list=None):
-        experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name=self.name)
+        experiment_name = get_experiment_name(exp_folder=self.args.exp_dir, model_name=self.name)
         run = wandb.init(project="overcooked_ai", entity=self.args.wandb_ent, dir=str(self.args.base_dir / 'wandb'),
                          reinit=True, name=experiment_name, mode=self.args.wandb_mode,
                          resume="allow")
@@ -313,7 +313,7 @@ class RLAgentTrainer(OAITrainer):
 
         if self.checkpoint_rate is not None:
             if self.args.resume:
-                path = RLAgentTrainer.get_model_path(
+                path = get_model_path(
                     base_dir=self.args.base_dir,
                     exp_folder=self.args.exp_dir,
                     model_name=self.name
@@ -359,7 +359,7 @@ class RLAgentTrainer(OAITrainer):
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
-                        path = OAITrainer.get_model_path(
+                        path = get_model_path(
                             base_dir=self.args.base_dir,
                             exp_folder=self.args.exp_dir,
                             model_name=self.name

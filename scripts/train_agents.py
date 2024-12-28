@@ -348,7 +348,7 @@ def set_input(args):
 
         # Training_seeds = 1010, 2020, 2602, 13
         args.SP_seed, args.SP_h_dim = 1010, 256
-        args.N_X_SP_seed, args.N_X_SP_h_dim = 13, 256
+        args.N_X_SP_seed, args.N_X_SP_h_dim = 7, 256
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
