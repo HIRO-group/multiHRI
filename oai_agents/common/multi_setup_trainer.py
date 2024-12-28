@@ -89,13 +89,21 @@ class MultiSetupTrainer:
             checkpoint_rate,
             total_train_timesteps,
         ):
+        '''
+        TODO: implement a static method to let all other methods to be able to call resume function.
+        '''
         agent_ckpt = None
         start_step = 0
         start_timestep = 0
         ck_list = None
         n_envs=self.args.n_envs
         if self.args.resume:
-            last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args=self.args, name=name)
+            last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
+                base_dir=self.args.base_dir,
+                exp_dir=self.args.exp_dir,
+                name=name
+            )
+            # last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args=self.args, name=name)
             if last_ckpt:
                 agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args=self.args, name=name, tag=last_ckpt)
                 agent_ckpt = agent_ckpt_info[0]
