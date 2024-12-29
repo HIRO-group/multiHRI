@@ -146,13 +146,13 @@ def SPN_XSPCKP(args) -> None:
     unseen_teammates_len = 1
     primary_train_types = [
         TeamType.SELF_PLAY_HIGH,
-        # TeamType.SELF_PLAY_MEDIUM,
-        # TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_STATIC_ADV,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
+        # TeamType.SELF_PLAY_STATIC_ADV,
         TeamType.SELF_PLAY_DYNAMIC_ADV
     ]
     primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
+        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV],
         'load': []
     }
 
@@ -292,15 +292,8 @@ def set_input(args):
         'selected_3_chefs_coordination_ring',
         'selected_3_chefs_counter_circuit',
         'selected_3_chefs_cramped_room',
-        'selected_3_chefs_secret_coordination_ring',
-        'selected_3_chefs_storage_room'
-    ]
-
-    three_chefs_aamas24_layouts = [
-        'selected_3_chefs_coordination_ring',
-        'selected_3_chefs_cramped_room',
-        'selected_3_chefs_secret_coordination_ring',
-        'selected_3_chefs_storage_room'
+        # 'selected_3_chefs_secret_coordination_ring',
+        # 'selected_3_chefs_storage_room'
     ]
 
     four_chefs_aamas24_layouts = [
@@ -314,12 +307,12 @@ def set_input(args):
     ]
 
     five_chefs_aamas24_layouts = [
-        'selected_5_chefs_coordination_ring',
+        # 'selected_5_chefs_coordination_ring',
         'selected_5_chefs_counter_circuit',
-        'selected_5_chefs_cramped_room',
+        # 'selected_5_chefs_cramped_room',
         'selected_5_chefs_secret_coordination_ring',
-        'selected_5_chefs_spacious_room_few_resources',
-        'selected_5_chefs_spacious_room_no_counter_space',
+        # 'selected_5_chefs_spacious_room_few_resources',
+        # 'selected_5_chefs_spacious_room_no_counter_space',
         'selected_5_chefs_storage_room'
     ]
 
@@ -394,7 +387,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.parallel = True
 
     args.pop_force_training = False

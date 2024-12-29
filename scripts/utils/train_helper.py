@@ -159,9 +159,11 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
 
         teammates_collection = update_TC_w_dynamic_and_static_ADV_teammates(args=args,
                                                                             train_types=curriculum.train_types,
+                                                                            eval_types=n_x_sp_eval_types['generate'],
                                                                             teammates_collection=teammates_collection,
                                                                             primary_agent=init_agent,
                                                                             adversaries=adversaries)
+        init_agent.name = name
         n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                                 args=args,
                                                 agent=init_agent,

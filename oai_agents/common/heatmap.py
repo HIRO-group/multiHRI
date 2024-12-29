@@ -64,47 +64,14 @@ def generate_static_adversaries(args, all_tiles):
 
 def generate_dynamic_adversaries(args, all_tiles):
     '''
-    The goal of dynamic adversary, is to enable the ego agents to learn a solution outside of their comfort zone.
-
-    Static adversaries are helpful:
-    - They render scenarios impossible thus forcing the ego agent to learn new solutions
-    - But they can make the game impossible as well
-
-    Dynamic adversaries exist to make the game harder, but not impossible. How can they do this?
-    - Given a heatmap of the layout we know what are the states the ego agents are likely to visit
-    - If we make it harder to visit those states, the ego agent will have to learn a new solution
-    - Assumptions: we only have access to policies and value functions
-    - Given: heatmap of the layout, trajectories of the ego agent
-    - Output: dynamic adversaries that occupy the states the ego agent is likely to visit
-    
-
-    - Use trajectories of the agent that were used to create the heatmap to construct states s0 -> s1 -> ... -> sK (But what if such a trajectory that goes through these positions does not exist?)
-    - Now, randomly sample actions that can reach these states a0 -> a1 -> ... -> aK-1
-    - This way we have:
-        - a dynamic adversary that occupies a certain region of the heatmap
-        - by having the dynamic adversary randomly sampling actions it
-    - This is the dynamic adversary
-
-    Using the heatmap -> sample start and end positions
-    Using the trajectories, we should now find a set of actions that takes us from start to end: 
-    There are many trajectories that takes us from start to end, to find a trajectory easier:
-    Find the highest action given the start position, then find a trajectory from that location that reaches end position
-    - Why should we only find the highest action for the first state?
-    - There is no clear motivation for this approach
-
-    Only sample start positions and follow the policy for a few steps
-    - How many steps should we follow? Does that matter?
-    - This is just partial SP though
-    - But, what if it ends up serving soups?
-    - Or, what if it ends up putting onions in the pot and the other agent learns to rely on that agent?
-
-    - Dynamic adversary:
+    Dynamic adversary:
+    Given a heatmap, create a chain of connected tiles (positions) and stay in that region by sampling appropriate actions
     - p0: start position: the hottest spot in the heatmap
     - p1: out of all the positions connected to p0, find the next hottest spot in the heatmap thats not p0
     - p2: out of all the positions connected to p1, find the next hottest spot in the heatmap thats not p0, p1
     - pN: continue doing this until we have N connected positions
     - Given positions p0 -> p1 -> ... -> pN:
-    - Sample all actions and see which ones take us from p0 -> p1 -> ... -> pN
+    - Randomly sample actions that enables the agent to go from p0 -> ... -> pN or pN -> .. -> p0
     '''
 
     mode = 'V' if args.use_val_func_for_heatmap_gen else 'P'

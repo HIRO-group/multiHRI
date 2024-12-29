@@ -164,10 +164,13 @@ class OvercookedGymEnv(Env):
             tm = self.get_teammate_from_idx(t_idx)
             if tm.get_start_position(self.layout_name) is not None:
                 self.reset_info['start_position'][t_idx] = tm.get_start_position(self.layout_name)
+            if type(tm) == CustomAgent:
+                tm.reset()
 
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
+        self.reset()
 
 
     def stack_frames(self, c_idx):
@@ -242,8 +245,7 @@ class OvercookedGymEnv(Env):
                 teammate = self.get_teammate_from_idx(t_idx)
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
                 if type(teammate) == CustomAgent:
-                    info = {'layout_name': self.layout_name, 'state': self.prev_state}
-                    joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info=info)[0]
+                    joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info={'layout_name': self.layout_name})[0]
                 else:
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic)[0]
 
@@ -255,23 +257,19 @@ class OvercookedGymEnv(Env):
         if self.is_eval_env:
             if self.prev_state and self.state.time_independent_equal(self.prev_state) and tuple(joint_action) == tuple(
                     self.prev_actions):
-                joint_action = [Action.STAY for _ in range(self.mdp.num_players)]
+                joint_action = deepcopy(self.joint_action)
                 for t_idx in self.t_idxes:
-                    joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
+                    tm = self.get_teammate_from_idx(t_idx)
+                    if type(tm) != CustomAgent:
+                        joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
 
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
         self.state, reward, done, info = self.env.step(joint_action)
-
-        for idx in self.t_idxes:
-            print(self.t_idxes)
+        for idx in self.t_idxes: # Should be right after env.step
             tm = self.get_teammate_from_idx(idx)
             if type(tm) == CustomAgent:
-                # idx = self.teammates.index
-                tm.current_position[self.layout_name] = self.state.players[idx].position
-                # if tm.current_position[self.layout_name] == (3, 4):
-                #     print(idx)
-                #     print(tm.name)
+                tm.update_current_position(self.layout_name, self.state.players[idx].position)
 
         if self.shape_rewards and not self.is_eval_env:
             if self.dynamic_reward:
@@ -298,20 +296,15 @@ class OvercookedGymEnv(Env):
 
         if not self.is_eval_env: # To have consistent teammates for evaluation
             random.shuffle(teammates_ids)
-            if self.reset_info and 'start_position' in self.reset_info:
-                all_fixed_start_positions = list(self.reset_info['start_position'].values())
-                self.reset_info['start_position'] = {}
-                for id in range(min(len(teammates_ids), len(all_fixed_start_positions))):
-                    self.reset_info['start_position'][teammates_ids[id]] = all_fixed_start_positions[id]
 
+        if self.reset_info and 'start_position' in self.reset_info:
+            self.reset_info['start_position'] = {}
+            for id in range(len(teammates_ids)):
+                if type(self.teammates[id]) == CustomAgent:
+                    self.teammates[id].reset()
+                    self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name)
+    
         self.t_idxes = teammates_ids
-        
-        if len(self.teammates) > 0:
-            for idx in self.t_idxes:
-                tm = self.get_teammate_from_idx(idx)
-                if type(tm) == CustomAgent:
-                    tm.reset()
-        
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
 

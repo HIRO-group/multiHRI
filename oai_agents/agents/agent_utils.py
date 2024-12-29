@@ -79,7 +79,6 @@ class CustomAgent():
 
         self.layout_scores = {layout_name: -1 for layout_name in args.layout_names}
         self.layout_performance_tags = {layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names}
-        self.pos_list = []
 
     def get_start_position(self, layout_name):
         return self.trajectories[layout_name][0]
@@ -87,8 +86,14 @@ class CustomAgent():
     def reset(self):
         self.current_position = {layout_name: self.trajectories[layout_name][0] for layout_name in self.args.layout_names}
         self.on_the_way_to_end_of_the_trajectory = True
+        for layout in self.args.layout_names:
+            assert self.current_position[layout] == self.trajectories[layout][0]
+    
+    def update_current_position(self, layout_name, new_position):
+        self.current_position[layout_name] = new_position
 
     def predict(self, obs, info=None, state=None, episode_start=None, deterministic=False):
+
         if self.is_dynamic:
             layout_name = info['layout_name']
 
@@ -102,25 +107,13 @@ class CustomAgent():
             else:
                 next_position_idx_dx = -1
 
-            try:
-                cur_pos_idx = self.trajectories[layout_name].index(self.current_position[layout_name])
-            except:
-                print('layout name: ', layout_name) 
-                print('static adv name: ',self.name)
-                print('trajectory: ', self.trajectories[layout_name])
-                print('current_position: ', self.current_position)
-                print('pos list: ', self.pos_list)
-                print('state: ', info['state'])
-                raise EnvironmentError
-
+            cur_pos_idx = self.trajectories[layout_name].index(self.current_position[layout_name])
             next_position = self.trajectories[layout_name][cur_pos_idx + next_position_idx_dx]
             action_to_move_forward = (next_position[0] - self.current_position[layout_name][0], next_position[1] - self.current_position[layout_name][1])
             action_idx = random.choice([action_to_move_forward, Action.STAY, Action.INTERACT])
-            # print(pos_list.app)
-            self.pos_list.append((self.current_position[layout_name], action_idx))
         else: 
             action_idx = Action.STAY
-
+        
         action = Action.ACTION_TO_INDEX[action_idx]
         return action, None
 
