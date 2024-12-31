@@ -284,8 +284,8 @@ def set_input(args):
         'selected_2_chefs_coordination_ring',
         'selected_2_chefs_counter_circuit',
         'selected_2_chefs_cramped_room',
-        # 'selected_2_chefs_secret_coordination_ring',
-        # 'selected_2_chefs_storage_room'
+        'selected_2_chefs_secret_coordination_ring',
+        'selected_2_chefs_storage_room'
     ]
 
     three_chefs_aamas24_layouts = [
@@ -325,6 +325,7 @@ def set_input(args):
     ]
 
     two_chefs_layouts = two_chefs_aamas24_layouts
+
     three_chefs_layouts = three_chefs_dec_layouts
     four_chefs_layouts = four_chefs_aamas24_layouts
     five_chefs_layouts = five_chefs_dec_layouts
@@ -364,8 +365,8 @@ def set_input(args):
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
-        args.total_ego_agents = 8
-        args.exp_dir = f'Dec/{args.num_players}'
+        args.total_ego_agents = 4
+        args.exp_dir = f'DynamicADV/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -395,7 +396,7 @@ if __name__ == '__main__':
     args.primary_force_training = False
 
     args.teammates_len = 1
-    args.how_long = 20 # Not effective in quick_test mode
+    args.how_long = 15 # Not effective in quick_test mode
 
     set_input(args=args)
 
