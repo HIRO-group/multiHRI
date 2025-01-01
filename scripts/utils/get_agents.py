@@ -221,6 +221,10 @@ class AdversaryAgentsFinder(AgentsFinder):
     def get_agentfolders(self):
         return self.get_agentfolders_with_suffix(LearnerType.SELFISHER)
 
+class AdaptiveAgentsFinder(AgentsFinder):
+    def get_agentfolders(self):
+        return self.get_agentfolders_with_suffix(LearnerType.ORIGINALER)
+
 if __name__ == '__main__':
     args = get_arguments()
     # args.base_dir = Path.cwd()
