@@ -349,6 +349,21 @@ def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_a
         teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
     return teammates_collection
 
+def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_agent, adversary_play_config):
+    '''
+        For when we train a primary agent with adversary teammates
+    '''
+    self_teammates = [primary_agent for _ in range(args.teammates_len-1)]
+    if adversary_play_config == AdversaryPlayConfig.SAP:
+        teammates = [[adversaries[-1]] + self_teammates]
+    if adversary_play_config == AdversaryPlayConfig.MAP:
+        teammates = [[adversary]+self_teammates for adversary in adversaries]
+
+    for layout_name in args.layout_names:
+        teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
+        teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_ADVERSARY] = teammates
+    return teammates_collection
+
 
 def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, teammates_collection, primary_agent, adversaries):
     itself = [primary_agent for _ in range(args.teammates_len-1)]

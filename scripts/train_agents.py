@@ -98,32 +98,21 @@ def SPN_1ADV_XSPCKP(args) -> None:
     primary_train_types = [
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
         TeamType.SELF_PLAY_ADVERSARY
     ]
 
     primary_eval_types = {
         'generate': [
             TeamType.SELF_PLAY_HIGH,
+            TeamType.SELF_PLAY_MEDIUM,
             TeamType.SELF_PLAY_LOW,
             TeamType.SELF_PLAY_ADVERSARY
         ],
         'load': []
     }
 
-    curriculum = Curriculum(
-        train_types = primary_train_types,
-        is_random = False,
-        total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-        training_phases_durations_in_order={
-            (TeamType.SELF_PLAY_ADVERSARY): 0.5,
-        },
-        rest_of_the_training_probabilities={
-            TeamType.SELF_PLAY_MEDIUM: 0.3,
-            TeamType.SELF_PLAY_HIGH: 0.3,
-            TeamType.SELF_PLAY_ADVERSARY: 0.4,
-        },
-        probabilities_decay_over_time=0
-    )
+    curriculum = Curriculum(train_types = primary_train_types, is_random = True)
     get_N_X_SP_agents(
         args,
         n_x_sp_train_types=curriculum.train_types,
@@ -329,14 +318,14 @@ def set_input(args):
     args.dynamic_reward = True
     args.final_sparse_r_ratio = 0.5
     args.custom_agent_ck_rate_generation = args.num_players + 1
-    args.gen_pop_for_eval = False
+    args.gen_pop_for_eval = True
 
     if not args.quick_test:
         args.num_of_ckpoints = 10
         args.n_envs = 210
         args.epoch_timesteps = 1e5
 
-        args.primary_learner_type = LearnerType.SELFISHER
+        args.primary_learner_type = LearnerType.ORIGINALER
         args.adversary_learner_type = LearnerType.SELFISHER
         args.pop_learner_type = LearnerType.ORIGINALER
 
@@ -348,7 +337,7 @@ def set_input(args):
 
         # Training_seeds = 1010, 2020, 2602, 13
         args.SP_seed, args.SP_h_dim = 1010, 256
-        args.N_X_SP_seed, args.N_X_SP_h_dim = 7, 256
+        args.N_X_SP_seed, args.N_X_SP_h_dim = 13, 256
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
@@ -395,9 +384,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_XSPCKP_LMH(args=args)
+    # SPN_XSPCKP_LMH(args=args)
 
-    # SPN_1ADV_XSPCKP(args=args)
+    SPN_1ADV_XSPCKP(args=args)
 
     # SP(args)
 

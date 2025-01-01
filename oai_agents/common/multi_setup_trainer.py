@@ -97,6 +97,8 @@ class MultiSetupTrainer:
         start_timestep = 0
         ck_list = None
         n_envs=self.args.n_envs
+        best_score = -1
+        best_training_rew = float('-inf')
         if self.args.resume:
             last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
                 base_dir=self.args.base_dir,
@@ -111,6 +113,8 @@ class MultiSetupTrainer:
                 start_timestep = env_info["timestep_count"]
                 ck_list = training_info["ck_list"]
                 n_envs = training_info["n_envs"]
+                best_score = training_info["best_score"]
+                best_training_rew = training_info["best_training_info"]
                 print(f"The model with {seed} Restarting training from step: {start_step} (timestep: {n_envs*start_timestep})")
 
         rlat = RLAgentTrainer(
@@ -126,7 +130,9 @@ class MultiSetupTrainer:
             epoch_timesteps=self.args.epoch_timesteps,
             n_envs=n_envs,
             start_step=start_step,
-            start_timestep=start_timestep
+            start_timestep=start_timestep,
+            best_score = best_score,
+            best_training_rew = best_training_rew
         )
 
         rlat.train_agents(

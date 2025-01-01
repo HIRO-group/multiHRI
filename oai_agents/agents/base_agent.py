@@ -370,6 +370,7 @@ class OAITrainer(ABC):
         self.args = args
         self.ck_list = []
         self.n_envs = args.n_envs
+        self.best_score, self.best_training_rew = -1, float('-inf')
         if seed is not None:
             os.environ['PYTHONASHSEED'] = str(seed)
             th.manual_seed(seed)
@@ -496,6 +497,8 @@ class OAITrainer(ABC):
             save_dict['agent_fns'].append(f'agent_{i}')
             save_dict["ck_list"] = self.ck_list
             save_dict["n_envs"] = self.n_envs
+            save_dict["best_score"] = self.best_score
+            save_dict["best_training_rew"] = self.best_training_rew
         th.save(save_dict, save_path)
         with open(env_path, "wb") as f:
             step_counts = self.env.get_attr("step_count")
@@ -503,10 +506,38 @@ class OAITrainer(ABC):
             timestep_count = min(step_counts)
             pkl.dump({
                 "timestep_count": timestep_count,
-                "step_count": self.steps
+                "step_count": self.steps,
             }, f)
             print(f"we saved timestep_count: {self.n_envs*timestep_count} and step_count:{self.steps} for tag: {tag}")
         return path, tag
+
+    @staticmethod
+    def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):
+        ''' Loads each agent that the trainer is training '''
+        path = path or get_model_path(
+            base_dir=args.base_dir,
+            exp_folder=args.exp_dir,
+            model_name=name
+        )
+
+        tag = tag
+        load_path = path / tag / 'trainer_file'
+        env_path = path / tag / "env_file"
+        agent_path = path / tag / 'agents_dir'
+        device = args.device
+        saved_variables = th.load(load_path, map_location=device)
+
+        # Load weights
+        agents = []
+        for agent_fn in saved_variables['agent_fns']:
+            agent = load_agent(agent_path / agent_fn, args)
+            agent.to(device)
+            agents.append(agent)
+
+        with open(env_path, "rb") as f:
+            env_info = pkl.load(f)
+
+        return agents, env_info, saved_variables
 
     @staticmethod
     def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):

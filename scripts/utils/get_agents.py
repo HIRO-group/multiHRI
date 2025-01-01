@@ -1,5 +1,11 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, Prefix, KeyCheckpoints
+from oai_agents.common.cklist_helper import get_layouts_from_cklist
+from oai_agents.common.arguments import get_arguments
+from oai_agents.common.path_helper import get_experiment_models_dir
+from oai_agents.common.learner import LearnerType
+from pathlib import Path
+
 import os
 
 from scripts.utils.layout_config import (
@@ -13,26 +19,10 @@ from scripts.utils.layout_config import (
     classic_layouts
 )
 
-def get_layoutnames_from_cklist(ck_list):
-    assert ck_list is not None
-    scores, _, _ = ck_list[0]
-    assert isinstance(scores, dict)
-    return list(ck_list.keys())
-
-def get_agents_by_layout(ck_list):
-    layout_names = get_layoutnames_from_cklist(ck_list=ck_list)
-    H_agents = []
-    M_agents = []
-    L_agents = []
-
-    for layout_name in layout_names:
-        H_agent, M_agent, L_agent = RLAgentTrainer.get_HML_agents_by_layout(
-            ck_list=ck_list,
-            layout_name=layout_name
-        )
-
-
 class AgentCategory:
+    """
+    Represents the categories of agents with default uniform weights.
+    """
     HIGH_PERFORMANCE = "high_performance"
     MEDIUM_PERFORMANCE = "medium_performance"
     LOW_PERFORMANCE = "low_performance"
@@ -40,16 +30,53 @@ class AgentCategory:
     FLEXIBLE = "flexible"
     SELFISH = "selfish"
 
+    CATEGORY_NAMES = [
+        HIGH_PERFORMANCE,
+        MEDIUM_PERFORMANCE,
+        LOW_PERFORMANCE,
+        IDLE,
+        FLEXIBLE,
+        SELFISH
+    ]
+
+    @classmethod
+    def default_weights(cls):
+        """Returns default uniform weights for all categories."""
+        weight = 1 / len(cls.CATEGORY_NAMES)
+        return {name: weight for name in cls.CATEGORY_NAMES}
+
+    @classmethod
+    def pure_weight(cls, category):
+        """Returns weights for a pure category (1 for the category, 0 for others)."""
+        if category not in cls.CATEGORY_NAMES:
+            raise ValueError(f"Invalid category: {category}")
+        return {name: (1.0 if name == category else 0.0) for name in cls.CATEGORY_NAMES}
+
+
 class AgentProfile:
     """
     Represents an individual agent profile with a model, target layouts,
     category weights, and feature weights.
     """
-    def __init__(self, model, layouts, category_weights, feature_weights):
+    def __init__(self, model, layouts, category_weights=None, feature_weights=None):
         self.model = model  # Agent model
         self.layouts = set(layouts)  # Set of layouts the agent targets
-        self.category_weights = category_weights  # Dictionary of category weights
-        self.feature_weights = feature_weights  # Dictionary of feature weights
+        self.category_weights = category_weights or AgentCategory.default_weights()  # Default uniform weights
+        self.feature_weights = feature_weights or {}  # Dictionary of feature weights
+
+    def assign_category_weight(self, category):
+        """
+        Assigns pure weight for the specified category.
+        Example: `assign_category_weight(AgentCategory.HIGH_PERFORMANCE)`
+        """
+        self.category_weights = AgentCategory.pure_weight(category)
+
+    def category_weights_to_list(self):
+        """
+        Converts category_weights dictionary to a list of values in the same order
+        as CATEGORY_NAMES.
+        """
+        return [self.category_weights[name] for name in AgentCategory.CATEGORY_NAMES]
 
     def __repr__(self):
         def format_dict(d):
@@ -68,14 +95,18 @@ class AgentProfile:
         )
 
 
-
 class BasicProfileCollection:
     """
     Stores and organizes a collection of agent profiles, providing utilities for querying by layout.
     """
-    def __init__(self):
+    def __init__(self, args):
         self.agent_profiles = []  # List to store all agent profiles
         self.layout_map = {}  # Maps layouts to lists of agent profiles
+        self.args = args
+        self.add_sp_agents()
+        # self.add_dummy_agents()
+        # self.add_fcp_agents()
+        # self.add_advp_agents()
 
     def add_agent(self, agent_profile):
         """
@@ -89,6 +120,31 @@ class BasicProfileCollection:
                 self.layout_map[layout] = []
             self.layout_map[layout].append(agent_profile)
 
+    def add_performance_agent(self, model, layout, category):
+        """
+        Adds an agent to the collection with a specific performance category.
+        """
+        agent = AgentProfile(model=model, layouts=[layout])
+        agent.assign_category_weight(category=category)
+        self.add_agent(agent)
+
+    def add_sp_agents(self):
+        agent_finder = AdversaryAgentsFinder(args=self.args)
+        agents, env_infos, training_infos = agent_finder.get_agents_infos()
+        for training_info in training_infos:
+            ck_list = training_info["ck_list"]
+            layouts = get_layouts_from_cklist(ck_list=ck_list)
+            for layout in layouts:
+                h_agents, m_agents, l_agents = RLAgentTrainer.get_HML_agents_by_layout(
+                    args=self.args, ck_list=ck_list, layout_name=layout,
+                )
+                assert len(h_agents) == 1
+                self.add_performance_agent(model=h_agents[0], layout=layout, category=AgentCategory.HIGH_PERFORMANCE)
+                assert len(m_agents) == 1
+                self.add_performance_agent(model=m_agents[0], layout=layout, category=AgentCategory.MEDIUM_PERFORMANCE)
+                assert len(l_agents) == 1
+                self.add_performance_agent(model=l_agents[0], layout=layout, category=AgentCategory.LOW_PERFORMANCE)
+
     def get_agents_by_layout(self, layout):
         """
         Returns all agent profiles associated with a specific layout.
@@ -98,31 +154,75 @@ class BasicProfileCollection:
     def __repr__(self):
         return f"BasicProfileCollection({len(self.agent_profiles)} agent profiles stored)"
 
-class AgentsZoo:
-    def __init__(self, args):
-        self.layout_names = classic_layouts
-        self.agent_dict = {layout: [] for layout in self.layout_names}
+class AgentsFinder:
+    def __init__(self, args, folders=None):
         self.args = args
-        self.fill_SP_agents()
-        self.fill_dummy_agents()
-        self.fill_FCP_agents()
+        self.folders = folders
+        self.target_dir = get_experiment_models_dir(base_dir=self.args.base_dir, exp_folder=self.args.exp_dir)
 
-    def fill_SP_agents(self):
-        folders = Prefix.find_folders_with_prefix(
-            base_dir=self.args.base_dir,
-            exp_dir=self.args.exp_dir,
-            prefix=Prefix.SELF_PLAY
-        )
+    def get_agentfolders_with_prefix(self, prefix):
+        return [
+            folder for folder in os.listdir(self.target_dir)
+            if os.path.isdir(os.path.join(self.target_dir, folder)) and folder.startswith(prefix)
+        ]
 
-        for folder in folders:
-            last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
-                base_dir=self.args.base_dir,
-                exp_dir=self.args.exp_dir,
-                name=folder,
-            )
-            _, _, training_info = RLAgentTrainer.load_agents(
-                args=self.args,
-                name=folder,
-                tag=last_ckpt
-            )
-            ck_list = training_info["ck_list"]
+    def get_agentfolders(self):
+        raise NotImplementedError('Learning is not supported for cloned policies')
+
+    def get_agentfolders_with_suffix(self, suffix):
+        return [
+            folder for folder in os.listdir(self.target_dir)
+            if os.path.isdir(os.path.join(self.target_dir, folder)) and folder.endswith(suffix)
+        ]
+
+    def get_agentfolders_containing(self, substring):
+        return [
+            folder for folder in os.listdir(self.target_dir)
+            if os.path.isdir(os.path.join(self.target_dir, folder)) and substring in folder
+        ]
+
+    def get_agents(self, tag=None):
+        agents, _, _ = self.get_agents_infos()
+        return agents
+
+    def get_agents_infos(self, tag=None):
+        self.folders = self.get_agentfolders()
+        agents, env_infos, training_infos = [], [], []
+        if len(self.folders)>0:
+            for folder in self.folders:
+                if tag is not None:
+                    agent, env_info, training_info = RLAgentTrainer.load_agents(
+                        args=self.args,
+                        name=folder,
+                        tag=tag
+                    )
+                else:
+                    last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
+                        base_dir=self.args.base_dir,
+                        exp_dir=self.args.exp_dir,
+                        name=folder,
+                    )
+                    agent, env_info, training_info = RLAgentTrainer.load_agents(
+                        args=self.args,
+                        name=folder,
+                        tag=last_ckpt
+                    )
+                agents.append(agent[0])
+                env_infos.append(env_info)
+                training_infos.append(training_info)
+            return agents, env_infos, training_infos
+        return None
+
+class SelfPlayAgentsFinder(AgentsFinder):
+    def get_agentfolders(self):
+        return self.get_agentfolders_with_prefix(Prefix.SELF_PLAY)
+
+class AdversaryAgentsFinder(AgentsFinder):
+    def get_agentfolders(self):
+        return self.get_agentfolders_with_suffix(LearnerType.SELFISHER)
+
+if __name__ == '__main__':
+    args = get_arguments()
+    # args.base_dir = Path.cwd()
+    args.exp_dir = 'Classic/2'
+    basic_profile = BasicProfileCollection(args=args)

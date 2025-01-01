@@ -7,6 +7,7 @@ from oai_agents.common.path_helper import get_experiment_name, get_model_path
 from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
+from oai_agents.common.cklist_helper import get_layouts_from_cklist
 
 import numpy as np
 import random
@@ -30,7 +31,9 @@ class RLAgentTrainer(OAITrainer):
             curriculum=None, num_layers=2, hidden_dim=256,
             checkpoint_rate=None, name=None, env=None, eval_envs=None,
             use_cnn=False, use_lstm=False, use_frame_stack=False,
-            taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0
+            taper_layers=False, use_policy_clone=False, deterministic=False,
+            start_step: int=0, start_timestep: int=0,
+            best_score = -1, best_training_rew = float('-inf'),
         ):
 
 
@@ -74,7 +77,7 @@ class RLAgentTrainer(OAITrainer):
             train_types = train_types,
             eval_types = eval_types
         )
-        self.best_score, self.best_training_rew = -1, float('-inf')
+        self.best_score, self.best_training_rew = best_score, best_training_rew
 
     @classmethod
     def generate_randomly_initialized_agent(
@@ -396,10 +399,11 @@ class RLAgentTrainer(OAITrainer):
             agent.layout_performance_tags[layout_name] = performance_tag
 
         # set other layouts's scores. Can't set their performance tags because we don't know it but it doesn't matter, we don't use the perftag
+        layouts = get_layouts_from_cklist(ck_list=ck_list)
         for agent in all_agents:
             for scores, ck_path, ck_tag in ck_list:
                 if ck_path == path and ck_tag == tag:
-                    for other_layout in args.layout_names:
+                    for other_layout in layouts:
                         if other_layout != layout_name:
                             agent.layout_scores[other_layout] = scores[other_layout]
         return all_agents

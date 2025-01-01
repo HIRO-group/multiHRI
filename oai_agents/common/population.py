@@ -23,6 +23,9 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
     start_timestep = 0
     ck_rewards = None
     n_envs=args.n_envs
+    best_score = -1
+    best_training_rew = float('-inf')
+
     if args.resume:
         last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
             base_dir=args.base_dir,
@@ -37,6 +40,8 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
             start_timestep = env_info["timestep_count"]
             ck_rewards = training_info["ck_list"]
             n_envs = training_info["n_envs"]
+            best_score = training_info["best_score"]
+            best_training_rew = training_info["best_training_rew"]
             print(f"Restarting training from step: {start_step} (timestep: {start_timestep*n_envs})")
 
 
@@ -53,7 +58,9 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
         learner_type=args.pop_learner_type,
         curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True),
         start_step=start_step,
-        start_timestep=start_timestep
+        start_timestep=start_timestep,
+        best_score=best_score,
+        best_training_rew=best_training_rew
     )
     '''
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.

@@ -1,6 +1,6 @@
 from enum import Enum
 import os
-from oai_agents.common.path_helper import get_model_path
+from oai_agents.common.path_helper import get_model_path, get_experiment_models_dir
 
 class AgentPerformance:
     '''
@@ -59,7 +59,11 @@ class TeamType:
     SELF_PLAY_STATIC_ADV = 'SPSA' # Sits still
     SELF_PLAY_DYNAMIC_ADV = 'SPDA' # Moves around
 
-    SELF_PLAY_X_TYPES = [SELF_PLAY_LOW, SELF_PLAY_MEDIUM, SELF_PLAY_MIDDLE, SELF_PLAY_HIGH, SELF_PLAY_ADVERSARY, SELF_PLAY_STATIC_ADV, SELF_PLAY_DYNAMIC_ADV]
+    SELF_PLAY_FLEXIBLE_SELFISHER = 'SPFS' # FLEXIBLE SELFISHER was trained by interacting with a population of agents, which includes three different levels of skills
+    SELF_PLAY_FLEXIBLE_ORIGINALER = 'SPFO' # FLEXIBLE ORIGINALER was trained by interacting with a population of agents, which includes three different levels of skills
+
+    SELF_PLAY_X_TYPES = [SELF_PLAY_LOW, SELF_PLAY_MEDIUM, SELF_PLAY_MIDDLE, SELF_PLAY_HIGH, SELF_PLAY_ADVERSARY,
+                         SELF_PLAY_STATIC_ADV, SELF_PLAY_DYNAMIC_ADV, SELF_PLAY_FLEXIBLE_SELFISHER, SELF_PLAY_FLEXIBLE_ORIGINALER]
 
     def map_to_index(teamtype):
         tt_map = {
@@ -80,7 +84,9 @@ class TeamType:
             TeamType.SELF_PLAY_ADVERSARY: 13,
             TeamType.ALL_MIX: 14,
             TeamType.SELF_PLAY_STATIC_ADV: 15,
-            TeamType.SELF_PLAY_DYNAMIC_ADV: 16
+            TeamType.SELF_PLAY_DYNAMIC_ADV: 16,
+            TeamType.SELF_PLAY_FLEXIBLE_SELFISHER: 17,
+            TeamType.SELF_PLAY_FLEXIBLE_ORIGINALER: 18,
         }
         return tt_map[teamtype]
 
@@ -113,7 +119,6 @@ class KeyCheckpoints: # Tags to identify the type of model checkpoint to save/lo
         return [c for c in ckpts if c.startswith(f"{KeyCheckpoints.CHECKED_MODEL_PREFIX}{last_ckpt_num}")][0]
 
 
-
 class Prefix:
     SELF_PLAY = 'SP'
     FICTITIOUS_CO_PLAY = 'FCP'
@@ -133,7 +138,7 @@ class Prefix:
         Returns:
             list: List of matching folder names.
         """
-        target_dir = os.path.join(base_dir, exp_dir)
+        target_dir = get_experiment_models_dir(base_dir=base_dir, exp_folder=exp_dir)
         if not os.path.exists(target_dir):
             raise ValueError(f"The directory {target_dir} does not exist.")
 
@@ -142,7 +147,6 @@ class Prefix:
             folder for folder in os.listdir(target_dir)
             if os.path.isdir(os.path.join(target_dir, folder)) and folder.startswith(prefix)
         ]
-
         return matching_folders
 
 class AdversaryPlayConfig:
