@@ -187,7 +187,7 @@ class RLAgentTrainer(OAITrainer):
                 teammates_c = teammates_collection[layout_name][tag]
                 for teammates in teammates_c:
                     for agent in teammates:
-                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, start_pos: {agent.get_start_position(layout_name)}, len: {len(teammates)}')
+                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, start_pos: {agent.get_start_position(layout_name, 0)}, len: {len(teammates)}')
         print("-------------------")
 
 
@@ -199,13 +199,13 @@ class RLAgentTrainer(OAITrainer):
 
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
                                  'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
-            eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
+            eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs, 'unique_env_idx':self.args.n_envs+i}) for i in range(self.n_layouts)]
         else:
             env = _env
             eval_envs = _eval_envs
 
         for i in range(self.n_envs):
-            env.env_method('set_env_layout', indices=i, env_index =i % self.n_layouts)
+            env.env_method('set_env_layout', indices=i, env_index =i % self.n_layouts, unique_env_idx=i)
         return env, eval_envs
 
 

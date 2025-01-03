@@ -38,6 +38,7 @@ class OvercookedGymEnv(Env):
     def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, enc_fn=None, full_init=True, args=None, deterministic=False, start_timestep: int = 0,
                  **kwargs):
+        
         self.is_eval_env = is_eval_env
         self.args = args
         self.device = args.device
@@ -101,7 +102,7 @@ class OvercookedGymEnv(Env):
         if full_init:
             self.set_env_layout(**kwargs)
 
-    def set_env_layout(self, env_index=None, layout_name=None, base_env=None, horizon=None):
+    def set_env_layout(self, unique_env_idx=None, env_index=None, layout_name=None, base_env=None, horizon=None):
         '''
         Required to play nicely with sb3 make_vec_env. make_vec_env doesn't allow different arguments for each env,
         so to specify the layouts, they must first be created then each this is called.
@@ -112,8 +113,7 @@ class OvercookedGymEnv(Env):
         :param horizon: horizon for environment. Will default to args.horizon if not provided
         '''
         assert env_index is not None or layout_name is not None or base_env is not None
-
-
+        self.unique_env_idx = unique_env_idx
 
         if base_env is None:
             self.env_idx = env_index
@@ -162,8 +162,8 @@ class OvercookedGymEnv(Env):
 
         for t_idx in self.t_idxes:
             tm = self.get_teammate_from_idx(t_idx)
-            if tm.get_start_position(self.layout_name) is not None:
-                self.reset_info['start_position'][t_idx] = tm.get_start_position(self.layout_name)
+            if tm.get_start_position(self.layout_name, u_env_idx=self.unique_env_idx) is not None:
+                self.reset_info['start_position'][t_idx] = tm.get_start_position(layout_name=self.layout_name, u_env_idx=self.unique_env_idx)
             if type(tm) == CustomAgent:
                 tm.reset()
 
@@ -245,7 +245,8 @@ class OvercookedGymEnv(Env):
                 teammate = self.get_teammate_from_idx(t_idx)
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
                 if type(teammate) == CustomAgent:
-                    joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info={'layout_name': self.layout_name})[0]
+                    info = {'layout_name': self.layout_name, 'u_env_idx': self.unique_env_idx}
+                    joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info=info)[0]
                 else:
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic)[0]
 
@@ -262,14 +263,14 @@ class OvercookedGymEnv(Env):
                     tm = self.get_teammate_from_idx(t_idx)
                     if type(tm) != CustomAgent:
                         joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
-
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
+
         self.state, reward, done, info = self.env.step(joint_action)
-        for idx in self.t_idxes: # Should be right after env.step
-            tm = self.get_teammate_from_idx(idx)
+        for t_idx in self.t_idxes: # Should be right after env.step
+            tm = self.get_teammate_from_idx(t_idx)
             if type(tm) == CustomAgent:
-                tm.update_current_position(self.layout_name, self.state.players[idx].position)
+                tm.update_current_position(layout_name=self.layout_name, new_position=self.env.state.players[t_idx].position, u_env_idx=self.unique_env_idx)
 
         if self.shape_rewards and not self.is_eval_env:
             if self.dynamic_reward:
@@ -302,8 +303,8 @@ class OvercookedGymEnv(Env):
             for id in range(len(teammates_ids)):
                 if type(self.teammates[id]) == CustomAgent:
                     self.teammates[id].reset()
-                    self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name)
-    
+                    self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)
+
         self.t_idxes = teammates_ids
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)

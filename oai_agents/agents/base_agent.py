@@ -57,7 +57,7 @@ class OAIAgent(nn.Module, ABC):
             layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
         }
 
-    def get_start_position(self, layout_name):
+    def get_start_position(self, layout_name, u_env_idx):
         return None
 
     @abstractmethod
@@ -434,6 +434,8 @@ class OAITrainer(ABC):
 
             rew_per_layout_per_teamtype[env.layout_name] = {teamtype: np.mean(rew_per_layout_per_teamtype[env.layout_name][teamtype]) for teamtype in rew_per_layout_per_teamtype[env.layout_name]}
             rew_per_layout[env.layout_name] = np.mean([rew_per_layout_per_teamtype[env.layout_name][teamtype] for teamtype in rew_per_layout_per_teamtype[env.layout_name]])
+
+            env.set_reset_p_idx(None)
 
             if log_wandb:
                 wandb.log({f'eval_mean_reward_{env.layout_name}': rew_per_layout[env.layout_name], 'timestep': timestep})
