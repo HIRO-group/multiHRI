@@ -50,19 +50,74 @@ def generate_static_adversaries(args, all_tiles):
             top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
             top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
             layout_heatmap_top_xy_coords.extend(top_n_coords)
-        heatmap_xy_coords[layout] = layout_heatmap_top_xy_coords
-    
+        heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
     agents = []
     for adv_idx in range(args.num_static_advs_per_heatmap):
         start_position = {layout: (-1, -1) for layout in args.layout_names}
         for layout in args.layout_names:
-            start_position[layout] = tuple(map(int, heatmap_xy_coords[layout][adv_idx]))
-        agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', start_position=start_position, action=Action.STAY))
+            start_position[layout] = [tuple(map(int, heatmap_xy_coords[layout][adv_idx]))]
+
+        agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', trajectories=start_position))
     return agents
 
 
+
 def generate_dynamic_adversaries(args, all_tiles):
-    raise NotImplementedError
+    '''
+    Dynamic adversary:
+    Given a heatmap, create a chain of connected tiles (positions) and stay in that region by sampling appropriate actions
+    - p0: start position: the hottest spot in the heatmap
+    - p1: out of all the positions connected to p0, find the next hottest spot in the heatmap thats not p0
+    - p2: out of all the positions connected to p1, find the next hottest spot in the heatmap thats not p0, p1
+    - pN: continue doing this until we have N connected positions
+    - Given positions p0 -> p1 -> ... -> pN:
+    - Randomly sample actions that enables the agent to go from p0 -> ... -> pN or pN -> .. -> p0
+    '''
+
+    mode = 'V' if args.use_val_func_for_heatmap_gen else 'P'
+    heatmap_trajectories = {layout: [] for layout in args.layout_names}
+    for layout in args.layout_names:
+        layout_trajectories = []
+        for tiles in all_tiles[layout][mode]:
+            top_1_indices = np.argsort(tiles.ravel())[-1:][::-1]
+            top_1_coords = np.column_stack(np.unravel_index(top_1_indices, tiles.shape))
+            trajectory = create_trajectory_from_heatmap(args=args, start_pos=top_1_coords[0], heatmap=tiles)
+            layout_trajectories.append(trajectory)
+        heatmap_trajectories[layout] = random.choices(layout_trajectories, k=args.num_dynamic_advs_per_heatmap)
+    agents = []
+    for adv_idx in range(args.num_dynamic_advs_per_heatmap):
+        trajectories = {layout: [tuple(map(int, step)) for step in heatmap_trajectories[layout][adv_idx]] for layout in args.layout_names}
+        agents.append(CustomAgent(args=args, name=f'DA{adv_idx}', trajectories=trajectories))
+    return agents
+
+
+def get_connected_positions(heatmap, start_pos):
+    connected_positions = []
+    rows, cols = heatmap.shape
+    neighbor_offsets = [
+        (-1, 0), (1, 0), (0, -1), (0, 1)
+    ]
+    cur_step_x, cur_step_y = start_pos
+    for dx, dy in neighbor_offsets:
+        new_x, new_y = cur_step_x + dx, cur_step_y + dy
+        if 0 <= new_x < rows and 0 <= new_y < cols:
+            connected_positions.append(np.array([new_x, new_y]))
+    return connected_positions
+
+
+def create_trajectory_from_heatmap(args, start_pos, heatmap):
+    trajectory = [start_pos]
+    for _ in range(args.num_steps_in_traj_for_dyn_adv):
+        connected_positions = get_connected_positions(heatmap=heatmap, start_pos=trajectory[-1])
+        next_connected_hottest_value, next_connected_hottest_pos = -1, (-1, -1)
+        for pos in connected_positions:
+            if not any(np.array_equal(pos, traj) for traj in trajectory):
+                if heatmap[pos[0], pos[1]] > next_connected_hottest_value:
+                    next_connected_hottest_value = heatmap[pos[0], pos[1]]
+                    next_connected_hottest_pos = pos
+        if next_connected_hottest_value not in [-1, 0]:
+            trajectory.append(next_connected_hottest_pos)
+    return trajectory
 
 
 def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
@@ -74,7 +129,7 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
             for train_type_for_teammate in train_types:
                 if train_type_for_teammate not in [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MIDDLE, TeamType.SELF_PLAY_HIGH]:
                     continue
-                
+
                 all_teammates_for_train_type = teammates_collection[TeammatesCollection.TRAIN][layout][train_type_for_teammate]
                 selected_teammates = random.choice(all_teammates_for_train_type)
 
@@ -92,8 +147,7 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
         adversaries[TeamType.SELF_PLAY_STATIC_ADV] = static_advs
 
     if TeamType.SELF_PLAY_DYNAMIC_ADV in train_types:
-        raise NotImplementedError
-        dynamic_advs = genereate_dynamic_adversaries(args, all_tiles)
+        dynamic_advs = generate_dynamic_adversaries(args, all_tiles)
         adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV] = dynamic_advs 
     
     return adversaries
