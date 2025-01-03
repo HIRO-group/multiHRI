@@ -415,6 +415,10 @@ def get_2_player_input(args):
         'sALMH 2A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         'sALMH 4A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
         'sALMH 6A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        
+        'dALMH 2A': 'agent_models/DynamicADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        'dALMH 4A': 'agent_models/DynamicADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        'dALMH 6A': 'agent_models/DynamicADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
 
         # 'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
         # 'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
