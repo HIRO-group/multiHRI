@@ -16,7 +16,7 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
-    args.layout = f'selected_2_chefs_coordination_ring'
+    args.layout = f'selected_2_chefs_storage_room'
     args.p_idx = 0
     args.layout_names = [args.layout]
 
@@ -28,8 +28,8 @@ if __name__ == "__main__":
         'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     ]
 
-    teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
-    # teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(1, 3), (2, 4), (1, 1), (2, 1), (3, 1), (4, 1)]})]
+    # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
+    teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(8, 1), (8, 2), (7, 2), (6, 2)]})]
 
     # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
     # player = load_agent(Path(player_path), args)
