@@ -69,7 +69,7 @@ class CustomAgent():
     def __init__(self, args, name, trajectories):
         self.args = args
         self.name = f'CA_{name}'
-        self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
+        self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))})) # It's only purpose is to avoid getting errors from sb3
         self.encoding_fn = lambda *args, **kwargs: {}
         self.trajectories = trajectories
         self.is_dynamic = len(self.trajectories[args.layout_names[0]]) > 1
@@ -112,12 +112,12 @@ class CustomAgent():
             cur_pos_idx = self.trajectories[layout_name].index(self.current_position[layout_name][u_env_idx])
             next_position = self.trajectories[layout_name][cur_pos_idx + next_position_idx_dx]
             action_to_move_forward = (next_position[0] - self.current_position[layout_name][u_env_idx][0], next_position[1] - self.current_position[layout_name][u_env_idx][1])
-            action_idx = random.choice([action_to_move_forward, Action.STAY, Action.INTERACT])
+            action = random.choice([action_to_move_forward, Action.STAY, Action.INTERACT])
         else: 
-            action_idx = Action.STAY
+            action = Action.STAY
         
-        action = Action.ACTION_TO_INDEX[action_idx]
-        return action, None
+        action_idx = Action.ACTION_TO_INDEX[action]
+        return action_idx, None
 
     def set_encoding_params(self, *args, **kwargs):
         pass

@@ -102,7 +102,7 @@ class OvercookedGymEnv(Env):
         if full_init:
             self.set_env_layout(**kwargs)
 
-    def set_env_layout(self, unique_env_idx=None, env_index=None, layout_name=None, base_env=None, horizon=None):
+    def set_env_layout(self, unique_env_idx=0, env_index=None, layout_name=None, base_env=None, horizon=None):
         '''
         Required to play nicely with sb3 make_vec_env. make_vec_env doesn't allow different arguments for each env,
         so to specify the layouts, they must first be created then each this is called.
