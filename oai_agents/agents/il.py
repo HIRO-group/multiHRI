@@ -3,7 +3,8 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.common.networks import GridEncoder, MLP, weights_init_, get_output_shape
 from oai_agents.common.overcooked_dataset import OvercookedDataset
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+
+# from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.agents.agent_utils import load_agent
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action

@@ -69,6 +69,9 @@ class OvercookedSimulation:
             curr_tick += 1
         
         return trajectory
+    
+    def get_mdp(self):
+        return self.env.env.mdp
 
 
     def run_simulation(self, how_many_times):

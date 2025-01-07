@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from oai_agents.common.heatmap import get_tile_map
+from oai_agents.common.heatmap import get_tile_p, get_tile_v
 from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.overcooked_gui import OvercookedGUI
+# from oai_agents.common.overcooked_gui import OvercookedGUI
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 
 
@@ -56,7 +56,9 @@ if __name__ == "__main__":
 
     # if you just care about the heatmap
     simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, horizon=400)
-    trajectories = simulation.run_simulation(how_many_times=2)
+    trajectories = simulation.run_simulation(how_many_times=1)
 
-    tiles_v, tiles_p = get_tile_map(args=args, p_idx=args.p_idx, trajectories=trajectories, agent=agent, interact_actions_only=False)
-    plot_heatmap(tiles_v, tiles_p, title='sp')
+    tiles_p = get_tile_p(args=args, p_idx=args.p_idx, trajectories=trajectories, agent=agent, interact_actions_only=False)
+    tiles_v = get_tile_v(args=args, layout=args.layout, agent=agent)
+
+    plot_heatmap(tiles_v=tiles_v, tiles_p=tiles_p, title='sp')
