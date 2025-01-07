@@ -139,7 +139,6 @@ def SPN_XSPCKP(args) -> None:
     - X is the number of unseen teammate.
     - X is assigned by the variable, unseen_teammates_len, in the funciton.
 
-
     :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
     :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file.
     '''
@@ -149,10 +148,11 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_STATIC_ADV
+        # TeamType.SELF_PLAY_STATIC_ADV,
+        TeamType.SELF_PLAY_DYNAMIC_ADV
     ]
     primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW],
+        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV],
         'load': []
     }
 
@@ -284,24 +284,16 @@ def set_input(args):
         'selected_2_chefs_coordination_ring',
         'selected_2_chefs_counter_circuit',
         'selected_2_chefs_cramped_room',
-        'selected_2_chefs_secret_coordination_ring',
-        'selected_2_chefs_storage_room'
+        # 'selected_2_chefs_secret_coordination_ring',
+        # 'selected_2_chefs_storage_room'
     ]
 
     three_chefs_aamas24_layouts = [
         'selected_3_chefs_coordination_ring',
         'selected_3_chefs_counter_circuit',
         'selected_3_chefs_cramped_room',
-        'selected_3_chefs_secret_coordination_ring',
-        'selected_3_chefs_storage_room'
-    ]
-
-    three_chefs_aamas24_layouts = [
-        'selected_3_chefs_coordination_ring',
-        'selected_3_chefs_counter_circuit',
-        'selected_3_chefs_cramped_room',
-        'selected_3_chefs_secret_coordination_ring',
-        'selected_3_chefs_storage_room'
+        # 'selected_3_chefs_secret_coordination_ring',
+        # 'selected_3_chefs_storage_room'
     ]
 
     four_chefs_aamas24_layouts = [
@@ -315,12 +307,12 @@ def set_input(args):
     ]
 
     five_chefs_aamas24_layouts = [
-        'selected_5_chefs_coordination_ring',
+        # 'selected_5_chefs_coordination_ring',
         'selected_5_chefs_counter_circuit',
-        'selected_5_chefs_cramped_room',
+        # 'selected_5_chefs_cramped_room',
         'selected_5_chefs_secret_coordination_ring',
-        'selected_5_chefs_spacious_room_few_resources',
-        'selected_5_chefs_spacious_room_no_counter_space',
+        # 'selected_5_chefs_spacious_room_few_resources',
+        # 'selected_5_chefs_spacious_room_no_counter_space',
         'selected_5_chefs_storage_room'
     ]
 
@@ -332,7 +324,7 @@ def set_input(args):
         'forced_coordination',
     ]
 
-    two_chefs_layouts = two_chefs_dec_layouts
+    two_chefs_layouts = two_chefs_aamas24_layouts
     three_chefs_layouts = three_chefs_dec_layouts
     four_chefs_layouts = four_chefs_aamas24_layouts
     five_chefs_layouts = five_chefs_dec_layouts
@@ -403,7 +395,7 @@ if __name__ == '__main__':
     args.primary_force_training = False
 
     args.teammates_len = 1
-    args.how_long = 10 # Not effective in quick_test mode
+    args.how_long = 20 # Not effective in quick_test mode
 
     set_input(args=args)
 

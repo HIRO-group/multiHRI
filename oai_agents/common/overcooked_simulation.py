@@ -24,7 +24,6 @@ class OvercookedSimulation:
         self.p_idx = p_idx
         self.env.set_teammates(teammates)
         self.env.reset(p_idx=self.p_idx)
-        
 
         assert self.agent is not 'human'
         self.agent.set_encoding_params(self.p_idx, self.args.horizon, 
@@ -40,8 +39,6 @@ class OvercookedSimulation:
                                          tune_subtasks=True)
 
         self.env.deterministic = False
-
-
 
     def _run_simulation(self):
         self.env.reset(p_idx=self.p_idx)
@@ -80,7 +77,6 @@ class OvercookedSimulation:
         Returns:
             dict: Collected trajectory data
         """
-        
         trajectories = []
         for _ in range(how_many_times):
             trajectory = self._run_simulation()
