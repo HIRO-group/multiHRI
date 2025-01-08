@@ -26,25 +26,24 @@ def print_selected_agents_for_evaluation(selected_agents_for_evaluation):
 
 
 TWO_PLAYERS_LOW_EVAL = [
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_0',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_1_rew_18.666666666666668',
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_1_rew_22.0',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_1_rew_38.0',
-    'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_0',
+    'agent_models/StaticADV/2/SP_hd64_seed14/ck_0',
+    'agent_models/StaticADV/2/SP_hd64_seed0/ck_0',
+    'agent_models/StaticADV/2/SP_hd256_seed13/ck_0',
+    'agent_models/StaticADV/2/SP_hd256_seed68/ck_0',
 ]
+
 TWO_PLAYERS_MEDIUM_EVAL = [
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_2_rew_108.66666666666667',
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_3_rew_170.66666666666666',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_2_rew_106.66666666666667',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_3_rew_192.66666666666666',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_2_rew_110.66666666666667',
+    'agent_models/DummyADV_correct_collision_checker/2/SP_hd64_seed14/ck_1_rew_88.5',
+    'agent_models/DummyADV_correct_collision_checker/2/SP_hd64_seed0/ck_1_rew_92.5',
+    'agent_models/DummyADV_correct_collision_checker/2/SP_hd256_seed13/ck_1_rew_113.0',
+    'agent_models/DummyADV_correct_collision_checker/2/SP_hd256_seed68/ck_1_rew_119.0',
 ]
+
 TWO_PLAYERS_HIGH_EVAL = [
-    'agent_models/Result/Eval/2/SP_hd64_seed11/ck_24_rew_298.0',
-    'agent_models/Result/Eval/2/SP_hd64_seed1995/ck_20_rew_286.6666666666667',
-    'agent_models/Result/Eval/2/SP_hd256_seed7/ck_24_rew_258.0',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_22_rew_262.0',
-    'agent_models/Result/Eval/2/SP_hd256_seed42/ck_13_rew_274.0',
+    'agent_models/StaticADV/2/SP_hd256_seed13/ck_1_rew_252.0',
+    'agent_models/StaticADV/2/SP_hd64_seed0/best',
+    'agent_models/StaticADV/2/SP_hd256_seed13/best',
+    'agent_models/StaticADV/2/SP_hd256_seed68/best',
 ]
 
 THREE_PLAYERS_LOW_EVAL = [

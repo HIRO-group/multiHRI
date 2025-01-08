@@ -345,16 +345,24 @@ def update_TC_w_ADV_teammates(args, teammates_collection, adversaries, primary_a
     return teammates_collection
 
 
-def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, teammates_collection, primary_agent, adversaries):
+def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, eval_types, teammates_collection, primary_agent, adversaries):
     itself = [primary_agent for _ in range(args.teammates_len-1)]
 
     for layout_name in args.layout_names:
-        for tr in train_types:
-            if tr == TeamType.SELF_PLAY_STATIC_ADV:
-                static_advs = adversaries[tr]
-                teammates_collection[TeammatesCollection.TRAIN][layout_name][tr] = [[static_advs[i]] + itself for i in range(len(static_advs))]
-                teammates_collection[TeammatesCollection.EVAL][layout_name][tr] = [[static_advs[i]] + itself for i in range(len(static_advs))]
-            elif tr == TeamType.SELF_PLAY_DYNAMIC_ADV:
-                raise NotImplementedError('Dynamic adversaries not yet supported')
+        if TeamType.SELF_PLAY_STATIC_ADV in train_types:
+            static_advs = adversaries[TeamType.SELF_PLAY_STATIC_ADV]
+            teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_STATIC_ADV] = [[static_advs[i]] + itself for i in range(len(static_advs))]
+
+        if TeamType.SELF_PLAY_STATIC_ADV in eval_types:
+            static_advs = adversaries[TeamType.SELF_PLAY_STATIC_ADV]
+            teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_STATIC_ADV] = [[static_advs[i]] + itself for i in range(len(static_advs))]
+
+        if TeamType.SELF_PLAY_DYNAMIC_ADV in train_types:
+            dyn_advs = adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV]
+            teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_DYNAMIC_ADV] = [[dyn_advs[i]] + itself for i in range(len(dyn_advs))]
+        
+        if TeamType.SELF_PLAY_DYNAMIC_ADV in eval_types:
+            dyn_advs = adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV]
+            teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_DYNAMIC_ADV] = [[dyn_advs[i]] + itself for i in range(len(dyn_advs))]
 
     return teammates_collection
