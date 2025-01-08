@@ -277,7 +277,7 @@ def set_input(args):
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.total_ego_agents = 4
-        args.exp_dir = f'Experiment/{args.num_players}'
+        args.exp_dir = f'Classic/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1

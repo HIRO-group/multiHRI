@@ -75,7 +75,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--pop-learner-type', type=str, default='originaler')
     parser.add_argument("--max-concurrent-jobs", type=int, default=None)
 
-    parser.add_argument("--num-of-ckpoints", type=int, default=10)
+    parser.add_argument("--num-of-ckpoints", type=int, default=15)
     parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint for population training only")
 
     parser.add_argument("--use-val-func-for-heatmap-gen", type=bool, default=False)
