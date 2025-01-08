@@ -161,7 +161,7 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_DYNAMIC_ADV
     ]
     primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_STATIC_ADV],
+        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV],
         'load': []
     }
 
@@ -399,7 +399,7 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
-        args.total_ego_agents = 2
+        args.total_ego_agents = 3
         args.exp_dir = f'test/{args.num_players}'
 
 
