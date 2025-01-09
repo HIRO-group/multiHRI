@@ -93,26 +93,35 @@ def SPN_1ADV_XSPCKP(args) -> None:
     primary_eval_types = {
         'generate': [
             TeamType.SELF_PLAY_HIGH,
-            TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_MEDIUM,
             TeamType.SELF_PLAY_ADVERSARY
         ],
         'load': []
     }
 
-    curriculum = Curriculum(
-        train_types = primary_train_types,
-        is_random = False,
-        total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-        training_phases_durations_in_order={
-            (TeamType.SELF_PLAY_ADVERSARY): 0.5,
-        },
-        rest_of_the_training_probabilities={
-            TeamType.SELF_PLAY_MEDIUM: 0.3,
-            TeamType.SELF_PLAY_HIGH: 0.3,
-            TeamType.SELF_PLAY_ADVERSARY: 0.4,
-        },
-        probabilities_decay_over_time=0
-    )
+    if args.prioritized_sampling:
+        curriculum = Curriculum(
+            train_types = primary_train_types,
+            eval_types=primary_eval_types,
+            prioritized_sampling=True,
+        )
+
+    else:
+        curriculum = Curriculum(
+            train_types = primary_train_types,
+            is_random=False,
+            prioritized_sampling=True,
+            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
+            training_phases_durations_in_order={
+                (TeamType.SELF_PLAY_ADVERSARY): 0.5,
+            },
+            rest_of_the_training_probabilities={
+                TeamType.SELF_PLAY_MEDIUM: 0.3,
+                TeamType.SELF_PLAY_HIGH: 0.3,
+                TeamType.SELF_PLAY_ADVERSARY: 0.4,
+            },
+            probabilities_decay_over_time=0
+        )
     get_N_X_SP_agents(
         args,
         n_x_sp_train_types=curriculum.train_types,
@@ -152,11 +161,19 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_DYNAMIC_ADV
     ]
     primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV],
+        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV],
         'load': []
     }
 
-    curriculum = Curriculum(train_types=primary_train_types, is_random=True)
+    if args.prioritized_sampling:
+        curriculum = Curriculum(train_types=primary_train_types, 
+                                eval_types=primary_eval_types, 
+                                is_random=False, 
+                                prioritized_sampling=True,
+                                priority_scaling=2.0)
+
+    else:
+        curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
     get_N_X_SP_agents(
         args,
@@ -342,6 +359,7 @@ def set_input(args):
     args.final_sparse_r_ratio = 0.5
     args.custom_agent_ck_rate_generation = args.num_players + 1
     args.gen_pop_for_eval = False
+    args.prioritized_sampling = True
 
     if not args.quick_test:
         args.num_of_ckpoints = 10
@@ -381,7 +399,7 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
 
-        args.total_ego_agents = 2
+        args.total_ego_agents = 3
         args.exp_dir = f'test/{args.num_players}'
 
 
