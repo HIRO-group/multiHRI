@@ -35,9 +35,10 @@ def plot_heatmap(tiles_v, tiles_p, title=''):
 if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
-    args.layout = f'{args.num_players}_chefs_coordination_ring_adv'
+    args.layout = f'selected_{args.num_players}_chefs_counter_circuit'
     args.p_idx = 0
     args.n_envs = 200
+    args.layout_names = [args.layout]
     
     path = 'agent_models/DummyADV/2/SP_hd64_seed14/best'
     agent = load_agent(Path(path), args) # blue
