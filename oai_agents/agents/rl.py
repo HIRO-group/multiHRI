@@ -343,11 +343,6 @@ class RLAgentTrainer(OAITrainer):
 
         while self.learning_agent.num_timesteps < total_train_timesteps:
 
-            # If using prioritized sampling, we have to run an evaluation on the first step to determine how to sample a teammate
-            if (self.curriculum.prioritized_sampling and self.steps == self.start_step):
-                _, _, rew_per_layout_per_teamtype = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
-                self.curriculum.update_teamtype_performances(teamtype_performances=rew_per_layout_per_teamtype)
-
             self.curriculum.update(current_step=self.steps)
             self.set_new_teammates(curriculum=self.curriculum)
 

@@ -84,7 +84,7 @@ class Curriculum:
         Update the curriculum with the latest dictionary of performances for use in prioritized sampling
         NOTE: this must contain performance values for all possible combinations of teammates
 
-        :param teamtype_performances: Dictionary mapping agent teams to their latest rollout performance e.g. for a 3-player game with 3 possible teammates
+        :param teamtype_performances: Dictionary mapping agent teamtypes to their latest rollout performance e.g. for a 3-player game with 3 possible teammates
         {<layout> : {TeamType.HIGH_FIRST: : <score>, TeamType.MEDIUM_FIRST: : <score>, ... }}
         '''
         assert self.prioritized_sampling is True, "Updating curriculum teamtype performances while curriculum is not set for prioritized sampling"
@@ -141,37 +141,52 @@ class Curriculum:
         teammates_per_type = population_teamtypes[team_type]
         return random.choice(teammates_per_type)
 
-    def select_teammates_prioritized_sampling(self, population_teamtypes, layout):
+    def select_teammates_prioritized_sampling(self, population_teamtypes:dict, layout:str):
+        '''
+        Select teammates according to prioritized sampling (lower performing teammates are prioritized for selection)
+        NOTE: This function just uses the latest performance values for selection, it does not track performance of TeamTypes over time
 
+        :param population_teamtypes: Dictionary mapping TeamTypes to lists of agent teammates of each type
+        :param layout: The name fo the layout that teammates are being selected for
+        '''
 
-        assert layout in self.teamtype_performances.keys(), "Requesting prioritized sampling teammates for unrecognized layout"
+        teamtype_options = list(population_teamtypes.keys())
 
-        # Ignore the performances for all layouts except the requested one
-        teamtype_performances_for_layout = self.teamtype_performances[layout]
-        teamtype_options = list(teamtype_performances_for_layout.keys())
+        # Check if teamtype performances have been set (only happens after first training round)
+        if self.teamtype_performances:
 
-        # Convert scores to priorities (lower score = higher priority)
-        scores = list(teamtype_performances_for_layout.values())
-        max_score = np.max(scores)
-        # Invert scores
-        priorities = max_score + 1 - scores 
+            assert layout in self.teamtype_performances.keys(), "Requesting prioritized sampling teammates for unrecognized layout"
 
-        # Apply power transformation to increase contrast between priorities
-        priorities = np.power(priorities, self.priority_scaling)
+            # Ignore the performances for all layouts except the requested one
+            teamtype_performances_for_layout = self.teamtype_performances[layout]
+            teamtype_options = list(teamtype_performances_for_layout.keys())
 
-        # Add small epsilon to ensure no zero probabilities
-        epsilon = 1e-5
-        priorities += epsilon
+            # Convert scores to priorities (lower score = higher priority)
+            scores = list(teamtype_performances_for_layout.values())
+            max_score = np.max(scores)
+            # Invert scores
+            priorities = max_score + 1 - scores 
 
-        # Convert to probabilities
-        probabilities = priorities / np.sum(priorities)
+            # Apply power transformation to increase contrast between priorities
+            priorities = np.power(priorities, self.priority_scaling)
 
-        # Sample the teamtypes using the calculated probabilities
-        prioritized_teamtype = np.random.choice(teamtype_options, p=probabilities)
+            # Add small epsilon to ensure no zero probabilities
+            epsilon = 1e-5
+            priorities += epsilon
+
+            # Convert to probabilities
+            probabilities = priorities / np.sum(priorities)
+
+            # Sample the teamtypes using the calculated probabilities
+            prioritized_teamtype = np.random.choice(teamtype_options, p=probabilities)
+
+        else:
+            # Randomly select a teamtype
+            prioritized_teamtype = np.random.choice(teamtype_options)
 
         # Randomly sample a team of agents from this teamtype
-        teammates_per_type = population_teamtypes[prioritized_teamtype]
-        teammates = random.choice(teammates_per_type)
+        teammates_for_teamtype = population_teamtypes[prioritized_teamtype]
+        teammates = random.choice(teammates_for_teamtype)
 
         return teammates
 
