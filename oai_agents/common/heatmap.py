@@ -6,7 +6,7 @@ from stable_baselines3.common.utils import obs_as_tensor
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 from gym import spaces
 
-# from oai_agents.common.overcooked_simulation import OvercookedSimulation
+from oai_agents.common.overcooked_simulation import OvercookedSimulation
 from oai_agents.common.tags import TeammatesCollection, TeamType
 from oai_agents.agents.agent_utils import CustomAgent
 
@@ -62,7 +62,7 @@ def get_tile_v(args, agent, layout):
             env.state.players[i].position = pos[i]
         obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)
     
-        tiles_v[pos[0][0], pos[0][1]] += get_value_function(args=args, agent=agent, observation=obs)
+        # tiles_v[pos[0][0], pos[0][1]] += get_value_function(args=args, agent=agent, observation=obs)
 
         # for i in range(0, 4):
 
@@ -115,10 +115,8 @@ def generate_static_adversaries(args, all_tiles):
         start_position = {layout: (-1, -1) for layout in args.layout_names}
         for layout in args.layout_names:
             start_position[layout] = [tuple(map(int, heatmap_xy_coords[layout][adv_idx]))]
-
         agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', trajectories=start_position))
     return agents
-
 
 
 def generate_dynamic_adversaries(args, all_tiles):
@@ -201,7 +199,7 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
                 # all_tiles[layout]['V'].append(tiles_v)
                 all_tiles[layout]['P'].append(tiles_p)
 
-        tiles_v = get_tile_v(args=args, layout=layout, agent=heatmap_source, mdp=simulation.get_mdp())
+        tiles_v = get_tile_v(args=args, layout=layout, agent=heatmap_source)
         all_tiles[layout]['V'].append(tiles_v)
 
 

@@ -74,11 +74,12 @@ class CustomAgent():
         self.trajectories = trajectories
         self.is_dynamic = len(self.trajectories[args.layout_names[0]]) > 1
         self.current_position = {
-            layout_name: {u_env_idx: self.trajectories[layout_name][0] for u_env_idx in range(0, args.n_envs+len(args.layout_names))}
+            layout_name: {u_env_idx: self.trajectories[layout_name][0] for u_env_idx in range(0, args.n_envs + len(args.layout_names))}
                 for layout_name in args.layout_names}
-
-        self.on_the_way_to_end_of_the_trajectory = True
-
+        self.on_the_way_to_end_of_the_trajectory = {
+            layout_name: {u_env_idx: True for u_env_idx in range(0, args.n_envs+len(args.layout_names))}
+                for layout_name in args.layout_names
+        }
         self.layout_scores = {layout_name: -1 for layout_name in args.layout_names}
         self.layout_performance_tags = {layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names}
 
@@ -89,22 +90,25 @@ class CustomAgent():
         self.current_position = {
             layout_name: {u_env_idx: self.trajectories[layout_name][0] for u_env_idx in range(0, self.args.n_envs+len(self.args.layout_names))}
                 for layout_name in self.args.layout_names}
-        self.on_the_way_to_end_of_the_trajectory = True
+        self.on_the_way_to_end_of_the_trajectory = {
+            layout_name: {u_env_idx: True for u_env_idx in range(0, self.args.n_envs+len(self.args.layout_names))}
+                for layout_name in self.args.layout_names
+        }
     
     def update_current_position(self, layout_name, new_position, u_env_idx):
         self.current_position[layout_name][u_env_idx] = new_position
 
     def predict(self, obs, info=None, state=None, episode_start=None, deterministic=False):
         if self.is_dynamic:
+
             layout_name = info['layout_name']
             u_env_idx = info['u_env_idx']
 
             if self.current_position[layout_name][u_env_idx] == self.trajectories[layout_name][-1]:
-                self.on_the_way_to_end_of_the_trajectory = False
+                self.on_the_way_to_end_of_the_trajectory[layout_name][u_env_idx] = False
             elif self.current_position[layout_name][u_env_idx] == self.trajectories[layout_name][0]:
-                self.on_the_way_to_end_of_the_trajectory = True
-            
-            if self.on_the_way_to_end_of_the_trajectory:
+                self.on_the_way_to_end_of_the_trajectory[layout_name][u_env_idx] = True
+            if self.on_the_way_to_end_of_the_trajectory[layout_name][u_env_idx]:
                 next_position_idx_dx = 1
             else:
                 next_position_idx_dx = -1
@@ -112,7 +116,7 @@ class CustomAgent():
             cur_pos_idx = self.trajectories[layout_name].index(self.current_position[layout_name][u_env_idx])
             next_position = self.trajectories[layout_name][cur_pos_idx + next_position_idx_dx]
             action_to_move_forward = (next_position[0] - self.current_position[layout_name][u_env_idx][0], next_position[1] - self.current_position[layout_name][u_env_idx][1])
-            action = random.choice([action_to_move_forward, Action.STAY, Action.INTERACT])
+            action = random.choice([action_to_move_forward, Action.INTERACT])
         else: 
             action = Action.STAY
         

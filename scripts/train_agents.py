@@ -227,7 +227,8 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_DYNAMIC_ADV
+        TeamType.SELF_PLAY_DYNAMIC_ADV,
+        TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV],
@@ -262,7 +263,10 @@ def set_input(args):
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
 
-    args.custom_agent_ck_rate_generation = args.num_players + 1
+    args.custom_agent_ck_rate_generation = 1
+    args.num_steps_in_traj_for_dyn_adv = 2
+    args.num_static_advs_per_heatmap = 1
+    args.num_dynamic_advs_per_heatmap = 1
 
     if not args.quick_test:
         args.gen_pop_for_eval = False
@@ -277,12 +281,12 @@ def set_input(args):
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.total_ego_agents = 4
-        args.exp_dir = f'Classic/{args.num_players}'
+        args.exp_dir = f'Experiment/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
-        args.n_envs = 2
+        args.n_envs = 3
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 3500
         args.n_x_sp_total_training_timesteps = 1500
@@ -304,11 +308,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    # SPN_XSPCKP(args=args)
+    SPN_XSPCKP(args=args)
 
-    FCP_traditional(args=args)
-
-    # SPN_1ADV_XSPCKP(args=args)
+    # FCP_traditional(args=args)
 
     # SP(args)
 
