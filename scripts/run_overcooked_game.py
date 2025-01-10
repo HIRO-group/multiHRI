@@ -32,11 +32,12 @@ if __name__ == "__main__":
     # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
     # trajectories = tile locations. Top left of the layout is (0, 0), bottom right is (M, N)
-    teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(8, 1), (8, 2), (7, 2), (6, 2)]})]
+    # teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(8, 1), (8, 2), (7, 2), (6, 2)]})]
+    teammates = [DummyAgent(action='random')]
 
-    # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
-    # player = load_agent(Path(player_path), args)
-    player = 'human' # blue
+    player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
+    player = load_agent(Path(player_path), args)
+    # player = 'human' # blue
 
     dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
     dc.on_execute()

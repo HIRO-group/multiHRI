@@ -263,7 +263,7 @@ def set_input(args):
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
 
-    args.custom_agent_ck_rate_generation = 1
+    args.custom_agent_ck_rate_generation = args.num_players + 1
     args.num_steps_in_traj_for_dyn_adv = 2
     args.num_static_advs_per_heatmap = 1
     args.num_dynamic_advs_per_heatmap = 1
@@ -281,7 +281,7 @@ def set_input(args):
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.total_ego_agents = 4
-        args.exp_dir = f'Experiment/{args.num_players}'
+        args.exp_dir = f'Classic/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1

@@ -42,8 +42,11 @@ class DummyAgent():
         self.encoding_fn = lambda *args, **kwargs: {}
         self.use_hrl_obs = False
 
-    def predict(self, x, state=None, episode_start=None, deterministic=False):
-        add_dim = len(x) == 1
+    def get_start_position(self, layout_name, u_env_idx):
+        return None
+
+    def predict(self, obs, state=None, episode_start=None, deterministic=False):
+        add_dim = len(obs) == 1
         if self.action == 'random':
             action = np.random.randint(0, Action.NUM_ACTIONS)
         elif self.action == 'random_dir':
@@ -100,10 +103,8 @@ class CustomAgent():
 
     def predict(self, obs, info=None, state=None, episode_start=None, deterministic=False):
         if self.is_dynamic:
-
             layout_name = info['layout_name']
             u_env_idx = info['u_env_idx']
-
             if self.current_position[layout_name][u_env_idx] == self.trajectories[layout_name][-1]:
                 self.on_the_way_to_end_of_the_trajectory[layout_name][u_env_idx] = False
             elif self.current_position[layout_name][u_env_idx] == self.trajectories[layout_name][0]:

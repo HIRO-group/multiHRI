@@ -6,112 +6,33 @@ from stable_baselines3.common.utils import obs_as_tensor
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 from gym import spaces
 from oai_agents.common.tags import TeammatesCollection, TeamType
-from oai_agents.agents.agent_utils import CustomAgent
+from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
 
 
-def get_value_function(args, agent, observation):
-    obs_tensor = obs_as_tensor(observation, args.device)
-    visual_obs = obs_tensor['visual_obs'].clone().detach()
-    
-    if visual_obs.shape[0] != args.n_envs:
-        visual_obs = visual_obs.repeat(args.n_envs // visual_obs.shape[0], 1, 1, 1)
-
-    obs_tensor['visual_obs'] = visual_obs
-    with th.no_grad():
-        values = agent.policy.predict_values(obs_tensor)
-    return values[0].item()
-
-
-# def get_all_observations(args, layout, pos, env):
-#     from oai_agents.common.state_encodings import OAI_egocentric_encode_state
-#     all_valid_pos = env.mdp.get_valid_player_positions()
-#     all_valid_joint_pos = env.mdp.get_valid_joint_player_positions()
-#     env.state.players[0].position = pos
-#     for p in
-#     obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)
-#     return None
-
-
-def get_tile_v(args, agent, layout):
-    from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
-    from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, SoupState
-    from oai_agents.common.state_encodings import OAI_egocentric_encode_state
-
-
-    mdp = OvercookedGridworld.from_layout_name(layout)
-    env = OvercookedEnv.from_mdp(mdp, horizon=400)
-    env.reset()
-
-    tiles_v = np.zeros((7, 7))
-
-    all_valid_joint_pos = env.mdp.get_valid_joint_player_positions()
-
-    counter = np.zeros((7, 7))
-    for pos in all_valid_joint_pos:
-        env.reset()
-        for i in range(0, args.num_players):
-            env.state.players[i].position = pos[i]
-        pots = env.mdp.get_pot_states(env.state)["empty"]
-
-
-        # obj = np.random.choice(["dish", "onion", "soup"], p=[0.2, 0.6, 0.2])
-        # if obj == "soup":
-        #     player.set_object(SoupState.get_soup(player.position, num_onions=3, finished=True))
-        # else:
-        #     player.set_object(ObjectState(obj, player.position))
-
-        # for pot_loc in pots:
-
-        for cooking_tick in range(0, 19):
-            for pot_loc in pots:
-                for n in range(4):
-                    if n != 3:
-                        cooking_tick = -1
-                    env.state.objects[pot_loc] = SoupState.get_soup(pot_loc, num_onions=n, cooking_tick=cooking_tick)
-                # counter[pot_loc[0], pot_loc[1]] = +1
-
-                    obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)    
-                    tiles_v[pos[0][0], pos[0][1]] += get_value_function(args=args, agent=agent, observation=obs)
-
-                    counter[pos[0][0], pos[0][1]] += 1
-    
-    print(counter.T)
-
-    # print(all_valid_joint_pos)
-    # for pos in all_valid_pos:        
-    #     all_observations = get_all_observations(args=args, layout=layout, pos=pos, env=env)
-    #     for obs in all_observations:
-    #         value = get_value_function(args=args, agent=agent, observation=obs)
-    #         tiles_v[pos[0], pos[1]] += value
-    #     tiles_v[pos[0], pos[1]] = value
-
-    # tiles_v = tiles_v / counter
-
-    return tiles_v
-
-
-def get_tisdle_v(args, agent, layout):
+def not_used_function_get_tile_v_using_all_states(args, agent, layout):
+    '''
+    This function is currently NOT used in the codebase.
+    Get the value function for all possible states in the layout
+    '''
     from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
     from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, SoupState, ObjectState
     from oai_agents.common.state_encodings import OAI_egocentric_encode_state
     import numpy as np
+    from itertools import product
 
     mdp = OvercookedGridworld.from_layout_name(layout)
     env = OvercookedEnv.from_mdp(mdp, horizon=400)
-    env.reset()
+
     tiles_v = np.zeros((7, 7))
-    counter = np.zeros((7, 7))
-    
     all_valid_joint_pos = env.mdp.get_valid_joint_player_positions()
-    possible_objects = ["dish", "onion", "soup"]
+    possible_objects = [None, "dish", "onion", "soup"]
+    player_object_combinations = list(product(possible_objects, repeat=args.num_players))
     for pos in all_valid_joint_pos:
         env.reset()
-        
         for i in range(args.num_players):
             env.state.players[i].position = pos[i]
-        
+
         pots = env.mdp.get_pot_states(env.state)["empty"]
-        
         for pot_loc in pots:
             for n in range(4):
                 if n == 3:
@@ -120,47 +41,49 @@ def get_tisdle_v(args, agent, layout):
                     cooking_ticks = [-1]
                 for cooking_tick in cooking_ticks:
                     env.state.objects[pot_loc] = SoupState.get_soup(pot_loc, num_onions=n, cooking_tick=cooking_tick)
-
-                    for player_idx in range(args.num_players):
-                        for obj in possible_objects:
-                            if obj == "soup":
+                    for objects_combination in player_object_combinations:
+                        for player_idx, obj in enumerate(objects_combination):
+                            if env.state.players[player_idx].has_object():
+                                env.state.players[player_idx].remove_object()
+                            if obj is None: continue                                    
+                            elif obj == "soup":
                                 held_obj = SoupState.get_soup(pos[player_idx], num_onions=3, finished=True)
+                                env.state.players[player_idx].set_object(held_obj)
                             else:
                                 held_obj = ObjectState(obj, pos[player_idx])
-                            env.state.players[player_idx].set_object(held_obj)
+                                env.state.players[player_idx].set_object(held_obj)
 
-                    obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)
-                    value = get_value_function(args=args, agent=agent, observation=obs)
-                    tiles_v[pos[0][0], pos[0][1]] += value
-                    counter[pos[0][0], pos[0][1]] += 1
-
-                    env.state.players[player_idx].remove_object()
-
-
-    mask = counter > 0
-    # tiles_v[mask] = tiles_v[mask] / counter[mask]
+                        obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)
+                        value = get_value_function(args=args, agent=agent, observation=obs)
+                        tiles_v[pos[0][0], pos[0][1]] += value
     return tiles_v
 
 
-def get_tile_p(args, agent, trajectories, p_idx, interact_actions_only=True):
+def get_value_function(args, agent, observation):
+    obs_tensor = obs_as_tensor(observation, args.device)
+    visual_obs = obs_tensor['visual_obs'].clone().detach()
+    repeated_obs = visual_obs.unsqueeze(0).repeat(args.n_envs, 1, 1, 1)
+    obs_tensor['visual_obs'] = repeated_obs
+    with th.no_grad():
+        values = agent.policy.predict_values(obs_tensor)
+    return values[0].item()
+
+
+def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
     if interact_actions_only:
         raise NotImplementedError
-
-    tiles_p = np.zeros((7, 7)) # position counter
+    tiles_p = np.zeros((20, 20)) # position counter
+    tiles_v = np.zeros((20, 20)) # value counter
     for trajectory in trajectories:
         observations = trajectory['observations']
         joint_trajectory = trajectory['positions']
         agent1_trajectory = [tr[p_idx] for tr in joint_trajectory]
         for i in range(0, len(agent1_trajectory)):
             x, y = agent1_trajectory[i]
-            value = get_value_function(args=args, agent=agent, observation=observations[i])
-            # tiles_p[x, y] += value
             tiles_p[x, y] += 1
-
-    # tile_v = 
-    # tiles_v = tiles_v / tiles_p
-    # tiles_v = np.nan_to_num(tiles_v)
-    return tiles_p
+            value = get_value_function(args=args, agent=agent, observation=observations[i])
+            tiles_v[x, y] += value
+    return tiles_p, tiles_v
 
 
 def generate_static_adversaries(args, all_tiles):
@@ -241,30 +164,20 @@ def create_trajectory_from_heatmap(args, start_pos, heatmap):
 
 def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
     from oai_agents.common.overcooked_simulation import OvercookedSimulation
-
     print('Heatmap source:', heatmap_source.name)
-    all_tiles = {layout: {'V': [], 'P': []} for layout in args.layout_names}
+    all_tiles = {layout: {'V': [np.zeros((20, 20))], 'P': [np.zeros((20, 20))]} for layout in args.layout_names}
 
     for layout in args.layout_names:
         for p_idx in range(args.num_players):
-            for train_type_for_teammate in train_types:
-                if train_type_for_teammate not in [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MIDDLE, TeamType.SELF_PLAY_HIGH]:
-                    continue
-                all_teammates_for_train_type = teammates_collection[TeammatesCollection.TRAIN][layout][train_type_for_teammate]
-                selected_teammates = random.choice(all_teammates_for_train_type)
-
-                simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=selected_teammates, layout_name=layout, p_idx=p_idx, horizon=400)
+            for teammates in [
+                [DummyAgent(action='random') for _ in range(args.num_players - 1)], # lowest performance teammates
+                [heatmap_source for _ in range(args.num_players - 1)] # highest performance teammates 
+            ]:
+                simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=teammates, layout_name=layout, p_idx=p_idx, horizon=400)
                 trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
-                # tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-                # tiles_v = get_tile_v(args=args, agent=heatmap_source, observation=trajectories[0]['observations'][-1], p_idx=p_idx)
-                tiles_p = get_tile_p(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-
-                # all_tiles[layout]['V'].append(tiles_v)
-                all_tiles[layout]['P'].append(tiles_p)
-
-        tiles_v = get_tile_v(args=args, layout=layout, agent=heatmap_source)
-        all_tiles[layout]['V'].append(tiles_v)
-
+                tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
+                all_tiles[layout]['V'] += tiles_v
+                all_tiles[layout]['P'] += tiles_p
 
     adversaries = {}
     if TeamType.SELF_PLAY_STATIC_ADV in train_types:
