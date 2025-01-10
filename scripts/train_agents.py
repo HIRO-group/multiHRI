@@ -286,7 +286,7 @@ def set_input(args):
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
-        args.n_envs = 3
+        args.n_envs = 2
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 3500
         args.n_x_sp_total_training_timesteps = 1500

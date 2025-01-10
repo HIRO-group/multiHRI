@@ -3,9 +3,7 @@ import torch as th
 import numpy as np
 
 from stable_baselines3.common.utils import obs_as_tensor
-from overcooked_ai_py.mdp.overcooked_mdp import Action
-from gym import spaces
-from oai_agents.common.tags import TeammatesCollection, TeamType
+from oai_agents.common.tags import TeamType
 from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
 
 

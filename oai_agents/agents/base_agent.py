@@ -4,7 +4,7 @@ from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
 from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
-# from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
+from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 from overcooked_ai_py.planning.planners import MediumLevelActionManager
