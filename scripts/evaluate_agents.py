@@ -326,7 +326,7 @@ def evaluate_agent(args,
                                        )
                 env.set_teammates(teammates)
                 for p_idx in p_idxes:
-                    env.reset(p_idx=p_idx)
+                    env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(primary_agent, env,
                                                               n_eval_episodes=number_of_eps,
                                                               deterministic=deterministic,
