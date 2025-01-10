@@ -81,7 +81,7 @@ def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
             tiles_p[x, y] += 1
             value = get_value_function(args=args, agent=agent, observation=observations[i])
             tiles_v[x, y] += value
-    return tiles_p, tiles_v
+    return {'P': tiles_p, 'V': tiles_v}
 
 
 def generate_static_adversaries(args, all_tiles):
@@ -173,9 +173,9 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
             ]:
                 simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=teammates, layout_name=layout, p_idx=p_idx, horizon=400)
                 trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
-                tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-                all_tiles[layout]['V'][0] += tiles_v
-                all_tiles[layout]['P'][0] += tiles_p
+                tile = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
+                all_tiles[layout]['V'][0] += tile['V']
+                all_tiles[layout]['P'][0] += tile['P']
 
     adversaries = {}
     if TeamType.SELF_PLAY_STATIC_ADV in train_types:
