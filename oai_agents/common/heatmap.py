@@ -174,8 +174,8 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
                 simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=teammates, layout_name=layout, p_idx=p_idx, horizon=400)
                 trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
                 tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-                all_tiles[layout]['V'] += tiles_v
-                all_tiles[layout]['P'] += tiles_p
+                all_tiles[layout]['V'][0] += tiles_v
+                all_tiles[layout]['P'][0] += tiles_p
 
     adversaries = {}
     if TeamType.SELF_PLAY_STATIC_ADV in train_types:

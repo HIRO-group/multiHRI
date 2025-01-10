@@ -26,16 +26,32 @@ class Curriculum:
         TeamType.LOW_FIRST: 0.4 - 0.1,
         TeamType.MEDIUM_FIRST: 0.3 + (0.1/2), 
         TeamType.HIGH_FIRST: 0.3 + (0.1/2),
-    
-    
+
+
     WHENEVER we don't care about the order of the training types, we can set is_random=True.
     and we can just call Curriculum(train_types=sp_train_types, is_random=True) and ignore
-    the rest of teh parameters.
+    the rest of the parameters.
+
+    Prioritized sampling can also be used to sample teammates such that the teammates with the worst historical
+    performance are given the highest probability of selection. In this case, TeamTypes are ignored.
     '''
-    def __init__(self, train_types, is_random, total_steps=None, training_phases_durations_in_order=None, 
-                 rest_of_the_training_probabilities=None, probabilities_decay_over_time=None):
+    def __init__(self, 
+                 train_types, 
+                 is_random,
+                 eval_types=None,
+                 prioritized_sampling=False,
+                 priority_scaling = 1.0,
+                 total_steps=None,
+                 training_phases_durations_in_order=None,
+                 rest_of_the_training_probabilities=None,
+                 probabilities_decay_over_time=None):
+
         self.train_types = train_types
+        self.eval_types = eval_types
         self.is_random = is_random
+        self.prioritized_sampling = prioritized_sampling
+        self.priority_scaling = priority_scaling
+        self.teamtype_performances = {}
         self.current_step = 0
         self.total_steps = total_steps
         self.training_phases_durations_in_order = training_phases_durations_in_order
@@ -49,8 +65,9 @@ class Curriculum:
             assert self.training_phases_durations_in_order is None, "training_phases_durations_in_order should be None for random curriculums"
             assert self.rest_of_the_training_probabilities is None, "rest_of_the_training_probabilities should be None for random curriculums"
             assert self.probabilities_decay_over_time is None, "probabilities_decay_over_time should be None for random curriculums"
+        elif self.prioritized_sampling:
+            assert self.train_types == (self.eval_types['generate'] + self.eval_types['load']), "train_types and eval_types must be identical when using prioritized sampling"
         else:
-
             phase_team_types = {team for teams in self.training_phases_durations_in_order.keys() for team in (teams if isinstance(teams, tuple) else (teams,))}
             rest_team_types = set(self.rest_of_the_training_probabilities.keys())
             assert set(self.train_types) == phase_team_types.union(rest_team_types), "Invalid training types"
@@ -62,8 +79,19 @@ class Curriculum:
     def update(self, current_step):
         self.current_step = current_step
 
-    
-    def select_teammates(self, population_teamtypes):
+    def update_teamtype_performances(self, teamtype_performances:dict)->None:
+        '''
+        Update the curriculum with the latest dictionary of performances for use in prioritized sampling
+        NOTE: this must contain performance values for all possible combinations of teammates
+
+        :param teamtype_performances: Dictionary mapping agent teamtypes to their latest rollout performance e.g. for a 3-player game with 3 possible teammates
+        {<layout> : {TeamType.HIGH_FIRST: : <score>, TeamType.MEDIUM_FIRST: : <score>, ... }}
+        '''
+        assert self.prioritized_sampling is True, "Updating curriculum teamtype performances while curriculum is not set for prioritized sampling"
+        self.teamtype_performances = teamtype_performances
+
+
+    def select_teammates_for_layout(self, population_teamtypes, layout):
         '''
         Population_teamtypes = {
             TeamType.HIGH_FIRST: [[agent1, agent2], [agent3, agent4], ...],
@@ -75,8 +103,11 @@ class Curriculum:
             population = [population_teamtypes[t] for t in population_teamtypes.keys()]
             teammates_per_type = population[np.random.randint(len(population))]
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
-            return teammates
-        return self.select_teammates_based_on_curriculum(population_teamtypes)
+        elif self.prioritized_sampling:
+            teammates = self.select_teammates_prioritized_sampling(population_teamtypes, layout)
+        else:
+            teammates = self.select_teammates_based_on_curriculum(population_teamtypes)
+        return teammates
 
 
     def select_teammates_based_on_curriculum(self, population_teamtypes):
@@ -110,10 +141,67 @@ class Curriculum:
         teammates_per_type = population_teamtypes[team_type]
         return random.choice(teammates_per_type)
 
+    def select_teammates_prioritized_sampling(self, population_teamtypes:dict, layout:str):
+        '''
+        Select teammates according to prioritized sampling (lower performing teammates are prioritized for selection)
+        NOTE: This function just uses the latest performance values for selection, it does not track performance of TeamTypes over time
+
+        :param population_teamtypes: Dictionary mapping TeamTypes to lists of agent teammates of each type
+        :param layout: The name fo the layout that teammates are being selected for
+        '''
+
+        teamtype_options = list(population_teamtypes.keys())
+
+        # Check if teamtype performances have been set (only happens after first training round)
+        if self.teamtype_performances:
+
+            assert layout in self.teamtype_performances.keys(), "Requesting prioritized sampling teammates for unrecognized layout"
+
+            # Ignore the performances for all layouts except the requested one
+            teamtype_performances_for_layout = self.teamtype_performances[layout]
+            teamtype_options = list(teamtype_performances_for_layout.keys())
+
+            # Convert scores to priorities (lower score = higher priority)
+            scores = list(teamtype_performances_for_layout.values())
+            max_score = np.max(scores)
+            # Invert scores
+            priorities = max_score + 1 - scores 
+
+            # Apply power transformation to increase contrast between priorities
+            priorities = np.power(priorities, self.priority_scaling)
+
+            # Add small epsilon to ensure no zero probabilities
+            epsilon = 1e-5
+            priorities += epsilon
+
+            # Convert to probabilities
+            probabilities = priorities / np.sum(priorities)
+
+            # Sample the teamtypes using the calculated probabilities
+            prioritized_teamtype = np.random.choice(teamtype_options, p=probabilities)
+
+        else:
+            # Randomly select a teamtype
+            prioritized_teamtype = np.random.choice(teamtype_options)
+
+        # Randomly sample a team of agents from this teamtype
+        teammates_for_teamtype = population_teamtypes[prioritized_teamtype]
+        teammates = random.choice(teammates_for_teamtype)
+
+        return teammates
+
     def print_curriculum(self):
         print("Curriculum:")
         if self.is_random:
             print("Random curriculum: ", self.train_types)
+        elif self.prioritized_sampling:
+            print("Prioritized sampling curriculum current teamtype performances (lower score = higher priority):")
+            for layout in self.teamtype_performances.keys():
+                print("  Layout: ", layout)
+                teamtype_perforamnces_for_layout = self.teamtype_performances[layout]
+                for teamtype in teamtype_perforamnces_for_layout.keys():
+                    score = teamtype_perforamnces_for_layout[teamtype]
+                    print("    TeamType: ", teamtype, " Score: ", score)
         else:
             print("Total steps:", self.total_steps)
             print("Training phases durations in order:", self.training_phases_durations_in_order)
@@ -129,7 +217,3 @@ class Curriculum:
         # Ensure no unallowed types are present in train_types
         assert not any(ut in self.train_types for ut in unallowed_types), \
             "Error: One or more unallowed types are present in train_types."
-    
-
-    
-

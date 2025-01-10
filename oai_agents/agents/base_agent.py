@@ -444,7 +444,7 @@ class OAITrainer(ABC):
 
         if log_wandb:
             wandb.log({f'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
-        return np.mean(tot_mean_reward), rew_per_layout
+        return np.mean(tot_mean_reward), rew_per_layout, rew_per_layout_per_teamtype
 
 
     def set_new_teammates(self, curriculum):
@@ -452,7 +452,8 @@ class OAITrainer(ABC):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
             population_teamtypes = self.teammates_collection[layout_name]
 
-            teammates = curriculum.select_teammates(population_teamtypes=population_teamtypes)
+            teammates = curriculum.select_teammates_for_layout(population_teamtypes=population_teamtypes,
+                                                               layout=layout_name)
 
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list

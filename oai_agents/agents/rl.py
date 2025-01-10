@@ -342,6 +342,7 @@ class RLAgentTrainer(OAITrainer):
         ck_name_handler = CheckedModelNameHandler()
 
         while self.learning_agent.num_timesteps < total_train_timesteps:
+
             self.curriculum.update(current_step=self.steps)
             self.set_new_teammates(curriculum=self.curriculum)
 
@@ -354,7 +355,11 @@ class RLAgentTrainer(OAITrainer):
                 if mean_training_rew >= self.best_training_rew:
                     self.best_training_rew = mean_training_rew
 
-                mean_reward, rew_per_layout = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
+                mean_reward, rew_per_layout, rew_per_layout_per_teamtype = self.evaluate(self.learning_agent, timestep=self.learning_agent.num_timesteps)
+
+                if self.curriculum.prioritized_sampling:
+                    # Use the results from the evaluation to dictate how teammates are sampled in the next round
+                    self.curriculum.update_teamtype_performances(teamtype_performances=rew_per_layout_per_teamtype)
 
                 if self.checkpoint_rate:
                     if self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1):
