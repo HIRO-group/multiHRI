@@ -55,7 +55,7 @@ class RLAgentTrainer(OAITrainer):
 
         self.seed = seed
         self.checkpoint_rate = checkpoint_rate
-        self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
+        self.encoding_fn = ENCODING_SCHEMES[self.args.encoding_fn]
 
         self.use_lstm = use_lstm
         self.use_cnn = use_cnn
@@ -197,11 +197,11 @@ class RLAgentTrainer(OAITrainer):
 
     def get_envs(self, _env, _eval_envs, deterministic, learner_type, start_timestep: int = 0):
         if _env is None:
-            env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
+            env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack, 'p_enc_fn': self.args.encoding_fn,
                         'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep}
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed, vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
-            eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
+            eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack, 'p_enc_fn': self.args.encoding_fn,
                                  'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
         else:
@@ -438,6 +438,7 @@ class RLAgentTrainer(OAITrainer):
         medium_score_path_tag = RLAgentTrainer.find_closest_score_path_tag(middle_score, all_score_path_tag_sorted)
         low_score_path_tag = all_score_path_tag_sorted[-1]
 
+        print(f"path: {path}")
         H_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, high_score_path_tag, AgentPerformance.HIGH, ck_list=ck_list)
         M_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, medium_score_path_tag, AgentPerformance.MEDIUM, ck_list=ck_list)
         L_agents = RLAgentTrainer.get_agents_and_set_score_and_perftag(args, layout_name, low_score_path_tag, AgentPerformance.LOW, ck_list=ck_list)

@@ -6,7 +6,6 @@ from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Dir
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 from overcooked_ai_py.planning.planners import MediumLevelActionManager
 from overcooked_ai_py.utils import read_layout_dict
-from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 
 from copy import deepcopy
 from gym import Env, spaces, register
@@ -34,16 +33,16 @@ USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'as
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
-                 shape_rewards=False, enc_fn=None, full_init=True, args=None, deterministic=False, start_timestep: int = 0,
+    def __init__(self, learner_type, p_enc_fn, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+                 shape_rewards=False, full_init=True, args=None, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
         self.args = args
         self.device = args.device
         # Observation encoding setup
-        enc_fn = enc_fn or args.encoding_fn
-        self.encoding_fn = ENCODING_SCHEMES[enc_fn]
-        if enc_fn == 'OAI_egocentric':
+        p_enc_fn = p_enc_fn or args.encoding_fn
+        self.p_encoding_fn = ENCODING_SCHEMES[p_enc_fn]
+        if p_enc_fn in ['OAI_egocentric', 'OAI_contexted_egocentric']:
             # Override grid shape to make it egocentric
             assert grid_shape is None, 'Grid shape cannot be used when egocentric encodings are used!'
             self.grid_shape = (7, 7)
@@ -60,7 +59,7 @@ class OvercookedGymEnv(Env):
         self.num_enc_channels = base_enc_channels + ego_agent_pos_channels + teammates_pos_channels
 
         self.obs_dict = {}
-        if enc_fn == 'OAI_feats':
+        if self.p_encoding_fn == 'OAI_feats':
             self.obs_dict['agent_obs'] = spaces.Box(0, 400, (96,), dtype=int)
         else:
             self.obs_dict['visual_obs'] = spaces.Box(0, 20, (self.num_enc_channels, *self.grid_shape), dtype=int)
@@ -193,7 +192,6 @@ class OvercookedGymEnv(Env):
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
 
     def get_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
-        enc_fn = enc_fn or self.encoding_fn
         obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=c_idx,
                      goal_objects=goal_objects)
 
@@ -264,7 +262,7 @@ class OvercookedGymEnv(Env):
                 ratio = self.final_sparse_r_ratio
             reward = self.learner.calculate_reward(p_idx=self.p_idx, env_info=info, ratio=ratio, num_players=self.mdp.num_players)
         self.step_count += 1
-        return self.get_obs(self.p_idx, done=done), reward, done, info
+        return self.get_obs(c_idx=self.p_idx, enc_fn=self.p_encoding_fn, done=done), reward, done, info
 
     def set_reset_p_idx(self, p_idx):
         self.reset_p_idx = p_idx
@@ -297,7 +295,7 @@ class OvercookedGymEnv(Env):
 
         # Reset subtask counts
         self.completed_tasks = [np.zeros(Subtasks.NUM_SUBTASKS), np.zeros(Subtasks.NUM_SUBTASKS)]
-        return self.get_obs(self.p_idx, on_reset=True)
+        return self.get_obs(c_idx=self.p_idx, enc_fn=self.p_encoding_fn, on_reset=True)
 
 
     def render(self, mode='human', close=False):

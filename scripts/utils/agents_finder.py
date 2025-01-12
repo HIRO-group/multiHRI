@@ -4,7 +4,9 @@ from oai_agents.common.cklist_helper import get_layouts_from_cklist
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.path_helper import get_experiment_models_dir
 from oai_agents.common.learner import LearnerType
+from oai_agents.common.overcooked_simulation import OvercookedSimulation
 from pathlib import Path
+
 
 import os
 
@@ -129,12 +131,13 @@ class BasicProfileCollection:
         self.add_agent(agent)
 
     def add_sp_agents(self):
-        agent_finder = AdversaryAgentsFinder(args=self.args)
+        agent_finder = SelfPlayAgentsFinder(args=self.args)
         agents, env_infos, training_infos = agent_finder.get_agents_infos()
         for training_info in training_infos:
             ck_list = training_info["ck_list"]
             layouts = get_layouts_from_cklist(ck_list=ck_list)
             for layout in layouts:
+                print(f"layout: {layout}")
                 h_agents, m_agents, l_agents = RLAgentTrainer.get_HML_agents_by_layout(
                     args=self.args, ck_list=ck_list, layout_name=layout,
                 )
@@ -166,9 +169,6 @@ class AgentsFinder:
             if os.path.isdir(os.path.join(self.target_dir, folder)) and folder.startswith(prefix)
         ]
 
-    def get_agentfolders(self):
-        raise NotImplementedError('Learning is not supported for cloned policies')
-
     def get_agentfolders_with_suffix(self, suffix):
         return [
             folder for folder in os.listdir(self.target_dir)
@@ -181,52 +181,104 @@ class AgentsFinder:
             if os.path.isdir(os.path.join(self.target_dir, folder)) and substring in folder
         ]
 
-    def get_agents(self, tag=None):
-        agents, _, _ = self.get_agents_infos()
+    def get_agents_infos(self, tag=None):
+        all_agents = []
+        env_infos = []
+        training_infos = []
+        assert len(self.folders)>0
+        for folder in self.folders:
+            if tag is not None:
+                agents, env_info, training_info = RLAgentTrainer.load_agents(
+                    args=self.args,
+                    name=folder,
+                    tag=tag
+                )
+            else:
+                last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
+                    base_dir=self.args.base_dir,
+                    exp_dir=self.args.exp_dir,
+                    name=folder,
+                )
+                agents, env_info, training_info = RLAgentTrainer.load_agents(
+                    args=self.args,
+                    name=folder,
+                    tag=last_ckpt
+                )
+            all_agents.append(agents[0])
+            env_infos.append(env_info)
+            training_infos.append(training_info)
+
+        return all_agents, env_infos, training_infos
+
+    def get_agents(self, tag= None):
+        agents, _, _ = self.get_agents_infos(tag=tag)
         return agents
 
-    def get_agents_infos(self, tag=None):
-        self.folders = self.get_agentfolders()
-        agents, env_infos, training_infos = [], [], []
-        if len(self.folders)>0:
-            for folder in self.folders:
-                if tag is not None:
-                    agent, env_info, training_info = RLAgentTrainer.load_agents(
-                        args=self.args,
-                        name=folder,
-                        tag=tag
-                    )
-                else:
-                    last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
-                        base_dir=self.args.base_dir,
-                        exp_dir=self.args.exp_dir,
-                        name=folder,
-                    )
-                    agent, env_info, training_info = RLAgentTrainer.load_agents(
-                        args=self.args,
-                        name=folder,
-                        tag=last_ckpt
-                    )
-                agents.append(agent[0])
-                env_infos.append(env_info)
-                training_infos.append(training_info)
-            return agents, env_infos, training_infos
-        return None
-
 class SelfPlayAgentsFinder(AgentsFinder):
-    def get_agentfolders(self):
-        return self.get_agentfolders_with_prefix(Prefix.SELF_PLAY)
+    def get_agents_infos(self, tag=None):
+        self.folders = self.get_agentfolders_with_prefix(prefix=Prefix.SELF_PLAY)
+        return super().get_agents_infos(tag=tag)
 
 class AdversaryAgentsFinder(AgentsFinder):
-    def get_agentfolders(self):
-        return self.get_agentfolders_with_suffix(LearnerType.SELFISHER)
+    def get_agents_infos(self, tag=None):
+        self.folders = self.get_agentfolders_with_suffix(suffix=LearnerType.SELFISHER)
+        return super().get_agents_infos(tag=tag)
 
 class AdaptiveAgentsFinder(AgentsFinder):
-    def get_agentfolders(self):
-        return self.get_agentfolders_with_suffix(LearnerType.ORIGINALER)
+    def get_agents_infos(self, tag=None):
+        self.folders = self.get_agentfolders_with_suffix(suffix=f"tr[SPH_SPM_SPL]_ran_{LearnerType.ORIGINALER}")
+        return super().get_agents_infos(tag=tag)
+
+class AgentsFinderByKey(AgentsFinder):
+    def get_agents(self, key, tag=None):
+        agents, _, _ = self.get_agents_infos(key=key, tag=tag)
+        return agents
+
+class AgentsFinderBySuffix(AgentsFinderByKey):
+    def get_agents_infos(self, key, tag=None):
+        self.folders = self.get_agentfolders_with_suffix(suffix=key)
+        return super().get_agents_infos(tag=tag)
+
+class AMMAS23AgentsFinder(AgentsFinder):
+    def get_agents_infos(self, tag=None):
+        return self.get_agents(tag=tag)
+    def get_agents(self, tag):
+        all_agents = []
+        assert len(self.folders)>0
+        for folder in self.folders:
+            if tag is not None:
+                agents = RLAgentTrainer.only_load_agents(
+                    args=self.args,
+                    name=folder,
+                    tag=tag
+                )
+            else:
+                last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
+                    base_dir=self.args.base_dir,
+                    exp_dir=self.args.exp_dir,
+                    name=folder,
+                )
+                agents = RLAgentTrainer.only_load_agents(
+                    args=self.args,
+                    name=folder,
+                    tag=last_ckpt
+                )
+            for agent in agents:
+                all_agents.append(agent)
+
+        return all_agents
+
+class AMMAS23AgentsFinderBySuffix(AMMAS23AgentsFinder):
+    def get_agents(self, key, tag=None):
+        self.folders = self.get_agentfolders_with_suffix(suffix=key)
+        return super().get_agents(tag=tag)
 
 if __name__ == '__main__':
     args = get_arguments()
-    # args.base_dir = Path.cwd()
-    args.exp_dir = 'Classic/2'
+    args.exp_dir = 'Selected/2'
     basic_profile = BasicProfileCollection(args=args)
+    layouts = two_chefs_aamas24_layouts
+    # for layout in two_chefs_aamas24_layouts:
+    #     agents = basic_profile.layout_map[layout]
+    #     simulation = OvercookedSimulation(args=args, agent=agents[0], teammates=[agents[1]], layout_name=layout, p_idx=p_idx, horizon=400)
+    #     trajectories = simulation.run_simulation(how_many_times=1)

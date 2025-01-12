@@ -1,13 +1,23 @@
 class Eval:
-    LOW = 'low'
-    MEDIUM = 'medium'
-    HIGH = 'high'
-    ALL = [LOW, MEDIUM, HIGH]
+    # LOW = 'low'
+    # MEDIUM = 'medium'
+    # HIGH = 'high'
+    HUMAN_PROXY = 'human_proxy'
+    FLXEXIBLE = 'flexible'
+    SELFISHER = 'selfisher'
+
+    # ALL = [LOW, MEDIUM, HIGH, HUMAN_PROXY]
+    ALL = [HUMAN_PROXY]
 
 POPULATION_EVAL_AGENTS = {
     'selected_2_chefs_coordination_ring': 'agent_models/Result/Eval/2/pop_selected_2_chefs_coordination_ring',
     'selected_2_chefs_counter_circuit':   'agent_models/Result/Eval/2/pop_selected_2_chefs_counter_circuit',
     'selected_2_chefs_cramped_room':      'agent_models/Result/Eval/2/pop_selected_2_chefs_cramped_room',
+    'coordination_ring':   'agent_models/ClassicEval/2/pop_coordination_ring',
+    'cramped_room':'agent_models/ClassicEval/2/pop_cramped_room',
+    'forced_coordination': 'agent_models/ClassicEval/2/pop_forced_coordination',
+    'counter_circuit': 'agent_models/ClassicEval/2/pop_counter_circuit',
+    'asymmetric_advantages':   'agent_models/ClassicEval/2/pop_asymmetric_advantages',
 }
 
 

@@ -4,6 +4,9 @@ from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
+from scripts.utils.agents_finder import AgentsFinder, AgentsFinderBySuffix, AMMAS23AgentsFinderBySuffix
+from oai_agents.common.learner import LearnerType
+from oai_agents.common.tags import KeyCheckpoints
 
 
 def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
@@ -15,24 +18,43 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 
 if __name__ == "__main__":
     args = get_arguments()
-    args.num_players = 3
-    args.layout = f'selected_{args.num_players}_chefs_counter_circuit'
+    args.encoding_fn = 'OAI_contexted_egocentric'
+    args.num_players = 2
+    # args.layout = f'selected_{args.num_players}_chefs_counter_circuit'
+    args.layout = 'forced_coordination'
     args.p_idx = 0
+    '''
+    Define a suffix parameter to place a suffix, which are used by an agent folder or multiple of them, and
+    then let the agent finder to use that suffix as  and
+    then it will find all agents under this suffix
+    '''
+    suffix = f"tr[SPH_SPM_SPL]_ran_{LearnerType.ORIGINALER}"
+    fcp_suffix = "N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler"
+    advp_suffix = "N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPADV]_ran_originaler"
+    f2p_suffix = "N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPFO]_ran_originaler"
+    human_proxy_suffix = f"bc_{args.layout}"
 
-    teammates_path = [
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green 
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
-        'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
-    ]
+    args.exp_dir = "Classic/2"
+    agent_finder = AgentsFinderBySuffix(args=args)
+    agents = agent_finder.get_agents(key=fcp_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
+    human_proxy_finder = AMMAS23AgentsFinderBySuffix(args=args)
+    human_proxies = human_proxy_finder.get_agents(key=human_proxy_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
+    teammates = [human_proxies[0]]
 
-    teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
+    # teammates_path = [
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
+    # ]
 
-    player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
-    player = load_agent(Path(player_path), args)
+    # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
-    # player = 'human' # blue
+    # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
+    # player = load_agent(Path(player_path), args)
+
+    player = 'human' # blue
 
     dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
     dc.on_execute()

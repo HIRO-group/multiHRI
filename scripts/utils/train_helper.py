@@ -8,7 +8,7 @@ from oai_agents.agents.agent_utils import CustomAgent
 from .common import load_agents, generate_name
 from oai_agents.common.tags import Prefix, KeyCheckpoints
 from oai_agents.common.multi_setup_trainer import MultiSetupSPTrainer
-from scripts.utils.get_agents import AdversaryAgentsFinder
+from scripts.utils.agents_finder import AdversaryAgentsFinder, AdaptiveAgentsFinder
 
 
 def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_agent):
@@ -186,7 +186,8 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
 def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
-    agent_finder = AdversaryAgentsFinder(args=args)
+    # agent_finder = AdversaryAgentsFinder(args=args)
+    agent_finder = AdaptiveAgentsFinder(args=args)
     adversary_agents = agent_finder.get_agents()
 
     name = generate_name(

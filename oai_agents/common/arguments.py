@@ -15,8 +15,14 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--horizon', type=int, default=400, help='Max timesteps in a rollout')
     parser.add_argument('--num_stack', type=int, default=3, help='Number of frame stacks to use in training if frame stacks are being used')
     parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',
-                        help='Encoding scheme to use. '
-                             'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric"')
+                        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
+                             'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
+    parser.add_argument('--primary-agent-encoding-fn', type=str, default='OAI_egocentric',
+                        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
+                             'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
+    parser.add_argument('--teammates-encoding-fn', type=str, default='OAI_egocentric',
+                        help='Encoding scheme for teammate agents, paired with the primary(ego) agent, to use. '
+                             'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
 
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate used in imitation learning. lr for rl is defined in rl.py')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size used in imitation learning. bs for rl is defined in rl.py')
@@ -93,7 +99,7 @@ def get_arguments(additional_args=[]):
     args.base_dir = Path(args.base_dir)
     args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
     args.layout_names = args.layout_names.split(',')
-    if len(args.layout_names) > 1 and args.encoding_fn != 'OAI_egocentric':
+    if len(args.layout_names) > 1 and args.encoding_fn not in ['OAI_egocentric', 'OAI_contexted_egocentric']:
         raise ValueError("Encoding function must be OAI_egocentric if training on multiple layouts")
 
     return args

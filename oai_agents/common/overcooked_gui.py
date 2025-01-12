@@ -55,7 +55,7 @@ from overcooked_ai_py.planning.planners import MediumLevelActionManager
 class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
-    
+
     def __init__(self, args, layout_name=None, agent=None, teammates=None, p_idx=0, horizon=400,
                  trial_id=None, user_id=None, stream=None, outlet=None, fps=5, gif_name='gif'):
         self.x = None
@@ -64,20 +64,28 @@ class OvercookedGUI:
         self.args = args
         self.layout_name = layout_name or 'asymmetric_advantages'
 
+        self.agent = agent
         self.use_subtask_env = False
         if self.use_subtask_env:
             kwargs = {'single_subtask_id': 10, 'args': args, 'is_eval_env': True}
             self.env = OvercookedSubtaskGymEnv(**p_kwargs, **kwargs)
         else:
-            self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=False,
-                                        is_eval_env=True, horizon=horizon, learner_type='originaler')
-        self.agent = agent
+            if self.agent != 'human':
+                self.env = OvercookedGymEnv(
+                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=self.agent.encoding_fn,
+                    is_eval_env=True, horizon=horizon, learner_type='originaler')
+            else:
+                self.env = OvercookedGymEnv(
+                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=args.encoding_fn,
+                    is_eval_env=True, horizon=horizon, learner_type='originaler')
+        print(f"args.encoding_fn: {args.encoding_fn}")
+        # print(f"self.agent.encoding_fn: {self.agent.encoding_fn}")
         self.p_idx = p_idx
         self.env.set_teammates(teammates)
         self.env.reset(p_idx=self.p_idx)
         if self.agent != 'human':
             self.agent.set_encoding_params(self.p_idx, self.args.horizon, env=self.env, is_haha=isinstance(self.agent, HierarchicalRL), tune_subtasks=False)
-            self.env.encoding_fn = self.agent.encoding_fn
+            # self.env.p_encoding_fn = self.agent.encoding_fn
 
         for t_idx, teammate in enumerate(self.env.teammates):
             teammate.set_encoding_params(t_idx+1, self.args.horizon, env=self.env, is_haha=isinstance(teammate, HierarchicalRL), tune_subtasks=True)
@@ -278,7 +286,7 @@ class OvercookedGUI:
 
                 action = self.human_action if self.human_action is not None else Action.ACTION_TO_INDEX[Action.STAY]
             else:
-                obs = self.env.get_obs(self.env.p_idx, on_reset=False)
+                obs = self.env.get_obs(self.env.p_idx, enc_fn=self.agent.encoding_fn, on_reset=False)
                 action = self.agent.predict(obs, state=self.env.state, deterministic=self.deterministic)[0]
                 # pygame.time.wait(sleep_time)
 

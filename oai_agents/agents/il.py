@@ -140,9 +140,10 @@ class BehavioralCloningTrainer(OAITrainer):
         self.dataset = dataset
         self.datasets = None
         self.layout_names = layout_names or args.layout_names
-        self.eval_envs = [OvercookedGymEnv(shape_rewards=False, is_eval_env=True, enc_fn='OAI_feats', horizon=400,
+        p_enc_fn = 'OAI_feats'
+        self.eval_envs = [OvercookedGymEnv(shape_rewards=False, is_eval_env=True, p_enc_fn=p_enc_fn, horizon=400,
                                            layout_name=ln, args=args) for ln in self.layout_names]
-        obs = self.eval_envs[0].get_obs(p_idx=0)
+        obs = self.eval_envs[0].get_obs(p_idx=0, enc_fn=p_enc_fn)
         visual_obs_shape = obs['visual_obs'].shape if 'visual_obs' in obs else 0
         agent_obs_shape = obs['agent_obs'].shape if 'agent_obs' in obs else 0
         self.agents = [BehaviouralCloningAgent(visual_obs_shape, agent_obs_shape, args, name=name+'1'),

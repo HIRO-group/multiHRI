@@ -6,29 +6,58 @@ from oai_agents.common.tags import TeamType, TeammatesCollection, KeyCheckpoints
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.agent_utils import load_agent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+from scripts.utils.agents_finder import AgentsFinder, AgentsFinderBySuffix, AMMAS23AgentsFinderBySuffix
 
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from utils import Eval, POPULATION_EVAL_AGENTS, print_selected_agents_for_evaluation
+from scripts.utils import Eval, POPULATION_EVAL_AGENTS, print_selected_agents_for_evaluation
+from scripts.utils.layout_config import (
+    two_chefs_dec_layouts,
+    three_chefs_dec_layouts,
+    five_chefs_dec_layouts,
+    two_chefs_aamas24_layouts,
+    three_chefs_aamas24_layouts,
+    four_chefs_aamas24_layouts,
+    five_chefs_aamas24_layouts,
+    classic_layouts
+)
 
 def get_2_player_input(args):
     args.teammates_len = 1
     args.num_players = args.teammates_len + 1
-    args.layout_names = ['selected_2_chefs_coordination_ring',
-                        'selected_2_chefs_counter_circuit',
-                        'selected_2_chefs_cramped_room']
+    args.layout_names = classic_layouts
+    # args.layout_names = ['selected_2_chefs_coordination_ring',
+    #                     'selected_2_chefs_counter_circuit',
+    #                     'selected_2_chefs_cramped_room']
 
     args.p_idxes = [0, 1]
-    all_agents_paths = {    
-        'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
-        'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
-        'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
+    all_agents_paths = {
+        'SP_1010':      'agent_models/Classic/2/SP_hd256_seed1010/best',
+        'SP_2020':      'agent_models/Classic/2/SP_hd256_seed2020/best',
+        'SP_2602':      'agent_models/Classic/2/SP_hd256_seed2602/best',
+        'SP_13':        'agent_models/Classic/2/SP_hd256_seed13/best',
+        'FCP_1010':     'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'FCP_2020':     'agent_models/Classic/2/N-1-SP_s2020_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'FCP_2602':     'agent_models/Classic/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'FCP_13':       'agent_models/Classic/2/N-1-SP_s13_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'F2P_1010':    'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPFO]_ran_originaler/best',
+        'F2P_2020':    'agent_models/Classic/2/N-1-SP_s2020_h256_tr[SPH_SPM_SPL_SPFO]_ran_originaler/best',
+        'F2P_2602':    'agent_models/Classic/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPFO]_ran_originaler/best',
+        'F2P_13':      'agent_models/Classic/2/N-1-SP_s13_h256_tr[SPH_SPM_SPL_SPFO]_ran_originaler/best',
+        'A2P_1010':    'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPADV]_ran_originaler/best',
+        'A2P_2020':    'agent_models/Classic/2/N-1-SP_s2020_h256_tr[SPH_SPM_SPL_SPADV]_ran_originaler/best',
+        'A2P_2602':    'agent_models/Classic/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPADV]_ran_originaler/best',
+        'A2P_13':      'agent_models/Classic/2/N-1-SP_s13_h256_tr[SPH_SPM_SPL_SPADV]_ran_originaler/best',
+        # 'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
+        # 'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
+        # 'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
     }
 
     teammate_lvl_sets = [
-        Eval.LOW,
-        Eval.MEDIUM,
-        Eval.HIGH
+        # Eval.LOW,
+        # Eval.MEDIUM,
+        # Eval.HIGH,
+        Eval.HUMAN_PROXY
     ]
 
     return args, all_agents_paths, teammate_lvl_sets
@@ -38,9 +67,11 @@ def get_all_players_and_teammates(args, teammate_lvl_sets, all_players):
     all_teammates = {layout_name: {teammate_lvl: [] for teammate_lvl in Eval.ALL} for layout_name in args.layout_names}
 
     for layout_name in args.layout_names:
-        layout_population, _, _ = RLAgentTrainer.load_agents(args,
-                                                            path=Path(POPULATION_EVAL_AGENTS[layout_name]),
-                                                            tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        layout_population, _, _ = RLAgentTrainer.load_agents(
+            args,
+            path=Path(POPULATION_EVAL_AGENTS[layout_name]),
+            tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
+        )
 
         sorted_agents = sorted(layout_population, key=lambda x: x.layout_scores[layout_name], reverse=False)
         unique_agents = {}
@@ -51,9 +82,17 @@ def get_all_players_and_teammates(args, teammate_lvl_sets, all_players):
 
         sorted_agents = sorted(unique_agents.values(), key=lambda x: x.layout_scores[layout_name], reverse=False)
         part_size = len(sorted_agents) // 3
-        all_teammates[layout_name][Eval.LOW] = sorted_agents[:part_size]
-        all_teammates[layout_name][Eval.MEDIUM] = sorted_agents[part_size:2 * part_size]
-        all_teammates[layout_name][Eval.HIGH] = sorted_agents[2 * part_size:]
+        # all_teammates[layout_name][Eval.LOW] = sorted_agents[:part_size]
+        # all_teammates[layout_name][Eval.MEDIUM] = sorted_agents[part_size:2 * part_size]
+        # all_teammates[layout_name][Eval.HIGH] = sorted_agents[2 * part_size:]
+
+        human_proxy_suffix = f"bc_{layout_name}"
+        args.exp_dir = "Classic/2"
+        args.base_dir = Path.cwd()
+        print(f"args.base_dir: {args.base_dir}")
+        agent_finder = AMMAS23AgentsFinderBySuffix(args=args)
+        human_proxies = agent_finder.get_agents(key=human_proxy_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
+        all_teammates[layout_name][Eval.HUMAN_PROXY] = human_proxies
 
 
     selected_agents_for_evaluation = {
@@ -61,8 +100,8 @@ def get_all_players_and_teammates(args, teammate_lvl_sets, all_players):
             layout_name: {
                 unseen_count: {
                     teammate_lvl: [] for teammate_lvl in Eval.ALL}
-                         for unseen_count in range(args.num_players)} 
-                            for layout_name in args.layout_names} 
+                         for unseen_count in range(args.num_players)}
+                            for layout_name in args.layout_names}
                                 for primary_agent in all_players}
 
     for primary_agent in all_players:
@@ -163,70 +202,70 @@ def plot_performance_grid(mean_rewards, std_rewards, layout_names, skill_levels)
     # Number of layouts and skill levels
     n_layouts = len(layout_names)
     n_skills = len(skill_levels) + 1  # +1 for the average row
-    
+
     # Create figure and axes grid
     fig, axes = plt.subplots(n_skills, n_layouts, figsize=(5*n_layouts, 4*n_skills))
     fig.suptitle('Agent Performance Comparison', fontsize=16, y=1.02)
-    
+
     # If only one layout, wrap axes in a list for consistent indexing
     if n_layouts == 1:
         axes = axes[:, np.newaxis]
-    
+
     # Colors for different agents
     colors = plt.cm.Set3(np.linspace(0, 1, len(mean_rewards)))
-    
+
     # Plot for each layout and skill level
     for layout_idx, layout in enumerate(layout_names):
         # Plot for each skill level
         for skill_idx, skill in enumerate(skill_levels):
             ax = axes[skill_idx, layout_idx]
-            
+
             # Plot data for each primary agent
             x = np.arange(len(mean_rewards))
             width = 0.35
-            
+
             for agent_idx, (agent_name, agent_data) in enumerate(mean_rewards.items()):
                 reward = agent_data[layout][1][skill]  # unseen_count = 1
                 std = std_rewards[agent_name][layout][1][skill]
-                
-                ax.bar(agent_idx, reward, width, 
-                      yerr=std, 
+
+                ax.bar(agent_idx, reward, width,
+                      yerr=std,
                       label=agent_name,
                       color=colors[agent_idx],
                       capsize=5)
-            
+
             # Customize subplot
             ax.set_title(f'{layout} - {skill}')
             ax.set_xticks(x)
-            ax.set_xticklabels([name[:10] for name in mean_rewards.keys()], 
+            ax.set_xticklabels([name[:10] for name in mean_rewards.keys()],
                               rotation=45, ha='right')
             ax.set_ylabel('Reward')
             if skill_idx == 0:
-                ax.legend(bbox_to_anchor=(0.5, 1.15), 
-                         loc='center', 
+                ax.legend(bbox_to_anchor=(0.5, 1.15),
+                         loc='center',
                          ncol=len(mean_rewards))
-        
+
         # Plot averages in the last row
         ax = axes[-1, layout_idx]
         for agent_idx, (agent_name, agent_data) in enumerate(mean_rewards.items()):
             # Calculate average across all skill levels
-            avg_reward = np.mean([agent_data[layout][1][skill] 
+            avg_reward = np.mean([agent_data[layout][1][skill]
                                 for skill in skill_levels])
-            avg_std = np.mean([std_rewards[agent_name][layout][1][skill] 
+            avg_std = np.mean([std_rewards[agent_name][layout][1][skill]
                              for skill in skill_levels])
-            
+
             ax.bar(agent_idx, avg_reward, width,
                   yerr=avg_std,
                   color=colors[agent_idx],
                   capsize=5)
-        
+
         # Customize average subplot
         ax.set_title(f'{layout} - Average')
         ax.set_xticks(x)
         ax.set_xticklabels([name[:10] for name in mean_rewards.keys()],
                           rotation=45, ha='right')
         ax.set_ylabel('Average Reward')
-    
+
     # Adjust layout to prevent overlap
     plt.tight_layout()
     # plt.show()

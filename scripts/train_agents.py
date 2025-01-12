@@ -93,13 +93,14 @@ def SPN_1ADV_XSPCKP(args) -> None:
     - X is assigned by the variable, unseen_teammates_len, in the funciton.
     '''
     attack_rounds = 3
+
     unseen_teammates_len = 1
     adversary_play_config = AdversaryPlayConfig.MAP
     primary_train_types = [
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_ADVERSARY
+        TeamType.SELF_PLAY_ADVERSARY,
     ]
 
     primary_eval_types = {
@@ -337,13 +338,13 @@ def set_input(args):
 
         # Training_seeds = 1010, 2020, 2602, 13
         args.SP_seed, args.SP_h_dim = 1010, 256
-        args.N_X_SP_seed, args.N_X_SP_h_dim = 13, 256
+        args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
         args.FCP_seed, args.FCP_h_dim = 2020, 256
         args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.total_ego_agents = 4
-        args.exp_dir = f'Classic/{args.num_players}'
+        args.exp_dir = f'ClassicTest/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -386,9 +387,9 @@ if __name__ == '__main__':
 
     # SPN_XSPCKP_LMH(args=args)
 
-    SPN_1ADV_XSPCKP(args=args)
+    # SPN_1ADV_XSPCKP(args=args)
 
-    # SP(args)
+    SP(args)
 
     # FCP_traditional(args=args)
 

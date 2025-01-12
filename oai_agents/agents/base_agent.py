@@ -511,33 +511,22 @@ class OAITrainer(ABC):
             print(f"we saved timestep_count: {self.n_envs*timestep_count} and step_count:{self.steps} for tag: {tag}")
         return path, tag
 
-    @staticmethod
-    def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):
-        ''' Loads each agent that the trainer is training '''
+    def only_load_agents(args, tag, name: str=None, path: Union[Path, None] = None):
         path = path or get_model_path(
             base_dir=args.base_dir,
             exp_folder=args.exp_dir,
             model_name=name
         )
-
-        tag = tag
-        load_path = path / tag / 'trainer_file'
-        env_path = path / tag / "env_file"
         agent_path = path / tag / 'agents_dir'
         device = args.device
-        saved_variables = th.load(load_path, map_location=device)
+        agent_folders_under_the_tag = [entry for entry in os.listdir(agent_path) if os.path.isdir(os.path.join(agent_path, entry))]
 
-        # Load weights
         agents = []
-        for agent_fn in saved_variables['agent_fns']:
-            agent = load_agent(agent_path / agent_fn, args)
+        for agent_folder in agent_folders_under_the_tag:
+            agent = load_agent(agent_path / agent_folder, args)
             agent.to(device)
             agents.append(agent)
-
-        with open(env_path, "rb") as f:
-            env_info = pkl.load(f)
-
-        return agents, env_info, saved_variables
+        return agents
 
     @staticmethod
     def load_agents(args, tag, name: str=None, path: Union[Path, None] = None):

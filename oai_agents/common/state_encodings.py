@@ -52,6 +52,38 @@ def OAI_encode_state(mdp: OvercookedGridworld, state: OvercookedState, grid_shap
     #     visual_obs = visual_obs[p_idx]
     return {'visual_obs': visual_obs}
 
+def OAI_contexted_egocentric_encode_state(
+        mdp: OvercookedGridworld, state: OvercookedState,
+        grid_shape: tuple, horizon: int, p_idx=None, goal_objects=None) -> Dict[str, np.array]:
+    """
+    Returns the egocentric encode state. Player will always be facing down (aka. SOUTH).
+    grid_shape: The desired padded output shape from the egocentric view
+    """
+    if len(grid_shape) > 2 or grid_shape[0] % 2 == 0 or grid_shape[1] % 2 == 0:
+        raise ValueError(f'Ego grid shape must be 2D and both dimensions must be odd! {grid_shape} is invalid.')
+
+    # Get np.array representing current state
+    # This returns 2xNxMxF (F is # features) if p_idx is None else NxMxF
+    visual_obs = mdp.lossless_state_encoding(state, horizon=horizon, goal_objects=goal_objects, p_idx=p_idx)
+
+    if p_idx is not None:
+        visual_obs = np.transpose(visual_obs, (2, 0, 1))
+        num_features = visual_obs.shape[0]
+    else:
+        visual_obs = np.stack(visual_obs, axis=0)
+        visual_obs = np.transpose(visual_obs, (0, 3, 1, 2))  # Reorder to features first --> 2xFxNxM
+        num_players, num_features = visual_obs.shape[0], visual_obs.shape[1]
+
+    # Now we mask out the egocentric view
+    if p_idx is not None:
+        ego_visual_obs = get_egocentric_grid(visual_obs, grid_shape, state.players[p_idx])
+        assert ego_visual_obs.shape == (num_features, *grid_shape)
+    else:
+        assert len(state.players) == num_players
+        ego_visual_obs = np.stack([get_egocentric_grid(visual_obs[idx], grid_shape, player)
+                                   for idx, player in enumerate(state.players)])
+        assert ego_visual_obs.shape == (num_players, num_features, *grid_shape)
+    return {'visual_obs': ego_visual_obs}
 
 def OAI_egocentric_encode_state(mdp: OvercookedGridworld, state: OvercookedState,
                                 grid_shape: tuple, horizon: int, p_idx=None, goal_objects=None) -> Dict[str, np.array]:
@@ -66,20 +98,13 @@ def OAI_egocentric_encode_state(mdp: OvercookedGridworld, state: OvercookedState
     # This returns 2xNxMxF (F is # features) if p_idx is None else NxMxF
     visual_obs = mdp.lossless_state_encoding(state, horizon=horizon, goal_objects=goal_objects, p_idx=p_idx)
 
-    if p_idx is None:
+    if p_idx is not None:
+        visual_obs = np.transpose(visual_obs, (2, 0, 1))
+        num_features = visual_obs.shape[0]
+    else:
         visual_obs = np.stack(visual_obs, axis=0)
         visual_obs = np.transpose(visual_obs, (0, 3, 1, 2))  # Reorder to features first --> 2xFxNxM
         num_players, num_features = visual_obs.shape[0], visual_obs.shape[1]
-    else:
-        visual_obs = np.transpose(visual_obs, (2, 0, 1))
-        num_features = visual_obs.shape[0]
-    # Remove orientation features since they are now irrelevant.
-    # There are num_players * num_directions features.
-    #num_layers_to_skip = num_players*len(Direction.ALL_DIRECTIONS)
-    #idx_slice = list(range(num_players)) + list(range(num_players+num_layers_to_skip, num_features))
-    #visual_obs = visual_obs[:, idx_slice, :, :]
-    #assert visual_obs.shape[1] == num_features - num_layers_to_skip
-    #num_features = num_features - num_layers_to_skip
 
     # Now we mask out the egocentric view
     if p_idx is not None:
@@ -121,6 +146,7 @@ ENCODING_SCHEMES = {
     'OAI_feats': OAI_feats,
     'OAI_lossless': OAI_encode_state,
     'OAI_egocentric': OAI_egocentric_encode_state,
+    'OAI_contexted_egocentric': OAI_contexted_egocentric_encode_state,
 }
 
 if __name__ == '__main__':
@@ -130,7 +156,7 @@ if __name__ == '__main__':
     env = OvercookedEnv.from_mdp(OvercookedGridworld.from_layout_name('asymmetric_advantages'), horizon=400)
     env.reset()
     for name, encoding_fn in ENCODING_SCHEMES.items():
-        grid_shape = (7,7) if name == 'OAI_egocentric' else (10,10)
+        grid_shape = (7,7) if name in ['OAI_contexted_egocentric', 'OAI_egocentric'] else (10,10)
         obs = encoding_fn(env.mdp, env.state, grid_shape, 400)
         time_taken = timeit.timeit(lambda: encoding_fn(env.mdp, env.state, grid_shape, 400), number=10)
         d = {k: v.shape for k,v in obs.items()}

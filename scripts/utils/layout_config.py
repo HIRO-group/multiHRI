@@ -20,8 +20,8 @@ two_chefs_aamas24_layouts = [
     'selected_2_chefs_coordination_ring',
     'selected_2_chefs_counter_circuit',
     'selected_2_chefs_cramped_room',
-    'selected_2_chefs_secret_coordination_ring',
-    'selected_2_chefs_storage_room'
+    # 'selected_2_chefs_secret_coordination_ring',
+    # 'selected_2_chefs_storage_room'
 ]
 
 three_chefs_aamas24_layouts = [
@@ -64,6 +64,6 @@ classic_layouts = [
     'coordination_ring',
     'counter_circuit',
     'cramped_room',
-    'asymmetric_advantages',
-    'forced_coordination',
+    # 'asymmetric_advantages',
+    # 'forced_coordination',
 ]
