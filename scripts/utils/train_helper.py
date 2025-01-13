@@ -7,7 +7,7 @@ from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
 from oai_agents.agents.agent_utils import CustomAgent
 from .common import load_agents, generate_name
 from oai_agents.common.tags import Prefix, KeyCheckpoints
-# from oai_agents.common.multi_setup_trainer import MultiSetupSPTrainer
+from oai_agents.common.multi_setup_trainer import MultiSetupSPTrainer
 
 
 def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_agent):

@@ -21,7 +21,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from utils import (
-    Complex,
+    Complex, Classic,
     TWO_PLAYERS_LOW_EVAL,
     TWO_PLAYERS_MEDIUM_EVAL,
     TWO_PLAYERS_HIGH_EVAL,
@@ -57,6 +57,33 @@ LAYOUT_NAMES_PATHs = {
         Eval.MEDIUM: Complex.COMPLEX_2_M,
         Eval.HIGH: Complex.COMPLEX_2_H,
     },
+
+    'coordination_ring': {
+        Eval.LOW: Classic.L_2,
+        Eval.MEDIUM: Classic.M_2,
+        Eval.HIGH: Classic.H_2,
+    },
+    'counter_circuit': {
+        Eval.LOW: Classic.L_2,
+        Eval.MEDIUM: Classic.M_2,
+        Eval.HIGH: Classic.H_2,
+    },
+    'cramped_room': {
+        Eval.LOW: Classic.L_2,
+        Eval.MEDIUM: Classic.M_2,
+        Eval.HIGH: Classic.H_2,
+    },
+    'asymmetric_advantages': {
+        Eval.LOW: Classic.L_2,
+        Eval.MEDIUM: Classic.M_2,
+        Eval.HIGH: Classic.H_2,
+    },
+    'forced_coordination': {
+        Eval.LOW: Classic.L_2,
+        Eval.MEDIUM: Classic.M_2,
+        Eval.HIGH: Classic.H_2,
+    },
+
     'selected_2_chefs_coordination_ring': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
@@ -416,48 +443,60 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
 
 def get_2_player_input(args):
     args.num_players = 2
-    layout_names = ['secret_heaven',
-                    'storage_room']
+    layout_names = [
+        'coordination_ring',
+        'counter_circuit',
+        'cramped_room',
+        'asymmetric_advantages',
+        'forced_coordination'
+        ]
+
     p_idxes = [0, 1]
 
     all_agents_paths = {
-        'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
-        'FCP_s1010_h256': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
+        'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
+        'SP_s1010_h256': 'agent_models/Classic/2/SP_hd256_seed1010/best',
+        'FCP_s1010_h256': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
-        'dsALMH 1d[2t] 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[2t] 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 1d[2t] 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        'dsALMH 1d[5t] 1s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[5t] 2s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[5t] 3s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 1d[5t] 1us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[5t] 2us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[5t] 3us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        'sALMH 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        'sALMH 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        # 'SP':       'agent_models/StaticADV/2/SP_hd64_seed14/best',
-        # 'sALMH 2A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        # 'sALMH 4A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        # 'sALMH 6A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 1d[2t] 1s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        # 'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
-        # 'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',
+        'dsALMH 1d[5t] 1s PH': 'agent_models/Visit_counter_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[5t] 2s PH': 'agent_models/Visit_counter_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[5t] 3s PH': 'agent_models/Visit_counter_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        # 'ALMH CUR 3A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack2/best',
-        # 'ALMH RAN 3A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack2/best',
-        # 'AMH CUR 3A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack2/best',
-        # 'AMH RAN 3A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack2/best',
+        'sALMH 1s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 2s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 3s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        # 'ALMH CUR 2A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
-        # 'ALMH RAN 2A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
-        # 'AMH CUR 2A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        # 'AMH RAN 2A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best',
 
-        # 'ALMH CUR 1A': 'agent_models/ALMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        # 'ALMH RAN 1A': 'agent_models/ALMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        # 'AMH CUR 1A':  'agent_models/AMH_CUR/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        # 'AMH RAN 1A':  'agent_models/AMH_RAN/2/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
+        # 'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
+        # 'FCP_s1010_h256': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
+
+        # 'dsALMH 1d[2t] 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[2t] 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        # 'dsALMH 3d[2t] 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+        # 'dsALMH 1d[5t] 1s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[5t] 2s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        # 'dsALMH 3d[5t] 3s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+        # 'sALMH 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        # 'sALMH 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
