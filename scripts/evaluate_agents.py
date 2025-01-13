@@ -21,6 +21,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from utils import (
+    Complex,
     TWO_PLAYERS_LOW_EVAL,
     TWO_PLAYERS_MEDIUM_EVAL,
     TWO_PLAYERS_HIGH_EVAL,
@@ -46,6 +47,16 @@ eval_key_lut = {
 }
 
 LAYOUT_NAMES_PATHs = {
+    'secret_heaven': {
+        Eval.LOW: Complex.COMPLEX_2_L,
+        Eval.MEDIUM: Complex.COMPLEX_2_M,
+        Eval.HIGH: Complex.COMPLEX_2_H,
+    },
+    'storage_room': {
+        Eval.LOW: Complex.COMPLEX_2_L,
+        Eval.MEDIUM: Complex.COMPLEX_2_M,
+        Eval.HIGH: Complex.COMPLEX_2_H,
+    },
     'selected_2_chefs_coordination_ring': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
@@ -405,16 +416,30 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
 
 def get_2_player_input(args):
     args.num_players = 2
-    layout_names = ['selected_2_chefs_coordination_ring',
-                    'selected_2_chefs_counter_circuit',
-                    'selected_2_chefs_cramped_room']
+    layout_names = ['secret_heaven',
+                    'storage_room']
     p_idxes = [0, 1]
 
-    all_agents_paths = {    
-        'SP':       'agent_models/StaticADV/2/SP_hd64_seed14/best',
-        'sALMH 2A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 4A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 6A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+    all_agents_paths = {
+        'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
+        'FCP_s1010_h256': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
+
+        'dsALMH 1d[2t] 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+        'dsALMH 1d[5t] 1s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[5t] 2s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[5t] 3s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+        'sALMH 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+
+        # 'SP':       'agent_models/StaticADV/2/SP_hd64_seed14/best',
+        # 'sALMH 2A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 4A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        # 'sALMH 6A': 'agent_models/StaticADV/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
         # 'SP':          'agent_models/Result/2/SP_hd64_seed14/best',
         # 'FCP':         'agent_models/FCP_correct/2/FCP_s2020_h256_tr(AMX)_ran/best',

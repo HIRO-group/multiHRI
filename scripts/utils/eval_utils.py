@@ -24,6 +24,26 @@ def print_selected_agents_for_evaluation(selected_agents_for_evaluation):
                         team_members = [(member.name, member.layout_scores[layout_name]) for member in team]
                         print(f"        Team {i + 1}: {team_members}")
 
+class Complex:
+    COMPLEX_2_L = [
+        'agent_models/Complex/2/SP_hd256_seed13/ck_0',
+        'agent_models/Complex/2/SP_hd256_seed1010/ck_0',
+        'agent_models/Complex/2/SP_hd256_seed2020/ck_0',
+        'agent_models/Complex/2/SP_hd256_seed2602/ck_0',
+    ]
+    COMPLEX_2_M = [
+        'agent_models/Complex/2/SP_hd256_seed13/ck_1_rew_236.0',
+        'agent_models/Complex/2/SP_hd256_seed1010/ck_1_rew_182.0',
+        'agent_models/Complex/2/SP_hd256_seed2020/ck_1_rew_257.0',
+        'agent_models/Complex/2/SP_hd256_seed2602/ck_1_rew_216.0',
+    ]
+    COMPLEX_2_H = [
+        'agent_models/Complex/2/SP_hd256_seed1010/best',
+        'agent_models/Complex/2/SP_hd256_seed2020/best',
+        'agent_models/Complex/2/SP_hd256_seed2602/best',
+        'agent_models/Complex/2/SP_hd256_seed2602/ck_9_rew_308.0'
+    ]
+
 
 TWO_PLAYERS_LOW_EVAL = [
     'agent_models/StaticADV/2/SP_hd64_seed14/ck_0',
