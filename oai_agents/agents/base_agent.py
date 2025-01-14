@@ -500,7 +500,7 @@ class OAITrainer(ABC):
                 "timestep_count": timestep_count,
                 "step_count": self.steps
             }, f)
-            print(f"we saved timestep_count: {self.n_envs*timestep_count} and step_count:{self.steps} for tag: {tag}")
+            print(f"Saved on timestep_count: {self.n_envs*timestep_count} and step_count:{self.steps} for tag: {tag}")
         return path, tag
 
     @staticmethod

@@ -132,58 +132,6 @@ def SPN_1ADV_XSPCKP(args) -> None:
         attack_rounds=attack_rounds
     )
 
-
-
-def SPN_XSPCKP(args) -> None:
-    '''
-    In N-agents games, a randomly initialized agent will be trained with N-X copies of itself
-    and X homogeneous unseen teammates, which are checkpoints saved during a previous self-play process.
-    These saved checkpoints are cateogorized into High, Medium, Low performance.
-    e.g.
-    when N is 4 and X is 1, the team can be composed by [SP, SP, SP, H], [SP, SP, SP, M], [SP, SP, SP, L] in a 4-chef layout.
-    when N is 4 and X is 2, the team can be composed [SP, SP, H, H], [SP, SP, M, M], [SP, SP, L, L] in a 4-chef layout.
-
-
-    Please note that
-    - X is the number of unseen teammate.
-    - X is assigned by the variable, unseen_teammates_len, in the funciton.
-
-    :param pop_force_training: Boolean that, if true, indicates population should be generated, otherwise load it from file
-    :param primary_force_training: Boolean that, if true, indicates the SP agent teammates_collection should be trained  instead of loaded from file.
-    '''
-
-    unseen_teammates_len = 1
-    primary_train_types = [
-        TeamType.SELF_PLAY_HIGH,
-        TeamType.SELF_PLAY_MEDIUM,
-        TeamType.SELF_PLAY_LOW,
-        # TeamType.SELF_PLAY_STATIC_ADV,
-        TeamType.SELF_PLAY_DYNAMIC_ADV
-    ]
-    primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_DYNAMIC_ADV],
-        'load': []
-    }
-
-    if args.prioritized_sampling:
-        curriculum = Curriculum(train_types=primary_train_types, 
-                                eval_types=primary_eval_types, 
-                                is_random=False, 
-                                prioritized_sampling=True,
-                                priority_scaling=2.0)
-
-    else:
-        curriculum = Curriculum(train_types=primary_train_types, is_random=True)
-
-    get_N_X_SP_agents(
-        args,
-        n_x_sp_train_types = curriculum.train_types,
-        n_x_sp_eval_types=primary_eval_types,
-        curriculum=curriculum,
-        unseen_teammates_len=unseen_teammates_len,
-    )
-
-
 def FCP_mhri(args):
     '''
     There are two types of FCP, one is the traditional FCP that uses random teammates (i.e. ALL_MIX),
@@ -217,28 +165,6 @@ def FCP_mhri(args):
         fcp_train_types = fcp_curriculum.train_types,
         fcp_eval_types=primary_eval_types,
         fcp_curriculum=fcp_curriculum
-    )
-
-
-
-def FCP_traditional(args):
-    '''
-    The ALL_MIX TeamType enables truly random teammates when training (like in the original FCP
-    implementation)
-    '''
-
-    primary_train_types = [TeamType.ALL_MIX]
-    primary_eval_types = {
-        'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
-        'load': []
-    }
-    fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
-
-    _, _ = get_FCP_agent_w_pop(
-        args,
-        fcp_train_types=fcp_curriculum.train_types,
-        fcp_eval_types=primary_eval_types,
-        fcp_curriculum=fcp_curriculum,
     )
 
 
@@ -276,63 +202,72 @@ def N_1_FCP(args):
     )
 
 
+
+def FCP_traditional(args):
+    '''
+    The ALL_MIX TeamType enables truly random teammates when training (like in the original FCP
+    implementation)
+    '''
+    primary_train_types = [TeamType.ALL_MIX]
+    primary_eval_types = {
+        'generate' : [TeamType.HIGH_FIRST, TeamType.LOW_FIRST],
+        'load': []
+    }
+    fcp_curriculum = Curriculum(train_types=primary_train_types, is_random=True)
+    _, _ = get_FCP_agent_w_pop(
+        args,
+        fcp_train_types=fcp_curriculum.train_types,
+        fcp_eval_types=primary_eval_types,
+        fcp_curriculum=fcp_curriculum,
+    )
+
+
+def SPN_XSPCKP(args) -> None:
+    '''
+    In N-agents games, a randomly initialized agent will be trained with N-X copies of itself
+    and X homogeneous unseen teammates, which are checkpoints saved during a previous self-play process.
+    when N is 4 and X is 1, the team can be composed by [SP, SP, SP, H], [SP, SP, SP, M], [SP, SP, SP, L] in a 4-chef layout.
+    when N is 4 and X is 2, the team can be composed [SP, SP, H, H], [SP, SP, M, M], [SP, SP, L, L] in a 4-chef layout.
+    - X is the number of unseen teammate.
+    - X is assigned by the variable, unseen_teammates_len, in the funciton.
+    '''
+    unseen_teammates_len = 1
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
+        TeamType.SELF_PLAY_DYNAMIC_ADV,
+        TeamType.SELF_PLAY_STATIC_ADV,
+    ]
+    primary_eval_types = {
+        'generate': [TeamType.SELF_PLAY_HIGH, 
+                     TeamType.SELF_PLAY_LOW,
+                     TeamType.SELF_PLAY_DYNAMIC_ADV,
+                     TeamType.SELF_PLAY_STATIC_ADV,
+                    ],
+        'load': []
+    }
+    if args.prioritized_sampling:
+        curriculum = Curriculum(train_types=primary_train_types, 
+                                eval_types=primary_eval_types, 
+                                is_random=False, 
+                                prioritized_sampling=True,
+                                priority_scaling=2.0)
+        primary_eval_types['generate'] = primary_eval_types
+    else:
+        curriculum = Curriculum(train_types=primary_train_types, is_random=True)
+
+    get_N_X_SP_agents(
+        args,
+        n_x_sp_train_types = curriculum.train_types,
+        n_x_sp_eval_types=primary_eval_types,
+        curriculum=curriculum,
+        unseen_teammates_len=unseen_teammates_len,
+    )
+
+
 def set_input(args):
     args.num_players = args.teammates_len + 1
-
-    two_chefs_dec_layouts = [
-        'dec_2_chefs_counter_circuit',
-        'dec_2_chefs_storage_room',
-        'dec_2_chefs_cramped_room',
-    ]
-
-    three_chefs_dec_layouts = [
-        'dec_3_chefs_counter_circuit',
-        'dec_3_chefs_storage_room',
-        'dec_3_chefs_cramped_room',
-    ]
-
-    five_chefs_dec_layouts = [
-        'dec_5_chefs_counter_circuit',
-        'dec_5_chefs_storage_room',
-        'dec_5_chefs_secret_heaven',
-    ]
-
-    two_chefs_aamas24_layouts = [
-        'selected_2_chefs_coordination_ring',
-        'selected_2_chefs_counter_circuit',
-        'selected_2_chefs_cramped_room',
-        # 'selected_2_chefs_secret_coordination_ring',
-        # 'selected_2_chefs_storage_room'
-    ]
-
-    three_chefs_aamas24_layouts = [
-        'selected_3_chefs_coordination_ring',
-        'selected_3_chefs_counter_circuit',
-        'selected_3_chefs_cramped_room',
-        # 'selected_3_chefs_secret_coordination_ring',
-        # 'selected_3_chefs_storage_room'
-    ]
-
-    four_chefs_aamas24_layouts = [
-        'selected_4_chefs_coordination_ring',
-        'selected_4_chefs_counter_circuit',
-        'selected_4_chefs_cramped_room',
-        'selected_4_chefs_secret_coordination_ring',
-        'selected_4_chefs_spacious_room_few_resources',
-        'selected_4_chefs_spacious_room_no_counter_space',
-        'selected_4_chefs_storage_room'
-    ]
-
-    five_chefs_aamas24_layouts = [
-        # 'selected_5_chefs_coordination_ring',
-        'selected_5_chefs_counter_circuit',
-        # 'selected_5_chefs_cramped_room',
-        'selected_5_chefs_secret_coordination_ring',
-        # 'selected_5_chefs_spacious_room_few_resources',
-        # 'selected_5_chefs_spacious_room_no_counter_space',
-        'selected_5_chefs_storage_room'
-    ]
-
     classic_layouts = [
         'coordination_ring',
         'counter_circuit',
@@ -341,89 +276,67 @@ def set_input(args):
         'forced_coordination',
     ]
 
-    two_chefs_layouts = two_chefs_aamas24_layouts
-    three_chefs_layouts = three_chefs_dec_layouts
-    four_chefs_layouts = four_chefs_aamas24_layouts
-    five_chefs_layouts = five_chefs_dec_layouts
+    complex_layouts = [
+        'secret_heaven',
+        'storage_room'
+    ]
 
+    two_chefs_layouts = classic_layouts
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
-    elif args.num_players == 3:
-        args.layout_names = three_chefs_layouts
-    elif args.num_players == 4:
-        args.layout_names = four_chefs_layouts
-    elif args.num_players == 5:
-        args.layout_names = five_chefs_layouts
 
-    args.dynamic_reward = True
-    args.final_sparse_r_ratio = 0.5
     args.custom_agent_ck_rate_generation = args.num_players + 1
-    args.gen_pop_for_eval = False
-    args.prioritized_sampling = True
+    args.num_steps_in_traj_for_dyn_adv = 2
+    args.num_static_advs_per_heatmap = 1
+    args.num_dynamic_advs_per_heatmap = 1
+    args.use_val_func_for_heatmap_gen = True
+    args.prioritized_sampling = False
 
     if not args.quick_test:
-        args.num_of_ckpoints = 10
+        args.gen_pop_for_eval = False
         args.n_envs = 210
         args.epoch_timesteps = 1e5
 
-        args.primary_learner_type = LearnerType.ORIGINALER
-        args.adversary_learner_type = LearnerType.SELFISHER
-        args.pop_learner_type = LearnerType.ORIGINALER
-
         args.pop_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * args.how_long)
-        args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.fcp_total_training_timesteps = int(5e6 * args.how_long)
+        
+        args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.SP_seed, args.SP_h_dim = 1010, 256
-        args.N_X_SP_seed, args.N_X_SP_h_dim = 1010, 256
-        args.FCP_seed, args.FCP_h_dim = 2020, 256
-        args.N_X_FCP_seed, args.N_X_FCP_h_dim = 2602, 256
-        args.ADV_seed, args.ADV_h_dim = 68, 512
-
-        args.total_ego_agents = 8
-        args.exp_dir = f'Dec/{args.num_players}'
+        args.total_ego_agents = 4
+        args.exp_dir = f'Classic/{args.num_players}'
 
     else: # Used for doing quick tests
-        args.num_of_ckpoints = 10
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
         args.n_envs = 2
         args.epoch_timesteps = 2
-
         args.pop_total_training_timesteps = 3500
-        args.n_x_sp_total_training_timesteps = 1000
-        args.adversary_total_training_timesteps = 1000
-
+        args.n_x_sp_total_training_timesteps = 1500
+        args.adversary_total_training_timesteps = 1500
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
-
-        args.total_ego_agents = 3
-        args.exp_dir = f'test/{args.num_players}'
+        args.total_ego_agents = 2
+        args.exp_dir = f'Test/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
     args.quick_test = False
-    args.parallel = True
-
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-
     args.teammates_len = 1
-    args.how_long = 20 # Not effective in quick_test mode
+    args.how_long = 20
 
     set_input(args=args)
 
     SPN_XSPCKP(args=args)
 
-    # SPN_1ADV_XSPCKP(args=args)
+    # FCP_traditional(args=args)
 
     # SP(args)
-
-    # FCP_traditional(args=args)
 
     # FCP_mhri(args=args)
 
