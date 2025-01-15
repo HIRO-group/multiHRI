@@ -144,7 +144,7 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             seed=seed,
             h_dim=h_dim,
             train_types=self.train_types,
-            has_curriculum=not self.curriculum.is_random
+            curriculum=self.curriculum
         )
 
         return self.get_reinforcement_agent(

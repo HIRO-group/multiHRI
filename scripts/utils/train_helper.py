@@ -58,8 +58,7 @@ def get_N_X_SP_agents(
         prefix = prefix,
         seed = args.N_X_SP_seed,
         h_dim = args.N_X_SP_h_dim,
-        train_types = n_x_sp_train_types,
-        has_curriculum = not curriculum.is_random,
+        curriculum = curriculum,
         suffix=suffix,
     )
     agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
@@ -113,8 +112,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                         prefix = f'N-{unseen_teammates_len}-SP',
                         seed = args.N_X_SP_seed,
                         h_dim = args.N_X_SP_h_dim,
-                        train_types = curriculum.train_types,
-                        has_curriculum = not curriculum.is_random,
+                        curriculum = curriculum,
                         suffix=args.primary_learner_type + '_attack' + str(args.custom_agent_ck_rate_generation))
 
     agents = load_agents(args, name=name, tag=tag, force_training=args.primary_force_training)
@@ -149,8 +147,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                         prefix = f'N-{unseen_teammates_len}-SP',
                         seed = args.N_X_SP_seed,
                         h_dim = args.N_X_SP_h_dim,
-                        train_types = curriculum.train_types,
-                        has_curriculum = not curriculum.is_random,
+                        curriculum = curriculum,
                         suffix=args.primary_learner_type + '_attack' + str(round))
         agents = load_agents(args, name=name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=args.primary_force_training)
         if agents:
@@ -203,8 +200,7 @@ def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adv
             prefix = f'PWADV-N-{unseen_teammates_len}-SP',
             seed = args.N_X_SP_seed,
             h_dim = args.N_X_SP_h_dim,
-            train_types = curriculum.train_types,
-            has_curriculum = not curriculum.is_random,
+            curriculum = curriculum,
             suffix=args.primary_learner_type + '_attack' + str(attack_round),
         )
 
@@ -277,8 +273,7 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         prefix = f'N-{unseen_teammates_len}-SP',
         seed = args.N_X_SP_seed,
         h_dim = args.N_X_SP_h_dim,
-        train_types = curriculum.train_types,
-        has_curriculum = not curriculum.is_random,
+        curriculum = curriculum,
         suffix=args.primary_learner_type,
     )
 
@@ -348,7 +343,6 @@ def get_adversary_agent(
         seed=args.ADV_seed,
         h_dim=args.ADV_h_dim,
         train_types=[adversary_teammates_teamtype],
-        has_curriculum=False,
         suffix=args.adversary_learner_type +'_attack'+ str(attack_round)
     )
 
@@ -394,8 +388,8 @@ def get_FCP_agent_w_pop(
         prefix=Prefix.FICTITIOUS_CO_PLAY,
         seed=args.FCP_seed,
         h_dim=args.FCP_h_dim,
-        train_types=fcp_train_types,
-        has_curriculum = not fcp_curriculum.is_random
+        train_types=fcp_train_types,    # TODO: verify that this comes from fcp_curriculum and remove the argument
+        curriculum=fcp_curriculum
     )
 
     population = get_performance_based_population_by_layouts(
@@ -475,8 +469,7 @@ def get_N_X_FCP_agents(
         prefix=f'N-{unseen_teammates_len}-FCP',
         seed=args.N_X_FCP_seed,
         h_dim=args.N_X_FCP_h_dim,
-        train_types=n_1_fcp_curriculum.train_types,
-        has_curriculum = not fcp_curriculum.is_random
+        curriculum = n_1_fcp_curriculum
     )
 
     agents = load_agents(

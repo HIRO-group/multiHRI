@@ -185,6 +185,7 @@ class Curriculum:
             prioritized_teamtype = np.random.choice(teamtype_options)
 
         # Randomly sample a team of agents from this teamtype
+        wandb.log({"team_type_index": TeamType.map_to_index(prioritized_teamtype)})
         teammates_for_teamtype = population_teamtypes[prioritized_teamtype]
         teammates = random.choice(teammates_for_teamtype)
 
