@@ -3,10 +3,58 @@ import torch as th
 import numpy as np
 
 from stable_baselines3.common.utils import obs_as_tensor
-from overcooked_ai_py.mdp.overcooked_mdp import Action
-from oai_agents.common.overcooked_simulation import OvercookedSimulation
-from oai_agents.common.tags import TeammatesCollection, TeamType
-from oai_agents.agents.agent_utils import CustomAgent
+from oai_agents.common.tags import TeamType
+from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
+
+
+def not_used_function_get_tile_v_using_all_states(args, agent, layout):
+    '''
+    This function is currently NOT used in the codebase.
+    Get the value function for all possible states in the layout
+    '''
+    from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
+    from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, SoupState, ObjectState
+    from oai_agents.common.state_encodings import OAI_egocentric_encode_state
+    import numpy as np
+    from itertools import product
+
+    mdp = OvercookedGridworld.from_layout_name(layout)
+    env = OvercookedEnv.from_mdp(mdp, horizon=400)
+
+    tiles_v = np.zeros((7, 7))
+    all_valid_joint_pos = env.mdp.get_valid_joint_player_positions()
+    possible_objects = [None, "dish", "onion", "soup"]
+    player_object_combinations = list(product(possible_objects, repeat=args.num_players))
+    for pos in all_valid_joint_pos:
+        env.reset()
+        for i in range(args.num_players):
+            env.state.players[i].position = pos[i]
+
+        pots = env.mdp.get_pot_states(env.state)["empty"]
+        for pot_loc in pots:
+            for n in range(4):
+                if n == 3:
+                    cooking_ticks = range(20)
+                else:
+                    cooking_ticks = [-1]
+                for cooking_tick in cooking_ticks:
+                    env.state.objects[pot_loc] = SoupState.get_soup(pot_loc, num_onions=n, cooking_tick=cooking_tick)
+                    for objects_combination in player_object_combinations:
+                        for player_idx, obj in enumerate(objects_combination):
+                            if env.state.players[player_idx].has_object():
+                                env.state.players[player_idx].remove_object()
+                            if obj is None: continue                                    
+                            elif obj == "soup":
+                                held_obj = SoupState.get_soup(pos[player_idx], num_onions=3, finished=True)
+                                env.state.players[player_idx].set_object(held_obj)
+                            else:
+                                held_obj = ObjectState(obj, pos[player_idx])
+                                env.state.players[player_idx].set_object(held_obj)
+
+                        obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)
+                        value = get_value_function(args=args, agent=agent, observation=obs)
+                        tiles_v[pos[0][0], pos[0][1]] += value
+    return tiles_v
 
 
 def get_value_function(args, agent, observation):
@@ -22,23 +70,18 @@ def get_value_function(args, agent, observation):
 def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
     if interact_actions_only:
         raise NotImplementedError
-
-    tiles_v = np.zeros((20,  20)) # value function
-    tiles_p = np.zeros((20,  20)) # position counter
-
+    tiles_p = np.zeros((20, 20)) # position counter
+    tiles_v = np.zeros((20, 20)) # value counter
     for trajectory in trajectories:
         observations = trajectory['observations']
         joint_trajectory = trajectory['positions']
         agent1_trajectory = [tr[p_idx] for tr in joint_trajectory]
         for i in range(0, len(agent1_trajectory)):
             x, y = agent1_trajectory[i]
+            tiles_p[x, y] += 1
             value = get_value_function(args=args, agent=agent, observation=observations[i])
             tiles_v[x, y] += value
-            tiles_p[x, y] += 1
-    
-    tiles_v = tiles_v / tiles_p
-    tiles_v = np.nan_to_num(tiles_v)
-    return tiles_v, tiles_p
+    return {'P': tiles_p, 'V': tiles_v}
 
 
 def generate_static_adversaries(args, all_tiles):
@@ -50,16 +93,15 @@ def generate_static_adversaries(args, all_tiles):
             top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
             top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
             layout_heatmap_top_xy_coords.extend(top_n_coords)
+        
         heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
     agents = []
     for adv_idx in range(args.num_static_advs_per_heatmap):
         start_position = {layout: (-1, -1) for layout in args.layout_names}
         for layout in args.layout_names:
             start_position[layout] = [tuple(map(int, heatmap_xy_coords[layout][adv_idx]))]
-
         agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', trajectories=start_position))
     return agents
-
 
 
 def generate_dynamic_adversaries(args, all_tiles):
@@ -73,7 +115,6 @@ def generate_dynamic_adversaries(args, all_tiles):
     - Given positions p0 -> p1 -> ... -> pN:
     - Randomly sample actions that enables the agent to go from p0 -> ... -> pN or pN -> .. -> p0
     '''
-
     mode = 'V' if args.use_val_func_for_heatmap_gen else 'P'
     heatmap_trajectories = {layout: [] for layout in args.layout_names}
     for layout in args.layout_names:
@@ -120,26 +161,27 @@ def create_trajectory_from_heatmap(args, start_pos, heatmap):
     return trajectory
 
 
-def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
+def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types, current_adversaries):
+    from oai_agents.common.overcooked_simulation import OvercookedSimulation
     print('Heatmap source:', heatmap_source.name)
-    all_tiles = {layout: {'V': [], 'P': []} for layout in args.layout_names}
+    all_tiles = {layout: {'V': [np.zeros((20, 20))], 'P': [np.zeros((20, 20))]} for layout in args.layout_names}
 
     for layout in args.layout_names:
         for p_idx in range(args.num_players):
-            for train_type_for_teammate in train_types:
-                if train_type_for_teammate not in [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MIDDLE, TeamType.SELF_PLAY_HIGH]:
-                    continue
-
-                all_teammates_for_train_type = teammates_collection[TeammatesCollection.TRAIN][layout][train_type_for_teammate]
-                selected_teammates = random.choice(all_teammates_for_train_type)
-
-                simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=selected_teammates, layout_name=layout, p_idx=p_idx, horizon=400)
+            for teammates in [
+                [DummyAgent(action='random') for _ in range(args.num_players - 1)], # lowest performance teammates
+                [heatmap_source for _ in range(args.num_players - 1)] # highest performance teammates 
+            ]:
+                simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=teammates, layout_name=layout, p_idx=p_idx, horizon=400)
                 trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
-                tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-                
-                all_tiles[layout]['V'].append(tiles_v)
-                all_tiles[layout]['P'].append(tiles_p)
+                tile = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
+                all_tiles[layout]['V'][0] += tile['V']
+                all_tiles[layout]['P'][0] += tile['P']
 
+        for adversary in [item for sublist in current_adversaries.values() for item in sublist]:
+            start_pos = adversary.get_start_position(layout, u_env_idx=0)
+            all_tiles[layout]['V'][0][start_pos[0], start_pos[1]] = 0
+            all_tiles[layout]['P'][0][start_pos[0], start_pos[1]] = 0
 
     adversaries = {}
     if TeamType.SELF_PLAY_STATIC_ADV in train_types:
@@ -149,5 +191,5 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
     if TeamType.SELF_PLAY_DYNAMIC_ADV in train_types:
         dynamic_advs = generate_dynamic_adversaries(args, all_tiles)
         adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV] = dynamic_advs 
-    
+
     return adversaries
