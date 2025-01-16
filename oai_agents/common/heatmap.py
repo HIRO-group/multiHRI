@@ -93,6 +93,7 @@ def generate_static_adversaries(args, all_tiles):
             top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
             top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
             layout_heatmap_top_xy_coords.extend(top_n_coords)
+        
         heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
     agents = []
     for adv_idx in range(args.num_static_advs_per_heatmap):
@@ -160,7 +161,7 @@ def create_trajectory_from_heatmap(args, start_pos, heatmap):
     return trajectory
 
 
-def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types):
+def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collection, train_types, current_adversaries):
     from oai_agents.common.overcooked_simulation import OvercookedSimulation
     print('Heatmap source:', heatmap_source.name)
     all_tiles = {layout: {'V': [np.zeros((20, 20))], 'P': [np.zeros((20, 20))]} for layout in args.layout_names}
@@ -176,6 +177,11 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
                 tile = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
                 all_tiles[layout]['V'][0] += tile['V']
                 all_tiles[layout]['P'][0] += tile['P']
+
+        for adversary in [item for sublist in current_adversaries.values() for item in sublist]:
+            start_pos = adversary.get_start_position(layout, u_env_idx=0)
+            all_tiles[layout]['V'][0][start_pos[0], start_pos[1]] = 0
+            all_tiles[layout]['P'][0][start_pos[0], start_pos[1]] = 0
 
     adversaries = {}
     if TeamType.SELF_PLAY_STATIC_ADV in train_types:
