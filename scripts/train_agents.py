@@ -11,6 +11,7 @@ from scripts.utils import (
     get_FCP_agent_w_pop,
     get_N_X_FCP_agents,
     get_N_X_SP_agents,
+    get_MEP_agents_w_pop,
 )
 
 def SP(args):
@@ -166,9 +167,9 @@ def SPN_XSPCKP(args) -> None:
     }
 
     if args.prioritized_sampling:
-        curriculum = Curriculum(train_types=primary_train_types, 
-                                eval_types=primary_eval_types, 
-                                is_random=False, 
+        curriculum = Curriculum(train_types=primary_train_types,
+                                eval_types=primary_eval_types,
+                                is_random=False,
                                 prioritized_sampling=True,
                                 priority_scaling=2.0)
 
@@ -239,6 +240,25 @@ def FCP_traditional(args):
         fcp_train_types=fcp_curriculum.train_types,
         fcp_eval_types=primary_eval_types,
         fcp_curriculum=fcp_curriculum,
+    )
+
+def MEP(args):
+    '''
+    Create a population using Max Entropy population and train an agent using prioritized sampling
+    '''
+
+    primary_train_types = [TeamType.ALL_MIX]
+    primary_eval_types = {
+        'generate' : [TeamType.ALL_MIX],
+        'load': []
+    }
+    mep_curriculum = Curriculum(train_types=primary_train_types, prioritized_sampling=True, is_random=True)
+
+    _, _ = get_max_ent_agent_w_pop(
+        args,
+        train_types=primary_train_types,
+        eval_types=primary_eval_types,
+        mep_curriculum=mep_curriculum
     )
 
 

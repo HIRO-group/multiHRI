@@ -239,3 +239,138 @@ def get_performance_based_population_by_layouts(
         save_performance_based_population_by_layouts(args=args, population=population)
 
     return population
+
+def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
+    '''
+        Returns ckeckpoints_list
+        either serialized or not based on serialize flag
+    '''
+    name = f'SP_hd{h_dim}_seed{seed}'
+
+    agent_ckpt = None
+    start_step = 0
+    start_timestep = 0
+    ck_rewards = None
+    n_envs=args.n_envs
+    if args.resume:
+        last_ckpt = RLAgentTrainer.get_most_recent_checkpoint(args, name=name)
+        if last_ckpt:
+            agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
+            agent_ckpt = agent_ckpt_info[0]
+            start_step = env_info["step_count"]
+            start_timestep = env_info["timestep_count"]
+            ck_rewards = training_info["ck_list"]
+            n_envs = training_info["n_envs"]
+            print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
+
+
+    rlat = RLAgentTrainer(
+        name=name,
+        args=args,
+        agent=agent_ckpt,
+        teammates_collection={}, # automatically creates SP type
+        epoch_timesteps=args.epoch_timesteps,
+        n_envs=n_envs,
+        hidden_dim=h_dim,
+        seed=seed,
+        checkpoint_rate=ck_rate,
+        learner_type=args.pop_learner_type,
+        curriculum=Curriculum(train_types=[TeamType.SELF_PLAY], is_random=True),
+        start_step=start_step,
+        start_timestep=start_timestep
+    )
+    '''
+    For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
+    For SP agents, they only are trained with themselves so the order doesn't matter.
+    '''
+
+    rlat.train_agents(
+        total_train_timesteps=total_training_timesteps,
+        tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+        resume_ck_list=ck_rewards
+    )
+    checkpoints_list = rlat.ck_list
+
+    if serialize:
+        return dill.dumps(checkpoints_list)
+    return checkpoints_list
+
+def get_max_ent_population_by_layouts(
+        args,
+        ck_rate,
+        total_training_timesteps,
+        train_types,
+        eval_types,
+        total_ego_agents,
+        unseen_teammates_len=0,
+        force_training=False,
+        tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
+    ):
+
+    population = {layout_name: [] for layout_name in args.layout_names}
+
+    try:
+        if force_training:
+            raise FileNotFoundError
+        for layout_name in args.layout_names:
+            name = f'pop_{layout_name}'
+            population[layout_name], _, _ = RLAgentTrainer.load_agents(args, name=name, tag=tag)
+            print(f'Loaded pop with {len(population[layout_name])} agents.')
+    except FileNotFoundError as e:
+        print(f'Could not find saved population, creating them from scratch...\nFull Error: {e}')
+
+        seed, h_dim = generate_hdim_and_seed(
+            for_evaluation=args.gen_pop_for_eval, total_ego_agents=total_ego_agents)
+        population = []
+
+        for i in range(total_ego_agents):
+            agent_ckpt = None
+            start_step = 0
+            start_timestep = 0
+            ck_rewards = None
+            n_envs=args.n_envs
+            name = f"MEP_hd{h_dim[i]}_seed{seed[i]}_{i}"
+            population.append(RLAgentTrainer(
+                name=name,
+                args=args,
+                agent=agent_ckpt,
+                teammates_collection={}, # automatically creates SP type
+                epoch_timesteps=args.epoch_timesteps,
+                n_envs=n_envs,
+                hidden_dim=h_dim[i],
+                seed=seed[i],
+                checkpoint_rate=ck_rate,
+                learner_type=args.pop_learner_type,
+                curriculum=Curriculum(train_types=[TeamType.MAX_ENT], is_random=True),
+                start_step=start_step,
+                start_timestep=start_timestep
+            ))
+
+        seed, h_dim = generate_hdim_and_seed(
+            for_evaluation=args.gen_pop_for_eval, total_ego_agents=total_ego_agents)
+        inputs = [
+            (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True)
+            for i in range(total_ego_agents)
+        ]
+
+
+        # Needs to find the population mean action for each timestep?
+        # How to augment the reward from here?
+        # H(1/n Sigma (get_diststribution for a in agents))
+        for inp in inputs:
+            checkpoints_list = train_SP_with_checkpoints(
+                args=inp[0],
+                total_training_timesteps = inp[1],
+                ck_rate=inp[2],
+                seed=inp[3],
+                h_dim=inp[4],
+                serialize=False
+            )
+            for layout_name in args.layout_names:
+                layout_pop = RLAgentTrainer.get_checkedpoints_agents(
+                    args, checkpoints_list, layout_name)
+                population[layout_name].extend(layout_pop)
+
+        save_performance_based_population_by_layouts(args=args, population=population)
+
+    return population

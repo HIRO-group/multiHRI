@@ -518,3 +518,70 @@ def get_N_X_FCP_agents(
         tag_for_returning_agent=tag
     )
     return fcp_trainer.get_agents()[0], teammates_collection
+
+def get_MEP_agent_w_pop(
+    args,
+    train_types,
+    eval_types,
+    curriculum=None,
+    tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
+):
+    if curriculum is None:
+        curriculum = Curriculum(is_random=True)
+
+    name = generate_name(
+        args,
+        prefix=Prefix.MAX_ENT,
+        seed=args.MEP_seed,
+        h_dim=args.MEP_h_dim,
+        curriculum=curriculum
+    )
+
+    population = get_max_ent_population_by_layouts(
+        args=args,
+        ck_rate=args.pop_total_training_timesteps // args.num_of_ckpoints,
+        total_training_timesteps=args.pop_total_training_timesteps,
+        train_types=train_types,
+        eval_types=eval_types['generate'],
+        total_ego_agents=args.total_ego_agents,
+        force_training=args.pop_force_training,
+        tag=tag
+    )
+
+    teammates_collection = generate_TC(
+        args=args,
+        population=population,
+        train_types=train_types,
+        eval_types_to_generate=eval_types['generate'],
+        eval_types_to_read_from_file=eval_types['load'],
+        use_entire_population_for_train_types_teammates=False
+    )
+
+    agents = load_agents(
+        args,
+        name=name,
+        tag=tag,
+        force_training=args.primary_force_training
+    )
+    if agents:
+        return agents[0], population
+
+    mep_trainer = RLAgentTrainer(
+        name=name,
+        args=args,
+        agent=None,
+        teammates_collection=teammates_collection,
+        epoch_timesteps=args.epoch_timesteps,
+        n_envs=args.n_envs,
+        seed=args.MEP_seed,
+        hidden_dim=args.MEP_h_dim,
+        curriculum=curriculum,
+        learner_type=args.primary_learner_type,
+        checkpoint_rate=args.mep_total_training_timesteps // args.num_of_ckpoints,
+    )
+
+    mep_trainer.train_agents(
+        total_train_timesteps=args.mep_total_training_timesteps,
+        tag_for_returning_agent=tag
+    )
+    return mep_trainer.get_agents()[0], population
