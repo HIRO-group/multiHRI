@@ -93,9 +93,6 @@ def generate_static_adversaries(args, all_tiles):
             top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
             top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
             layout_heatmap_top_xy_coords.extend(top_n_coords)
-            # for coord in top_n_coords:
-            #     if tiles[coord[0]][coord[1]] > 0:
-            #         layout_heatmap_top_xy_coords.append(coord)
         
         heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
     agents = []
