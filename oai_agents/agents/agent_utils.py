@@ -79,10 +79,10 @@ class CustomAgent():
         self.current_position = {
             layout_name: {u_env_idx: self.trajectories[layout_name][0] for u_env_idx in range(0, args.n_envs + len(args.layout_names))}
                 for layout_name in args.layout_names}
-        self.on_the_way_to_end_of_the_trajectory = {
+        self.heading_to_end = {
             layout_name: {u_env_idx: True for u_env_idx in range(0, args.n_envs+len(args.layout_names))}
                 for layout_name in args.layout_names
-        }
+        } # Defines whether the agent is heading to the end of the trajectory or going back to the start
         self.layout_scores = {layout_name: -1 for layout_name in args.layout_names}
         self.layout_performance_tags = {layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names}
 
@@ -93,7 +93,7 @@ class CustomAgent():
         self.current_position = {
             layout_name: {u_env_idx: self.trajectories[layout_name][0] for u_env_idx in range(0, self.args.n_envs+len(self.args.layout_names))}
                 for layout_name in self.args.layout_names}
-        self.on_the_way_to_end_of_the_trajectory = {
+        self.heading_to_end = {
             layout_name: {u_env_idx: True for u_env_idx in range(0, self.args.n_envs+len(self.args.layout_names))}
                 for layout_name in self.args.layout_names
         }
@@ -106,10 +106,10 @@ class CustomAgent():
             layout_name = info['layout_name']
             u_env_idx = info['u_env_idx']
             if self.current_position[layout_name][u_env_idx] == self.trajectories[layout_name][-1]:
-                self.on_the_way_to_end_of_the_trajectory[layout_name][u_env_idx] = False
+                self.heading_to_end[layout_name][u_env_idx] = False
             elif self.current_position[layout_name][u_env_idx] == self.trajectories[layout_name][0]:
-                self.on_the_way_to_end_of_the_trajectory[layout_name][u_env_idx] = True
-            if self.on_the_way_to_end_of_the_trajectory[layout_name][u_env_idx]:
+                self.heading_to_end[layout_name][u_env_idx] = True
+            if self.heading_to_end[layout_name][u_env_idx]:
                 next_position_idx_dx = 1
             else:
                 next_position_idx_dx = -1
