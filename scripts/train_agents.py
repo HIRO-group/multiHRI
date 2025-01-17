@@ -281,9 +281,18 @@ def set_input(args):
         'storage_room'
     ]
 
+    five_player_layouts = [
+        'dec_5_chefs_counter_circuit',
+        'dec_5_chefs_storage_room',
+        'dec_5_chefs_secret_heaven',
+        'selected_5_chefs_spacious_room_no_counter_space',
+    ]
+
     two_chefs_layouts = classic_layouts
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
+    elif args.num_players == 5:
+        args.layout_names = five_player_layouts
 
     args.custom_agent_ck_rate_generation = args.num_players + 1
     args.num_steps_in_traj_for_dyn_adv = 2
@@ -305,7 +314,7 @@ def set_input(args):
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.total_ego_agents = 4
-        args.exp_dir = f'Classic/{args.num_players}'
+        args.exp_dir = f'FivePlayerLayouts/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -327,14 +336,14 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 1
-    args.how_long = 20
+    args.teammates_len = 4
+    args.how_long = 35
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
-    # FCP_traditional(args=args)
+    FCP_traditional(args=args)
 
     # SP(args)
 
