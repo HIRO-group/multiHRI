@@ -47,17 +47,17 @@ class Complex:
 class Classic: 
     L_2 = [
         # Pass through
-        'agent_models/PassThrough/2/SP_hd256_seed13/ck_0',
-        'agent_models/PassThrough/2/SP_hd256_seed1010/ck_0',
-        'agent_models/PassThrough/2/SP_hd256_seed2020/ck_0',
-        'agent_models/PassThrough/2/SP_hd256_seed2602/ck_0',
+        # 'agent_models/PassThrough/2/SP_hd256_seed13/ck_0',
+        # 'agent_models/PassThrough/2/SP_hd256_seed1010/ck_0',
+        # 'agent_models/PassThrough/2/SP_hd256_seed2020/ck_0',
+        # 'agent_models/PassThrough/2/SP_hd256_seed2602/ck_0',
 
         # No pass through
 
-        # 'agent_models/ClassicTest/2/SP_hd256_seed3031/ck_0',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed3708/ck_0',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed4041/ck_0',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed5051/ck_0',
+        'agent_models/ClassicTest/2/SP_hd256_seed3031/ck_0',
+        'agent_models/ClassicTest/2/SP_hd256_seed3708/ck_0',
+        'agent_models/ClassicTest/2/SP_hd256_seed4041/ck_0',
+        'agent_models/ClassicTest/2/SP_hd256_seed5051/ck_0',
 
         # 'agent_models/Classic/2/SP_hd256_seed13/ck_0',
         # 'agent_models/Classic/2/SP_hd256_seed1010/ck_0',
@@ -66,29 +66,29 @@ class Classic:
     ]
     M_2 = [
         # Pass through
-        'agent_models/PassThrough/2/SP_hd256_seed2020/ck_1_rew_228.0',
+        # 'agent_models/PassThrough/2/SP_hd256_seed2020/ck_1_rew_228.0',
         # No pass through
 
-        # 'agent_models/ClassicTest/2/SP_hd256_seed3031/ck_1_rew_121.2',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed3708/ck_1_rew_111.6',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed4041/ck_1_rew_136.8',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed5051/ck_1_rew_114.8',
+        'agent_models/ClassicTest/2/SP_hd256_seed3031/ck_1_rew_121.2',
+        'agent_models/ClassicTest/2/SP_hd256_seed3708/ck_1_rew_111.6',
+        'agent_models/ClassicTest/2/SP_hd256_seed4041/ck_1_rew_136.8',
+        'agent_models/ClassicTest/2/SP_hd256_seed5051/ck_1_rew_114.8',
 
         # 'agent_models/Classic/2/SP_hd256_seed2602/ck_1_rew_190.8',
     ]
     H_2 = [
         # Pass through
-        'agent_models/PassThrough/2/SP_hd256_seed13/best',
-        'agent_models/PassThrough/2/SP_hd256_seed13/ck_10_rew_253.2',
-        'agent_models/PassThrough/2/SP_hd256_seed2020/best',
-        'agent_models/PassThrough/2/SP_hd256_seed2602/best',
+        # 'agent_models/PassThrough/2/SP_hd256_seed13/best',
+        # 'agent_models/PassThrough/2/SP_hd256_seed13/ck_10_rew_253.2',
+        # 'agent_models/PassThrough/2/SP_hd256_seed2020/best',
+        # 'agent_models/PassThrough/2/SP_hd256_seed2602/best',
 
         # No pass through
 
-        # 'agent_models/ClassicTest/2/SP_hd256_seed3031/best',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed3708/best',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed4041/best',
-        # 'agent_models/ClassicTest/2/SP_hd256_seed5051/best',
+        'agent_models/ClassicTest/2/SP_hd256_seed3031/best',
+        'agent_models/ClassicTest/2/SP_hd256_seed3708/best',
+        'agent_models/ClassicTest/2/SP_hd256_seed4041/best',
+        'agent_models/ClassicTest/2/SP_hd256_seed5051/best',
 
         # 'agent_models/Classic/2/SP_hd256_seed1010/ck_7_rew_253.6',
         # 'agent_models/Classic/2/SP_hd256_seed1010/best',
