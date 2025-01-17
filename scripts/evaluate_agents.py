@@ -183,7 +183,7 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
     return all_teammates
 
 
-def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams, teammate_lvl_sets):
+def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams, teammate_lvl_sets, suffix=''):
     plot_name = f'{num_players}-players'
     plot_name += '-det' if deterministic else '-stoch'
     p_idexes_str = ''.join([str(p_idx) for p_idx in p_idxes])
@@ -192,6 +192,7 @@ def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_tea
     plot_name += f'-maxteams{str(max_num_teams)}'
     teams = ''.join([str(t[0]) for t in teammate_lvl_sets])
     plot_name += f"-teams({str(teams)})"
+    plot_name += suffix
     return plot_name
 
 
@@ -382,7 +383,7 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
     for s in fn_args:
         m.update(str(s).encode())
     arg_hash = m.hexdigest()
-    cached_eval = Path(f"eval_cache/eval_test_{arg_hash}.pkl")
+    cached_eval = Path(f"eval_cache_v2/eval_{arg_hash}.pkl")
 
     if cached_eval.is_file():
         print(f"Loading cached evaluation for agent {agent_name}")
@@ -454,13 +455,26 @@ def get_2_player_input(args):
     p_idxes = [0, 1]
 
     all_agents_paths = {
-        'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
+        'SP_s1010_h256': 'agent_models/PassThrough/2/SP_hd256_seed1010/best',
+        'FCP_s1010_h256': 'agent_models/PassThrough/2/FCP_s1010_h256_tr[AMX]_ran/best',
+
+        'dsALMH 1d[2t] 1us 3ck VH': 'agent_models/PassThrough/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2us 3ck VH': 'agent_models/PassThrough/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3us 3ck VH': 'agent_models/PassThrough/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+        'dsALMH 1d[2t] 1us 5ck VH': 'agent_models/PassThrough_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2us 5ck VH': 'agent_models/PassThrough_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3us 5ck VH': 'agent_models/PassThrough_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 4d[2t] 4us 5ck VH': 'agent_models/PassThrough_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
+        'dsALMH 5d[2t] 5us 5ck VH': 'agent_models/PassThrough_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
+
+        # 'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
         # 'SP_s1010_h256': 'agent_models/Classic/2/SP_hd256_seed1010/best',
-        'FCP_s1010_h256': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
+        # 'FCP_s1010_h256': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
         # 'dsALMH 1d[2t] 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        # 'dsALMH 3d[2t] 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
         # 'dsALMH 1d[5t] 1us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[5t] 2us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
@@ -468,7 +482,7 @@ def get_2_player_input(args):
 
         # 'sALMH 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'sALMH 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'sALMH 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
         # 'dsALMH 1d[2t] 1s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
@@ -480,11 +494,8 @@ def get_2_player_input(args):
 
         # 'sALMH 1s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'sALMH 2s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-        'sALMH 6s PH PS': 'agent_models/Classic_2_ps/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack2/best',
-
-
-
+        # 'sALMH 3s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'sALMH 6s PH PS': 'agent_models/Classic_2_ps/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack2/best',
 
         # 'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
         # 'FCP_s1010_h256': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
@@ -581,7 +592,9 @@ if __name__ == "__main__":
                                     p_idxes=p_idxes,
                                     num_eps=number_of_eps,
                                     max_num_teams=max_num_teams_per_layout_per_x,
-                                    teammate_lvl_sets=teammate_lvl_sets)
+                                    teammate_lvl_sets=teammate_lvl_sets,
+                                    suffix='_pass_through',
+                                    )
 
     all_mean_rewards, all_std_rewards = run_parallel_evaluation(
             args=args,
