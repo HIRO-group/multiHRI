@@ -1,6 +1,9 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
 from oai_agents.common.learner import LearnerType, Learner
+from oai_agents.common.tags import TeamType
+
+from oai_agents.agents.agent_utils import DummyAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -96,6 +99,8 @@ class OvercookedGymEnv(Env):
         self.joint_action = []
         self.deterministic = deterministic
         self.reset_info = {}
+
+        self.teamtype = None
         if full_init:
             self.set_env_layout(**kwargs)
 
@@ -110,7 +115,6 @@ class OvercookedGymEnv(Env):
         :param horizon: horizon for environment. Will default to args.horizon if not provided
         '''
         assert env_index is not None or layout_name is not None or base_env is not None
-
 
 
         if base_env is None:
@@ -143,6 +147,7 @@ class OvercookedGymEnv(Env):
                                range(2)]
         self.reset()
 
+
     # def get_overcooked_from_mdp_kwargs(self, horizon=None):
     #     horizon = horizon or self.args.horizon
     #     return {'start_state_fn': self.mdp.get_fully_random_start_state_fn(self.mlam), 'horizon': horizon}
@@ -153,11 +158,12 @@ class OvercookedGymEnv(Env):
     def get_joint_action(self):
         return self.joint_action
 
-    def set_teammates(self, teammates):
+    def set_teammates(self, teammates, team_type):
         assert isinstance(teammates, list)
         self.teammates = teammates
+        self.team_type = team_type
         self.reset_info['start_position'] = {}
-
+        # TODO: get teammate type information and assign it to self.teamate_type
         for t_idx in self.t_idxes:
             tm = self.get_teammate_from_idx(t_idx)
             if tm.get_start_position(self.layout_name) is not None:
@@ -191,36 +197,72 @@ class OvercookedGymEnv(Env):
         return get_doable_subtasks(self.state, self.prev_subtask[p_idx], self.layout_name, self.terrain, p_idx,
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
 
+    def get_contexted_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
+        p_obs = self.get_obs(c_idx=c_idx, done=done, enc_fn=ENCODING_SCHEMES['OAI_egocentric'],
+                         on_reset=on_reset, goal_objects=goal_objects)
+        # Since we currently do not have feature generator, we use oracle information,  instead.
+        # feature = self.feature_generator(p_obs)
+        # num_of_features = np.prod(feature_vectors[0].shape)
+        potential_teamtypes = [
+            TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW,
+            TeamType.SELF_PLAY_STATIC_ADV, TeamType.SELF_PLAY_DYNAMIC_ADV,
+            TeamType.SELF_PLAY_ADVERSARY,
+            TeamType.SELF_PLAY,
+        ]
+        num_of_features = len(potential_teamtypes)
+        x, y = p_obs['visual_obs'].shape[1], p_obs['visual_obs'].shape[2]
+        feature_matrix = np.zeros((num_of_features, x, y), dtype=float)
+        for i, player in enumerate(self.state.players):
+            px = player.position[0]
+            py = player.position[1]
+            if i != c_idx:
+                if len(self.teammates) > 0:
+                    obs = self.get_obs(c_idx=i, done=done, enc_fn=ENCODING_SCHEMES['OAI_egocentric'],
+                                on_reset=on_reset, goal_objects=goal_objects)
+                    # feature = self.feature_generator(obs)
+                    # Before having a feature generator. Let's use oracle teamtype information
+                    feature_idx = potential_teamtypes.index(self.team_type)
+                    feature_vector = np.zeros(len(potential_teamtypes), dtype=float)
+                    feature_vector[feature_idx] = 1
+                    print(feature_vector)
+                    for fid in range(num_of_features):
+                        feature_matrix[fid][px][py] = feature_vector[fid]
+        # Append the feature matrix to primary agent's observation
+        p_obs['visual_obs'] = np.concatenate((p_obs['visual_obs'], feature_matrix), axis=0)
+        return p_obs
+
     def get_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
-        obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=c_idx,
-                     goal_objects=goal_objects)
+        if enc_fn == ENCODING_SCHEMES['OAI_contexted_egocentric']:
+            obs = self.get_contexted_obs(
+                c_idx=c_idx, done=done, on_reset=on_reset, goal_objects=goal_objects)
+        else:
+            obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=c_idx,
+                        goal_objects=goal_objects)
+            if self.stack_frames(c_idx):
+                obs['visual_obs'] = np.expand_dims(obs['visual_obs'], 0)
+                if self.stack_frames_need_reset[c_idx]:  # On reset
+                    obs['visual_obs'] = self.stackedobs[c_idx].reset(obs['visual_obs'])
+                    self.stack_frames_need_reset[c_idx] = False
+                else:
+                    obs['visual_obs'], _ = self.stackedobs[c_idx].update(obs['visual_obs'], np.array([done]), [{}])
+                obs['visual_obs'] = obs['visual_obs'].squeeze()
 
-        if self.stack_frames(c_idx):
-            obs['visual_obs'] = np.expand_dims(obs['visual_obs'], 0)
-            if self.stack_frames_need_reset[c_idx]:  # On reset
-                obs['visual_obs'] = self.stackedobs[c_idx].reset(obs['visual_obs'])
-                self.stack_frames_need_reset[c_idx] = False
-            else:
-                obs['visual_obs'], _ = self.stackedobs[c_idx].update(obs['visual_obs'], np.array([done]), [{}])
-            obs['visual_obs'] = obs['visual_obs'].squeeze()
+            if self.return_completed_subtasks:
+                obs['subtask_mask'] = self.action_masks(c_idx)
 
-        if self.return_completed_subtasks:
-            obs['subtask_mask'] = self.action_masks(c_idx)
-
-        if self.teammates is not None:
-            for t_idx in self.t_idxes:
-                if c_idx == t_idx:
-                    teammate = self.get_teammate_from_idx(c_idx)
-                    if 'subtask_mask' in teammate.policy.observation_space.keys():
-                        obs['subtask_mask'] = self.action_masks(c_idx)
-                        break
+            if self.teammates is not None:
+                for t_idx in self.t_idxes:
+                    if c_idx == t_idx:
+                        teammate = self.get_teammate_from_idx(c_idx)
+                        if 'subtask_mask' in teammate.policy.observation_space.keys():
+                            obs['subtask_mask'] = self.action_masks(c_idx)
+                            break
 
         for t_idx in self.t_idxes:
             if c_idx == t_idx:
                 teammate = self.get_teammate_from_idx(t_idx)
                 obs = {k: v for k, v in obs.items() if k in teammate.policy.observation_space.keys()}
                 break
-
         return obs
 
     def get_teammate_from_idx(self, idx):
@@ -245,6 +287,7 @@ class OvercookedGymEnv(Env):
 
         # If the state didn't change from the previous timestep and the agent is choosing the same action
         # then play a random action instead. Prevents agents from getting stuck
+        # TODO: comment it and evaluate our agents again.
         if self.is_eval_env:
             if self.prev_state and self.state.time_independent_equal(self.prev_state) and tuple(joint_action) == tuple(
                     self.prev_actions):
@@ -319,8 +362,12 @@ if __name__ == '__main__':
     from oai_agents.common.arguments import get_arguments
 
     args = get_arguments()
-    env = OvercookedGymEnv(p1=DummyAgent(),
-                           args=args)  # make('overcooked_ai.agents:OvercookedGymEnv-v0', layout='asymmetric_advantages', encoding_fn=encode_state, args=args)
+    env = OvercookedGymEnv(
+        # p1=DummyAgent(),
+        args=args,
+        learner_type=LearnerType.ORIGINALER,
+        p_enc_fn='OAI_egocentric',
+    )  # make('overcooked_ai.agents:OvercookedGymEnv-v0', layout='asymmetric_advantages', encoding_fn=encode_state, args=args)
     print(check_env(env))
     env.setup_visualization()
     env.reset()
@@ -328,4 +375,5 @@ if __name__ == '__main__':
     done = False
     while not done:
         obs, reward, done, info = env.step(Action.ACTION_TO_INDEX[np.random.choice(Action.ALL_ACTIONS)])
+        print(f"obs: {obs}")
         env.render()

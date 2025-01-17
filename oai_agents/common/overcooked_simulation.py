@@ -2,6 +2,8 @@ import json
 import numpy as np
 import pandas as pd
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
+
 import time
 
 class OvercookedSimulation:
@@ -15,8 +17,9 @@ class OvercookedSimulation:
         assert agent is not None
         assert agent.encoding_fn is not None
 
+        enc_fn_key = next((key for key, value in ENCODING_SCHEMES.items() if value is agent.encoding_fn), None)
         self.env = OvercookedGymEnv(args=args,
-                                    p_enc_fn=agent.encoding_fn,
+                                    p_enc_fn=enc_fn_key,
                                     layout_name=self.layout_name,
                                     ret_completed_subtasks=False,
                                     is_eval_env=True,
@@ -34,7 +37,7 @@ class OvercookedSimulation:
                                         env=self.env,
                                         is_haha=False,
                                         tune_subtasks=False)
-        self.env.p_encoding_fn = agent.primary_agent_encoding_fn
+        self.env.p_encoding_fn = agent.encoding_fn
 
         for t_idx, teammate in enumerate(self.env.teammates):
             teammate.set_encoding_params(t_idx+1, self.args.horizon,

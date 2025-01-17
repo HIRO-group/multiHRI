@@ -11,12 +11,12 @@ class Curriculum:
             (TeamType.MEDIUM_FIRST): 0.125,                           next 12.5% of the training time
             (TeamType.HIGH_FIRST): 0.125,                             next 12.5% of the training time
         },
-    
+
     For the rest of the training time (12.55%)
     Choose training types with the following probabilities
         rest_of_the_training_probabilities={
             TeamType.LOW_FIRST: 0.4,
-            TeamType.MEDIUM_FIRST: 0.3, 
+            TeamType.MEDIUM_FIRST: 0.3,
             TeamType.HIGH_FIRST: 0.3,
         },
 
@@ -24,15 +24,15 @@ class Curriculum:
     Everytime an update_happens, the probabilities will be updated
     probability_of_playing becomes:
         TeamType.LOW_FIRST: 0.4 - 0.1,
-        TeamType.MEDIUM_FIRST: 0.3 + (0.1/2), 
+        TeamType.MEDIUM_FIRST: 0.3 + (0.1/2),
         TeamType.HIGH_FIRST: 0.3 + (0.1/2),
-    
-    
+
+
     WHENEVER we don't care about the order of the training types, we can set is_random=True.
     and we can just call Curriculum(train_types=sp_train_types, is_random=True) and ignore
     the rest of teh parameters.
     '''
-    def __init__(self, train_types, is_random, total_steps=None, training_phases_durations_in_order=None, 
+    def __init__(self, train_types, is_random, total_steps=None, training_phases_durations_in_order=None,
                  rest_of_the_training_probabilities=None, probabilities_decay_over_time=None):
         self.train_types = train_types
         self.is_random = is_random
@@ -42,7 +42,7 @@ class Curriculum:
         self.rest_of_the_training_probabilities = rest_of_the_training_probabilities
         self.probabilities_decay_over_time = probabilities_decay_over_time
         self.is_valid()
-    
+
     def is_valid(self):
         if self.is_random:
             assert self.total_steps is None, "total_steps should be None for random curriculums"
@@ -62,7 +62,7 @@ class Curriculum:
     def update(self, current_step):
         self.current_step = current_step
 
-    
+
     def select_teammates(self, population_teamtypes):
         '''
         Population_teamtypes = {
@@ -73,11 +73,13 @@ class Curriculum:
         '''
         if self.is_random:
             population = [population_teamtypes[t] for t in population_teamtypes.keys()]
-            teammates_per_type = population[np.random.randint(len(population))]
+            type_id = np.random.randint(len(population))
+            team_type = population_teamtypes.keys()[type_id]
+            teammates_per_type = population[type_id]
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
-            return teammates
-        return self.select_teammates_based_on_curriculum(population_teamtypes)
-
+            return teammates, team_type
+        teammates, team_type = self.select_teammates_based_on_curriculum(population_teamtypes)
+        return teammates, team_type
 
     def select_teammates_based_on_curriculum(self, population_teamtypes):
         # Calculate the current phase based on current_step and total_steps
@@ -85,7 +87,7 @@ class Curriculum:
         for team_type_tuple, duration in self.training_phases_durations_in_order.items():
             cumulative_duration += duration
             if self.current_step / self.total_steps <= cumulative_duration:
-                
+
                 if type(team_type_tuple) is tuple:
                     team_type = random.choice(team_type_tuple)
                 else:
@@ -94,7 +96,7 @@ class Curriculum:
                 teammates_per_type = population_teamtypes[team_type]
                 wandb.log({"team_type_index": TeamType.map_to_index(team_type)})
                 return random.choice(teammates_per_type)
-        
+
         # If the current_step is in the remaining training time
         decay = self.probabilities_decay_over_time * (self.current_step / self.total_steps)
         adjusted_probabilities = {
@@ -103,12 +105,12 @@ class Curriculum:
         }
         adjusted_probabilities = {k: v / sum(adjusted_probabilities.values()) for k, v in adjusted_probabilities.items()}
         team_type = np.random.choice(
-            list(adjusted_probabilities.keys()), 
+            list(adjusted_probabilities.keys()),
             p=list(adjusted_probabilities.values())
         )
         wandb.log({"team_type_index": TeamType.map_to_index(team_type)})
         teammates_per_type = population_teamtypes[team_type]
-        return random.choice(teammates_per_type)
+        return random.choice(teammates_per_type), team_type
 
     def print_curriculum(self):
         print("Curriculum:")
@@ -129,7 +131,7 @@ class Curriculum:
         # Ensure no unallowed types are present in train_types
         assert not any(ut in self.train_types for ut in unallowed_types), \
             "Error: One or more unallowed types are present in train_types."
-    
 
-    
+
+
 

@@ -17,9 +17,6 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',
                         help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
                              'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
-    parser.add_argument('--primary-agent-encoding-fn', type=str, default='OAI_egocentric',
-                        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
-                             'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
     parser.add_argument('--teammates-encoding-fn', type=str, default='OAI_egocentric',
                         help='Encoding scheme for teammate agents, paired with the primary(ego) agent, to use. '
                              'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
@@ -81,6 +78,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--max-concurrent-jobs", type=int, default=None)
 
     parser.add_argument("--num-of-ckpoints", type=int, default=10)
+    parser.add_argument("--num-players", type=int, default=2)
     parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint for population training only")
 
     parser.add_argument("--use-val-func-for-heatmap-gen", type=bool, default=False)

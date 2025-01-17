@@ -4,9 +4,9 @@ from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
-from scripts.utils.agents_finder import AgentsFinder, AgentsFinderBySuffix, AMMAS23AgentsFinderBySuffix
+from scripts.utils.agents_finder import AgentsFinder, SelfPlayAgentsFinder, AgentsFinderBySuffix, AMMAS23AgentsFinderBySuffix
 from oai_agents.common.learner import LearnerType
-from oai_agents.common.tags import KeyCheckpoints
+from oai_agents.common.tags import KeyCheckpoints, TeamType
 
 
 def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
@@ -19,6 +19,11 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 if __name__ == "__main__":
     args = get_arguments()
     args.encoding_fn = 'OAI_contexted_egocentric'
+    print("args.encoding_fn", args.encoding_fn)
+    print("args.encoding_fn", args.encoding_fn)
+    print("args.encoding_fn", args.encoding_fn)
+    print("args.encoding_fn", args.encoding_fn)
+    print("args.encoding_fn", args.encoding_fn)
     args.num_players = 2
     # args.layout = f'selected_{args.num_players}_chefs_counter_circuit'
     args.layout = 'forced_coordination'
@@ -35,11 +40,15 @@ if __name__ == "__main__":
     human_proxy_suffix = f"bc_{args.layout}"
 
     args.exp_dir = "Classic/2"
-    agent_finder = AgentsFinderBySuffix(args=args)
-    agents = agent_finder.get_agents(key=fcp_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
-    human_proxy_finder = AMMAS23AgentsFinderBySuffix(args=args)
-    human_proxies = human_proxy_finder.get_agents(key=human_proxy_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
-    teammates = [human_proxies[0]]
+
+    sp_agent_finder = SelfPlayAgentsFinder(args=args)
+    sp_agents = sp_agent_finder.get_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
+    # agent_finder = AgentsFinderBySuffix(args=args)
+    # agents = agent_finder.get_agents(key=fcp_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
+    # human_proxy_finder = AMMAS23AgentsFinderBySuffix(args=args)
+    # human_proxies = human_proxy_finder.get_agents(key=human_proxy_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
+    teammates = [sp_agents[0]]
+    team_type = TeamType.SELF_PLAY_ADVERSARY
 
     # teammates_path = [
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green
@@ -54,7 +63,7 @@ if __name__ == "__main__":
     # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
     # player = load_agent(Path(player_path), args)
 
-    player = 'human' # blue
-
-    dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
+    # player = sp_agents[0] # blue
+    player = "human"
+    dc = OvercookedGUI(args, agent=player, teammates=teammates, team_type=team_type, layout_name=args.layout, p_idx=args.p_idx, fps=10, horizon=400)
     dc.on_execute()

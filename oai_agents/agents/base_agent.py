@@ -6,6 +6,7 @@ from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 from oai_agents.common.path_helper import get_model_path
 from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
+from oai_agents.common.curriculum import Curriculum
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 from overcooked_ai_py.planning.planners import MediumLevelActionManager
@@ -35,7 +36,7 @@ class OAIAgent(nn.Module, ABC):
     Ensures that all agents play nicely with the environment
     """
 
-    def __init__(self, name, args):
+    def __init__(self, name, args, encoding_fn):
         super(OAIAgent, self).__init__()
         self.name = name
         # Player index and Teammate index
@@ -183,8 +184,9 @@ class OAIAgent(nn.Module, ABC):
         device = args.device
         load_path = path / 'agent_file'
         saved_variables = th.load(load_path, map_location=device)
-        set_args_from_load(saved_variables['args'], args)
-        saved_variables['const_params']['args'] = args
+        loaded_model_args = deepcopy(args)
+        set_args_from_load(saved_variables['args'], loaded_model_args)
+        saved_variables['const_params']['args'] = loaded_model_args
         # Create agent object
         model = cls(**saved_variables['const_params'])  # pytype: disable=not-instantiable
         # Load weights
@@ -263,8 +265,9 @@ class SB3Wrapper(OAIAgent):
         device = args.device
         load_path = path / 'agent_file'
         saved_variables = th.load(load_path)
-        set_args_from_load(saved_variables['args'], args)
-        saved_variables['const_params']['args'] = args
+        loaded_model_args = deepcopy(args)
+        set_args_from_load(saved_variables['args'], loaded_model_args)
+        saved_variables['const_params']['args'] = loaded_model_args
         # Create agent object
         agent = saved_variables['sb3_model_type'].load(str(load_path) + '_sb3_agent')
         # Create wrapper object
@@ -431,7 +434,7 @@ class OAITrainer(ABC):
 
             for teamtype in teamtypes_population:
                 teammates = teamtypes_population[teamtype][np.random.randint(len(teamtypes_population[teamtype]))]
-                env.set_teammates(teammates)
+                env.set_teammates(teammates, teamtype)
 
                 for p_idx in selected_p_indexes:
                     env.set_reset_p_idx(p_idx)
@@ -454,12 +457,12 @@ class OAITrainer(ABC):
         return np.mean(tot_mean_reward), rew_per_layout
 
 
-    def set_new_teammates(self, curriculum):
+    def set_new_teammates(self, curriculum: Curriculum):
         for i in range(self.args.n_envs):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
             population_teamtypes = self.teammates_collection[layout_name]
 
-            teammates = curriculum.select_teammates(population_teamtypes=population_teamtypes)
+            teammates, team_type = curriculum.select_teammates(population_teamtypes=population_teamtypes)
 
             assert len(teammates) == self.args.teammates_len
             assert type(teammates) == list
@@ -467,7 +470,7 @@ class OAITrainer(ABC):
             for teammate in teammates:
                 assert type(teammate) in [SB3Wrapper, CustomAgent]
 
-            self.env.env_method('set_teammates', teammates, indices=i)
+            self.env.env_method('set_teammates', teammates, team_type, indices=i)
 
 
     def get_agents(self) -> List[OAIAgent]:

@@ -40,6 +40,7 @@ from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.hrl import HierarchicalRL
 # from oai_agents.agents import Manager
 from oai_agents.common.arguments import get_arguments
+from oai_agents.common.tags import TeamType
 from oai_agents.common.subtasks import Subtasks, get_doable_subtasks, facing, calculate_completed_subtask
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.agents.agent_utils import load_agent, DummyAgent
@@ -56,36 +57,34 @@ class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
 
-    def __init__(self, args, layout_name=None, agent=None, teammates=None, p_idx=0, horizon=400,
+    def __init__(self, args, layout_name=None, agent=None, teammates=None, team_type=None, p_idx=0, horizon=400,
                  trial_id=None, user_id=None, stream=None, outlet=None, fps=5, gif_name='gif'):
         self.x = None
         self._running = True
         self._display_surf = None
         self.args = args
         self.layout_name = layout_name or 'asymmetric_advantages'
-
         self.agent = agent
         self.use_subtask_env = False
         if self.use_subtask_env:
             kwargs = {'single_subtask_id': 10, 'args': args, 'is_eval_env': True}
-            self.env = OvercookedSubtaskGymEnv(**p_kwargs, **kwargs)
+            self.env = OvercookedSubtaskGymEnv(**kwargs, **kwargs)
         else:
             if self.agent != 'human':
+                enc_fn_key = next((key for key, value in ENCODING_SCHEMES.items() if value is self.agent.encoding_fn), None)
                 self.env = OvercookedGymEnv(
-                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=self.agent.encoding_fn,
+                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=enc_fn_key,
                     is_eval_env=True, horizon=horizon, learner_type='originaler')
             else:
                 self.env = OvercookedGymEnv(
                     layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=args.encoding_fn,
                     is_eval_env=True, horizon=horizon, learner_type='originaler')
-        print(f"args.encoding_fn: {args.encoding_fn}")
-        # print(f"self.agent.encoding_fn: {self.agent.encoding_fn}")
+
         self.p_idx = p_idx
-        self.env.set_teammates(teammates)
+        self.env.set_teammates(teammates, team_type=team_type)
         self.env.reset(p_idx=self.p_idx)
         if self.agent != 'human':
             self.agent.set_encoding_params(self.p_idx, self.args.horizon, env=self.env, is_haha=isinstance(self.agent, HierarchicalRL), tune_subtasks=False)
-            # self.env.p_encoding_fn = self.agent.encoding_fn
 
         for t_idx, teammate in enumerate(self.env.teammates):
             teammate.set_encoding_params(t_idx+1, self.args.horizon, env=self.env, is_haha=isinstance(teammate, HierarchicalRL), tune_subtasks=True)

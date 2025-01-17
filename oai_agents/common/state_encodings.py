@@ -51,6 +51,19 @@ def OAI_encode_state(mdp: OvercookedGridworld, state: OvercookedState, grid_shap
     # if p_idx is not None:
     #     visual_obs = visual_obs[p_idx]
     return {'visual_obs': visual_obs}
+def context_of_an_agent(agent_id: int, mdp: OvercookedGridworld, overcookedstate: OvercookedState, horizon: int, goal_objects=None):
+    visual_obs = mdp.lossless_state_encoding(
+            overcookedstate=overcookedstate, horizon=horizon,
+            goal_objects=goal_objects, p_idx=agent_id)
+    # TODO: please use the context generator and rewrite the code.
+
+
+def contexts_of_primary_agent(mdp: OvercookedGridworld, overcookedstate: OvercookedState,
+                              grid_shape: tuple, horizon: int, goal_objects=None):
+    for i, player in enumerate(overcookedstate.players):
+        obs = OAI_egocentric_encode_state(
+            mdp=mdp, state=overcookedstate, grid_shape=grid_shape,
+            horizon=horizon, p_idx=i, goal_objects=goal_objects)
 
 def OAI_contexted_egocentric_encode_state(
         mdp: OvercookedGridworld, state: OvercookedState,

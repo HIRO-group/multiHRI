@@ -344,7 +344,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.total_ego_agents = 4
-        args.exp_dir = f'ClassicTest/{args.num_players}'
+        args.exp_dir = f'ClassicForAva/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -375,7 +375,7 @@ if __name__ == '__main__':
     # args.device = 'cpu'
 
     args.teammates_len = 1
-    args.how_long = 10 # Not effective in quick_test mode
+    args.how_long = 6 # Not effective in quick_test mode
 
     # args.teammates_len = 2
     # args.how_long = 13 # Not effective in quick_test mode
@@ -389,7 +389,7 @@ if __name__ == '__main__':
 
     # SPN_1ADV_XSPCKP(args=args)
 
-    SP(args)
+    # SP(args)
 
     # FCP_traditional(args=args)
 
@@ -397,4 +397,4 @@ if __name__ == '__main__':
 
     # SPN_1ADV(args=args)
 
-    # N_1_FCP(args=args)
+    N_1_FCP(args=args)

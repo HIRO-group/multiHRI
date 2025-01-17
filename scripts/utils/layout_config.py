@@ -64,6 +64,6 @@ classic_layouts = [
     'coordination_ring',
     'counter_circuit',
     'cramped_room',
-    # 'asymmetric_advantages',
-    # 'forced_coordination',
+    'asymmetric_advantages',
+    'forced_coordination',
 ]
