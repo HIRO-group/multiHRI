@@ -338,6 +338,7 @@ if __name__ == '__main__':
     args.primary_force_training = False
     args.teammates_len = 4
     args.how_long = 35
+    args.num_of_ckpoints = 40
 
     set_input(args=args)
 
