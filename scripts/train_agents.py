@@ -253,7 +253,6 @@ def SPN_XSPCKP(args) -> None:
                                 is_random=False, 
                                 prioritized_sampling=True,
                                 priority_scaling=2.0)
-        primary_eval_types['generate'] = primary_eval_types
     else:
         curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
