@@ -190,8 +190,7 @@ class Curriculum:
 
         # Randomly sample a team of agents from this teamtype
         wandb.log({"team_type_index": TeamType.map_to_index(prioritized_teamtype)})
-        # for teamtype in rew_per_layout_per_teamtype[env.layout_name]:
-            # wandb.log({f'eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype], 'timestep': timestep})
+
         for teamtype in teamtype_proabilities:
             wandb.log({f'teamtype_{teamtype}_prioritized_sampling_probability': teamtype_proabilities[teamtype], 'current_step': self.current_step})
 
