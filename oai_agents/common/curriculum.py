@@ -177,15 +177,24 @@ class Curriculum:
             # Convert to probabilities
             probabilities = priorities / np.sum(priorities)
 
+            # Create dict for easier logging
+            teamtype_proabilities = {tt : prob for tt, prob in zip(teamtype_options, probabilities)}
+
             # Sample the teamtypes using the calculated probabilities
             prioritized_teamtype = np.random.choice(teamtype_options, p=probabilities)
-
         else:
             # Randomly select a teamtype
             prioritized_teamtype = np.random.choice(teamtype_options)
+            # No probabilities defined yet
+            teamtype_proabilities = {}
 
         # Randomly sample a team of agents from this teamtype
         wandb.log({"team_type_index": TeamType.map_to_index(prioritized_teamtype)})
+        # for teamtype in rew_per_layout_per_teamtype[env.layout_name]:
+            # wandb.log({f'eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype], 'timestep': timestep})
+        for teamtype in teamtype_proabilities:
+            wandb.log({f'teamtype_{teamtype}_prioritized_sampling_probability': teamtype_proabilities[teamtype], 'current_step': self.current_step})
+
         teammates_for_teamtype = population_teamtypes[prioritized_teamtype]
         teammates = random.choice(teammates_for_teamtype)
 
@@ -197,12 +206,15 @@ class Curriculum:
             print("Random curriculum: ", self.train_types)
         elif self.prioritized_sampling:
             print("Prioritized sampling curriculum current teamtype performances (lower score = higher priority):")
-            for layout in self.teamtype_performances.keys():
-                print("  Layout: ", layout)
-                teamtype_perforamnces_for_layout = self.teamtype_performances[layout]
-                for teamtype in teamtype_perforamnces_for_layout.keys():
-                    score = teamtype_perforamnces_for_layout[teamtype]
-                    print("    TeamType: ", teamtype, " Score: ", score)
+            if not self.teamtype_performances:
+                print("  No teamtype performance recieved yet, teamtype will be randomly sampled")
+            else:
+                for layout in self.teamtype_performances.keys():
+                    print("  Layout: ", layout)
+                    teamtype_perforamnces_for_layout = self.teamtype_performances[layout]
+                    for teamtype in teamtype_perforamnces_for_layout.keys():
+                        score = teamtype_perforamnces_for_layout[teamtype]
+                        print("    TeamType: ", teamtype, " Score: ", score)
         else:
             print("Total steps:", self.total_steps)
             print("Training phases durations in order:", self.training_phases_durations_in_order)
