@@ -196,8 +196,9 @@ class OAIAgent(nn.Module, ABC):
 
 
 class SB3Wrapper(OAIAgent):
-    # encoding_fn=ENCODING_SCHEMES['OAI_egocentric']
-    def __init__(self, agent, name, args, encoding_fn):
+    # TODO: get rid of the default on encoding_fn.
+    # We need them now only because our previous trained agents do not initializing with encoding_fn.
+    def __init__(self, agent, name, args, encoding_fn=ENCODING_SCHEMES['OAI_egocentric']):
         super(SB3Wrapper, self).__init__(name=name, args=args, encoding_fn=encoding_fn)
         self.agent = agent
         self.policy = self.agent.policy
