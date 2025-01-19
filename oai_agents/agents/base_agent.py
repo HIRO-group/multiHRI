@@ -36,11 +36,11 @@ class OAIAgent(nn.Module, ABC):
     Ensures that all agents play nicely with the environment
     """
 
-    def __init__(self, name, args):
+    def __init__(self, name, args, encoding_fn):
         super(OAIAgent, self).__init__()
         self.name = name
         # Player index and Teammate index
-        self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
+        self.encoding_fn = encoding_fn
         self.args = args
         # Must define a policy. The policy must implement a get_distribution(obs) that returns the action distribution
         self.policy = None
@@ -196,9 +196,9 @@ class OAIAgent(nn.Module, ABC):
 
 
 class SB3Wrapper(OAIAgent):
-
-    def __init__(self, agent, name, args):
-        super(SB3Wrapper, self).__init__(name, args)
+    # encoding_fn=ENCODING_SCHEMES['OAI_egocentric']
+    def __init__(self, agent, name, args, encoding_fn):
+        super(SB3Wrapper, self).__init__(name=name, args=args, encoding_fn=encoding_fn)
         self.agent = agent
         self.policy = self.agent.policy
         self.num_timesteps = 0
@@ -299,13 +299,13 @@ class PolicyClone(OAIAgent):
     Policy Clones are copies of other agents policies (and nothing else). They can only play the game.
     They do not support training, saving, or loading, just playing.
     """
-    def __init__(self, source_agent, args, device=None, name=None):
+    def __init__(self, source_agent:OAIAgent, args, device=None, name=None):
         """
         Given a source agent, create a new agent that plays identically.
         WARNING: This just copies the replica's policy, not all the necessary training code
         """
         name = name or 'policy_clone'
-        super(PolicyClone, self).__init__(name, args)
+        super(PolicyClone, self).__init__(name=name, args=args, encoding_fn=source_agent.encoding_fn)
         device = device or args.device
         # Create policy object
         policy_cls = type(source_agent.policy)
