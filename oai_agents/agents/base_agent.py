@@ -36,7 +36,7 @@ class OAIAgent(nn.Module, ABC):
     Ensures that all agents play nicely with the environment
     """
 
-    def __init__(self, name, args, encoding_fn):
+    def __init__(self, name, args):
         super(OAIAgent, self).__init__()
         self.name = name
         # Player index and Teammate index
@@ -154,7 +154,7 @@ class OAIAgent(nn.Module, ABC):
         return Action.INDEX_TO_ACTION[int(action)], agent_msg
 
     def _get_constructor_parameters(self):
-        return dict(name=self.name, args=self.args)
+        return dict(name=self.name, args=self.args, encoding_fn=self.encoding_fn)
 
     def step(self):
         pass
