@@ -7,6 +7,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.tags import KeyCheckpoints
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
 
 def fix_ck_list(initial_run_root, continued_run_root, corrected_run_root, ck_starts_from):
     ck_regex = re.compile(r'ck_(\d+)(.*)')
@@ -89,6 +90,7 @@ def fix_pop(args, initial_run_root, continued_run_root, corrected_run_root):
             epoch_timesteps=args.epoch_timesteps,
             n_envs=args.n_envs,
             seed=None,
+            encoding_fn=ENCODING_SCHEMES['OAI_egocentric'],
         )
         rt.agents = all_agents
         args.exp_dir = corrected_run_exp

@@ -4,12 +4,14 @@ import dill
 import os
 
 from oai_agents.agents.rl import RLAgentTrainer
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
 
 
 from .curriculum import Curriculum
 import random
 
+# sp_encoding_fn = ENCODING_SCHEMES['OAI_egocentric']
 
 def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
@@ -26,6 +28,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
     best_score = -1
     best_training_rew = float('-inf')
 
+
     if args.resume:
         last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
             base_dir=args.base_dir,
@@ -36,6 +39,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
         if last_ckpt:
             agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
             agent_ckpt = agent_ckpt_info[0]
+            assert agent_ckpt.encoding_fn == args.sp_encoding_fn
             start_step = env_info["step_count"]
             start_timestep = env_info["timestep_count"]
             ck_rewards = training_info["ck_list"]
@@ -60,7 +64,8 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
         start_step=start_step,
         start_timestep=start_timestep,
         best_score=best_score,
-        best_training_rew=best_training_rew
+        best_training_rew=best_training_rew,
+        encoding_fn=args.sp_encoding_fn,
     )
     '''
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
@@ -178,6 +183,7 @@ def save_performance_based_population_by_layouts(args, population):
             n_envs=args.n_envs,
             learner_type=args.pop_learner_type,
             seed=None,
+            encoding_fn=args.sp_encoding_fn,
         )
         rt.agents = population[layout_name]
         rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)

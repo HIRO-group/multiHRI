@@ -130,14 +130,16 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
         seed=args.N_X_SP_seed,
         n_envs = args.n_envs
     )
-    teammates_collection = generate_TC(args=args,
-                                        population=population,
-                                        agent=init_agent,
-                                        train_types=curriculum.train_types,
-                                        eval_types_to_generate=n_x_sp_eval_types['generate'],
-                                        eval_types_to_read_from_file=n_x_sp_eval_types['load'],
-                                        unseen_teammates_len=unseen_teammates_len,
-                                        use_entire_population_for_train_types_teammates=True)
+    teammates_collection = generate_TC(
+        args=args,
+        population=population,
+        agent=init_agent,
+        train_types=curriculum.train_types,
+        eval_types_to_generate=n_x_sp_eval_types['generate'],
+        eval_types_to_read_from_file=n_x_sp_eval_types['load'],
+        unseen_teammates_len=unseen_teammates_len,
+        use_entire_population_for_train_types_teammates=True
+    )
 
     heatmap_source = get_best_SP_agent(args=args, population=population)
     adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, teammates_collection=teammates_collection, train_types=curriculum.train_types)
@@ -163,17 +165,19 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                                             teammates_collection=teammates_collection,
                                                                             primary_agent=init_agent,
                                                                             adversaries=adversaries)
-        n_x_sp_types_trainer = RLAgentTrainer(name=name,
-                                                args=args,
-                                                agent=init_agent,
-                                                teammates_collection=teammates_collection,
-                                                epoch_timesteps=args.epoch_timesteps,
-                                                n_envs=args.n_envs,
-                                                curriculum=curriculum,
-                                                seed=args.N_X_SP_seed,
-                                                hidden_dim=args.N_X_SP_h_dim,
-                                                learner_type=args.primary_learner_type,
-                                                checkpoint_rate=ck_rate)
+        n_x_sp_types_trainer = RLAgentTrainer(
+            name=name,
+            args=args,
+            agent=init_agent,
+            teammates_collection=teammates_collection,
+            epoch_timesteps=args.epoch_timesteps,
+            n_envs=args.n_envs,
+            curriculum=curriculum,
+            seed=args.N_X_SP_seed,
+            hidden_dim=args.N_X_SP_h_dim,
+            learner_type=args.primary_learner_type,
+            checkpoint_rate=ck_rate
+        )
 
         n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps * (round + 1),
                                                     tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)

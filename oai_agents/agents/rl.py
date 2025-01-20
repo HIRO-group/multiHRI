@@ -33,7 +33,8 @@ class RLAgentTrainer(OAITrainer):
             use_cnn=False, use_lstm=False, use_frame_stack=False,
             taper_layers=False, use_policy_clone=False, deterministic=False,
             start_step: int=0, start_timestep: int=0,
-            best_score = -1, best_training_rew = float('-inf'),
+            best_score=-1, best_training_rew=float('-inf'),
+            encoding_fn=ENCODING_SCHEMES['OAI_egocentric'],
         ):
 
 
@@ -64,13 +65,15 @@ class RLAgentTrainer(OAITrainer):
         self.use_policy_clone = use_policy_clone
 
         self.learner_type = learner_type
-        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type, start_timestep)
+        self.env, self.eval_envs = self.get_envs(
+            _env=env, _eval_envs=eval_envs, deterministic=deterministic,
+            learner_type=learner_type, encoding_fn=encoding_fn, start_timestep=start_timestep)
         # Episode to start training from (usually 0 unless restarted)
         self.start_step = start_step
         self.steps = self.start_step
         # Cumm. timestep to start training from (usually 0 unless restarted)
         self.start_timestep = start_timestep
-        self.learning_agent, self.agents = self.get_learning_agent(agent)
+        self.learning_agent, self.agents = self.get_learning_agent(agent=agent, encoding_fn=encoding_fn)
         self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(
             _tms_clctn = teammates_collection,
             learning_agent = self.learning_agent,
@@ -87,7 +90,8 @@ class RLAgentTrainer(OAITrainer):
             name:str,
             seed:int,
             hidden_dim:int,
-            n_envs: int
+            n_envs: int,
+            encoding_fn,
         ) -> OAIAgent:
         '''
         Generate a randomly initialized learning agent using the RLAgentTrainer class
@@ -107,6 +111,7 @@ class RLAgentTrainer(OAITrainer):
             seed=seed,
             hidden_dim=hidden_dim,
             learner_type=learner_type,
+            encoding_fn=encoding_fn,
         )
 
         learning_agent, _ = trainer.get_learning_agent(None)
@@ -195,13 +200,13 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
 
 
-    def get_envs(self, _env, _eval_envs, deterministic, learner_type, start_timestep: int = 0):
+    def get_envs(self, _env, _eval_envs, deterministic, learner_type, encoding_fn, start_timestep: int = 0, ):
         if _env is None:
-            env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack, 'p_enc_fn': self.args.encoding_fn,
+            env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack, 'p_encoding_fn': encoding_fn,
                         'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep}
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed, vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
-            eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack, 'p_enc_fn': self.args.encoding_fn,
+            eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack, 'p_encoding_fn': encoding_fn,
                                  'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs}) for i in range(self.n_layouts)]
         else:
@@ -269,10 +274,10 @@ class RLAgentTrainer(OAITrainer):
                     use_frame_stack=self.use_frame_stack,
                     hidden_dim=self.hidden_dim, seed=self.seed)
 
-    def wrap_agent(self, sb3_agent, name):
+    def wrap_agent(self, sb3_agent, name, encoding_fn):
         if self.use_lstm:
-            return SB3LSTMWrapper(sb3_agent, name, self.args)
-        return SB3Wrapper(sb3_agent, name, self.args)
+            return SB3LSTMWrapper(agent=sb3_agent, name=name, args=self.args, encoding_fn=encoding_fn)
+        return SB3Wrapper(agent=sb3_agent, name=name, args=self.args, encoding_fn=encoding_fn)
 
 
     def should_evaluate(self, steps):

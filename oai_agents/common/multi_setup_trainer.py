@@ -14,9 +14,11 @@ class MultiSetupTrainer:
             train_types,
             eval_types,
             curriculum,
-            tag_for_returning_agent
+            tag_for_returning_agent,
+            encoding_fn,
         ):
         self.args = args
+        self.encoding_fn = encoding_fn
         self.train_types = train_types
         self.eval_types = eval_types
         self.curriculum = curriculum
@@ -109,6 +111,7 @@ class MultiSetupTrainer:
             if last_ckpt:
                 agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args=self.args, name=name, tag=last_ckpt)
                 agent_ckpt = agent_ckpt_info[0]
+                self.encoding_fn = agent_ckpt.encoding_fn
                 start_step = env_info["step_count"]
                 start_timestep = env_info["timestep_count"]
                 ck_list = training_info["ck_list"]
@@ -132,7 +135,8 @@ class MultiSetupTrainer:
             start_step=start_step,
             start_timestep=start_timestep,
             best_score = best_score,
-            best_training_rew = best_training_rew
+            best_training_rew = best_training_rew,
+            encoding_fn=self.encoding_fn
         )
 
         rlat.train_agents(

@@ -57,7 +57,7 @@ class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
 
-    def __init__(self, args, layout_name=None, agent=None, teammates=None, team_type=None, p_idx=0, horizon=400,
+    def __init__(self, args, layout_name=None, agent=None, teammates: list = [], team_type=None, p_idx=0, horizon=400,
                  trial_id=None, user_id=None, stream=None, outlet=None, fps=5, gif_name='gif'):
         self.x = None
         self._running = True
@@ -71,13 +71,13 @@ class OvercookedGUI:
             self.env = OvercookedSubtaskGymEnv(**kwargs, **kwargs)
         else:
             if self.agent != 'human':
-                enc_fn_key = next((key for key, value in ENCODING_SCHEMES.items() if value is self.agent.encoding_fn), None)
                 self.env = OvercookedGymEnv(
-                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=enc_fn_key,
+                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=self.agent.encoding_fn,
                     is_eval_env=True, horizon=horizon, learner_type='originaler')
             else:
+                assert len(teammates) > 0
                 self.env = OvercookedGymEnv(
-                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=args.encoding_fn,
+                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=teammates[0].encoding_fn,
                     is_eval_env=True, horizon=horizon, learner_type='originaler')
 
         self.p_idx = p_idx

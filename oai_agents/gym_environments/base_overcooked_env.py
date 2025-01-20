@@ -18,6 +18,7 @@ from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
 import torch as th
 import random
 
@@ -36,16 +37,15 @@ USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'as
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, learner_type, p_enc_fn, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+    def __init__(self, learner_type, p_encoding_fn, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, full_init=True, args=None, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
         self.args = args
         self.device = args.device
         # Observation encoding setup
-        p_enc_fn = p_enc_fn or args.encoding_fn
-        self.p_encoding_fn = ENCODING_SCHEMES[p_enc_fn]
-        if p_enc_fn in ['OAI_egocentric', 'OAI_contexted_egocentric']:
+        self.p_encoding_fn = p_encoding_fn
+        if self.p_encoding_fn in [ENCODING_SCHEMES['OAI_egocentric'], ENCODING_SCHEMES['OAI_contexted_egocentric']]:
             # Override grid shape to make it egocentric
             assert grid_shape is None, 'Grid shape cannot be used when egocentric encodings are used!'
             self.grid_shape = (7, 7)
@@ -62,7 +62,7 @@ class OvercookedGymEnv(Env):
         self.num_enc_channels = base_enc_channels + ego_agent_pos_channels + teammates_pos_channels
 
         self.obs_dict = {}
-        if self.p_encoding_fn == 'OAI_feats':
+        if self.p_encoding_fn == ENCODING_SCHEMES['OAI_feats']:
             self.obs_dict['agent_obs'] = spaces.Box(0, 400, (96,), dtype=int)
         else:
             self.obs_dict['visual_obs'] = spaces.Box(0, 20, (self.num_enc_channels, *self.grid_shape), dtype=int)
@@ -366,7 +366,7 @@ if __name__ == '__main__':
         # p1=DummyAgent(),
         args=args,
         learner_type=LearnerType.ORIGINALER,
-        p_enc_fn='OAI_egocentric',
+        p_encoding_fn=ENCODING_SCHEMES['OAI_egocentric'],
     )  # make('overcooked_ai.agents:OvercookedGymEnv-v0', layout='asymmetric_advantages', encoding_fn=encode_state, args=args)
     print(check_env(env))
     env.setup_visualization()

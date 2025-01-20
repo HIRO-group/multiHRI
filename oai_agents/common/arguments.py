@@ -14,9 +14,14 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--layout-names', default='forced_coordination,counter_circuit_o_1order,asymmetric_advantages,cramped_room,coordination_ring',  help='Overcooked maps to use')
     parser.add_argument('--horizon', type=int, default=400, help='Max timesteps in a rollout')
     parser.add_argument('--num_stack', type=int, default=3, help='Number of frame stacks to use in training if frame stacks are being used')
-    parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',
-                        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
-                             'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
+    parser.add_argument(
+        '--sp-encoding-fn', type=str, default='OAI_egocentric',
+        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
+        'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
+    parser.add_argument(
+        '--adaptive-agent-encoding-fn', type=str, default='OAI_contexted_egocentric',
+        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
+        'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
     parser.add_argument('--teammates-encoding-fn', type=str, default='OAI_egocentric',
                         help='Encoding scheme for teammate agents, paired with the primary(ego) agent, to use. '
                              'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
@@ -89,6 +94,8 @@ def get_arguments(additional_args=[]):
 
     parser.add_argument('--gen-pop-for-eval', type=bool, default=False, help="Specifies whether to generate a population of agents for evaluation purposes. Currently, this functionality is limited to self-play agents, as support for other methods has not yet been implemented..)")
     parser.add_argument("--total-ego-agents", type=int, default=4)
+
+
 
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)

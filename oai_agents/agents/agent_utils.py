@@ -1,6 +1,7 @@
 from oai_agents.common.arguments import get_arguments
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 from oai_agents.common.tags import AgentPerformance
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
 
 from gym import spaces
 import numpy as np
@@ -65,11 +66,11 @@ class CustomPolicy:
         self.observation_space = obs_space
 
 class CustomAgent():
-    def __init__(self, name, args, start_position, action):
+    def __init__(self, name, args, start_position, action, encoding_fn=ENCODING_SCHEMES['OAI_egocentric']):
         self.name = f'CA_{name}'
         self.action = Action.ACTION_TO_INDEX[action]
         self.policy = CustomPolicy(spaces.Dict({'visual_obs': spaces.Box(0,1,(1,))}))
-        self.encoding_fn = lambda *args, **kwargs: {}
+        self.encoding_fn = encoding_fn
         self.start_position = start_position
         self.layout_scores = {
             layout_name: -1 for layout_name in args.layout_names

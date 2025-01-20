@@ -17,9 +17,8 @@ class OvercookedSimulation:
         assert agent is not None
         assert agent.encoding_fn is not None
 
-        enc_fn_key = next((key for key, value in ENCODING_SCHEMES.items() if value is agent.encoding_fn), None)
         self.env = OvercookedGymEnv(args=args,
-                                    p_enc_fn=enc_fn_key,
+                                    p_enc_fn=agent.encoding_fn,
                                     layout_name=self.layout_name,
                                     ret_completed_subtasks=False,
                                     is_eval_env=True,

@@ -280,7 +280,7 @@ class SB3Wrapper(OAIAgent):
 
 class SB3LSTMWrapper(SB3Wrapper):
     ''' A wrapper for a stable baselines 3 agents that uses an lstm and controls a single player '''
-    def __init__(self, agent, name, args):
+    def __init__(self, agent, name, args, encoding_fn=ENCODING_SCHEMES['OAI_egocentric']):
         super(SB3LSTMWrapper, self).__init__(agent, name, args)
         self.lstm_states = None
 
@@ -582,47 +582,3 @@ class OAITrainer(ABC):
 
         handler = CheckedModelNameHandler()
         return handler.get_all_checked_tags(path=path)
-
-    # @staticmethod
-    # def get_most_recent_checkpoint(args, name: str) -> str:
-    #     path = OAITrainer.get_model_path(
-    #         base_dir=args.base_dir,
-    #         exp_folder=args.exp_dir,
-    #         model_name=name
-    #     )
-    #     if not path.exists():
-    #         print(f"Warning: The directory {path} does not exist.")
-    #         return None
-    #     ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
-    #     if not ckpts:
-    #         print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
-    #         return None
-    #     ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
-    #     last_ckpt_num = max(ckpts_nums)
-    #     return [c for c in ckpts if c.startswith(f"{KeyCheckpoints.CHECKED_MODEL_PREFIX}{last_ckpt_num}")][0]
-
-    # @staticmethod
-    # def get_model_path(base_dir: Union[str, Path], exp_folder: Optional[str], model_name: str) -> Path:
-    #     """
-    #     Constructs a path for saving or loading an agent model.
-
-    #     Parameters:
-    #         base_dir (str or Path): The base directory where models are stored.
-    #         exp_folder (str or None): The experiment folder name, or None if not applicable.
-    #         model_name (str): The name of the model.
-
-    #     Returns:
-    #         Path: A Path object representing the constructed path.
-    #     """
-    #     # Ensure base_dir is a Path object
-    #     base_dir = Path(base_dir) if isinstance(base_dir, str) else base_dir
-
-    #     experiment_name = OAITrainer.get_experiment_name(exp_folder=exp_folder, model_name=model_name)
-
-    #     path = base_dir / 'agent_models' /experiment_name
-
-    #     return path
-
-    # @staticmethod
-    # def get_experiment_name(exp_folder: Optional[str], model_name: str):
-    #     return f"{exp_folder}/{model_name}" if exp_folder else model_name

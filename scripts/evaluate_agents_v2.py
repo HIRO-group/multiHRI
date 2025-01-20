@@ -6,6 +6,7 @@ from oai_agents.common.tags import TeamType, TeammatesCollection, KeyCheckpoints
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.agent_utils import load_agent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+from oai_agents.agents.base_agent import OAIAgent
 from scripts.utils.agents_finder import AgentsFinder, AgentsFinderBySuffix, AMMAS23AgentsFinderBySuffix
 
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -127,7 +128,7 @@ def get_all_players(args, all_agents_paths):
     return all_players
 
 
-def evaluate_on_layout_with_teammates(args, primary_agent, layout_name, unseen_count, teammate_lvl, all_teammates):
+def evaluate_on_layout_with_teammates(args, primary_agent:OAIAgent, layout_name, unseen_count, teammate_lvl, all_teammates):
     print(f"Evaluating {primary_agent.name} on layout {layout_name} with {unseen_count} unseen teammates at level {teammate_lvl}")
 
     mean_rewards = []
@@ -136,6 +137,7 @@ def evaluate_on_layout_with_teammates(args, primary_agent, layout_name, unseen_c
         env = OvercookedGymEnv(
             args=args,
             layout_name=layout_name,
+            p_encoding_fn=primary_agent.encoding_fn,
             ret_completed_subtasks=False,
             is_eval_env=True,
             horizon=400,

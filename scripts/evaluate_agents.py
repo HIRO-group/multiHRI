@@ -17,6 +17,7 @@ import numpy as np
 import pickle as pkl
 
 from oai_agents.agents.agent_utils import load_agent
+from oai_agents.agents.base_agent import OAIAgent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
@@ -297,7 +298,7 @@ def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names
 
 
 def evaluate_agent(args,
-                   primary_agent,
+                   primary_agent: OAIAgent,
                    p_idxes,
                    layout_names,
                    all_teammates,
@@ -318,6 +319,7 @@ def evaluate_agent(args,
             for teammates in all_teammates[layout_name][unseen_count]:
                 env = OvercookedGymEnv(args=args,
                                        layout_name=layout_name,
+                                       p_encoding_fn=primary_agent.encoding_fn,
                                        ret_completed_subtasks=False,
                                        is_eval_env=True,
                                        horizon=400,

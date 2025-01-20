@@ -4,10 +4,11 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, TeammatesCollection, KeyCheckpoints
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from scripts.utils import get_fcp_population
 
 
-def train_FCP(args, name, teammates_collection, train_types, total_training_timesteps):
+def train_FCP(args, name, teammates_collection, train_types, total_training_timesteps, encoding_fn):
     fcp_trainer = RLAgentTrainer(
         name=name,
         args=args,
@@ -17,6 +18,7 @@ def train_FCP(args, name, teammates_collection, train_types, total_training_time
         n_envs=args.n_envs,
         train_types=train_types,
         seed=2602,
+        encoding_fn=encoding_fn,
     )
     fcp_trainer.train_agents(total_train_timesteps=total_training_timesteps, tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
@@ -51,6 +53,7 @@ if __name__ == "__main__":
     pop_force_training = True
     primary_force_training = True
     set_input(args=args, quick_test=quick_test)
+    encoding_fn = ENCODING_SCHEMES['OAI_contexted_egocentric']
 
     all_FCP_train_types = [
         [TeamType.HIGH_FIRST],
@@ -64,25 +67,27 @@ if __name__ == "__main__":
         [TeamType.RANDOM],
     ]
 
-    teammates_collection = get_fcp_population(args,
-                                              ck_rate=args.pop_total_training_timesteps // 5,
-                                              train_types = TeamType.ALL_TYPES_BESIDES_SP,
-                                              eval_types_to_generate = [],
-                                              eval_types_to_load_from_file = [],
-                                              total_ego_agents=args.total_ego_agents,
-                                              total_training_timesteps = args.pop_total_training_timesteps,
-                                              force_training=pop_force_training,
-                                               ,
-                                              )
+    teammates_collection = get_fcp_population(
+        args,
+        ck_rate=args.pop_total_training_timesteps // 5,
+        train_types = TeamType.ALL_TYPES_BESIDES_SP,
+        eval_types_to_generate = [],
+        eval_types_to_load_from_file = [],
+        total_ego_agents=args.total_ego_agents,
+        total_training_timesteps = args.pop_total_training_timesteps,
+        force_training=pop_force_training,
+    )
 
     teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]
 
     # TODO: run this in parallel
     for fcp_train_types in all_FCP_train_types:
         vb = '_'.join(fcp_train_types)
-        train_FCP(args=args,
-                  name='fcp_{vb}',
-                  teammates_collection=teammates_collection,
-                  train_types=fcp_train_types,
-                  total_training_timesteps=args.fcp_total_training_timesteps,
-                  )
+        train_FCP(
+            args=args,
+            name='fcp_{vb}',
+            teammates_collection=teammates_collection,
+            train_types=fcp_train_types,
+            total_training_timesteps=args.fcp_total_training_timesteps,
+            encoding_fn=encoding_fn,
+        )
