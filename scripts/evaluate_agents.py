@@ -455,6 +455,7 @@ def get_2_player_input(args):
     p_idxes = [0, 1]
 
     all_agents_paths = {
+        # Pass Through: 
         # 'SP_s1010_h256': 'agent_models/PassThrough/2/SP_hd256_seed1010/best',
         # 'FCP_s1010_h256': 'agent_models/PassThrough/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
@@ -468,19 +469,29 @@ def get_2_player_input(args):
         # 'dsALMH 4d[2t] 4us 5ck VH': 'agent_models/PassThrough_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
         # 'dsALMH 5d[2t] 5us 5ck VH': 'agent_models/PassThrough_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
 
+        # No Pass Through:
         'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
         # 'SP_s1010_h256': 'agent_models/Classic/2/SP_hd256_seed1010/best',
         'FCP_s1010_h256': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
+        'dsALMH 1d[2t] 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        # 'dsALMH 1d[2t] 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[2t] 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3us 3ck VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+        'FCP_s1010_h256 PS':       'agent_models/Classic_2_ps/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ps_originaler/best',
+        'dsALMH 1d[2t] 1us VH PS': 'agent_models/Classic_2_ps/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ps_originaler_attack0/best',
+        'dsALMH 2d[2t] 2us VH PS': 'agent_models/Classic_2_ps/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ps_originaler_attack1/best',
+        'dsALMH 3d[2t] 3us VH PS': 'agent_models/Classic_2_ps/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ps_originaler_attack2/best',
+
+
+
+
         
-        'dsALMH 1d[2t] 1us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[2t] 2us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-        'dsALMH 4d[2t] 4us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
-        'dsALMH 5d[2t] 5us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
+        # 'dsALMH 1d[2t] 1us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[2t] 2us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        # 'dsALMH 3d[2t] 3us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        # 'dsALMH 4d[2t] 4us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
+        # 'dsALMH 5d[2t] 5us 5ck VH': 'agent_models/Classic_ck5/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
 
 
         # 'dsALMH 1d[5t] 1us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
