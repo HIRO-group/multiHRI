@@ -87,8 +87,8 @@ class BehaviouralCloningPolicy(nn.Module):
 class BehaviouralCloningAgent(OAIAgent):
     def __init__(self, visual_obs_shape, agent_obs_shape, args, hidden_dim=64, name=None):
         name = name or 'bc'
-        super(BehaviouralCloningAgent, self).__init__(name, args)
         self.encoding_fn = ENCODING_SCHEMES['OAI_feats']
+        super(BehaviouralCloningAgent, self).__init__(name, args, encoding_fn=self.encoding_fn)
         self.visual_obs_shape, self.agent_obs_shape, self.args, self.hidden_dim = \
             visual_obs_shape, agent_obs_shape, args, hidden_dim
         self.device = args.device

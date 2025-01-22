@@ -56,7 +56,6 @@ class RLAgentTrainer(OAITrainer):
 
         self.seed = seed
         self.checkpoint_rate = checkpoint_rate
-        self.encoding_fn = ENCODING_SCHEMES[self.args.encoding_fn]
 
         self.use_lstm = use_lstm
         self.use_cnn = use_cnn
@@ -114,19 +113,22 @@ class RLAgentTrainer(OAITrainer):
             encoding_fn=encoding_fn,
         )
 
-        learning_agent, _ = trainer.get_learning_agent(None)
+        learning_agent, _ = trainer.get_learning_agent(agent=None, encoding_fn=encoding_fn)
         return learning_agent
 
-    def get_learning_agent(self, agent):
+    def get_learning_agent(self, agent, encoding_fn):
         if agent:
             learning_agent = agent
             learning_agent.agent.env = self.env
+            print(f"learning_agent.encoding_fn: {learning_agent.encoding_fn}")
+            print(f"self.env.envs[0].p_encoding_fn: {self.env.envs[0].p_encoding_fn}")
+            print(f"learning_agent.agent.env.envs[0].p_encoding_fn: {learning_agent.agent.env.envs[0].p_encoding_fn}")
             learning_agent.agent.env.reset()
             agents = [learning_agent]
             return learning_agent, agents
 
         sb3_agent, agent_name = self.get_sb3_agent()
-        learning_agent = self.wrap_agent(sb3_agent, agent_name)
+        learning_agent = self.wrap_agent(sb3_agent=sb3_agent, name=agent_name, encoding_fn=encoding_fn)
         agents = [learning_agent]
         return learning_agent, agents
 

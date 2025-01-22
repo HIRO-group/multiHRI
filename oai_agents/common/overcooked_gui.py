@@ -72,12 +72,12 @@ class OvercookedGUI:
         else:
             if self.agent != 'human':
                 self.env = OvercookedGymEnv(
-                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=self.agent.encoding_fn,
+                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_encoding_fn=self.agent.encoding_fn,
                     is_eval_env=True, horizon=horizon, learner_type='originaler')
             else:
                 assert len(teammates) > 0
                 self.env = OvercookedGymEnv(
-                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_enc_fn=teammates[0].encoding_fn,
+                    layout_name=self.layout_name, args=args, ret_completed_subtasks=False, p_encoding_fn=teammates[0].encoding_fn,
                     is_eval_env=True, horizon=horizon, learner_type='originaler')
 
         self.p_idx = p_idx

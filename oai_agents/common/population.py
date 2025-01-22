@@ -11,8 +11,6 @@ from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
 from .curriculum import Curriculum
 import random
 
-# sp_encoding_fn = ENCODING_SCHEMES['OAI_egocentric']
-
 def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_dim, serialize):
     '''
         Returns ckeckpoints_list
@@ -39,7 +37,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
         if last_ckpt:
             agent_ckpt_info, env_info, training_info = RLAgentTrainer.load_agents(args, name=name, tag=last_ckpt)
             agent_ckpt = agent_ckpt_info[0]
-            assert agent_ckpt.encoding_fn == args.sp_encoding_fn
+            assert agent_ckpt.encoding_fn == args.specialized_agent_encoding_fn
             start_step = env_info["step_count"]
             start_timestep = env_info["timestep_count"]
             ck_rewards = training_info["ck_list"]
@@ -65,7 +63,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
         start_timestep=start_timestep,
         best_score=best_score,
         best_training_rew=best_training_rew,
-        encoding_fn=args.sp_encoding_fn,
+        encoding_fn=args.specialized_agent_encoding_fn,
     )
     '''
     For curriculum, whenever we don't care about the order of the training types, we can set is_random=True.
@@ -183,7 +181,7 @@ def save_performance_based_population_by_layouts(args, population):
             n_envs=args.n_envs,
             learner_type=args.pop_learner_type,
             seed=None,
-            encoding_fn=args.sp_encoding_fn,
+            encoding_fn=args.specialized_agent_encoding_fn,
         )
         rt.agents = population[layout_name]
         rt.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
@@ -227,7 +225,6 @@ def get_performance_based_population_by_layouts(
             (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True)
             for i in range(total_ego_agents)
         ]
-
 
         if args.parallel:
             with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_concurrent_jobs) as executor:

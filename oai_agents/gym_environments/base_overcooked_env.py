@@ -5,7 +5,7 @@ from oai_agents.common.tags import TeamType
 
 from oai_agents.agents.agent_utils import DummyAgent
 
-from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
+from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction, PlayerState
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 from overcooked_ai_py.planning.planners import MediumLevelActionManager
 from overcooked_ai_py.utils import read_layout_dict
@@ -18,7 +18,9 @@ from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
-from oai_agents.common.state_encodings import ENCODING_SCHEMES
+from oai_agents.common.state_encodings import ENCODING_SCHEMES, get_egocentric_grid
+
+from typing import Tuple
 import torch as th
 import random
 
@@ -28,6 +30,12 @@ import random
 # Max number of counters the agents should use
 USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'asymmetric_advantages': 2,
                     'cramped_room': 2, 'coordination_ring': 2}  # FOR WORKER TRAINING
+potential_teamtypes = [
+    TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW,
+    TeamType.SELF_PLAY_STATIC_ADV, TeamType.SELF_PLAY_DYNAMIC_ADV,
+    TeamType.SELF_PLAY_ADVERSARY,
+    TeamType.SELF_PLAY,
+]
 
 
 # USEABLE_COUNTERS = {'counter_circuit_o_1order': 4, 'forced_coordination': 3, 'asymmetric_advantages': 2, 'cramped_room': 3, 'coordination_ring': 3} # FOR MANAGER TRAINING
@@ -60,6 +68,8 @@ class OvercookedGymEnv(Env):
         ego_agent_pos_channels = 5 # 'ego_agent_loc', 'ego_agent_orientation_0', 'ego_agent_orientation_1', 'ego_agent_orientation_2', 'ego_agent_orientation_3'
         teammates_pos_channels = 5 # 'teammates_loc', 'teammates_orientation_0', 'teammates_orientation_1', 'teammates_orientation_2', 'teammates_orientation_3'
         self.num_enc_channels = base_enc_channels + ego_agent_pos_channels + teammates_pos_channels
+        if self.p_encoding_fn == ENCODING_SCHEMES['OAI_contexted_egocentric']:
+            self.num_enc_channels += len(potential_teamtypes)
 
         self.obs_dict = {}
         if self.p_encoding_fn == ENCODING_SCHEMES['OAI_feats']:
@@ -140,7 +150,9 @@ class OvercookedGymEnv(Env):
 
         self.terrain = self.mdp.terrain_mtx
 
-
+        layout_params = read_layout_dict(self.layout_name)
+        grid = [layout_row.strip() for layout_row in layout_params['grid'].split("\n")]
+        self.layout_shape = (len(grid[0]), len(grid[1]))
         self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'] for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
         self.valid_counters = [self.env.mdp.find_free_counters_valid_for_player(self.env.state, self.mlam, i) for i in
@@ -203,19 +215,14 @@ class OvercookedGymEnv(Env):
         # Since we currently do not have feature generator, we use oracle information,  instead.
         # feature = self.feature_generator(p_obs)
         # num_of_features = np.prod(feature_vectors[0].shape)
-        potential_teamtypes = [
-            TeamType.SELF_PLAY_HIGH, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_LOW,
-            TeamType.SELF_PLAY_STATIC_ADV, TeamType.SELF_PLAY_DYNAMIC_ADV,
-            TeamType.SELF_PLAY_ADVERSARY,
-            TeamType.SELF_PLAY,
-        ]
         num_of_features = len(potential_teamtypes)
-        x, y = p_obs['visual_obs'].shape[1], p_obs['visual_obs'].shape[2]
-        feature_matrix = np.zeros((num_of_features, x, y), dtype=float)
+        egoview_x_dim, egoview_y_dim = p_obs['visual_obs'].shape[1], p_obs['visual_obs'].shape[2]
+        x_dim, y_dim = self.layout_shape
+        feature_matrix = np.zeros((num_of_features, x_dim, y_dim), dtype=float)
         for i, player in enumerate(self.state.players):
-            px = player.position[0]
-            py = player.position[1]
             if i != c_idx:
+                px = player.position[0]
+                py = player.position[1]
                 if len(self.teammates) > 0:
                     obs = self.get_obs(c_idx=i, done=done, enc_fn=ENCODING_SCHEMES['OAI_egocentric'],
                                 on_reset=on_reset, goal_objects=goal_objects)
@@ -224,11 +231,19 @@ class OvercookedGymEnv(Env):
                     feature_idx = potential_teamtypes.index(self.team_type)
                     feature_vector = np.zeros(len(potential_teamtypes), dtype=float)
                     feature_vector[feature_idx] = 1
-                    print(feature_vector)
+                    # print(f"feature_vector: {feature_vector}")
+                    # print(f"num_of_features: {num_of_features}")
+                    # print(f"feature_idx: {feature_idx}")
+                    # print(f"self.team_type: {self.team_type}")
+                    # print(f"potential_teamtypes: {potential_teamtypes}")
+                    # print(f"px: {px}")
+                    # print(f"py: {py}")
                     for fid in range(num_of_features):
                         feature_matrix[fid][px][py] = feature_vector[fid]
+        egoview_feature_matrix = get_egocentric_grid(
+            grid=feature_matrix, ego_grid_shape=(egoview_x_dim, egoview_y_dim), player=self.state.players[c_idx])
         # Append the feature matrix to primary agent's observation
-        p_obs['visual_obs'] = np.concatenate((p_obs['visual_obs'], feature_matrix), axis=0)
+        p_obs['visual_obs'] = np.concatenate((p_obs['visual_obs'], egoview_feature_matrix), axis=0)
         return p_obs
 
     def get_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
@@ -305,6 +320,8 @@ class OvercookedGymEnv(Env):
                 ratio = self.final_sparse_r_ratio
             reward = self.learner.calculate_reward(p_idx=self.p_idx, env_info=info, ratio=ratio, num_players=self.mdp.num_players)
         self.step_count += 1
+        # print(f"primary agent's encoding_fn: {self.p_encoding_fn}")
+        # print(f"teammate's encoding_fn: {self.teammates[0].encoding_fn}")
         return self.get_obs(c_idx=self.p_idx, enc_fn=self.p_encoding_fn, done=done), reward, done, info
 
     def set_reset_p_idx(self, p_idx):

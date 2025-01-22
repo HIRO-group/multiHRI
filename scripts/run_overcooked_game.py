@@ -18,12 +18,6 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 
 if __name__ == "__main__":
     args = get_arguments()
-    args.encoding_fn = 'OAI_contexted_egocentric'
-    print("args.encoding_fn", args.encoding_fn)
-    print("args.encoding_fn", args.encoding_fn)
-    print("args.encoding_fn", args.encoding_fn)
-    print("args.encoding_fn", args.encoding_fn)
-    print("args.encoding_fn", args.encoding_fn)
     args.num_players = 2
     # args.layout = f'selected_{args.num_players}_chefs_counter_circuit'
     args.layout = 'forced_coordination'
@@ -39,14 +33,14 @@ if __name__ == "__main__":
     f2p_suffix = "N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPFO]_ran_originaler"
     human_proxy_suffix = f"bc_{args.layout}"
 
-    args.exp_dir = "Classic/2"
+    args.exp_dir = "Classic_RandomStartBug/2"
 
     sp_agent_finder = SelfPlayAgentsFinder(args=args)
     sp_agents = sp_agent_finder.get_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
-    # agent_finder = AgentsFinderBySuffix(args=args)
-    # agents = agent_finder.get_agents(key=fcp_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
-    # human_proxy_finder = AMMAS23AgentsFinderBySuffix(args=args)
-    # human_proxies = human_proxy_finder.get_agents(key=human_proxy_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
+    agent_finder = AgentsFinderBySuffix(args=args)
+    fcp_agents = agent_finder.get_agents(key=fcp_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
+    human_proxy_finder = AMMAS23AgentsFinderBySuffix(args=args)
+    human_proxies = human_proxy_finder.get_agents(key=human_proxy_suffix, tag=KeyCheckpoints.BEST_EVAL_REWARD)
     teammates = [sp_agents[0]]
     team_type = TeamType.SELF_PLAY_ADVERSARY
 

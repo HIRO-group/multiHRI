@@ -5,6 +5,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
 
 from scripts.utils import (
     get_SP_agents,
@@ -299,6 +300,7 @@ def N_1_FCP(args):
     )
 
 
+
 def set_input(args):
     args.num_players = args.teammates_len + 1
 
@@ -326,7 +328,7 @@ def set_input(args):
         args.n_envs = 210
         args.epoch_timesteps = 1e5
 
-        args.primary_learner_type = LearnerType.ORIGINALER
+        args.primary_learner_type = LearnerType.SELFISHER
         args.adversary_learner_type = LearnerType.SELFISHER
         args.pop_learner_type = LearnerType.ORIGINALER
 
@@ -344,7 +346,7 @@ def set_input(args):
         args.ADV_seed, args.ADV_h_dim = 68, 512
 
         args.total_ego_agents = 4
-        args.exp_dir = f'ClassicForAva/{args.num_players}'
+        args.exp_dir = f'Classic/{args.num_players}'
 
     else: # Used for doing quick tests
         args.num_of_ckpoints = 10
@@ -354,7 +356,7 @@ def set_input(args):
         args.epoch_timesteps = 2
 
         args.pop_total_training_timesteps = 3500
-        args.n_x_sp_total_training_timesteps = 1000
+        args.n_x_sp_total_training_timesteps = 1000*100
         args.adversary_total_training_timesteps = 1000
 
         args.fcp_total_training_timesteps = 1500
@@ -376,6 +378,7 @@ if __name__ == '__main__':
 
     args.teammates_len = 1
     args.how_long = 6 # Not effective in quick_test mode
+    args.adaptive_agent_encoding_fn = ENCODING_SCHEMES['OAI_egocentric']
 
     # args.teammates_len = 2
     # args.how_long = 13 # Not effective in quick_test mode
@@ -385,7 +388,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    # SPN_XSPCKP_LMH(args=args)
+    # SPN_XSPCKP_LMHA(args=args)
+
+    SPN_XSPCKP_LMH(args=args)
 
     # SPN_1ADV_XSPCKP(args=args)
 
@@ -397,4 +402,4 @@ if __name__ == '__main__':
 
     # SPN_1ADV(args=args)
 
-    N_1_FCP(args=args)
+    # N_1_FCP(args=args)

@@ -224,7 +224,7 @@ class AdversaryAgentsFinder(AgentsFinder):
         self.folders = self.get_agentfolders_with_suffix(suffix=LearnerType.SELFISHER)
         return super().get_agents_infos(tag=tag)
 
-class AdaptiveAgentsFinder(AgentsFinder):
+class FCPAgentsFinder(AgentsFinder):
     def get_agents_infos(self, tag=None):
         self.folders = self.get_agentfolders_with_suffix(suffix=f"tr[SPH_SPM_SPL]_ran_{LearnerType.ORIGINALER}")
         return super().get_agents_infos(tag=tag)

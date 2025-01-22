@@ -67,3 +67,8 @@ classic_layouts = [
     'asymmetric_advantages',
     'forced_coordination',
 ]
+
+complex_layouts = [
+    'secret_heaven',
+    'storage_room'
+]

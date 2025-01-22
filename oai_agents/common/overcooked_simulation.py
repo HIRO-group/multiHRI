@@ -11,23 +11,25 @@ class OvercookedSimulation:
     A class to run an Overcooked Gridworld simulation and collect trajectory data.
     Removes GUI and human player dependencies, focuses on agent interaction and data collection.
     """
-    def __init__(self, args, agent, teammates, layout_name, p_idx, horizon=400):
+    def __init__(self, args, agent, teammates, layout_name, p_idx, team_type, horizon=400):
         self.args = args
         self.layout_name = layout_name
         assert agent is not None
         assert agent.encoding_fn is not None
 
-        self.env = OvercookedGymEnv(args=args,
-                                    p_enc_fn=agent.encoding_fn,
-                                    layout_name=self.layout_name,
-                                    ret_completed_subtasks=False,
-                                    is_eval_env=True,
-                                    horizon=horizon,
-                                    learner_type='originaler')
+        self.env = OvercookedGymEnv(
+            args=args,
+            p_encoding_fn=agent.encoding_fn,
+            layout_name=self.layout_name,
+            ret_completed_subtasks=False,
+            is_eval_env=True,
+            horizon=horizon,
+            learner_type='originaler'
+        )
 
         self.agent = agent
         self.p_idx = p_idx
-        self.env.set_teammates(teammates)
+        self.env.set_teammates(teammates=teammates, team_type=team_type)
         self.env.reset(p_idx=self.p_idx)
 
 

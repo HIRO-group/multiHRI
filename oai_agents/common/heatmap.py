@@ -35,7 +35,7 @@ def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
             value = get_value_function(args=args, agent=agent, observation=observations[i])
             tiles_v[x, y] += value
             tiles_p[x, y] += 1
-    
+
     tiles_v = tiles_v / tiles_p
     tiles_v = np.nan_to_num(tiles_v)
     return tiles_v, tiles_p
@@ -51,13 +51,13 @@ def generate_static_adversaries(args, all_tiles):
             top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
             layout_heatmap_top_xy_coords.extend(top_n_coords)
         heatmap_xy_coords[layout] = layout_heatmap_top_xy_coords
-    
+
     agents = []
     for adv_idx in range(args.num_static_advs_per_heatmap):
         start_position = {layout: (-1, -1) for layout in args.layout_names}
         for layout in args.layout_names:
             start_position[layout] = tuple(map(int, heatmap_xy_coords[layout][adv_idx]))
-        agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', start_position=start_position, action=Action.STAY))
+        agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', start_position=start_position, action=Action.STAY, encoding_fn=args.specialized_agent_encoding_fn))
     return agents
 
 
@@ -74,14 +74,16 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
             for train_type_for_teammate in train_types:
                 if train_type_for_teammate not in [TeamType.SELF_PLAY_LOW, TeamType.SELF_PLAY_MEDIUM, TeamType.SELF_PLAY_MIDDLE, TeamType.SELF_PLAY_HIGH]:
                     continue
-                
+
                 all_teammates_for_train_type = teammates_collection[TeammatesCollection.TRAIN][layout][train_type_for_teammate]
                 selected_teammates = random.choice(all_teammates_for_train_type)
 
-                simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=selected_teammates, layout_name=layout, p_idx=p_idx, horizon=400)
+                simulation = OvercookedSimulation(
+                    args=args, agent=heatmap_source, teammates=selected_teammates,
+                    layout_name=layout, p_idx=p_idx, team_type=train_type_for_teammate, horizon=400)
                 trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
                 tiles_v, tiles_p = get_tile_map(args=args, agent=heatmap_source, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-                
+
                 all_tiles[layout]['V'].append(tiles_v)
                 all_tiles[layout]['P'].append(tiles_p)
 
@@ -94,6 +96,6 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
     if TeamType.SELF_PLAY_DYNAMIC_ADV in train_types:
         raise NotImplementedError
         dynamic_advs = genereate_dynamic_adversaries(args, all_tiles)
-        adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV] = dynamic_advs 
-    
+        adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV] = dynamic_advs
+
     return adversaries

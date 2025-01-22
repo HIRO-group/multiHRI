@@ -2,8 +2,9 @@ import argparse
 from pathlib import Path
 import torch as th
 from oai_agents.common.tags import TeamType
+from oai_agents.common.state_encodings import ENCODING_SCHEMES
 
-ARGS_TO_SAVE_LOAD = ['encoding_fn']
+ARGS_TO_SAVE_LOAD = []
 
 def get_arguments(additional_args=[]):
     """
@@ -15,17 +16,17 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--horizon', type=int, default=400, help='Max timesteps in a rollout')
     parser.add_argument('--num_stack', type=int, default=3, help='Number of frame stacks to use in training if frame stacks are being used')
     parser.add_argument(
-        '--sp-encoding-fn', type=str, default='OAI_egocentric',
-        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
-        'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
+        '--specialized-agent-encoding-fn',
+        type=lambda key: ENCODING_SCHEMES[key],  # Map the key to its corresponding value
+        choices=ENCODING_SCHEMES.values(),        # Ensure valid keys are enforced
+        default=ENCODING_SCHEMES['OAI_egocentric'],  # Default to the function reference for 'OAI_feats'
+    )
     parser.add_argument(
-        '--adaptive-agent-encoding-fn', type=str, default='OAI_contexted_egocentric',
-        help='Encoding scheme for the primary(ego) agent, who we are training, to use. '
-        'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
-    parser.add_argument('--teammates-encoding-fn', type=str, default='OAI_egocentric',
-                        help='Encoding scheme for teammate agents, paired with the primary(ego) agent, to use. '
-                             'Options: "dense_lossless", "OAI_lossless", "OAI_feats", "OAI_egocentric", "OAI_contexted_egocentric"')
-
+        '--adaptive-agent-encoding-fn',
+        type=lambda key: ENCODING_SCHEMES[key],  # Map the key to its corresponding value
+        choices=ENCODING_SCHEMES.values(),        # Ensure valid keys are enforced
+        default=ENCODING_SCHEMES['OAI_contexted_egocentric'],  # Default to the function reference for 'OAI_feats')
+    )
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate used in imitation learning. lr for rl is defined in rl.py')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size used in imitation learning. bs for rl is defined in rl.py')
     parser.add_argument('--SP-seed', type=int, default=68, help='seed used in train_helper')
@@ -104,7 +105,9 @@ def get_arguments(additional_args=[]):
     args.base_dir = Path(args.base_dir)
     args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
     args.layout_names = args.layout_names.split(',')
-    if len(args.layout_names) > 1 and args.encoding_fn not in ['OAI_egocentric', 'OAI_contexted_egocentric']:
+    if len(args.layout_names) > 1 and args.specialized_agent_encoding_fn not in [ENCODING_SCHEMES['OAI_egocentric'], ENCODING_SCHEMES['OAI_contexted_egocentric']]:
+        raise ValueError("Encoding function must be OAI_egocentric if training on multiple layouts")
+    if len(args.layout_names) > 1 and args.adaptive_agent_encoding_fn not in [ENCODING_SCHEMES['OAI_egocentric'], ENCODING_SCHEMES['OAI_contexted_egocentric']]:
         raise ValueError("Encoding function must be OAI_egocentric if training on multiple layouts")
 
     return args

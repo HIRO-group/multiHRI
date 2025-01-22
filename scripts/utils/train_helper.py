@@ -8,7 +8,7 @@ from oai_agents.agents.agent_utils import CustomAgent
 from .common import load_agents, generate_name
 from oai_agents.common.tags import Prefix, KeyCheckpoints
 from oai_agents.common.multi_setup_trainer import MultiSetupSPTrainer
-from scripts.utils.agents_finder import AdversaryAgentsFinder, AdaptiveAgentsFinder
+from scripts.utils.agents_finder import AdversaryAgentsFinder, FCPAgentsFinder
 
 
 def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_agent):
@@ -18,6 +18,7 @@ def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_a
         eval_types=eval_types,
         curriculum=curriculum,
         tag_for_returning_agent=tag_for_returning_agent,
+        encoding_fn=args.specialized_agent_encoding_fn,
     )
     return sp_trainer.get_multiple_trained_agents()
 
@@ -128,7 +129,8 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
         learner_type=args.primary_learner_type,
         hidden_dim=args.N_X_SP_h_dim,
         seed=args.N_X_SP_seed,
-        n_envs = args.n_envs
+        n_envs = args.n_envs,
+        encoding_fn=args.adaptive_agent_encoding_fn,
     )
     teammates_collection = generate_TC(
         args=args,
@@ -176,7 +178,8 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
             seed=args.N_X_SP_seed,
             hidden_dim=args.N_X_SP_h_dim,
             learner_type=args.primary_learner_type,
-            checkpoint_rate=ck_rate
+            checkpoint_rate=ck_rate,
+            encoding_fn=init_agent.encoding_fn
         )
 
         n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps * (round + 1),
@@ -190,9 +193,9 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
 def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
-    # agent_finder = AdversaryAgentsFinder(args=args)
-    agent_finder = AdaptiveAgentsFinder(args=args)
+    agent_finder = AdversaryAgentsFinder(args=args)
     adversary_agents = agent_finder.get_agents()
+    assert len(adversary_agents) > 0
 
     name = generate_name(
         args,
@@ -214,19 +217,20 @@ def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adv
         agent_to_be_attacked = agents[0]
         return
 
-    random_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
+    init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
         args=args,
         name=name,
         learner_type=args.primary_learner_type,
         hidden_dim=args.N_X_SP_h_dim,
         seed=args.N_X_SP_seed,
-        n_envs=args.n_envs
+        n_envs=args.n_envs,
+        encoding_fn=args.adaptive_agent_encoding_fn,
     )
 
     teammates_collection = generate_TC(
         args=args,
         population=population,
-        agent=random_init_agent,
+        agent=init_agent,
         train_types=curriculum.train_types,
         eval_types_to_generate=n_x_sp_eval_types['generate'],
         eval_types_to_read_from_file=n_x_sp_eval_types['load'],
@@ -237,7 +241,7 @@ def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adv
     teammates_collection = update_TC_w_ADV_teammates(
         args=args,
         teammates_collection=teammates_collection,
-        primary_agent=random_init_agent,
+        primary_agent=init_agent,
         adversaries=adversary_agents,
         adversary_play_config=adversary_play_config
     )
@@ -247,7 +251,7 @@ def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adv
     n_x_sp_types_trainer = RLAgentTrainer(
         name=name,
         args=args,
-        agent=random_init_agent,
+        agent=init_agent,
         teammates_collection=teammates_collection,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
@@ -256,12 +260,13 @@ def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adv
         hidden_dim=args.N_X_SP_h_dim,
         learner_type=args.primary_learner_type,
         checkpoint_rate=total_train_timesteps // args.num_of_ckpoints,
+        encoding_fn=init_agent.encoding_fn,
     )
 
     n_x_sp_types_trainer.train_agents(total_train_timesteps=total_train_timesteps, tag_for_returning_agent=tag)
     agent_to_be_attacked = n_x_sp_types_trainer.get_agents()[0]
 
-### Previous Version
+
 # def train_ADV_and_N_X_SP(args, population, curriculum, unseen_teammates_len, adversary_play_config, attack_rounds, n_x_sp_eval_types, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL):
 #     assert TeamType.SELF_PLAY_ADVERSARY in curriculum.train_types
 
@@ -364,19 +369,20 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
     if agents:
         return agents[0]
 
-    random_init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
+    init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
         args=args,
         name=name,
         learner_type=args.primary_learner_type,
         hidden_dim=args.N_X_SP_h_dim,
         seed=args.N_X_SP_seed,
-        n_envs=args.n_envs
+        n_envs=args.n_envs,
+        encoding_fn=args.adaptive_agent_encoding_fn,
     )
 
     teammates_collection = generate_TC(
         args=args,
         population=population,
-        agent=random_init_agent,
+        agent=init_agent,
         train_types=curriculum.train_types,
         eval_types_to_generate=n_x_sp_eval_types['generate'],
         eval_types_to_read_from_file=n_x_sp_eval_types['load'],
@@ -384,10 +390,13 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         use_entire_population_for_train_types_teammates=True
     )
 
+    print(f"init_agent: {init_agent.encoding_fn}")
+    print(f"args.adaptive_agent_encoding_fn: {args.adaptive_agent_encoding_fn}")
+
     n_x_sp_types_trainer = RLAgentTrainer(
         name=name,
         args=args,
-        agent=random_init_agent,
+        agent=init_agent,
         teammates_collection=teammates_collection,
         epoch_timesteps=args.epoch_timesteps,
         n_envs=args.n_envs,
@@ -396,6 +405,7 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         hidden_dim=args.N_X_SP_h_dim,
         learner_type=args.primary_learner_type,
         checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
+        encoding_fn=init_agent.encoding_fn
     )
     n_x_sp_types_trainer.train_agents(
         total_train_timesteps=args.n_x_sp_total_training_timesteps,
@@ -450,7 +460,8 @@ def get_adversary_agent(
         seed=args.ADV_seed,
         hidden_dim=args.ADV_h_dim,
         learner_type=args.adversary_learner_type,
-        checkpoint_rate=args.adversary_total_training_timesteps // args.num_of_ckpoints
+        checkpoint_rate=args.adversary_total_training_timesteps // args.num_of_ckpoints,
+        encoding_fn=args.specialized_agent_encoding_fn
     )
     adversary_trainer.train_agents(
         total_train_timesteps=args.adversary_total_training_timesteps,
@@ -517,6 +528,7 @@ def get_FCP_agent_w_pop(
         curriculum=fcp_curriculum,
         learner_type=args.primary_learner_type,
         checkpoint_rate=args.fcp_total_training_timesteps // args.num_of_ckpoints,
+        encoding_fn = args.adaptive_agent_encoding_fn
     )
 
     fcp_trainer.train_agents(
@@ -596,6 +608,7 @@ def get_N_X_FCP_agents(
         curriculum=n_1_fcp_curriculum,
         learner_type=args.primary_learner_type,
         checkpoint_rate=args.n_x_fcp_total_training_timesteps // args.num_of_ckpoints,
+        encoding_fn=fcp_agent.encoding_fn
     )
 
     fcp_trainer.train_agents(

@@ -72,9 +72,10 @@ class Curriculum:
         }
         '''
         if self.is_random:
-            population = [population_teamtypes[t] for t in population_teamtypes.keys()]
+            team_type_keys = list(population_teamtypes.keys())
+            population = [population_teamtypes[t] for t in team_type_keys]
             type_id = np.random.randint(len(population))
-            team_type = population_teamtypes.keys()[type_id]
+            team_type = team_type_keys[type_id]
             teammates_per_type = population[type_id]
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
             return teammates, team_type
