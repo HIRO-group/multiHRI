@@ -281,6 +281,12 @@ def set_input(args):
         'storage_room'
     ]
 
+    complex_3_chefs_layouts = [
+        'dec_3_chefs_storage_room',
+        'dec_3_chefs_secret_heaven',
+        'dec_3_chefs_counter_circuit',
+    ]
+
     complex_5_chefs_layouts = [
         'dec_5_chefs_counter_circuit',
         'dec_5_chefs_storage_room',
@@ -289,10 +295,13 @@ def set_input(args):
     ]
 
     two_chefs_layouts = classic_2_chefs_layouts
+    three_chefs_layouts = complex_3_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
+    elif args.num_players == 3:
+        args.layout_names = three_chefs_layouts
     elif args.num_players == 5:
         args.layout_names = five_chefs_layouts
 
@@ -317,6 +326,8 @@ def set_input(args):
 
         args.total_ego_agents = 4
         if args.layout_names == complex_2_chefs_layouts:
+            prefix = 'Complex'
+        elif args.layout_names == complex_3_chefs_layouts:
             prefix = 'Complex'
         elif args.layout_names == complex_5_chefs_layouts:
             prefix = 'Complex'
@@ -350,6 +361,9 @@ if __name__ == '__main__':
     if args.teammates_len == 1:
         args.how_long = 20
         args.num_of_ckpoints = 35
+    elif args.teammates_len == 2:
+        args.how_long = 25
+        args.num_of_ckpoints = 40
     elif args.teammates_len == 4:
         args.how_long = 35
         args.num_of_ckpoints = 50
