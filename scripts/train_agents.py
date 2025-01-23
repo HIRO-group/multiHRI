@@ -240,7 +240,7 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH, 
+        'generate': [TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
                      TeamType.SELF_PLAY_DYNAMIC_ADV,
                      TeamType.SELF_PLAY_STATIC_ADV,
@@ -268,7 +268,8 @@ def SPN_XSPCKP(args) -> None:
 
 def set_input(args):
     args.num_players = args.teammates_len + 1
-    classic_layouts = [
+
+    classic_2_chefs_layouts = [
         'coordination_ring',
         'counter_circuit',
         'cramped_room',
@@ -276,25 +277,27 @@ def set_input(args):
         'forced_coordination',
     ]
 
-    complex_layouts = [
+    complex_2_chefs_layouts = [
         'secret_heaven',
         'storage_room'
     ]
 
-    five_player_layouts = [
+    complex_5_chefs_layouts = [
         'dec_5_chefs_counter_circuit',
         'dec_5_chefs_storage_room',
         'dec_5_chefs_secret_heaven',
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
 
-    two_chefs_layouts = classic_layouts
+    two_chefs_layouts = classic_2_chefs_layouts
+    five_chefs_layouts = complex_5_chefs_layouts
+
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
     elif args.num_players == 5:
-        args.layout_names = five_player_layouts
+        args.layout_names = five_chefs_layouts
 
-    args.custom_agent_ck_rate_generation = args.num_players + 1
+    args.custom_agent_ck_rate_generation = 2
     args.num_steps_in_traj_for_dyn_adv = 2
     args.num_static_advs_per_heatmap = 1
     args.num_dynamic_advs_per_heatmap = 1
@@ -314,15 +317,22 @@ def set_input(args):
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
         args.total_ego_agents = 4
-        args.exp_dir = f'FivePlayerLayouts/{args.num_players}'
+        if args.layout_names == complex_2_chefs_layouts:
+            prefix = 'Complex'
+        elif args.layout_names == complex_5_chefs_layouts:
+            prefix = 'Complex'
+        elif args.layout_names == classic_2_chefs_layouts:
+            prefix = 'Classic'
+
+        args.exp_dir = f'{prefix}/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
         args.n_envs = 2
         args.epoch_timesteps = 2
-        args.pop_total_training_timesteps = 3500
-        args.n_x_sp_total_training_timesteps = 1500
+        args.pop_total_training_timesteps = 4000
+        args.n_x_sp_total_training_timesteps = 8000
         args.adversary_total_training_timesteps = 1500
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
@@ -337,16 +347,21 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 4
-    args.how_long = 35
-    args.num_of_ckpoints = 40
+
+    if args.teammates_len == 1:
+        args.how_long = 20
+        args.num_of_ckpoints = 30
+    elif args.teammates_len == 4:
+        args.how_long = 35
+        args.num_of_ckpoints = 50
 
     set_input(args=args)
 
     # SPN_XSPCKP(args=args)
 
-    FCP_traditional(args=args)
+    # FCP_traditional(args=args)
 
-    # SP(args)
+    SP(args)
 
     # FCP_mhri(args=args)
 
