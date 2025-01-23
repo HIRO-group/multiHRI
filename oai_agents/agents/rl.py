@@ -274,12 +274,11 @@ class RLAgentTrainer(OAITrainer):
     def should_evaluate(self, steps):
         mean_training_rew = np.mean([ep_info["r"] for ep_info in self.learning_agent.agent.ep_info_buffer])
         self.best_training_rew *= 1
-
-        steps_divisible_by_x = (steps + 1) % 15 == 0
+        steps_divisible_by_x = (steps + 1) % 40 == 0
         mean_rew_greater_than_best = mean_training_rew > self.best_training_rew and self.learning_agent.num_timesteps >= 5e6
-        checkpoint_rate_reached = self.checkpoint_rate and self.learning_agent.num_timesteps // self.checkpoint_rate > (len(self.ck_list) - 1)
-
+        checkpoint_rate_reached = self.checkpoint_rate and (self.learning_agent.num_timesteps // self.checkpoint_rate) > (len(self.ck_list) - 1 + self.args.ck_list_offset)
         return steps_divisible_by_x or mean_rew_greater_than_best or checkpoint_rate_reached
+
 
     def log_details(self, experiment_name, total_train_timesteps):
         print("Training agent: " + self.name + ", for experiment: " + experiment_name)
@@ -292,10 +291,17 @@ class RLAgentTrainer(OAITrainer):
         print(f"Number of environments: {self.n_envs}")
         print(f"Hidden dimension: {self.hidden_dim}")
         print(f"Seed: {self.seed}")
-        print(f"Checkpoint rate: {self.args.num_of_ckpoints if self.checkpoint_rate else None}")
+        print(f"args.num_of_ckpoints: {self.args.num_of_ckpoints if self.checkpoint_rate else None}")
+        print(f"args.checkpoint_rate: {self.checkpoint_rate}")
         print(f"Learner type: {self.learner_type}")
         print("Dynamic Reward: ", self.args.dynamic_reward)
         print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
+        print('args.custom_agent_ck_rate_generation: ', self.args.custom_agent_ck_rate_generation)
+        print('args.num_steps_in_traj_for_dyn_adv: ', self.args.num_steps_in_traj_for_dyn_adv)
+        print('args.num_static_advs_per_heatmap: ', self.args.num_static_advs_per_heatmap)
+        print('args.num_dynamic_advs_per_heatmap: ', self.args.num_dynamic_advs_per_heatmap)
+        print('args.use_val_func_for_heatmap_gen: ', self.args.use_val_func_for_heatmap_gen)
+
 
     def save_init_model_and_cklist(self):
         self.ck_list = []
@@ -338,11 +344,11 @@ class RLAgentTrainer(OAITrainer):
         best_path, best_tag = None, None
 
         self.steps = self.start_step
-        self.learning_agent.num_timesteps = self.n_envs*self.start_timestep
+        self.learning_agent.num_timesteps = self.n_envs * self.start_timestep
+        
         ck_name_handler = CheckedModelNameHandler()
 
         while self.learning_agent.num_timesteps < total_train_timesteps:
-
             self.curriculum.update(current_step=self.steps)
             self.set_new_teammates(curriculum=self.curriculum)
 
@@ -372,11 +378,11 @@ class RLAgentTrainer(OAITrainer):
                         self.ck_list.append((rew_per_layout, path, tag))
                         _, _ = self.save_agents(path=path, tag=tag)
 
-
                 if mean_reward >= self.best_score:
                     best_path, best_tag = self.save_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
                     print(f'New best evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     self.best_score = mean_reward
+
         self.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         self.agents, _, _ = RLAgentTrainer.load_agents(args=self.args, name=self.name, tag=tag_for_returning_agent)
         run.finish()
