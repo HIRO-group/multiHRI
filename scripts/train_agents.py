@@ -236,13 +236,13 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_DYNAMIC_ADV,
+        # TeamType.SELF_PLAY_DYNAMIC_ADV,
         TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
-                     TeamType.SELF_PLAY_DYNAMIC_ADV,
+                    #  TeamType.SELF_PLAY_DYNAMIC_ADV,
                      TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
@@ -288,7 +288,7 @@ def set_input(args):
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
 
-    two_chefs_layouts = classic_2_chefs_layouts
+    two_chefs_layouts = complex_2_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
