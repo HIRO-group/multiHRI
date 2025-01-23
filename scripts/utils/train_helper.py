@@ -156,7 +156,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                                             primary_agent=init_agent,
                                                                             adversaries=adversaries)
         init_agent.name = name
-        args.ck_list_offset = (args.num_of_ckpoints - 1) + ((args.num_of_ckpoints - 1) * round // (args.custom_agent_ck_rate_generation))
+        #args.ck_list_offset = (args.num_of_ckpoints - 1) + ((args.num_of_ckpoints - 1) * round // (args.custom_agent_ck_rate_generation))
 
         n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                                 args=args,
@@ -168,7 +168,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                 seed=args.N_X_SP_seed,
                                                 hidden_dim=args.N_X_SP_h_dim,
                                                 learner_type=args.primary_learner_type,
-                                                checkpoint_rate= ck_rate,
+                                                #checkpoint_rate= ck_rate,
                                                 )
 
         n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps*(round + 1) + args.pop_total_training_timesteps,
