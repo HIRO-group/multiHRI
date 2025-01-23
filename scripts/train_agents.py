@@ -297,7 +297,7 @@ def set_input(args):
     elif args.num_players == 5:
         args.layout_names = five_chefs_layouts
 
-    args.custom_agent_ck_rate_generation = 2
+    args.custom_agent_ck_rate_generation = args.num_players + 1
     args.num_steps_in_traj_for_dyn_adv = 2
     args.num_static_advs_per_heatmap = 1
     args.num_dynamic_advs_per_heatmap = 1
@@ -332,7 +332,7 @@ def set_input(args):
         args.n_envs = 2
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 4000
-        args.n_x_sp_total_training_timesteps = 8000
+        args.n_x_sp_total_training_timesteps = 4000
         args.adversary_total_training_timesteps = 1500
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
@@ -346,22 +346,22 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 4
+    args.teammates_len = 1
 
     if args.teammates_len == 1:
         args.how_long = 20
-        args.num_of_ckpoints = 30
+        args.num_of_ckpoints = 35
     elif args.teammates_len == 4:
         args.how_long = 35
         args.num_of_ckpoints = 50
 
     set_input(args=args)
 
-    # SPN_XSPCKP(args=args)
+    SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
 
-    SP(args)
+    # SP(args)
 
     # FCP_mhri(args=args)
 

@@ -279,6 +279,7 @@ class RLAgentTrainer(OAITrainer):
         checkpoint_rate_reached = self.checkpoint_rate and (self.learning_agent.num_timesteps // self.checkpoint_rate) > (len(self.ck_list) - 1 + self.args.ck_list_offset)
         return steps_divisible_by_x or mean_rew_greater_than_best or checkpoint_rate_reached
 
+
     def log_details(self, experiment_name, total_train_timesteps):
         print("Training agent: " + self.name + ", for experiment: " + experiment_name)
         self.print_tc_helper(self.teammates_collection, "Train TC")
@@ -348,13 +349,11 @@ class RLAgentTrainer(OAITrainer):
         ck_name_handler = CheckedModelNameHandler()
 
         while self.learning_agent.num_timesteps < total_train_timesteps:
-
             self.curriculum.update(current_step=self.steps)
             self.set_new_teammates(curriculum=self.curriculum)
 
             # In each iteration the agent collects n_envs * n_steps experiences. This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)
-
             self.steps += 1
 
             if self.should_evaluate(steps=self.steps):
