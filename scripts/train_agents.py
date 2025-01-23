@@ -236,14 +236,14 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_DYNAMIC_ADV,
-        TeamType.SELF_PLAY_STATIC_ADV,
+        # TeamType.SELF_PLAY_DYNAMIC_ADV,
+        # TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
-                     TeamType.SELF_PLAY_DYNAMIC_ADV,
-                     TeamType.SELF_PLAY_STATIC_ADV,
+                    #  TeamType.SELF_PLAY_DYNAMIC_ADV,
+                    #  TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
     }
@@ -345,7 +345,7 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 1
+    args.teammates_len = 4
 
     if args.teammates_len == 1:
         args.how_long = 20
