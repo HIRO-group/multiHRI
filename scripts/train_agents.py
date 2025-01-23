@@ -288,7 +288,7 @@ def set_input(args):
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
 
-    two_chefs_layouts = classic_2_chefs_layouts
+    two_chefs_layouts = complex_2_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
@@ -304,7 +304,7 @@ def set_input(args):
     args.prioritized_sampling = False
 
     if not args.quick_test:
-        args.gen_pop_for_eval = False
+        args.gen_pop_for_eval = True
         args.n_envs = 210
         args.epoch_timesteps = 1e5
 
@@ -322,6 +322,8 @@ def set_input(args):
             prefix = 'Complex'
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
+        
+        prefix += 'Test'
 
         args.exp_dir = f'{prefix}/{args.num_players}'
 
@@ -348,7 +350,7 @@ if __name__ == '__main__':
     args.teammates_len = 1
 
     if args.teammates_len == 1:
-        args.how_long = 20
+        args.how_long = 6
         args.num_of_ckpoints = 35
     elif args.teammates_len == 4:
         args.how_long = 35
@@ -356,9 +358,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
-    # FCP_traditional(args=args)
+    FCP_traditional(args=args)
 
     # SP(args)
 

@@ -401,6 +401,8 @@ def get_FCP_agent_w_pop(
         tag=tag
     )
 
+    return 0, 0
+
     teammates_collection = generate_TC(
         args=args,
         population=population,
