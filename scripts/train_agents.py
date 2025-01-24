@@ -248,9 +248,9 @@ def SPN_XSPCKP(args) -> None:
         'load': []
     }
     if args.prioritized_sampling:
-        curriculum = Curriculum(train_types=primary_train_types, 
-                                eval_types=primary_eval_types, 
-                                is_random=False, 
+        curriculum = Curriculum(train_types=primary_train_types,
+                                eval_types=primary_eval_types,
+                                is_random=False,
                                 prioritized_sampling=True,
                                 priority_scaling=2.0)
     else:
@@ -311,7 +311,7 @@ def set_input(args):
         args.pop_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * args.how_long)
         args.fcp_total_training_timesteps = int(5e6 * args.how_long)
-        
+
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
@@ -356,6 +356,7 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
+    args.N_X_SP_seed = 2020
     SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
