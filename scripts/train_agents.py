@@ -355,10 +355,11 @@ if __name__ == '__main__':
         args.num_of_ckpoints = 50
 
     set_input(args=args)
+    args.N_X_SP_seed = 2020
 
     SPN_XSPCKP(args=args)
 
-    args.N_X_SP_seed = 2020
+
 
     # FCP_traditional(args=args)
 
