@@ -356,6 +356,7 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
+    args.N_X_SP_seed = 2020
     SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
