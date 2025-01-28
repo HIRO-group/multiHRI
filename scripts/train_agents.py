@@ -294,7 +294,11 @@ def set_input(args):
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
 
-    two_chefs_layouts = classic_2_chefs_layouts
+    preference_2_chefs_layouts = [
+        'counter_circuit_left_pot'
+    ]
+
+    two_chefs_layouts = preference_2_chefs_layouts
     three_chefs_layouts = complex_3_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
@@ -324,7 +328,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 4
+        args.total_ego_agents = 1
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'
         elif args.layout_names == complex_3_chefs_layouts:
@@ -333,6 +337,8 @@ def set_input(args):
             prefix = 'Complex'
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
+        elif args.layout_names == preference_2_chefs_layouts:
+            prefix = 'Preferences'
 
         args.exp_dir = f'{prefix}/{args.num_players}'
 
@@ -347,20 +353,20 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
         args.total_ego_agents = 2
-        args.exp_dir = f'Test/{args.num_players}'
+        args.exp_dir = f'Test-P/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 1
 
     if args.teammates_len == 1:
-        args.how_long = 20
-        args.num_of_ckpoints = 35
+        args.how_long = 6
+        args.num_of_ckpoints = 10
     elif args.teammates_len == 2:
         args.how_long = 25
         args.num_of_ckpoints = 40
@@ -370,11 +376,11 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
 
-    # SP(args)
+    SP(args)
 
     # FCP_mhri(args=args)
 
