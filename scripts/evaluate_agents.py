@@ -1,6 +1,10 @@
 import multiprocessing as mp
 import os
 from pathlib import Path
+
+import matplotlib
+from torch import index_select
+from wandb import agent
 mp.set_start_method('spawn', force=True)
 
 import hashlib
@@ -15,6 +19,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 import pickle as pkl
+import warnings
 
 from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
@@ -196,6 +201,7 @@ def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_tea
 
 
 def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False):
+    #cmap = matplotlib.colormaps.get_cmap("Set3")
     plot_name = plot_name + "_delivery" if display_delivery else plot_name
     uc = ''.join([str(u) for u in unseen_counts])
     plot_name += f"_uc{uc}"
@@ -204,10 +210,12 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
     num_teamsets = len(team_lvl_set_names)
-    fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
+    fig, axes = plt.subplots(1, 1, figsize=(30, 10), sharey=True)
 
     if num_layouts == 1:
         axes = [[axes]]
+
+    axes = [[axes]]
 
     x_values = np.arange(len(unseen_counts))
     num_agents = len(all_mean_rewards)
@@ -217,11 +225,12 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     def process_reward(reward):
         return reward / 20 if display_delivery else reward
 
+    chart_data = {}
     for i, layout_name in enumerate(layout_names):
         cross_exp_mean = {}
         cross_exp_std = {}
         for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
-            ax = axes[j][i]
+            #ax = axes[j][i]
             for idx, agent_name in enumerate(all_mean_rewards):
                 mean_values = []
                 std_values = []
@@ -241,31 +250,54 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
 
                 # Plot bars for each agent
                 x = x_values + idx * width - width * (num_agents - 1) / 2
-                ax.bar(x, mean_values, width, yerr=std_values, label=f'{agent_name}', capsize=5)
+        #         ax.bar(x, mean_values, width, yerr=std_values, label=f'{agent_name}', capsize=5, color=cmap.colors)
 
-            team_name_print = team_name.strip("[]'\"")
-            ax.set_title(f'{layout_name}\n{team_name_print}')
-            ax.set_xlabel('Number of Unseen Teammates')
-            ax.set_xticks(x_values)
-            ax.set_xticklabels(unseen_counts)
-            ax.set_yticks(np.arange(0, 20, 1))
-            ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+        #     team_name_print = team_name.strip("[]'\"")
+        #     ax.set_title(f'{layout_name}\n{team_name_print}')
+        #     ax.set_xlabel('Number of Unseen Teammates')
+        #     ax.set_xticks(x_values)
+        #     ax.set_xticklabels(unseen_counts)
+        #     ax.set_yticks(np.arange(0, 20, 1))
+        #     ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
         # Average plot across all teamsets
-        ax = axes[-1][i]
+        ax = axes[-1][0]
         for idx, agent_name in enumerate(all_mean_rewards):
             mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
             std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
 
             x = x_values + idx * width - width * (num_agents - 1) / 2
-            ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
 
-        ax.set_title(f"Avg. {layout_name}")
-        ax.set_xlabel('Number of Unseen Teammates')
-        ax.set_xticks(x_values)
-        ax.set_xticklabels(unseen_counts)
-        ax.set_yticks(np.arange(0, 20, 1))
-        ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+            if not (agent_name in chart_data):
+                chart_data[agent_name] = {
+                    "mean": [],
+                    "std": [],
+                    "layout": []
+                }
+
+
+            chart_data[agent_name]["mean"].append(mean_values[0])
+            chart_data[agent_name]["std"].append(std_values[0])
+            chart_data[agent_name]["layout"].append(layout_name)
+
+            #ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
+
+    ax = axes[-1][0]
+    agents = list(chart_data.values())
+    num_agents = len(agents)
+    width = .95 / num_agents
+    layouts = agents[0]["layout"]
+    idxs = np.arange(len(layouts))
+    cmap = matplotlib.colormaps["tab20b"]
+
+    for i, (agent_name, d) in enumerate(chart_data.items()):
+        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(i))
+
+    ax.set_title(f"Avg. Reward")
+    ax.set_xticks(idxs + (num_agents/2 * width), labels=layouts)
+    ax.set_yticks(np.arange(0, 200, 10))
+    ax.autoscale_view()
+    ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
     # Set y-axis label based on display_delivery
     fig.text(0.04, 0.5, 'Number of Deliveries' if display_delivery else 'Reward', va='center', rotation='vertical')
@@ -308,6 +340,7 @@ def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names
                     cross_exp_mean[agent_name][unseen_count] += mean_values[-1]
                     cross_exp_mean[agent_name][unseen_count] += std_values[-1]
 
+
                 ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o',
                             label=f'Agent: {agent_name}', capsize=5)
             team_name_print = team_name.strip("[]'\"")
@@ -321,6 +354,10 @@ def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names
             mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
             std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
             ax.errorbar(x_values, mean_values, yerr=std_values, fmt="-o", label=f"Agent: {agent_name}", capsize=5)
+
+
+        my_cmap = plt.get_cmap("viridis")
+        rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
 
         ax.set_title(f"Avg. {layout_name}")
         ax.set_xlabel('Number of Unseen Teammates')
@@ -419,7 +456,8 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
 
 def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_sets: Sequence[Sequence[Eval]]):
     for path in all_agents_paths.values():
-        assert Path(path+'/trainer_file').is_file(), f"File {path+'/trainer_file'} does not exist"
+        if not Path(path+'/trainer_file').is_file():
+            warnings.warn(f"File {path+'/trainer_file'} does not exist")
 
     all_mean_rewards, all_std_rewards = {}, {}
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
@@ -571,7 +609,7 @@ if __name__ == "__main__":
 
     # For display_purposes
     unseen_counts = [1]
-    show_delivery_num = True
+    show_delivery_num = False
 
     plot_name = generate_plot_name(num_players=args.num_players,
                                     deterministic=deterministic,
