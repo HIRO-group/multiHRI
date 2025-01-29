@@ -48,14 +48,14 @@ eval_key_lut = {
 
 LAYOUT_NAMES_PATHs = {
     'secret_heaven': {
-        Eval.LOW: Complex.COMPLEX_2_L,
-        Eval.MEDIUM: Complex.COMPLEX_2_M,
-        Eval.HIGH: Complex.COMPLEX_2_H,
+        Eval.LOW: Complex.L_2,
+        Eval.MEDIUM: Complex.M_2,
+        Eval.HIGH: Complex.H_2,
     },
     'storage_room': {
-        Eval.LOW: Complex.COMPLEX_2_L,
-        Eval.MEDIUM: Complex.COMPLEX_2_M,
-        Eval.HIGH: Complex.COMPLEX_2_H,
+        Eval.LOW: Complex.L_2,
+        Eval.MEDIUM: Complex.M_2,
+        Eval.HIGH: Complex.H_2,
     },
 
     'coordination_ring': {
@@ -82,55 +82,6 @@ LAYOUT_NAMES_PATHs = {
         Eval.LOW: Classic.L_2,
         Eval.MEDIUM: Classic.M_2,
         Eval.HIGH: Classic.H_2,
-    },
-
-
-    'selected_2_chefs_coordination_ring': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
-    'selected_2_chefs_counter_circuit': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
-    'selected_2_chefs_cramped_room': {
-        Eval.LOW: TWO_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH:TWO_PLAYERS_HIGH_EVAL
-    },
-
-    'selected_3_chefs_coordination_ring': {
-        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
-    },
-    'selected_3_chefs_counter_circuit': {
-        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
-    },
-    'selected_3_chefs_cramped_room': {
-        Eval.LOW: THREE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: THREE_PLAYERS_MEDIUM_EVAL,
-        Eval.HIGH: THREE_PLAYERS_HIGH_EVAL,
-    },
-
-    'selected_5_chefs_counter_circuit': {
-        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-        Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    },
-    'selected_5_chefs_secret_coordination_ring': {
-        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-        Eval.HIGH: FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    },
-    'selected_5_chefs_storage_room': {
-        Eval.LOW: FIVE_PLAYERS_LOW_EVAL,
-        Eval.MEDIUM: FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
-        Eval.HIGH: FIVE_PLAYERS_HIGH_STORAGE_EVAL,
     },
 }
 
@@ -479,14 +430,52 @@ def get_2_player_input_classic(args):
         [Eval.MEDIUM],
         [Eval.HIGH]
     ]
-    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
+    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'classic'
+
+
+
+def get_2_player_input_complex(args):
+    args.num_players = 2
+    args.layout_names = [
+        'secret_heaven',
+        'storage_room'
+        ]
+    p_idxes = [0, 1]
+    all_agents_paths = {
+        'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
+        'SP_s1010_h256': 'agent_models/Complex/2/SP_hd256_seed1010/best',
+        'FCP_s1010_h256': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
+
+        'dsALMH 1d[2t] 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+        'sALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+
+        'dALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        'dALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        'dALMH 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+
+        'dsALMH 1d[5t] 1s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[5t] 2s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[5t] 3s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+    }
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
+    ]
+    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
 
 
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input_classic(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
@@ -499,7 +488,7 @@ if __name__ == "__main__":
     unseen_counts = [1]
     show_delivery_num = True
 
-    plot_name = generate_plot_name( prefix='classic',
+    plot_name = generate_plot_name( prefix=prefix,
                                     num_players=args.num_players,
                                     deterministic=deterministic,
                                     p_idxes=p_idxes,

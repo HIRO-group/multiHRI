@@ -25,24 +25,25 @@ def print_selected_agents_for_evaluation(selected_agents_for_evaluation):
                         print(f"        Team {i + 1}: {team_members}")
 
 class Complex:
-    COMPLEX_2_L = [
-        # 'agent_models/Complex/2/SP_hd256_seed13/ck_0',
-        # 'agent_models/Complex/2/SP_hd256_seed1010/ck_0',
-        # 'agent_models/Complex/2/SP_hd256_seed2020/ck_0',
-        # 'agent_models/Complex/2/SP_hd256_seed2602/ck_0',
+    L_2 = [
+        'agent_models/ComplexTest/2/SP_hd256_seed3031/ck_0',
+        'agent_models/ComplexTest/2/SP_hd256_seed3708/ck_0',
+        'agent_models/ComplexTest/2/SP_hd256_seed4041/ck_0',
+        'agent_models/ComplexTest/2/SP_hd256_seed5051/ck_0',
     ]
-    COMPLEX_2_M = [
-        # 'agent_models/Complex/2/SP_hd256_seed13/ck_1_rew_236.0',
-        # 'agent_models/Complex/2/SP_hd256_seed1010/ck_1_rew_182.0',
-        # 'agent_models/Complex/2/SP_hd256_seed2020/ck_1_rew_257.0',
-        # 'agent_models/Complex/2/SP_hd256_seed2602/ck_1_rew_216.0',
+    M_2 = [
+        'agent_models/ComplexTest/2/SP_hd256_seed3031/ck_4_rew_140.0',
+        'agent_models/ComplexTest/2/SP_hd256_seed3708/ck_3_rew_132.0',
+        'agent_models/ComplexTest/2/SP_hd256_seed4041/ck_4_rew_164.0',
+        'agent_models/ComplexTest/2/SP_hd256_seed5051/ck_3_rew_120.0',
     ]
-    COMPLEX_2_H = [
-        # 'agent_models/Complex/2/SP_hd256_seed1010/best',
-        # 'agent_models/Complex/2/SP_hd256_seed2020/best',
-        # 'agent_models/Complex/2/SP_hd256_seed2602/best',
-        # 'agent_models/Complex/2/SP_hd256_seed2602/ck_9_rew_308.0'
+    H_2 = [
+        'agent_models/ComplexTest/2/SP_hd256_seed3031/best',
+        'agent_models/ComplexTest/2/SP_hd256_seed3708/best',
+        'agent_models/ComplexTest/2/SP_hd256_seed4041/best',
+        'agent_models/ComplexTest/2/SP_hd256_seed5051/best',
     ]
+
 
 class Classic: 
     L_2 = [
