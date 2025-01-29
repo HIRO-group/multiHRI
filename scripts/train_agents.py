@@ -295,7 +295,7 @@ def set_input(args):
     ]
 
     preference_2_chefs_layouts = [
-        'storage_room_left_pot'
+        'storage_room_right_pot'
     ]
 
     two_chefs_layouts = preference_2_chefs_layouts
