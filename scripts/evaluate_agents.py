@@ -84,6 +84,7 @@ LAYOUT_NAMES_PATHs = {
         Eval.HIGH: Classic.H_2,
     },
 
+
     'selected_2_chefs_coordination_ring': {
         Eval.LOW: TWO_PLAYERS_LOW_EVAL,
         Eval.MEDIUM: TWO_PLAYERS_MEDIUM_EVAL,
@@ -183,8 +184,8 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
     return all_teammates
 
 
-def generate_plot_name(num_players, deterministic, p_idxes, num_eps, max_num_teams, teammate_lvl_sets):
-    plot_name = f'{num_players}-players'
+def generate_plot_name(prefix, num_players, deterministic, p_idxes, num_eps, max_num_teams, teammate_lvl_sets):
+    plot_name = f'{prefix}-{num_players}-players'
     plot_name += '-det' if deterministic else '-stoch'
     p_idexes_str = ''.join([str(p_idx) for p_idx in p_idxes])
     plot_name += f'-pidx{p_idexes_str}'
@@ -441,126 +442,51 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
 
 
 
-def get_2_player_input(args):
+def get_2_player_input_classic(args):
     args.num_players = 2
-    layout_names = [
+    args.layout_names = [
         'coordination_ring',
         'counter_circuit',
         'cramped_room',
         'asymmetric_advantages',
         'forced_coordination'
         ]
-
     p_idxes = [0, 1]
-
     all_agents_paths = {
         'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
         'SP_s1010_h256': 'agent_models/Classic/2/SP_hd256_seed1010/best',
         'FCP_s1010_h256': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
-        'dsALMH 1d[2t] 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[2t] 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        'dsALMH 1d[5t] 1us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[5t] 2us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[5t] 3us VH': 'agent_models/Classic_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'sALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        'sALMH 1us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 2us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3us VH': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        'dALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        'dALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        'dALMH 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
 
-        'dsALMH 1d[2t] 1s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[2t] 2s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 1d[5t] 1s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[5t] 2s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[5t] 3s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        'dsALMH 1d[5t] 1s PH': 'agent_models/Visit_counter_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[5t] 2s PH': 'agent_models/Visit_counter_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[5t] 3s PH': 'agent_models/Visit_counter_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
-        'sALMH 1s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 2s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3s PH': 'agent_models/Visit_counter/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-
-
-        # 'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
-        # 'FCP_s1010_h256': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
-
-        # 'dsALMH 1d[2t] 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[2t] 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        # 'dsALMH 3d[2t] 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
-        # 'dsALMH 1d[5t] 1s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[5t] 2s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        # 'dsALMH 3d[5t] 3s VH': 'agent_models/Complex_5s/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
-        # 'sALMH 1s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        # 'sALMH 2s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        # 'sALMH 3s VH': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
         [Eval.HIGH]
     ]
-    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
+    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
-
-def get_3_player_input(args):
-    args.num_players = 3
-    layout_names = ['selected_3_chefs_coordination_ring',
-                    'selected_3_chefs_counter_circuit',
-                    'selected_3_chefs_cramped_room']
-    p_idxes = [0, 1, 2]
-    all_agents_paths = {
-        'SP':          'agent_models/Result/3/SP_hd64_seed14/best',
-        'FCP':         'agent_models/Result/3/FCP_s2020_h256_tr(AMX)_ran/best',
-
-        'ALMH CUR 1A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        'ALMH RAN 1A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        'AMH CUR 1A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'AMH RAN 1A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best',
-
-        'ALMH CUR 2A': 'agent_models/ALMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack1/best',
-        'ALMH RAN 2A': 'agent_models/ALMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack1/best',
-        'AMH CUR 2A':  'agent_models/AMH_CUR/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack1/best',
-        'AMH RAN 2A':  'agent_models/AMH_RAN/3/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack1/best'
-    }
-    teammate_lvl_sets = [
-        [Eval.LOW],
-        [Eval.MEDIUM],
-        [Eval.HIGH]
-    ]
-    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
-
-
-def get_5_player_input(args):
-    args.num_players = 5
-    layout_names = ['selected_5_chefs_counter_circuit',
-                    'selected_5_chefs_secret_coordination_ring',
-                    'selected_5_chefs_storage_room']
-    p_idxes = [0, 1, 2, 3, 4]
-    all_agents_paths = {
-        'SP':              'agent_models/Result/5/SP_hd64_seed14/best',
-        'FCP at 38M steps':'agent_models/Result/5/FCP_s2020_h256_tr(AMX)_ran/best',
-        'ALMH CUR 1A':     'agent_models/ALMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_cur_originaler_attack0/best',
-        'ALMH RAN 1A':     'agent_models/ALMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPL_SPL_SPL_SPL_SPADV]_ran_originaler_attack0/best',
-        'AMH CUR 1A':      'agent_models/AMH_CUR/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_cur_originaler_attack0/best',
-        'AMH RAN 1A':      'agent_models/AMH_RAN/5/PWADV-N-1-SP_s1010_h256_tr[SPH_SPH_SPH_SPH_SPM_SPM_SPM_SPM_SPADV]_ran_originaler_attack0/best'
-        }
-    teammate_lvl_sets = [
-        [Eval.LOW],
-        [Eval.MEDIUM],
-        [Eval.HIGH]
-    ]
-    return layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args
 
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_3_player_input(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_5_player_input(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input_classic(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args = get_2_player_input_complex(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
@@ -573,7 +499,8 @@ if __name__ == "__main__":
     unseen_counts = [1]
     show_delivery_num = True
 
-    plot_name = generate_plot_name(num_players=args.num_players,
+    plot_name = generate_plot_name( prefix='classic',
+                                    num_players=args.num_players,
                                     deterministic=deterministic,
                                     p_idxes=p_idxes,
                                     num_eps=number_of_eps,
