@@ -295,7 +295,7 @@ def set_input(args):
     ]
 
     preference_2_chefs_layouts = [
-        'counter_circuit_left_pot'
+        'storage_room_left_pot'
     ]
 
     two_chefs_layouts = preference_2_chefs_layouts
@@ -353,7 +353,7 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
         args.total_ego_agents = 2
-        args.exp_dir = f'Test-P/{args.num_players}'
+        args.exp_dir = f'Test/{args.num_players}'
 
 
 if __name__ == '__main__':
