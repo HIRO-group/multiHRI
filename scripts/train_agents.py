@@ -313,7 +313,7 @@ def set_input(args):
     args.prioritized_sampling = False
 
     if not args.quick_test:
-        args.gen_pop_for_eval = False
+        args.gen_pop_for_eval = True
         args.n_envs = 210
         args.epoch_timesteps = 1e5
 
@@ -334,6 +334,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
 
+        prefix += 'Test'
         args.exp_dir = f'{prefix}/{args.num_players}'
 
     else: # Used for doing quick tests
@@ -356,13 +357,13 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 1
+    args.teammates_len = 2
 
     if args.teammates_len == 1:
         args.how_long = 20
         args.num_of_ckpoints = 35
     elif args.teammates_len == 2:
-        args.how_long = 25
+        args.how_long = 8
         args.num_of_ckpoints = 40
     elif args.teammates_len == 4:
         args.how_long = 35
@@ -370,9 +371,9 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
-    # FCP_traditional(args=args)
+    FCP_traditional(args=args)
 
     # SP(args)
 
