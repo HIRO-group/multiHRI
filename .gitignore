@@ -155,3 +155,4 @@ eval_cache/
 wandb/
 
 eval_cache.zip
+*.zip
