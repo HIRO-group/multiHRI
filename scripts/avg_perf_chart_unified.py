@@ -162,7 +162,7 @@ def generate_plot_name(prefix, num_players, deterministic, p_idxes, num_eps, max
     return plot_name
 
 
-def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False):
+def plot_evaluation_results_bar(fig, axes, all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False, start=0):
     #cmap = matplotlib.colormaps.get_cmap("Set3")
     plot_name = plot_name + "_delivery" if display_delivery else plot_name
     uc = ''.join([str(u) for u in unseen_counts])
@@ -172,7 +172,6 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
     num_teamsets = len(team_lvl_set_names)
-    fig, axes = plt.subplots(1, 1, figsize=(15, 5), sharey=True)
 
     if num_layouts == 1:
         axes = [[axes]]
@@ -240,7 +239,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
 
             chart_data[agent_name]["mean"].append(mean_values[0])
             chart_data[agent_name]["std"].append(std_values[0])
-            chart_data[agent_name]["layout"].append(DISPLAY_NAME_MAP[layout_name])
+            chart_data[agent_name]["layout"].append(layout_name)
 
             #ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
 
@@ -253,17 +252,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     cmap = matplotlib.colormaps["tab20b"]
 
     for i, (agent_name, d) in enumerate(chart_data.items()):
-        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(i*5), capsize=4)
-
-    #ax.set_title(f"Avg. Number of Soup Deliveries")
-    ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='14')
-    ax.set_yticks(np.arange(0, 20, 5), )
-    ax.set_ylabel("Number of Soup Deliveries", fontsize='18')
-    ax.autoscale_view()
-    ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
-
-    plt.tight_layout()
-    plt.savefig(f'data/plots/{plot_name}_{"deliveries" if display_delivery else "rewards"}_bar.png')
+        ax.bar(start + idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name if start == 0 else None, color=cmap(i*5), capsize=4)
 
 
 def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name):
@@ -446,7 +435,7 @@ def get_2_player_input_classic(args):
         'cramped_room',
         'asymmetric_advantages',
         'forced_coordination'
-        ]
+    ]
     p_idxes = [0, 1]
     all_agents_paths = {
         # 'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
@@ -483,8 +472,8 @@ def get_2_player_input_complex(args):
     args.num_players = 2
     args.layout_names = [
         'secret_heaven',
-        'storage_room'
-        ]
+        'storage_room',
+    ]
     p_idxes = [0, 1]
     all_agents_paths = {
         # 'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
@@ -519,8 +508,10 @@ def get_2_player_input_complex(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
-    #layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
+    fig, axes = plt.subplots(1, 1, figsize=(30, 5), sharey=True)
+    classic_layout_names, classic_p_idxes, classic_agents_paths, classic_teammate_lvl_sets, classic_args, classic_prefix = get_2_player_input_classic(args)
+
+    axes = [axes]
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
@@ -533,33 +524,86 @@ if __name__ == "__main__":
     unseen_counts = [1]
     show_delivery_num = True
 
-    plot_name = generate_plot_name( prefix=prefix,
+    plot_name = generate_plot_name(prefix=classic_prefix,
                                     num_players=args.num_players,
                                     deterministic=deterministic,
-                                    p_idxes=p_idxes,
+                                    p_idxes=classic_p_idxes,
                                     num_eps=number_of_eps,
                                     max_num_teams=max_num_teams_per_layout_per_x,
-                                    teammate_lvl_sets=teammate_lvl_sets)
+                                    teammate_lvl_sets=classic_teammate_lvl_sets)
 
     all_mean_rewards, all_std_rewards = run_parallel_evaluation(
             args=args,
-            all_agents_paths=all_agents_paths,
-            layout_names=layout_names,
-            p_idxes=p_idxes,
+            all_agents_paths=classic_agents_paths,
+            layout_names=classic_layout_names,
+            p_idxes=classic_p_idxes,
             deterministic=deterministic,
             max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
             number_of_eps=number_of_eps,
-            teammate_lvl_sets=teammate_lvl_sets
+            teammate_lvl_sets=classic_teammate_lvl_sets
     )
 
-    plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
+    plot_evaluation_results_bar(fig, axes[0], all_mean_rewards=all_mean_rewards,
                            all_std_rewards=all_std_rewards,
-                           layout_names=layout_names,
-                           teammate_lvl_sets=teammate_lvl_sets,
+                           layout_names=classic_layout_names,
+                           teammate_lvl_sets=classic_teammate_lvl_sets,
                            unseen_counts=unseen_counts,
                            display_delivery=show_delivery_num,
                            plot_name=plot_name)
 
+    complex_layout_names, complex_p_idxes, complex_agents_paths, complex_teammate_lvl_sets, complex_args, complex_prefix = get_2_player_input_complex(args)
+
+    deterministic = False # deterministic = True does not actually work :sweat_smile:
+    max_num_teams_per_layout_per_x = 4
+    number_of_eps = 5
+
+    # Number of parallel workers for evaluation
+    args.max_workers = 4
+
+    # For display_purposes
+    unseen_counts = [1]
+    show_delivery_num = True
+
+    plot_name = generate_plot_name(prefix=complex_prefix,
+                                    num_players=args.num_players,
+                                    deterministic=deterministic,
+                                    p_idxes=complex_p_idxes,
+                                    num_eps=number_of_eps,
+                                    max_num_teams=max_num_teams_per_layout_per_x,
+                                    teammate_lvl_sets=complex_teammate_lvl_sets)
+
+    all_mean_rewards, all_std_rewards = run_parallel_evaluation(
+            args=args,
+            all_agents_paths=complex_agents_paths,
+            layout_names=complex_layout_names,
+            p_idxes=complex_p_idxes,
+            deterministic=deterministic,
+            max_num_teams_per_layout_per_x=max_num_teams_per_layout_per_x,
+            number_of_eps=number_of_eps,
+            teammate_lvl_sets=complex_teammate_lvl_sets
+    )
+
+    plot_evaluation_results_bar(fig, axes[0], all_mean_rewards=all_mean_rewards,
+                           all_std_rewards=all_std_rewards,
+                           layout_names=complex_layout_names,
+                           teammate_lvl_sets=complex_teammate_lvl_sets,
+                           unseen_counts=unseen_counts,
+                           display_delivery=show_delivery_num,
+                           plot_name=plot_name,
+                           start=5)
+
+    layouts = (classic_layout_names + complex_layout_names)
+    idxs = np.arange(len(layouts))
+    num_agents = 3
+    width = .95 / num_agents
+    axes[0].set_xticks(idxs + (num_agents/3 * width), labels=[DISPLAY_NAME_MAP[l] for l in layouts], fontsize='20')
+    axes[0].set_yticks(np.arange(0, 20, 5), )
+    axes[0].set_ylabel("Number of Soup Deliveries", fontsize='20')
+    axes[0].autoscale_view()
+    axes[0].legend(loc='upper right', fontsize='18', fancybox=True, framealpha=0.5)
+
+    plt.tight_layout()
+    plt.savefig(f'data/plots/{plot_name}_deliveries_bar.png')
 
     # plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
     #                                  all_std_rewards=all_std_rewards,
