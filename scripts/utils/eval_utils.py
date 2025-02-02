@@ -44,6 +44,27 @@ class Complex:
         'agent_models/ComplexTest/2/SP_hd256_seed5051/best',
     ]
 
+
+    L_3 = [
+        'agent_models/ComplexTest/3/SP_hd256_seed3031/ck_0',
+        'agent_models/ComplexTest/3/SP_hd256_seed3708/ck_0',
+        'agent_models/ComplexTest/3/SP_hd256_seed4041/ck_0',
+        'agent_models/ComplexTest/3/SP_hd256_seed5051/ck_0',
+    ]
+    M_3 = [
+        'agent_models/ComplexTest/3/SP_hd256_seed3031/ck_4_rew_120.88888888888889',
+        'agent_models/ComplexTest/3/SP_hd256_seed3708/ck_4_rew_95.55555555555556',
+        'agent_models/ComplexTest/3/SP_hd256_seed4041/ck_4_rew_103.55555555555556',
+        'agent_models/ComplexTest/3/SP_hd256_seed5051/ck_3_rew_69.77777777777777',
+    ]
+    H_3 = [
+        'agent_models/ComplexTest/3/SP_hd256_seed3031/best',
+        'agent_models/ComplexTest/3/SP_hd256_seed3708/best',
+        'agent_models/ComplexTest/3/SP_hd256_seed4041/best',
+        'agent_models/ComplexTest/3/SP_hd256_seed5051/best',
+    ]
+
+
     L_5 = [
         'agent_models/ComplexTest/5/SP_hd256_seed3031/ck_0',
         'agent_models/ComplexTest/5/SP_hd256_seed3708/ck_0',
@@ -64,6 +85,7 @@ class Complex:
         'agent_models/ComplexTest/5/SP_hd256_seed4041/best',
         'agent_models/ComplexTest/5/SP_hd256_seed5051/best',
     ]
+
 
 
 class Classic: 

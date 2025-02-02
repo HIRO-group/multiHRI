@@ -104,7 +104,24 @@ LAYOUT_NAMES_PATHs = {
         Eval.MEDIUM: Complex.M_5,
         Eval.HIGH: Complex.H_5,
     },
+
+    'dec_3_chefs_storage_room': {
+        Eval.LOW: Complex.L_3,
+        Eval.MEDIUM: Complex.M_3,
+        Eval.HIGH: Complex.H_3,
+    },
+    'dec_3_chefs_secret_heaven': {
+        Eval.LOW: Complex.L_3,
+        Eval.MEDIUM: Complex.M_3,
+        Eval.HIGH: Complex.H_3,
+    },
+    'dec_3_chefs_counter_circuit': {
+        Eval.LOW: Complex.L_3,
+        Eval.MEDIUM: Complex.M_3,
+        Eval.HIGH: Complex.H_3,
+    },
 }
+
 
 def print_all_teammates(all_teammates):
     for layout_name in all_teammates:
@@ -493,6 +510,42 @@ def get_2_player_input_complex(args):
     return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
 
 
+def get_3_player_input_complex(args):
+    args.num_players = 3
+    args.layout_names = [
+        'dec_3_chefs_storage_room',
+        'dec_3_chefs_secret_heaven',
+        'dec_3_chefs_counter_circuit',
+    ]
+
+    p_idxes = [0, 1, 2]
+    all_agents_paths = {
+        'SP_s1010_h256': 'agent_models/Complex/3/SP_hd256_seed1010/best',
+        'FCP_s1010_h256': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+
+        'dsALMH 1d[2t] 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 4d[2t] 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
+
+        'sALMH 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        'sALMH 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack3/best',
+
+        'dALMH 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        'dALMH 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        'dALMH 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+        'dALMH 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack3/best',
+    }
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
+    ]
+    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
+
+
 
 def get_5_player_input_complex(args):
     args.num_players = 5
@@ -541,7 +594,8 @@ if __name__ == "__main__":
     args = get_arguments()
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
