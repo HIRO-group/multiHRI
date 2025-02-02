@@ -67,11 +67,11 @@ def get_value_function(args, agent, observation):
     return values[0].item()
 
 
-def get_tile_map(args, agent, trajectories, p_idx, interact_actions_only=True):
+def get_tile_map(args, agent, trajectories, p_idx, shape=(20, 20), interact_actions_only=True):
     if interact_actions_only:
         raise NotImplementedError
-    tiles_p = np.zeros((20, 20)) # position counter
-    tiles_v = np.zeros((20, 20)) # value counter
+    tiles_p = np.zeros(shape) # position counter
+    tiles_v = np.zeros(shape) # value counter
     for trajectory in trajectories:
         observations = trajectory['observations']
         joint_trajectory = trajectory['positions']
