@@ -51,7 +51,7 @@ def plot_stds_by_layout(all_stds, title='Standard Deviations by Layout'):
     n_rows = 1
     
     # Create figure with subplots
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 5))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 4))
     if n_rows == 1:
         axes = axes.reshape(1, -1)
     
@@ -73,7 +73,7 @@ def plot_stds_by_layout(all_stds, title='Standard Deviations by Layout'):
         ax.plot(x, stds, marker='o', linewidth=2, markersize=4)
         
         # Customize the plot
-        ax.set_title(f'{layout_name}', fontsize=16)
+        ax.set_title(f'{layout_name}', fontsize=24)
         # ax.grid(True, linestyle='--', alpha=0.7)
         
         # Format x-axis with actual path names
@@ -81,11 +81,14 @@ def plot_stds_by_layout(all_stds, title='Standard Deviations by Layout'):
         
         # Extract just the relevant part of the path (assuming paths are like 'agent_models/...')
         path_labels = [path.split('/')[-2] if '/' in path else path for path in paths]
-        ax.set_xticklabels(path_labels, rotation=0, ha='center', fontsize=14)
+        ax.set_xticklabels(path_labels, rotation=0, ha='center', fontsize=24)
         
+        # sorted_std = sorted(set(stds))
+        # sorted_std = sorted(set(int(round(y)) for y in sorted_std))
+        # ax.set_yticks([sorted_std[0], sorted_std[-1]])
 
         # set fontsize for y labels
-        ax.tick_params(axis='y', labelsize=14)
+        ax.tick_params(axis='y', labelsize=24)
         
         # Add value labels on top of points
         # for i, std in enumerate(stds):
@@ -124,9 +127,9 @@ if __name__ == "__main__":
     # paths = [         
     #       'FCP'
     #         # 'agent_models/Complex/2/SP_hd256_seed13/last',
-    #         # 'CAP 1d 1s',
-    #         # 'CAP 2d 2s',
-    #         # 'CAP 3d 3s'
+    #         # 'CAP 1',
+    #         # 'CAP 2',
+    #         # 'CAP 3'
     # ]
 
     # all_stds = {
@@ -167,7 +170,7 @@ if __name__ == "__main__":
 
 
     
-    all_stds = {'coordination_ring': {'SP': np.float64(2597.9749973860494), 'CAP 1d 1s': np.float64(1874.773584372634), 'CAP 2d 2s': np.float64(1703.146197683143), 'CAP 3d 3s': np.float64(1940.9894198561815)}, 'counter_circuit': {'SP': np.float64(1176.0687867763402), 'CAP 1d 1s': np.float64(876.5761172965472), 'CAP 2d 2s': np.float64(906.195828395413), 'CAP 3d 3s': np.float64(975.9509894714745)}, 'cramped_room': {'SP': np.float64(3101.058302061381), 'CAP 1d 1s': np.float64(2935.8603610460614), 'CAP 2d 2s': np.float64(2852.008231661217), 'CAP 3d 3s': np.float64(2843.650547597651)}, 'asymmetric_advantages': {'SP': np.float64(6727.689342997774), 'CAP 1d 1s': np.float64(4043.748436635012), 'CAP 2d 2s': np.float64(4290.791989126182), 'CAP 3d 3s': np.float64(4553.397944010883)}, 'forced_coordination': {'SP': np.float64(2422.2924200005555), 'CAP 1d 1s': np.float64(1465.6519257280636), 'CAP 2d 2s': np.float64(1285.0913681855034), 'CAP 3d 3s': np.float64(1276.0141657846073)}, 'resource_corridor': {'SP': np.float64(2153.2496144299603), 'CAP 1d 1s': np.float64(1432.8369943934683), 'CAP 2d 2s': np.float64(1416.5385703725715), 'CAP 3d 3s': np.float64(1431.3089462971318)}, 'secret_resources': {'SP': np.float64(7523.491741197232), 'CAP 1d 1s': np.float64(6140.533841626895), 'CAP 2d 2s': np.float64(6238.754735513586), 'CAP 3d 3s': np.float64(6366.827451955678)}}
+    all_stds = {'coordination_ring': {'SP': np.float64(2597.9749973860494), 'CAP 1': np.float64(1874.773584372634), 'CAP 2': np.float64(1703.146197683143), 'CAP 3': np.float64(1940.9894198561815)}, 'counter_circuit': {'SP': np.float64(1176.0687867763402), 'CAP 1': np.float64(876.5761172965472), 'CAP 2': np.float64(906.195828395413), 'CAP 3': np.float64(975.9509894714745)}, 'cramped_room': {'SP': np.float64(3101.058302061381), 'CAP 1': np.float64(2935.8603610460614), 'CAP 2': np.float64(2852.008231661217), 'CAP 3': np.float64(2843.650547597651)}, 'asymmetric_advantages': {'SP': np.float64(6727.689342997774), 'CAP 1': np.float64(4043.748436635012), 'CAP 2': np.float64(4290.791989126182), 'CAP 3': np.float64(4553.397944010883)}, 'forced_coordination': {'SP': np.float64(2422.2924200005555), 'CAP 1': np.float64(1465.6519257280636), 'CAP 2': np.float64(1285.0913681855034), 'CAP 3': np.float64(1276.0141657846073)}, 'resource_corridor': {'SP': np.float64(2153.2496144299603), 'CAP 1': np.float64(1432.8369943934683), 'CAP 2': np.float64(1416.5385703725715), 'CAP 3': np.float64(1431.3089462971318)}, 'secret_resources': {'SP': np.float64(7523.491741197232), 'CAP 1': np.float64(6140.533841626895), 'CAP 2': np.float64(6238.754735513586), 'CAP 3': np.float64(6366.827451955678)}}
 
 
     # filtered_
