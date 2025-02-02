@@ -44,6 +44,27 @@ class Complex:
         'agent_models/ComplexTest/2/SP_hd256_seed5051/best',
     ]
 
+    L_5 = [
+        'agent_models/ComplexTest/5/SP_hd256_seed3031/ck_0',
+        'agent_models/ComplexTest/5/SP_hd256_seed3708/ck_0',
+        'agent_models/ComplexTest/5/SP_hd256_seed4041/ck_0',
+        'agent_models/ComplexTest/5/SP_hd256_seed5051/ck_0',
+    ]
+
+    M_5 = [
+        'agent_models/ComplexTest/5/SP_hd256_seed3031/ck_2_rew_120.0',
+        'agent_models/ComplexTest/5/SP_hd256_seed3708/ck_3_rew_157.66666666666666',
+        'agent_models/ComplexTest/5/SP_hd256_seed4041/ck_3_rew_157.0',
+        'agent_models/ComplexTest/5/SP_hd256_seed5051/ck_3_rew_172.0',
+    ]
+
+    H_5 = [
+        'agent_models/ComplexTest/5/SP_hd256_seed3031/best',
+        'agent_models/ComplexTest/5/SP_hd256_seed3708/best',
+        'agent_models/ComplexTest/5/SP_hd256_seed4041/best',
+        'agent_models/ComplexTest/5/SP_hd256_seed5051/best',
+    ]
+
 
 class Classic: 
     L_2 = [
