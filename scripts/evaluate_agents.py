@@ -326,7 +326,7 @@ def evaluate_agent(args,
     }
 
     for layout_name in layout_names:
-        for unseen_count in range(args.num_players):
+        for unseen_count in [1]:
             for teammates in all_teammates[layout_name][unseen_count]:
                 env = OvercookedGymEnv(args=args,
                                        layout_name=layout_name,
