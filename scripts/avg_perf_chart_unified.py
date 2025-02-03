@@ -52,13 +52,13 @@ eval_key_lut = {
 }
 
 DISPLAY_NAME_MAP = {
-    'secret_heaven': "Secret Heaven",
-    'storage_room': "Storage Room",
-    'coordination_ring': "Coordination Ring",
+    'secret_heaven': "Secret Resources",
+    'storage_room': "Resource Corridor",
+    'coordination_ring': "Coord. Ring",
     'counter_circuit': "Counter Circuit",
     'cramped_room': "Cramped Room",
-    'asymmetric_advantages': "Asymmetric Advantages",
-    'forced_coordination': "Forced Coordination"
+    'asymmetric_advantages': "Asym. Adv.",
+    'forced_coordination': "Forced Coord.",
 }
 
 LAYOUT_NAMES_PATHs = {
@@ -444,7 +444,7 @@ def get_2_player_input_classic(args):
 
         # 'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'CAP 3d 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
         # 'sALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'sALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
@@ -461,8 +461,8 @@ def get_2_player_input_classic(args):
     }
     teammate_lvl_sets = [
         [Eval.LOW],
-        [Eval.MEDIUM],
-        [Eval.HIGH]
+        # [Eval.MEDIUM],
+        # [Eval.HIGH]
     ]
     return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'classic'
 
@@ -482,7 +482,7 @@ def get_2_player_input_complex(args):
 
         # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'CAP 3d 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
         # 'sALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'sALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
@@ -499,8 +499,8 @@ def get_2_player_input_complex(args):
     }
     teammate_lvl_sets = [
         [Eval.LOW],
-        [Eval.MEDIUM],
-        [Eval.HIGH]
+        # [Eval.MEDIUM],
+        # [Eval.HIGH]
     ]
     return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
 
@@ -596,11 +596,11 @@ if __name__ == "__main__":
     idxs = np.arange(len(layouts))
     num_agents = 3
     width = .95 / num_agents
-    axes[0].set_xticks(idxs + (num_agents/3 * width), labels=[DISPLAY_NAME_MAP[l] for l in layouts], fontsize='20')
+    axes[0].set_xticks(idxs + (num_agents/3 * width), labels=[DISPLAY_NAME_MAP[l] for l in layouts], fontsize='28')
     axes[0].set_yticks(np.arange(0, 20, 5), )
-    axes[0].set_ylabel("Number of Soup Deliveries", fontsize='20')
+    axes[0].set_ylabel("Number of Soup Deliveries", fontsize='24')
     axes[0].autoscale_view()
-    axes[0].legend(loc='upper right', fontsize='18', fancybox=True, framealpha=0.5)
+    axes[0].legend(loc='best', fontsize='28', fancybox=True, framealpha=0.5)
 
     plt.tight_layout()
     plt.savefig(f'data/plots/{plot_name}_deliveries_bar.png')

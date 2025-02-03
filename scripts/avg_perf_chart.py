@@ -27,17 +27,6 @@ from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from utils import (
     Complex, Classic,
-    TWO_PLAYERS_LOW_EVAL,
-    TWO_PLAYERS_MEDIUM_EVAL,
-    TWO_PLAYERS_HIGH_EVAL,
-    THREE_PLAYERS_LOW_EVAL,
-    THREE_PLAYERS_MEDIUM_EVAL,
-    THREE_PLAYERS_HIGH_EVAL,
-    FIVE_PLAYERS_LOW_EVAL,
-    FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
-    FIVE_PLAYERS_HIGH_STORAGE_EVAL
 )
 
 class Eval:
@@ -52,13 +41,24 @@ eval_key_lut = {
 }
 
 DISPLAY_NAME_MAP = {
-    'secret_heaven': "Secret Heaven",
-    'storage_room': "Storage Room",
-    'coordination_ring': "Coordination Ring",
+    'secret_heaven': "Secret Resources",
+    'storage_room': "Resource Corridor",
+    
+    'coordination_ring': "Coord. Ring",
     'counter_circuit': "Counter Circuit",
     'cramped_room': "Cramped Room",
-    'asymmetric_advantages': "Asymmetric Advantages",
-    'forced_coordination': "Forced Coordination"
+    'asymmetric_advantages': "Asym. Adv.",
+    'forced_coordination': "Forced Coord.",
+
+    'dec_5_chefs_counter_circuit': "Counter Circuit",
+    'dec_5_chefs_storage_room': "Resource Corridor",
+    'dec_5_chefs_secret_heaven': "Secret Resources",
+    'selected_5_chefs_spacious_room_no_counter_space': "No Counter Space",
+
+    'dec_3_chefs_storage_room': "Resource Corridor",
+    'dec_3_chefs_secret_heaven': "Secret Resources",
+    'dec_3_chefs_counter_circuit': "Counter Circuit",
+
 }
 
 LAYOUT_NAMES_PATHs = {
@@ -244,6 +244,8 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
 
             #ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
 
+    # print(chart_data)
+
     ax = axes[-1][0]
     agents = list(chart_data.values())
     num_agents = len(agents)
@@ -252,15 +254,18 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     idxs = np.arange(len(layouts))
     cmap = matplotlib.colormaps["tab20b"]
 
+    c = 0
     for i, (agent_name, d) in enumerate(chart_data.items()):
-        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(i*5), capsize=4)
+        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
+        c+=1
 
     #ax.set_title(f"Avg. Number of Soup Deliveries")
-    ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='14')
-    ax.set_yticks(np.arange(0, 20, 5), )
-    ax.set_ylabel("Number of Soup Deliveries", fontsize='18')
+    ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20')
+    ax.set_yticks(np.arange(0, 30, 2))
+    ax.tick_params(axis='y', labelsize=20) 
+    ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
     ax.autoscale_view()
-    ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+    ax.legend(loc='best', fontsize=20, fancybox=True, framealpha=0.5, ncol=2)
 
     plt.tight_layout()
     plt.savefig(f'data/plots/{plot_name}_{"deliveries" if display_delivery else "rewards"}_bar.png')
@@ -449,13 +454,12 @@ def get_2_player_input_classic(args):
         ]
     p_idxes = [0, 1]
     all_agents_paths = {
-        # 'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
         'SP': 'agent_models/Classic/2/SP_hd256_seed1010/best',
         'FCP': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
         # 'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'CAP 3d 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
         # 'sALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'sALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
@@ -463,13 +467,13 @@ def get_2_player_input_classic(args):
 
         # 'dALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
-        # 'dALMH 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+        'CAP 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
 
         # 'dsALMH 1d[5t] 1s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[5t] 2s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
         # 'dsALMH 3d[5t] 3s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
     }
+
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
@@ -487,17 +491,16 @@ def get_2_player_input_complex(args):
         ]
     p_idxes = [0, 1]
     all_agents_paths = {
-        # 'SP_s13_h256': 'agent_models/Complex/2/SP_hd256_seed13/best',
         'SP': 'agent_models/Complex/2/SP_hd256_seed1010/best',
         'FCP': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
         # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'CAP 3d 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
         # 'sALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'sALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        # 'sALMH 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        'CAP 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
         # 'dALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
@@ -516,11 +519,94 @@ def get_2_player_input_complex(args):
     return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
 
 
+def get_3_player_input_complex(args):
+    args.num_players = 3
+    args.layout_names = [
+        'dec_3_chefs_storage_room',
+        'dec_3_chefs_secret_heaven',
+        'dec_3_chefs_counter_circuit',
+    ]
+
+    p_idxes = [0, 1, 2]
+    all_agents_paths = {
+        'SP_s1010_h256': 'agent_models/Complex/3/SP_hd256_seed1010/best',
+        'FCP_s1010_h256': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+
+        'dsALMH 1d[2t] 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        'dsALMH 2d[2t] 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'dsALMH 3d[2t] 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'dsALMH 4d[2t] 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
+
+        'sALMH 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'sALMH 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'sALMH 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        'sALMH 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack3/best',
+
+        'dALMH 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        'dALMH 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        'dALMH 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+        'dALMH 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack3/best',
+    }
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
+    ]
+    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
+
+
+
+def get_5_player_input_complex(args):
+    args.num_players = 5
+    args.layout_names = [
+        'dec_5_chefs_counter_circuit',
+        'dec_5_chefs_storage_room',
+        'dec_5_chefs_secret_heaven',
+        'selected_5_chefs_spacious_room_no_counter_space',
+        ]
+    
+    p_idxes = [0, 1, 2, 3, 4]
+    all_agents_paths = {
+        'SP_s1010_h256': 'agent_models/Complex/5/SP_hd256_seed1010/best',
+        'FCP_s1010_h256': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+
+        # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 3d[2t] 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        # 'dsALMH 4d[2t] 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
+        # 'dsALMH 5d[2t] 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
+        'CAP 6d 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack5/best',
+
+        # 'sALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        # 'sALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'sALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack3/best',
+        # 'sALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack4/best',
+        'CAP 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/best',
+
+        'CAP 2d 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+
+        # 'dALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        # 'dALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        # 'dALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+        # 'dALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack3/best',
+        # 'dALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack4/best',
+        # 'dALMH 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack5/best',
+    }
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
+    ]
+    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
+
+
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
-    #layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4

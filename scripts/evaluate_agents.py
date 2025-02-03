@@ -242,6 +242,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
             ax.set_yticks(np.arange(0, 20, 1))
             ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
+
         # Average plot across all teamsets
         ax = axes[-1][i]
         for idx, agent_name in enumerate(all_mean_rewards):
@@ -250,6 +251,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
 
             x = x_values + idx * width - width * (num_agents - 1) / 2
             ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
+
 
         ax.set_title(f"Avg. {layout_name}")
         ax.set_xlabel('Number of Unseen Teammates')
@@ -409,8 +411,8 @@ def evaluate_agent_for_layout(agent_name, path, layout_names, p_idxes, args, det
 
 
 def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deterministic, max_num_teams_per_layout_per_x, number_of_eps, teammate_lvl_sets: Sequence[Sequence[Eval]]):
-    for path in all_agents_paths.values():
-        assert Path(path+'/trainer_file').is_file(), f"File {path+'/trainer_file'} does not exist"
+    # for path in all_agents_paths.values():
+    #     assert Path(path+'/trainer_file').is_file(), f"File {path+'/trainer_file'} does not exist"
 
     all_mean_rewards, all_std_rewards = {}, {}
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
@@ -561,26 +563,26 @@ def get_5_player_input_complex(args):
         'SP_s1010_h256': 'agent_models/Complex/5/SP_hd256_seed1010/best',
         'FCP_s1010_h256': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
 
-        'dsALMH 1d[2t] 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         'dsALMH 2d[2t] 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-        'dsALMH 4d[2t] 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
-        'dsALMH 5d[2t] 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
+        # 'dsALMH 3d[2t] 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        # 'dsALMH 4d[2t] 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
+        # 'dsALMH 5d[2t] 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
         'dsALMH 6d[2t] 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack5/best',
 
-        'sALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-        'sALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack3/best',
-        'sALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack4/best',
+        # 'sALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        # 'sALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'sALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack3/best',
+        # 'sALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack4/best',
         'sALMH 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/best',
 
-        'dALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
-        'dALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
-        'dALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
-        'dALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack3/best',
-        'dALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack4/best',
-        'dALMH 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack5/best',
+        # 'dALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        # 'dALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        # 'dALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+        # 'dALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack3/best',
+        # 'dALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack4/best',
+        # 'dALMH 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack5/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -594,8 +596,8 @@ if __name__ == "__main__":
     args = get_arguments()
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
