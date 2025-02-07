@@ -237,13 +237,13 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
         TeamType.SELF_PLAY_DYNAMIC_ADV,
-        TeamType.SELF_PLAY_STATIC_ADV,
+        # TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
                      TeamType.SELF_PLAY_DYNAMIC_ADV,
-                     TeamType.SELF_PLAY_STATIC_ADV,
+                    #  TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
     }
