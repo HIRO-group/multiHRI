@@ -168,7 +168,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                 seed=args.N_X_SP_seed,
                                                 hidden_dim=args.N_X_SP_h_dim,
                                                 learner_type=args.primary_learner_type,
-                                                checkpoint_rate= ck_rate,
+                                                # checkpoint_rate= ck_rate,
                                                 )
 
         n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps*(round + 1) + args.pop_total_training_timesteps,
