@@ -357,7 +357,7 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 4
-    args.args.N_X_SP_seed = 2602
+    args.N_X_SP_seed = 2602
 
     if args.teammates_len == 1:
         args.how_long = 20
