@@ -174,7 +174,7 @@ class OAIAgent(nn.Module, ABC):
         """
         device = args.device
         load_path = path / 'agent_file'
-        saved_variables = th.load(load_path, map_location=device)
+        saved_variables = th.load(load_path, map_location=device, weights_only=False)
         set_args_from_load(saved_variables['args'], args)
         saved_variables['const_params']['args'] = args
         # Create agent object
@@ -254,7 +254,7 @@ class SB3Wrapper(OAIAgent):
         """
         device = args.device
         load_path = path / 'agent_file'
-        saved_variables = th.load(load_path)
+        saved_variables = th.load(load_path, weights_only=False)
         set_args_from_load(saved_variables['args'], args)
         saved_variables['const_params']['args'] = args
         # Create agent object
@@ -515,7 +515,7 @@ class OAITrainer(ABC):
         env_path = path / tag / "env_file"
         agent_path = path / tag / 'agents_dir'
         device = args.device
-        saved_variables = th.load(load_path, map_location=device)
+        saved_variables = th.load(load_path, map_location=device, weights_only=False)
 
         # Load weights
         agents = []

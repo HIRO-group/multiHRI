@@ -388,7 +388,7 @@ class HierarchicalRL(OAIAgent):
         """
         device = args.device
         load_path = path / 'agent_file'
-        saved_variables = th.load(load_path, map_location=device)
+        saved_variables = th.load(load_path, map_location=device, weights_only=False)
         set_args_from_load(saved_variables['args'], args)
         worker = saved_variables['worker_type'].load(path / 'worker', args)
         manager = saved_variables['manager_type'].load(path / 'manager', args)
