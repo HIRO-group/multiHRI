@@ -327,6 +327,18 @@ class OvercookedGymEnv(Env):
     def close(self):
         pygame.quit()
 
+class BonusOvercookedGymEnv(OvercookedGymEnv):
+    def __init__(self, *args, bonus_getter=lambda state, action: 0.0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bonus_getter = bonus_getter
+
+    def step(self, action):
+        obs, reward, done, info = super().step(action)
+        bonus = self.bonus_getter(self.state, action)
+        return obs, reward + bonus, done, info
+
+    def set_bonus_getter(self, bonus_getter):
+        self.bonus_getter = bonus_getter
 
 register(
     id='OvercookedGymEnv-v0',
