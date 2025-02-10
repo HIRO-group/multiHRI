@@ -290,7 +290,7 @@ class OvercookedGymEnv(Env):
             self.p_idx = self.reset_p_idx
         else:
             self.p_idx = random.randint(0, self.mdp.num_players - 1)
-        
+
         teammates_ids = list(range(self.mdp.num_players))
         teammates_ids.remove(self.p_idx)
 
@@ -303,7 +303,7 @@ class OvercookedGymEnv(Env):
                 if type(self.teammates[id]) == CustomAgent:
                     self.teammates[id].reset()
                     self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)
-        
+
         self.t_idxes = teammates_ids
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
