@@ -1,5 +1,6 @@
 '''
-Modification of avg_perf_chart.py to support analyze performances of agents across multiple seeds
+Modification of avg_perf_chart.py to support analyze performances of agents across multiple seeds.
+NOTE: Currently only plot_evaluation_results_bar_multi_seed supports aggregation of seeds
 '''
 
 import multiprocessing as mp
@@ -166,15 +167,14 @@ def generate_plot_name(prefix, num_players, deterministic, p_idxes, num_eps, max
     return plot_name
 
 
-def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False, agent_groups=None):
+def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, agent_groups, plot_name, unseen_counts=[0], display_delivery=False, only_plot_summary_fig=False):
     
-    if agent_groups:
-        # Check that we have data for each agent in the group
-        for group_name in agent_groups:
-            for agt_name in agent_groups[group_name]:
-                assert agt_name in all_mean_rewards.keys(), f"No performance data for agent {agt_name}, unable to use in group"
+    # Check that we have data for each agent in the group
+    for group_name in agent_groups:
+        for agt_name in agent_groups[group_name]:
+            assert agt_name in all_mean_rewards.keys(), f"No performance data for agent '{agt_name}', unable to use in group"
 
-    #cmap = matplotlib.colormaps.get_cmap("Set3")
+    cmap = matplotlib.colormaps.get_cmap("Set3")
     plot_name = plot_name + "_delivery" if display_delivery else plot_name
     uc = ''.join([str(u) for u in unseen_counts])
     plot_name += f"_uc{uc}"
@@ -183,12 +183,6 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
     num_teamsets = len(team_lvl_set_names)
-    fig, axes = plt.subplots(1, 1, figsize=(15, 5), sharey=True)
-
-    if num_layouts == 1:
-        axes = [[axes]]
-
-    axes = [[axes]]
 
     x_values = np.arange(len(unseen_counts))
     num_agents = len(all_mean_rewards)
@@ -199,68 +193,114 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
         return reward / 20 if display_delivery else reward
 
     chart_data = {}
-    for i, layout_name in enumerate(layout_names):
-        cross_exp_mean = {}
-        cross_exp_std = {}
-        for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
-            #ax = axes[j][i]
-            for idx, agent_name in enumerate(all_mean_rewards):
-                mean_values = []
-                std_values = []
 
-                for unseen_count in unseen_counts:
-                    mean_rewards = [process_reward(r) for r in all_mean_rewards[agent_name][team][layout_name][unseen_count]]
-                    std_rewards = [process_reward(r) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
+    if not only_plot_summary_fig:
+        # Plot performance with each individual teamtype 
 
-                    mean_values.append(np.mean(mean_rewards))
-                    std_values.append(np.mean(std_rewards))
-                    if agent_name not in cross_exp_mean:
-                        cross_exp_mean[agent_name] = [0] * len(unseen_counts)
-                    if agent_name not in cross_exp_std:
-                        cross_exp_std[agent_name] = [0] * len(unseen_counts)
-                    cross_exp_mean[agent_name][unseen_counts.index(unseen_count)] += mean_values[-1]
-                    cross_exp_std[agent_name][unseen_counts.index(unseen_count)] += std_values[-1]
+        fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
+        
+        if num_layouts == 1:
+            axes = [[axes]]
 
-                # Plot bars for each agent
+        for i, layout_name in enumerate(layout_names):
+            cross_exp_mean = {}
+            cross_exp_std = {}
+            for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
+                ax = axes[j][i]
+                for idx, group_name in enumerate(agent_groups):
+                    mean_values = []
+                    std_values = []
+
+                    for unseen_count in unseen_counts:
+
+                        num_agents_in_group = len(agent_groups[group_name])
+
+                        # Add up the means and variances for the agents in each group
+                        group_means_for_layout = 0.0
+                        group_variances_for_layout = 0.0
+
+                        for ag_name in agent_groups[group_name]:
+                            # Add the results for this agent to the group's results
+                            mean_rewards = [process_reward(r) for r in all_mean_rewards[ag_name][team][layout_name][unseen_count]]
+                            group_means_for_layout += np.mean(mean_rewards)
+
+                            std_rewards = [process_reward(r) for r in all_std_rewards[ag_name][team][layout_name][unseen_count]]
+                            group_variances_for_layout += np.mean(std_rewards)**2
+
+                        # Finish calculating the results for the entire group
+                        group_means_for_layout = group_means_for_layout / num_agents_in_group
+                        group_std_for_layout = np.sqrt( group_variances_for_layout / num_agents_in_group )
+
+                        mean_values.append(np.mean(group_means_for_layout))
+                        std_values.append(np.mean(group_std_for_layout))
+
+                        if group_name not in cross_exp_mean:
+                            cross_exp_mean[group_name] = [0] * len(unseen_counts)
+                        if group_name not in cross_exp_std:
+                            cross_exp_std[group_name] = [0] * len(unseen_counts)
+                        cross_exp_mean[group_name][unseen_counts.index(unseen_count)] += mean_values[-1]
+                        cross_exp_std[group_name][unseen_counts.index(unseen_count)] += std_values[-1]
+
+                    # Plot bars for each agent
+                    x = x_values + idx * width - width * (num_agents - 1) / 2
+                    ax.bar(x, mean_values, width, yerr=std_values, label=f'{group_name}', capsize=5, color=cmap.colors)
+
+                team_name_print = team_name.strip("[]'\"")
+                ax.set_title(f'{layout_name}\n{team_name_print}')
+                ax.set_xlabel('Number of Unseen Teammates')
+                ax.set_xticks(x_values)
+                ax.set_xticklabels(unseen_counts)
+                ax.set_yticks(np.arange(0, 20, 1))
+                ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+
+            # Average plot across all teamsets
+            ax = axes[-1][i]
+            for idx, group_name in enumerate(agent_groups):
+                mean_values = [v / num_teamsets for v in cross_exp_mean[group_name]]
+                std_values = [v / num_teamsets for v in cross_exp_std[group_name]]
+
                 x = x_values + idx * width - width * (num_agents - 1) / 2
-        #         ax.bar(x, mean_values, width, yerr=std_values, label=f'{agent_name}', capsize=5, color=cmap.colors)
+                ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {group_name}", capsize=5)
 
-        #     team_name_print = team_name.strip("[]'\"")
-        #     ax.set_title(f'{layout_name}\n{team_name_print}')
-        #     ax.set_xlabel('Number of Unseen Teammates')
-        #     ax.set_xticks(x_values)
-        #     ax.set_xticklabels(unseen_counts)
-        #     ax.set_yticks(np.arange(0, 20, 1))
-        #     ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+            ax.set_title(f"Avg. {layout_name}")
+            ax.set_xlabel('Number of Unseen Teammates')
+            ax.set_xticks(x_values)
+            ax.set_xticklabels(unseen_counts)
+            ax.set_yticks(np.arange(0, 20, 1))
+            ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
-        # Average plot across all teamsets
-        ax = axes[-1][0]
-        for idx, agent_name in enumerate(all_mean_rewards):
-            mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
-            std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
+    else:
+        # Plot only the overall average performance
+        fig, axes = plt.subplots(1, 1, figsize=(15, 5), sharey=True)
 
-            # x = x_values + idx * width - width * (num_agents - 1) / 2
+        if num_layouts == 1:
+            axes = [[axes]]
 
-            if not (agent_name in chart_data):
-                chart_data[agent_name] = {
-                    "mean": [],
-                    "std": [],
-                    "layout": []
-                }
-            print(f" agent: {agent_name} mean values: {mean_values}")
+        axes = [[axes]]
 
-            chart_data[agent_name]["mean"].append(mean_values[0])
-            chart_data[agent_name]["std"].append(std_values[0])
-            chart_data[agent_name]["layout"].append(DISPLAY_NAME_MAP[layout_name])
+        for i, layout_name in enumerate(layout_names):
+            cross_exp_mean = {}
+            cross_exp_std = {}
+            for j, (team, team_name) in enumerate(zip(team_lvl_set_keys, team_lvl_set_names)):
+                # ax = axes[j][i]
+                for idx, agent_name in enumerate(all_mean_rewards):
+                    mean_values = []
+                    std_values = []
 
-            #ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", capsize=5)
+                    for unseen_count in unseen_counts:
+                        mean_rewards = [process_reward(r) for r in all_mean_rewards[agent_name][team][layout_name][unseen_count]]
+                        std_rewards = [process_reward(r) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
 
-
-        print(f" layout: {layout_name}\n")
-        for agent_name in chart_data.keys():
-            print(f" agent: {agent_name}\n mean: {chart_data[agent_name]['mean']}\n std: {chart_data[agent_name]['std']}")
-
-        if agent_groups:
+                        mean_values.append(np.mean(mean_rewards))
+                        std_values.append(np.mean(std_rewards))
+                        if agent_name not in cross_exp_mean:
+                            cross_exp_mean[agent_name] = [0] * len(unseen_counts)
+                        if agent_name not in cross_exp_std:
+                            cross_exp_std[agent_name] = [0] * len(unseen_counts)
+                        cross_exp_mean[agent_name][unseen_counts.index(unseen_count)] += mean_values[-1]
+                        cross_exp_std[agent_name][unseen_counts.index(unseen_count)] += std_values[-1]
+            
+            # Average plot across all groups
             # {group_name : [agent1, agent2, ...], ...}
             for group_name in agent_groups:
                 num_agents_in_group = len(agent_groups[group_name])
@@ -268,22 +308,17 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
                 # Add up the means and variances for the agents in each group
                 group_means_for_layout = 0.0
                 group_variances_for_layout = 0.0
-                print(f" group name: {group_name}")
+
                 for ag_name in agent_groups[group_name]:
-                    print(f" > agent name: {ag_name}")
+
                     agent_mean_values = [v / num_teamsets for v in cross_exp_mean[ag_name]][0]
-                    print(f" >> mean values: {agent_mean_values}")
                     group_means_for_layout += agent_mean_values
-                    # group_means_for_layout += cross_exp_mean[ag_name][0]
-                    
-                    # print(f" >>>> [v / num_teamsets for v in cross_exp_mean[ag_name]]: {[v / num_teamsets for v in cross_exp_mean[ag_name]]}")
+
                     std_values = [v / num_teamsets for v in cross_exp_std[ag_name]][0]
                     group_variances_for_layout += std_values**2
 
                 group_means_for_layout = group_means_for_layout / num_agents_in_group
                 group_std_for_layout = np.sqrt( group_variances_for_layout / num_agents_in_group )
-                print(f" >>>> group means: {group_means_for_layout}")
-                print(f" >>>> group std: {std_values}")
 
                 if not (group_name in chart_data):
                     chart_data[group_name] = {
@@ -296,27 +331,26 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
                 chart_data[group_name]["std"].append(group_std_for_layout)
                 chart_data[group_name]["layout"].append(DISPLAY_NAME_MAP[layout_name])
 
+        ax = axes[-1][0]
+        agents = list(chart_data.values())
+        num_agents = len(agents)
+        width = .95 / num_agents
+        layouts = agents[0]["layout"]
+        idxs = np.arange(len(layouts))
+        cmap = matplotlib.colormaps["tab20b"]
 
-    ax = axes[-1][0]
-    agents = list(chart_data.values())
-    num_agents = len(agents)
-    width = .95 / num_agents
-    layouts = agents[0]["layout"]
-    idxs = np.arange(len(layouts))
-    cmap = matplotlib.colormaps["tab20b"]
+        c = 0
+        for i, (agent_name, d) in enumerate(chart_data.items()):
+            ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
+            c+=1
 
-    c = 0
-    for i, (agent_name, d) in enumerate(chart_data.items()):
-        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
-        c+=1
-
-    #ax.set_title(f"Avg. Number of Soup Deliveries")
-    ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20')
-    ax.set_yticks(np.arange(0, 30, 2))
-    ax.tick_params(axis='y', labelsize=20) 
-    ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
-    ax.autoscale_view()
-    ax.legend(loc='best', fontsize=20, fancybox=True, framealpha=0.5, ncol=2)
+        #ax.set_title(f"Avg. Number of Soup Deliveries")
+        ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20')
+        ax.set_yticks(np.arange(0, 30, 2))
+        ax.tick_params(axis='y', labelsize=20) 
+        ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
+        ax.autoscale_view()
+        ax.legend(loc='best', fontsize=20, fancybox=True, framealpha=0.5, ncol=2)
 
     plt.tight_layout()
     plt.savefig(f'data/plots/{plot_name}_{"deliveries" if display_delivery else "rewards"}_bar.png')
@@ -506,9 +540,7 @@ def get_2_player_input_classic(args):
     p_idxes = [0, 1]
     all_agents_paths = {
         
-        'SP_1': 'agent_models/Classic/2/SP_hd256_seed1010/best',
-        # 'SP_2': 'agent_models/Classic/2/SP_hd256_seed2020/best',
-
+        'SP': 'agent_models/Classic/2/SP_hd256_seed1010/best',
         'FCP': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
         # 'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
@@ -534,11 +566,10 @@ def get_2_player_input_classic(args):
         [Eval.HIGH]
     ]
 
-    # Define a list of agent groups to be averaged (for evaluation across different seeds), each index in the list
-    # is a list of agents to be averaged
-    # These must correspond to keys defined in all_agents_paths
-    # E.g. agent_groups = [["SP_s1010_h256", "SP_s2010_h256"], ["FCP_s1010_h256", "FCP_s2010_h256"]]
-    agent_groups = {"SP_FCP" : ["SP_1", "FCP"]}
+    # Define a list of agent groups to be averaged (for evaluation across different seeds)
+    # Agents in each grouping must correspond to keys defined in all_agents_paths
+    # E.g. agent_groups = {"SP_group" : ["SP_s1010_h256", "SP_s2010_h256"], "FCP_group" : ["FCP_s1010_h256", "FCP_s2010_h256"]}
+    agent_groups = {"SP" : ["SP"], "FCP" : ["FCP"], "SP_FCP" : ["SP", "FCP"]}
     return args.layout_names, agent_groups, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'classic'
 
 
@@ -577,11 +608,10 @@ def get_2_player_input_complex(args):
         [Eval.HIGH]
     ]
 
-    # Define a list of agent groups to be averaged (for evaluation across different seeds), each index in the list
-    # is a list of agents to be averaged
-    # These must correspond to keys defined in all_agents_paths
-    # E.g. agent_groups = [["SP_s1010_h256", "SP_s2010_h256"], ["FCP_s1010_h256", "FCP_s2010_h256"]]
-    agent_groups = []
+    # Define a list of agent groups to be averaged (for evaluation across different seeds)
+    # Agents in each grouping must correspond to keys defined in all_agents_paths
+    # E.g. agent_groups = {"SP_group" : ["SP_s1010_h256", "SP_s2010_h256"], "FCP_group" : ["FCP_s1010_h256", "FCP_s2010_h256"]}
+    agent_groups = {}
     return args.layout_names, agent_groups, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
 
 
@@ -619,11 +649,10 @@ def get_3_player_input_complex(args):
         [Eval.HIGH]
     ]
 
-    # Define a list of agent groups to be averaged (for evaluation across different seeds), each index in the list
-    # is a list of agents to be averaged
-    # These must correspond to keys defined in all_agents_paths
-    # E.g. agent_groups = [["SP_s1010_h256", "SP_s2010_h256"], ["FCP_s1010_h256", "FCP_s2010_h256"]]
-    agent_groups = []
+    # Define a list of agent groups to be averaged (for evaluation across different seeds)
+    # Agents in each grouping must correspond to keys defined in all_agents_paths
+    # E.g. agent_groups = {"SP_group" : ["SP_s1010_h256", "SP_s2010_h256"], "FCP_group" : ["FCP_s1010_h256", "FCP_s2010_h256"]}
+    agent_groups = {}
     return args.layout_names, agent_groups, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
 
 
@@ -670,11 +699,10 @@ def get_5_player_input_complex(args):
         [Eval.HIGH]
     ]
 
-    # Define a list of agent groups to be averaged (for evaluation across different seeds), each index in the list
-    # is a list of agents to be averaged
-    # These must correspond to keys defined in all_agents_paths
-    # E.g. agent_groups = [["SP_s1010_h256", "SP_s2010_h256"], ["FCP_s1010_h256", "FCP_s2010_h256"]]
-    agent_groups = []
+    # Define a list of agent groups to be averaged (for evaluation across different seeds)
+    # Agents in each grouping must correspond to keys defined in all_agents_paths
+    # E.g. agent_groups = {"SP_group" : ["SP_s1010_h256", "SP_s2010_h256"], "FCP_group" : ["FCP_s1010_h256", "FCP_s2010_h256"]}
+    agent_groups = {}
 
     return args.layout_names, agent_groups, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
 
@@ -717,14 +745,15 @@ if __name__ == "__main__":
             teammate_lvl_sets=teammate_lvl_sets
     )
 
-    plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
+    plot_evaluation_results_bar_multi_seed(all_mean_rewards=all_mean_rewards,
                            all_std_rewards=all_std_rewards,
                            layout_names=layout_names,
                            agent_groups=agent_groups,
                            teammate_lvl_sets=teammate_lvl_sets,
                            unseen_counts=unseen_counts,
                            display_delivery=show_delivery_num,
-                           plot_name=plot_name)
+                           plot_name=plot_name,
+                           only_plot_summary_fig=True)
 
 
     # plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
