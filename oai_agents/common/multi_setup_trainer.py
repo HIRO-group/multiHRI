@@ -26,42 +26,14 @@ class MultiSetupTrainer:
         self.total_ego_agents = args.total_ego_agents
         self.for_evaluation = args.gen_pop_for_eval
 
-    def generate_hdim_and_seed(self):
-        evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
-        evaluation_hdims = [256] * len(evaluation_seeds)
-
-        training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
-        training_hdims = [256] * len(training_seeds)
-
-        if self.for_evaluation:
-            assert self.total_ego_agents <= len(evaluation_seeds), (
-                f"Total ego agents ({self.total_ego_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
-                "Please either increase the number of evaluation seeds in the `generate_hdim_and_seed` function or decrease "
-                f"`self.total_ego_agents` (currently set to {self.total_ego_agents}, based on `args.total_ego_agents`)."
-            )
-            seeds = evaluation_seeds
-            hdims = evaluation_hdims
-        else:
-            assert self.total_ego_agents <= len(training_seeds), (
-                f"Total ego agents ({self.total_ego_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
-                "Please either increase the number of training seeds in the `generate_hdim_and_seed` function or decrease "
-                f"`self.total_ego_agents` (currently set to {self.total_ego_agents}, based on `args.total_ego_agents`)."
-            )
-            seeds = training_seeds
-            hdims = training_hdims
-
-        selected_seeds = seeds[:self.total_ego_agents]
-        selected_hdims = hdims[:self.total_ego_agents]
-
-        return selected_seeds, selected_hdims
-
     def get_trained_agent(self, seed, h_dim):
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     def get_multiple_trained_agents(self):
         agents = []
 
-        seeds, hdims = self.generate_hdim_and_seed()
+        seeds, hdims = generate_hdim_and_seed(
+            for_evaluation=self.for_evaluation, total_ego_agents=self.total_ego_agents)
         inputs = [
             (seeds[i], hdims[i])
             for i in range(self.total_ego_agents)
@@ -157,3 +129,32 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             checkpoint_rate=self.args.pop_total_training_timesteps // self.args.num_of_ckpoints,
             total_train_timesteps=self.args.pop_total_training_timesteps,
         )
+
+def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
+    evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
+    evaluation_hdims = [256] * len(evaluation_seeds)
+
+    training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
+    training_hdims = [256] * len(training_seeds)
+
+    if for_evaluation:
+        assert total_ego_agents <= len(evaluation_seeds), (
+            f"Total ego agents ({total_ego_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
+            "Please either increase the number of evaluation seeds in the `generate_hdim_and_seed` function or decrease "
+            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+        )
+        seeds = evaluation_seeds
+        hdims = evaluation_hdims
+    else:
+        assert total_ego_agents <= len(training_seeds), (
+            f"Total ego agents ({total_ego_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
+            "Please either increase the number of training seeds in the `generate_hdim_and_seed` function or decrease "
+            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+        )
+        seeds = training_seeds
+        hdims = training_hdims
+
+    selected_seeds = seeds[:total_ego_agents]
+    selected_hdims = hdims[:total_ego_agents]
+
+    return selected_seeds, selected_hdims
