@@ -332,10 +332,10 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
                 chart_data[group_name]["layout"].append(DISPLAY_NAME_MAP[layout_name])
 
         ax = axes[-1][0]
-        agents = list(chart_data.values())
-        num_agents = len(agents)
+        groups = list(chart_data.keys())
+        num_agents = len(groups)
         width = .95 / num_agents
-        layouts = agents[0]["layout"]
+        layouts = chart_data[groups[0]]["layout"]
         idxs = np.arange(len(layouts))
         cmap = matplotlib.colormaps["tab20b"]
 
@@ -345,7 +345,8 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
             c+=1
 
         #ax.set_title(f"Avg. Number of Soup Deliveries")
-        ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20')
+        # ax.set_xticks(idxs, labels=layouts, fontsize='20')  # Use this for 1 agent
+        ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20') # Use this for multiple?
         ax.set_yticks(np.arange(0, 30, 2))
         ax.tick_params(axis='y', labelsize=20) 
         ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
