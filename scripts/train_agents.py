@@ -339,7 +339,8 @@ def set_input(args):
             prefix = 'Classic'
         elif args.layout_names == preference_2_chefs_layouts:
             prefix = 'Preferences'
-
+        
+        prefix = preference_2_chefs_layouts[0]
         args.exp_dir = f'{prefix}/{args.num_players}'
 
     else: # Used for doing quick tests
