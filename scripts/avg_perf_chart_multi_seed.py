@@ -174,7 +174,7 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
         for agt_name in agent_groups[group_name]:
             assert agt_name in all_mean_rewards.keys(), f"No performance data for agent '{agt_name}', unable to use in group"
 
-    cmap = matplotlib.colormaps.get_cmap("Set3")
+    cmap = matplotlib.colormaps["tab20b"]
     plot_name = plot_name + "_delivery" if display_delivery else plot_name
     uc = ''.join([str(u) for u in unseen_counts])
     plot_name += f"_uc{uc}"
@@ -184,10 +184,6 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
     num_teamsets = len(team_lvl_set_names)
 
-    x_values = np.arange(len(unseen_counts))
-    num_agents = len(all_mean_rewards)
-    width = 0.8 / num_agents  # Adjust bar width based on number of agents
-
     # Function to process rewards (divide by 20 if display_delivery is True)
     def process_reward(reward):
         return reward / 20 if display_delivery else reward
@@ -196,6 +192,11 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
 
     if not only_plot_summary_fig:
         # Plot performance with each individual teamtype 
+
+        x_values = np.arange(len(unseen_counts))
+        num_groups = len(agent_groups)
+        width = 0.5 / num_groups  # Adjust bar width based on number of agents
+        group_center_offset = (num_groups - 1) * width / 2
 
         fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
         
@@ -241,9 +242,8 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
                         cross_exp_mean[group_name][unseen_counts.index(unseen_count)] += mean_values[-1]
                         cross_exp_std[group_name][unseen_counts.index(unseen_count)] += std_values[-1]
 
-                    # Plot bars for each agent
-                    x = x_values + idx * width - width * (num_agents - 1) / 2
-                    ax.bar(x, mean_values, width, yerr=std_values, label=f'{group_name}', capsize=5, color=cmap.colors)
+                    bar_position = x_values - group_center_offset + (idx * width)
+                    ax.bar(bar_position, mean_values, width, yerr=std_values, label=f'{group_name}', capsize=5, color=cmap(idx*5))
 
                 team_name_print = team_name.strip("[]'\"")
                 ax.set_title(f'{layout_name}\n{team_name_print}')
@@ -259,8 +259,8 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
                 mean_values = [v / num_teamsets for v in cross_exp_mean[group_name]]
                 std_values = [v / num_teamsets for v in cross_exp_std[group_name]]
 
-                x = x_values + idx * width - width * (num_agents - 1) / 2
-                ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {group_name}", capsize=5)
+                bar_position = x_values - group_center_offset + (idx * width)
+                ax.bar(bar_position, mean_values, width, yerr=std_values, label=f"Agent: {group_name}", capsize=5, color=cmap((idx*5)))
 
             ax.set_title(f"Avg. {layout_name}")
             ax.set_xlabel('Number of Unseen Teammates')
@@ -339,14 +339,15 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
         idxs = np.arange(len(layouts))
         cmap = matplotlib.colormaps["tab20b"]
 
+        group_center_offset = (num_agents - 1) * width / 2
         c = 0
         for i, (agent_name, d) in enumerate(chart_data.items()):
-            ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
+            bar_positions = idxs - group_center_offset + (i * width)
+            ax.bar(bar_positions, d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
             c+=1
 
-        #ax.set_title(f"Avg. Number of Soup Deliveries")
-        # ax.set_xticks(idxs, labels=layouts, fontsize='20')  # Use this for 1 agent
-        ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20') # Use this for multiple?
+        ax.set_xticks(idxs)
+        ax.set_xticklabels(layouts, fontsize='20')
         ax.set_yticks(np.arange(0, 30, 2))
         ax.tick_params(axis='y', labelsize=20) 
         ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
