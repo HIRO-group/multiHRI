@@ -335,8 +335,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
 
-        prefix = 'RandomStaticAgents'
-        args.exp_dir = f'{prefix}/{args.num_players}'
+        args.exp_dir = f'{prefix}/RandomStaticAgents/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
