@@ -85,21 +85,30 @@ def get_tile_map(args, agent, trajectories, p_idx, shape=(20, 20), interact_acti
 
 
 def generate_static_adversaries(args, all_tiles):
-    mode = 'V' if args.use_val_func_for_heatmap_gen else 'P'
-    heatmap_xy_coords = {layout: [] for layout in args.layout_names}
-    for layout in args.layout_names:
-        layout_heatmap_top_xy_coords = []
-        for tiles in all_tiles[layout][mode]:
-            top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
-            top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
-            layout_heatmap_top_xy_coords.extend(top_n_coords)
+    # mode = 'V' if args.use_val_func_for_heatmap_gen else 'P'
+    # heatmap_xy_coords = {layout: [] for layout in args.layout_names}
+    # for layout in args.layout_names:
+    #     layout_heatmap_top_xy_coords = []
+    #     for tiles in all_tiles[layout][mode]:
+    #         top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
+    #         top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
+    #         layout_heatmap_top_xy_coords.extend(top_n_coords)
         
-        heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
+    #     heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
+    from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
+    from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld
+
+
     agents = []
     for adv_idx in range(args.num_static_advs_per_heatmap):
         start_position = {layout: (-1, -1) for layout in args.layout_names}
         for layout in args.layout_names:
-            start_position[layout] = [tuple(map(int, heatmap_xy_coords[layout][adv_idx]))]
+            mdp = OvercookedGridworld.from_layout_name(layout)
+            env = OvercookedEnv.from_mdp(mdp, horizon=400)
+            valid_player_postions = env.mdp.get_valid_player_positions()
+            start_position[layout] = [random.choice(valid_player_postions)]
+            # start_position[layout] = [tuple(map(int, heatmap_xy_coords[layout][adv_idx]))]
+
         agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', trajectories=start_position))
     return agents
 

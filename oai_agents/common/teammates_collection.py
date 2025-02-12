@@ -37,11 +37,12 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 continue
             elif (team_type in TeamType.SELF_PLAY_X_TYPES):
                 required_population_size += unseen_teammates_len
-
-        assert len(agents_perftag_score) % required_population_size == 0, \
-                f"Requested use of entire population for teammate generation but provided population size is not evenly divisible by the minimum number of required agents\n"\
-                f"Population size: {len(agents_perftag_score)}\n"\
-                f"Minimum number of agents required for teammate generation: {required_population_size}\n"
+        
+        if required_population_size > 0:
+            assert len(agents_perftag_score) % required_population_size == 0, \
+                    f"Requested use of entire population for teammate generation but provided population size is not evenly divisible by the minimum number of required agents\n"\
+                    f"Population size: {len(agents_perftag_score)}\n"\
+                    f"Minimum number of agents required for teammate generation: {required_population_size}\n"
 
     all_teammates = {
         teamtype: [] for teamtype in teamtypes
