@@ -188,6 +188,25 @@ class DiversePopulationManager:
                         eval_agent=t.learning_agent,
                         timestep=self.timesteps,
                         log_wandb=False,)
+                    if mean_reward >= t.best_score:
+                        best_path, best_tag = self.save_agents(tag=KeyCheckpoints.BEST_EVAL_REWARD)
+                        t.best_score = mean_reward
+                        print(f'Model of Seed {t.seed} Update: \nBest evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
+                    wandb.log({
+                        f'eval/{t.name}/eval_mean_reward': mean_reward,
+                        f'eval/{t.name}/timestep': self.timesteps
+                    })
+                    for _, env in enumerate(t.eval_envs):
+                        wandb.log({
+                            f'eval/{t.name}/eval_mean_reward_{env.layout_name}': rew_per_layout[env.layout_name],
+                            f'eval/{t.name}/timestep': self.timesteps,
+                        })
+                        for teamtype in rew_per_layout_per_teamtype[env.layout_name]:
+                            wandb.log({
+                                f'eval/{t.name}/eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype],
+                                f'eval/{t.name}/timestep': self.timesteps,
+                            })
+
                     if self.timesteps >= next_checkpoint:
                         path = OAITrainer.get_model_path(
                             base_dir=t.args.base_dir,
