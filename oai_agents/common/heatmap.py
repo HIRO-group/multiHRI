@@ -73,20 +73,22 @@ def get_value_function(args, agent, observation):
 
 
 def get_tile_map(args, agent, trajectories, p_idx, shape=(20, 20), interact_actions_only=True):
-    if interact_actions_only:
-        raise NotImplementedError
     tiles_p = np.zeros(shape) # position counter
     tiles_v = np.zeros(shape) # value counter
     for trajectory in trajectories:
         observations = trajectory['observations']
-        joint_trajectory = trajectory['positions']
-        agent1_trajectory = [tr[p_idx] for tr in joint_trajectory]
-        for i in range(0, len(agent1_trajectory)):
-            x, y = agent1_trajectory[i]
+        agent_actions = [tr[p_idx] for tr in trajectory['actions']]
+        agent_trajectory = [tr[p_idx] for tr in trajectory['positions']]
+
+        for i in range(0, len(agent_trajectory)):
+            if interact_actions_only and agent_actions[i] != 'interact':
+                continue
+            x, y = agent_trajectory[i]
             tiles_p[x, y] += 1
             value = get_value_function(args=args, agent=agent, observation=observations[i])
             tiles_v[x, y] += value
     return {'P': tiles_p, 'V': tiles_v}
+
 
 
 def generate_static_adversaries(args, all_tiles):
