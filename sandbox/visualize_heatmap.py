@@ -115,19 +115,26 @@ def plot_heatmap(tiles_v, layout_features, feature_positions, title=''):
 if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
-    args.layout = 'storage_room'
+    args.layout = 'secret_heaven'
+    interact_actions_only = True
 
-    # grid_layout = """XXXPPXXX
-    #                  X   2  X
-    #                  D XXXX S
-    #                  X   1  X
-    #                  XXXOOXXX"""
+    grid_layout = """XXXPPXXX
+                     X   2  X
+                     D XXXX S
+                     X   1  X
+                     XXXOOXXX"""
 
-    grid_layout = """XPXXXXXXXXPX
-                     S   XODX   S
-                     X    12    X
-                     X   XDOX   X
-                     XXXXXXXXXXXX"""
+    # grid_layout = """XXXPX
+    #                  X 1 P
+    #                  D2X X
+    #                  O   X
+    #                  XOSXX"""
+
+    # grid_layout = """XPXXXXXXXXPX
+    #                  S   XODX   S
+    #                  X    12    X
+    #                  X   XDOX   X
+    #                  XXXXXXXXXXXX"""
     
     # grid_layout = """XODSXXXXSDXX
     #                  X          X
@@ -171,7 +178,7 @@ if __name__ == "__main__":
         for teammates in [low_perf_teammates, high_perf_teammates]:
             simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=p_idx, horizon=400)
             trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
-            tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=True)
+            tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=interact_actions_only)
             final_tiles_v += tile['V']
 
     # final_tiles_v = not_used_function_get_tile_v_using_all_states(args=args, agent=agent, layout=args.layout, shape=shape)
