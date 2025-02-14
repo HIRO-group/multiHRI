@@ -449,17 +449,20 @@ def get_2_player_input_classic(args):
         'SP_s1010_h256': 'agent_models/Classic/2/SP_hd256_seed1010/best',
         'FCP_s1010_h256': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
-        'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[2t] 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        # 'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[2t] 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
         'dsALMH 3d[2t] 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        'sALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        # 'sALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
         'sALMH 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        'random static 1s': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'random static 2s': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'random static 3s': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'random static 1/3': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'random static 2/3': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+
+        'random static': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+
+        'targetted static advs': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
 
         # 'dALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
@@ -491,18 +494,19 @@ def get_2_player_input_complex(args):
         'SP_s1010_h256': 'agent_models/Complex/2/SP_hd256_seed1010/best',
         'FCP_s1010_h256': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
-        'dsALMH 1d[2t] 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[2t] 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[2t] 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
         'dsALMH 3d[2t] 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        'sALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        # 'sALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
         'sALMH 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        'random static 1s': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'random static 2s': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'random static 3s': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'random static 1s': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'random static 2s': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'random static': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
+        'targetted static advs': 'agent_models/Complex/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
 
         # 'dALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
