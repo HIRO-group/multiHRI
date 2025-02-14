@@ -236,13 +236,13 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_DYNAMIC_ADV,
+        # TeamType.SELF_PLAY_DYNAMIC_ADV,
         TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
-                     TeamType.SELF_PLAY_DYNAMIC_ADV,
+                    #  TeamType.SELF_PLAY_DYNAMIC_ADV,
                      TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
@@ -295,6 +295,8 @@ def set_input(args):
     ]
 
     two_chefs_layouts = classic_2_chefs_layouts
+    # two_chefs_layouts = complex_2_chefs_layouts
+
     three_chefs_layouts = complex_3_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
@@ -305,7 +307,7 @@ def set_input(args):
     elif args.num_players == 5:
         args.layout_names = five_chefs_layouts
 
-    args.custom_agent_ck_rate_generation = args.num_players + 1
+    args.custom_agent_ck_rate_generation = 1
     args.num_steps_in_traj_for_dyn_adv = 2
     args.num_static_advs_per_heatmap = 1
     args.num_dynamic_advs_per_heatmap = 1
@@ -334,7 +336,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
 
-        args.exp_dir = f'{prefix}/{args.num_players}'
+        args.exp_dir = f'{prefix}/TargAdvs/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
