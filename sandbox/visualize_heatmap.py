@@ -171,7 +171,7 @@ if __name__ == "__main__":
         for teammates in [low_perf_teammates, high_perf_teammates]:
             simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=p_idx, horizon=400)
             trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
-            tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
+            tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=True)
             final_tiles_v += tile['V']
 
     # final_tiles_v = not_used_function_get_tile_v_using_all_states(args=args, agent=agent, layout=args.layout, shape=shape)
