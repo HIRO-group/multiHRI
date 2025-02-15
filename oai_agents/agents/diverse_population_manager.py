@@ -146,7 +146,7 @@ class DiversePopulationManager:
             self.timesteps += self.epoch_timesteps
 
             print(f"Trained trainer of seed {trainer.seed} for {self.epoch_timesteps} timesteps. current timesteps: {self.timesteps}")
-            wandb.log({"train/episode_steps": self.epoch_timesteps, "train/timesteps": self.timesteps}, step=self.timesteps)
+            wandb.log({"train/episode_steps": int(self.epoch_timesteps), "train/timesteps": int(self.timesteps)}, step=int(self.timesteps))
 
             for t in self.population:
                 bonus_getter = self.bonus_getter_factory(ego_trainer=t)
@@ -165,17 +165,17 @@ class DiversePopulationManager:
                         print(f'Model of Seed {t.seed} Update: \nBest evaluation score of {mean_reward} reached, model saved to {best_path}/{best_tag}')
                     wandb.log({
                         f'eval/{t.name}/eval_mean_reward': mean_reward,
-                        f'eval/{t.name}/timestep': self.timesteps
+                        f'eval/{t.name}/timestep': int(self.timesteps)
                     })
                     for _, env in enumerate(t.eval_envs):
                         wandb.log({
                             f'eval/{t.name}/eval_mean_reward_{env.layout_name}': rew_per_layout[env.layout_name],
-                            f'eval/{t.name}/timestep': self.timesteps,
+                            f'eval/{t.name}/timestep': int(self.timesteps),
                         })
                         for teamtype in rew_per_layout_per_teamtype[env.layout_name]:
                             wandb.log({
                                 f'eval/{t.name}/eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype],
-                                f'eval/{t.name}/timestep': self.timesteps,
+                                f'eval/{t.name}/timestep': int(self.timesteps),
                             })
 
                     if self.timesteps >= next_checkpoint:
@@ -201,11 +201,21 @@ if __name__ == "__main__":
     from oai_agents.common.arguments import get_arguments
     from scripts.train_agents import set_input
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 1
+    args.teammates_len = 4
+
+    if args.teammates_len == 1:
+        args.how_long = 20
+        args.num_of_ckpoints = 35
+    elif args.teammates_len == 2:
+        args.how_long = 25
+        args.num_of_ckpoints = 40
+    elif args.teammates_len == 4:
+        args.how_long = 35
+        args.num_of_ckpoints = 50
 
     set_input(args=args)
 
