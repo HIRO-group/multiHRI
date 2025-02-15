@@ -446,7 +446,6 @@ class OAITrainer(ABC):
             wandb.log({f'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
         return np.mean(tot_mean_reward), rew_per_layout, rew_per_layout_per_teamtype
 
-
     def set_new_teammates(self, curriculum):
         for i in range(self.args.n_envs):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
