@@ -354,7 +354,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
 
-        args.exp_dir = f'{prefix}/TargAdvs_fs/{args.num_players}'
+        args.exp_dir = f'{prefix}/TargAdvs_1_adv_fs/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
