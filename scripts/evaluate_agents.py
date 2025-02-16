@@ -462,7 +462,9 @@ def get_2_player_input_classic(args):
 
         'random static': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        'targetted static advs': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'targetted static advs ran': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+
+        'targetted static advs cur': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack0/best',
 
         # 'dALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
@@ -506,7 +508,9 @@ def get_2_player_input_complex(args):
         # 'random static 2s': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
         'random static': 'agent_models/Complex/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        'targetted static advs': 'agent_models/Complex/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'targetted static advs ran': 'agent_models/Complex/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+
+        'targetted static advs cur': 'agent_models/Complex/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack0/best',
 
         # 'dALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
@@ -607,8 +611,8 @@ def get_5_player_input_complex(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
