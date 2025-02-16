@@ -255,22 +255,24 @@ def SPN_XSPCKP(args) -> None:
     #                             priority_scaling=2.0)
     # else:
 
-    curriculum = Curriculum(
-            train_types = primary_train_types,
-            is_random=False,
-            prioritized_sampling=False,
-            total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
-            training_phases_durations_in_order={
-                (TeamType.SELF_PLAY_STATIC_ADV): 0.5,
-            },
-            rest_of_the_training_probabilities={
-                TeamType.SELF_PLAY_MEDIUM: 0.25,
-                TeamType.SELF_PLAY_HIGH: 0.25,
-                TeamType.SELF_PLAY_LOW: 0.25,
-                TeamType.SELF_PLAY_STATIC_ADV: 0.25,
-            },
-            probabilities_decay_over_time=0
-    )
+    # curriculum = Curriculum(
+    #         train_types = primary_train_types,
+    #         is_random=False,
+    #         prioritized_sampling=False,
+    #         total_steps = args.n_x_sp_total_training_timesteps//args.epoch_timesteps,
+    #         training_phases_durations_in_order={
+    #             (TeamType.SELF_PLAY_STATIC_ADV): 0.5,
+    #         },
+    #         rest_of_the_training_probabilities={
+    #             TeamType.SELF_PLAY_MEDIUM: 0.25,
+    #             TeamType.SELF_PLAY_HIGH: 0.25,
+    #             TeamType.SELF_PLAY_LOW: 0.25,
+    #             TeamType.SELF_PLAY_STATIC_ADV: 0.25,
+    #         },
+    #         probabilities_decay_over_time=0
+    # )
+
+    curriculum = Curriculum(train_types=primary_train_types, is_random=True)
 
     get_N_X_SP_agents(
         args,
