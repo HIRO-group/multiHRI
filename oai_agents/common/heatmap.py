@@ -111,9 +111,9 @@ def generate_static_adversaries(args, all_tiles):
     agents = []
     advs_num = 0
     if 'storage_room' in args.layout_names:
-        advs_num = 3
+        advs_num = len(random_pos['storage_room'])
     elif 'counter_circuit' in args.layout_names:
-        advs_num = 4
+        advs_num = len(random_pos['counter_circuit'])
 
     for adv_idx in range(advs_num):
         start_position = {layout: [random_pos[layout][adv_idx]] for layout in args.layout_names}
