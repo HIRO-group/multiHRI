@@ -97,8 +97,8 @@ def generate_static_adversaries(args, all_tiles):
     #     heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
     
     random_pos = {
-        'storage_room': [(10, 1)],
-        'secret_heaven': [(1, 4)], 
+        'storage_room': [(1, 1), (10, 1), (10, 1)],
+        'secret_heaven': [(1, 4), (2, 1), (3, 5)], 
 
         'counter_circuit': [(4, 1), (3, 1), (3, 3), (4, 3)],
         'cramped_room': [(1, 1), (3, 1), (1, 1), (3, 1)],
