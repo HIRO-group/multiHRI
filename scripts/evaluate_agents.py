@@ -508,14 +508,14 @@ def get_2_player_input_complex(args):
         'targ advs ran': 'agent_models/Complex/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         'targ advs cur': 'agent_models/Complex/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack0/best',
 
-        'fs: random adv':     'agent_models/Complex/RandomStaticAgents_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'fs: targ adv ran':   'agent_models/Complex/TargAdvs_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'fs: targ adv cur':   'agent_models/Complex/TargAdvs_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack0/best',
-        'fs: targ 1 adv ran': 'agent_models/Complex/TargAdvs_1_adv_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'fs: random adv':     'agent_models/Complex/4090/RandomStaticAgents_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'fs: targ adv ran':   'agent_models/Complex/4090/TargAdvs_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'fs: targ adv cur':   'agent_models/Complex/4090/TargAdvs_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack0/best',
+        'fs: targ 1 adv ran': 'agent_models/Complex/4090/TargAdvs_1_adv_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
 
-        'fs ri: random adv':     'agent_models/Complex/RandomStaticAgents_fs_ri/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'fs ri: targ adv ran':   'agent_models/Complex/TargAdvs_fs_ri/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'fs ri: targ 1 adv ran': 'agent_models/Complex/TargAdvs_1_adv_fs_ri/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'fs ri: random adv':     'agent_models/Complex/RandomStaticAgents_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'fs ri: targ adv ran':   'agent_models/Complex/TargAdvs_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        'fs ri: targ 1 adv ran': 'agent_models/Complex/TargAdvs_1_adv_fs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
 
         # 'dALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
