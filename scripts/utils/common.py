@@ -21,7 +21,7 @@ def generate_name(args, prefix, seed, h_dim, train_types:list=None, curriculum:C
     if (train_types is None):
         train_types = curriculum.train_types
 
-    fname = prefix + '_s' + str(seed) + '_h' + str(h_dim) +'_tr['+'_'.join(train_types)+']'
+    fname = args.name_prefix + '-' + prefix + '_s' + str(seed) + '_h' + str(h_dim) +'_tr['+'_'.join(train_types)+']'
     if (not curriculum) or (curriculum.is_random):
         curriculum_type = '_ran'
     elif curriculum.prioritized_sampling:

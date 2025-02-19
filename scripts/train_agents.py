@@ -354,7 +354,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
 
-        args.exp_dir = f'{prefix}/TargAdvs_fs/{args.num_players}'
+        args.exp_dir = f'{prefix}/HP/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -377,6 +377,7 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 1
+    args.name_prefix = 'fs_ri'
 
     if args.teammates_len == 1:
         args.how_long = 20

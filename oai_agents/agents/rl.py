@@ -43,6 +43,17 @@ class RLAgentTrainer(OAITrainer):
         self.num_players = self.args.num_players
         self.curriculum = curriculum
 
+        self.hyperparams = {
+                'n_steps': 500,
+                'n_epochs': 4,
+                'learning_rate': 0.0003,
+                'batch_size': 500,
+                'ent_coef': 0.01,
+                'vf_coef': 0.1,
+                'gamma': 0.99,
+                'gae_lambda': 0.95,
+        }
+
         self.epoch_timesteps = epoch_timesteps
         self.n_envs = n_envs
 
@@ -233,9 +244,18 @@ class RLAgentTrainer(OAITrainer):
             https://stackoverflow.com/a/76198343/9102696
             n_epochs = Number of epoch when optimizing the surrogate loss
             '''
-            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
-                            n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
-                            gamma=0.99, gae_lambda=0.95, device=self.args.device)
+
+            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose,
+                            n_steps = self.hyperparams['n_steps'],
+                            n_epochs = self.hyperparams['n_epochs'],
+                            learning_rate = self.hyperparams['learning_rate'],
+                            batch_size = self.hyperparams['batch_size'],
+                            ent_coef = self.hyperparams['ent_coef'],
+                            vf_coef = self.hyperparams['vf_coef'],
+                            gamma = self.hyperparams['gamma'],
+                            gae_lambda = self.hyperparams['gae_lambda'],
+                            device=self.args.device)
+
             agent_name = f'{self.name}'
         return sb3_agent, agent_name
 
@@ -301,6 +321,7 @@ class RLAgentTrainer(OAITrainer):
         print('args.num_static_advs_per_heatmap: ', self.args.num_static_advs_per_heatmap)
         print('args.num_dynamic_advs_per_heatmap: ', self.args.num_dynamic_advs_per_heatmap)
         print('args.use_val_func_for_heatmap_gen: ', self.args.use_val_func_for_heatmap_gen)
+        print('Hyperparams: ', self.hyperparams)
 
 
     def save_init_model_and_cklist(self):
