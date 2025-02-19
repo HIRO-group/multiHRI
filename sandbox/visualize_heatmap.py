@@ -104,7 +104,7 @@ def plot_heatmap(tiles_v, layout_features, feature_positions, title=''):
     # Remove x and y ticks and labels
     ax.set_xticks([])
     ax.set_yticks([])
-    
+
     # plt.title('Accumulated Value Function with Layout Features')
     plt.tight_layout()
     plt.savefig(f'data/plots/heatmap_{title}.png', dpi=300)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                      X    12    X
                      X   XDOX   X
                      XXXXXXXXXXXX"""
-    
+
     # grid_layout = """XODSXXXXSDXX
     #                  X          X
     #                  S PP XX    X
@@ -146,12 +146,19 @@ if __name__ == "__main__":
     args.p_idx = 0
     args.n_envs = 200
     args.layout_names = [args.layout]
-    
+
     # path = 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/last'
-    path = 'agent_models/Complex/2/SP_hd256_seed2602/last'
+    path = 'agent_models/Complex_Ori/2/SP_hd256_seed2602/last'
     # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
     # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/last'
     # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/last'
+
+    path = 'agent_models/Complex_Ori/2/SP_hd256_seed1010/last'
+    agent_1010 = [load_agent(Path(path), args)]
+    path = 'agent_models/Complex_Ori/2/SP_hd256_seed2020/last'
+    agent_2020 = [load_agent(Path(path), args)]
+    path = 'agent_models/Complex_Ori/2/SP_hd256_seed13/last'
+    agent_13 = [load_agent(Path(path), args)]
 
     agent = load_agent(Path(path), args)
     title = f'{args.layout}_{path.split("/")[-2]}'
@@ -168,11 +175,12 @@ if __name__ == "__main__":
     final_tiles_v = np.zeros(shape)
 
     for p_idx in range(args.num_players):
-        for teammates in [low_perf_teammates, high_perf_teammates]:
+        # for teammates in [low_perf_teammates, high_perf_teammates]:
+        for teammates in [agent_1010, agent_2020, agent_13]:
             simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=p_idx, horizon=400)
             trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
             tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-            final_tiles_v += tile['V']
+            final_tiles_v += tile['P']
 
     # final_tiles_v = not_used_function_get_tile_v_using_all_states(args=args, agent=agent, layout=args.layout, shape=shape)
 
