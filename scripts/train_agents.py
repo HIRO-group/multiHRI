@@ -236,13 +236,13 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_DYNAMIC_ADV,
+        # TeamType.SELF_PLAY_DYNAMIC_ADV,
         TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
         'generate': [TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
-                     TeamType.SELF_PLAY_DYNAMIC_ADV,
+                    #  TeamType.SELF_PLAY_DYNAMIC_ADV,
                      TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
@@ -268,6 +268,12 @@ def SPN_XSPCKP(args) -> None:
 def set_input(args):
     args.num_players = args.teammates_len + 1
 
+    storage_room_1_chef_layouts = [
+        'storage_room_right_pot_single',
+        # 'storage_room_left_pot_single',
+        # 'cramped_room_single',
+    ]
+
     classic_2_chefs_layouts = [
         'coordination_ring',
         'counter_circuit',
@@ -281,12 +287,6 @@ def set_input(args):
         'storage_room'
     ]
 
-    complex_3_chefs_layouts = [
-        'dec_3_chefs_storage_room',
-        'dec_3_chefs_secret_heaven',
-        'dec_3_chefs_counter_circuit',
-    ]
-
     complex_5_chefs_layouts = [
         'dec_5_chefs_counter_circuit',
         'dec_5_chefs_storage_room',
@@ -294,16 +294,16 @@ def set_input(args):
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
 
-    two_chefs_layouts = classic_2_chefs_layouts
-    three_chefs_layouts = complex_3_chefs_layouts
+    one_chef_layouts = storage_room_1_chef_layouts
+    two_chefs_layouts = complex_2_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
-    elif args.num_players == 3:
-        args.layout_names = three_chefs_layouts
     elif args.num_players == 5:
         args.layout_names = five_chefs_layouts
+    elif args.num_players == 1:
+        args.layout_names = one_chef_layouts
 
     args.custom_agent_ck_rate_generation = args.num_players + 1
     args.num_steps_in_traj_for_dyn_adv = 2
@@ -324,15 +324,16 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 4
+        args.total_ego_agents = 1
+        print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
-            prefix = 'Complex'
-        elif args.layout_names == complex_3_chefs_layouts:
-            prefix = 'Complex'
+            prefix = 'Complex_Test'
         elif args.layout_names == complex_5_chefs_layouts:
             prefix = 'Complex'
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
+        elif args.layout_names == storage_room_1_chef_layouts:
+            prefix = 'DebugRightPot'
 
         args.exp_dir = f'{prefix}/{args.num_players}'
 
@@ -356,25 +357,22 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 1
+    args.teammates_len = 0
 
-    if args.teammates_len == 1:
+    if args.teammates_len == 1 or args.teammates_len == 0:
         args.how_long = 20
         args.num_of_ckpoints = 35
-    elif args.teammates_len == 2:
-        args.how_long = 25
-        args.num_of_ckpoints = 40
     elif args.teammates_len == 4:
         args.how_long = 35
         args.num_of_ckpoints = 50
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
 
-    # SP(args)
+    SP(args)
 
     # FCP_mhri(args=args)
 

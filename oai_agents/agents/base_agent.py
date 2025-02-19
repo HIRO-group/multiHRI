@@ -88,6 +88,9 @@ class OAIAgent(nn.Module, ABC):
                 obs['visual_obs'], _ = self.stackedobs.update(obs['visual_obs'], np.array([done]), [{}])
             obs['visual_obs'] = obs['visual_obs'].squeeze()
         if 'subtask_mask' in self.policy.observation_space.keys():
+            print("===================================")
+            print("===================================")
+            print("===================================")
             obs['subtask_mask'] = get_doable_subtasks(self.state, self.prev_subtask, self.layout_name, self.terrain, p_idx, self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 2)).astype(bool)
 
         obs = {k: v for k, v in obs.items() if k in self.policy.observation_space.keys()}
@@ -113,7 +116,7 @@ class OAIAgent(nn.Module, ABC):
             }
             self.mlam = MediumLevelActionManager.from_pickle_or_compute(mdp, COUNTERS_PARAMS, force_compute=False)
             self.valid_counters = [self.mdp.find_free_counters_valid_for_player(mdp.get_standard_start_state(), self.mlam, i)
-                                   for i in range(2)]
+                                   for i in range(self.mdp.num_players)]
         else:
             self.mdp = env.mdp
             self.layout_name = env.layout_name
