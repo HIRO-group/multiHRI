@@ -301,7 +301,7 @@ def set_input(args):
     args.num_static_advs_per_heatmap = 1
     args.num_dynamic_advs_per_heatmap = 1
     args.use_val_func_for_heatmap_gen = True
-    args.prioritized_sampling = False
+    args.prioritized_sampling = True
 
     if not args.quick_test:
         args.gen_pop_for_eval = False
