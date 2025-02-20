@@ -385,6 +385,7 @@ class OAITrainer(ABC):
             for split in combinations(range(self.n_layouts), split_size + 1):
                 self.splits.append(split)
         self.env_setup_idx, self.weighted_ratio = 0, 0.9
+        self.env = None
         # TODO: Claim eval_envs
 
     def _get_constructor_parameters(self):
@@ -495,14 +496,20 @@ class OAITrainer(ABC):
             save_dict["n_envs"] = self.n_envs
         th.save(save_dict, save_path)
         with open(env_path, "wb") as f:
-            step_counts = self.env.get_attr("step_count")
-            # Should be the same but to be safe save the min
-            timestep_count = min(step_counts)
+            if self.env is not None:
+                step_counts = self.env.get_attr("step_count")
+                # Should be the same but to be safe save the min
+                timestep_count = min(step_counts)
+            else:
+                timestep_count = 0
+                self.steps = 0
+                self.n_envs = 0
             pkl.dump({
                 "timestep_count": timestep_count,
                 "step_count": self.steps
             }, f)
             print(f"Saved on timestep_count: {self.n_envs*timestep_count} and step_count:{self.steps} for tag: {tag}")
+
         return path, tag
 
     @staticmethod

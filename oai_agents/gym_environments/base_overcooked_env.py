@@ -165,7 +165,6 @@ class OvercookedGymEnv(Env):
                 self.reset_info['start_position'][t_idx] = tm.get_start_position(layout_name=self.layout_name, u_env_idx=self.unique_env_idx)
             if type(tm) == CustomAgent:
                 tm.reset()
-
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]

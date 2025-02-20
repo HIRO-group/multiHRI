@@ -295,7 +295,7 @@ def set_input(args):
     ]
 
     one_chef_layouts = storage_room_1_chef_layouts
-    two_chefs_layouts = complex_2_chefs_layouts
+    two_chefs_layouts = classic_2_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
@@ -327,7 +327,7 @@ def set_input(args):
         args.total_ego_agents = 1
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
-            prefix = 'Complex_Test'
+            prefix = 'Complex'
         elif args.layout_names == complex_5_chefs_layouts:
             prefix = 'Complex'
         elif args.layout_names == classic_2_chefs_layouts:
@@ -340,7 +340,7 @@ def set_input(args):
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
-        args.n_envs = 2
+        args.n_envs = 210
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 4000
         args.n_x_sp_total_training_timesteps = 4000
@@ -348,16 +348,16 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
         args.total_ego_agents = 2
-        args.exp_dir = f'Test/{args.num_players}'
+        args.exp_dir = f'Classic/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 0
+    args.teammates_len = 1
 
     if args.teammates_len == 1 or args.teammates_len == 0:
         args.how_long = 20
@@ -368,11 +368,11 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    # SPN_XSPCKP(args=args)
+    SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
 
-    SP(args)
+    # SP(args)
 
     # FCP_mhri(args=args)
 
