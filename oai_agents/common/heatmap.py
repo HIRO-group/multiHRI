@@ -97,14 +97,16 @@ def generate_static_adversaries(args, all_tiles):
     #     heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
     
     random_pos = {
-        'storage_room': [(1, 1), (10, 1), (10, 1)],
-        'secret_heaven': [(1, 4), (2, 1), (3, 5)], 
+        'secret_resources': [(9, 5), (8, 5)],
+        'resource_corridor': [(2, 1), (7, 1)],
 
-        'counter_circuit': [(4, 1), (3, 1), (3, 3), (4, 3)],
-        'cramped_room': [(1, 1), (3, 1), (1, 1), (3, 1)],
-        'coordination_ring': [(1, 1), (3, 3), (1, 1), (3, 3)],
-        'asymmetric_advantages': [(3, 2), (5, 2), (5, 3), (3, 2)],
-        'forced_coordination': [(1, 2), (3, 1), (3, 2), (1, 2)]
+        # 'storage_room': [(1, 1), (10, 1), (10, 1)],
+        # 'secret_heaven': [(1, 4), (2, 1), (3, 5)], 
+        # 'counter_circuit': [(4, 1), (3, 1), (3, 3), (4, 3)],
+        # 'cramped_room': [(1, 1), (3, 1), (1, 1), (3, 1)],
+        # 'coordination_ring': [(1, 1), (3, 3), (1, 1), (3, 3)],
+        # 'asymmetric_advantages': [(3, 2), (5, 2), (5, 3), (3, 2)],
+        # 'forced_coordination': [(1, 2), (3, 1), (3, 2), (1, 2)]
     }
         
 
@@ -114,6 +116,8 @@ def generate_static_adversaries(args, all_tiles):
         advs_num = len(random_pos['storage_room'])
     elif 'counter_circuit' in args.layout_names:
         advs_num = len(random_pos['counter_circuit'])
+    elif 'secret_resources' in args.layout_names:
+        advs_num = len(random_pos['secret_resources'])
 
     for adv_idx in range(advs_num):
         start_position = {layout: [random_pos[layout][adv_idx]] for layout in args.layout_names}

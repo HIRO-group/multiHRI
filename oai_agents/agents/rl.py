@@ -48,7 +48,7 @@ class RLAgentTrainer(OAITrainer):
                 'n_epochs': 4,
                 'learning_rate': 0.0003,
                 'batch_size': 500,
-                'ent_coef': 0.01,
+                'ent_coef': 0.001,
                 'vf_coef': 0.1,
                 'gamma': 0.99,
                 'gae_lambda': 0.95,

@@ -298,6 +298,11 @@ def set_input(args):
         'secret_heaven',
         'storage_room'
     ]
+    
+    modified_complex_2_chefs_layouts = [
+        'resource_corridor',
+        'secret_resources',
+    ]
 
     complex_3_chefs_layouts = [
         'dec_3_chefs_storage_room',
@@ -313,7 +318,8 @@ def set_input(args):
     ]
 
     # two_chefs_layouts = classic_2_chefs_layouts
-    two_chefs_layouts = complex_2_chefs_layouts
+    # two_chefs_layouts = complex_2_chefs_layouts
+    two_chefs_layouts = modified_complex_2_chefs_layouts
 
     three_chefs_layouts = complex_3_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
@@ -353,6 +359,8 @@ def set_input(args):
             prefix = 'Complex'
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
+        elif args.layout_names == modified_complex_2_chefs_layouts:
+            prefix = 'ModifiedComplex'
 
         args.exp_dir = f'{prefix}/HP/{args.num_players}'
 
@@ -377,11 +385,11 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 1
-    args.name_prefix = 'fs_ri'
+    args.name_prefix = 'vf_0.1_fs'
 
     if args.teammates_len == 1:
         args.how_long = 20
-        args.num_of_ckpoints = 35
+        args.num_of_ckpoints = 30
     elif args.teammates_len == 2:
         args.how_long = 25
         args.num_of_ckpoints = 40
