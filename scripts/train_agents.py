@@ -388,7 +388,7 @@ if __name__ == '__main__':
     args.name_prefix = 'vf_0.1_fs'
 
     if args.teammates_len == 1:
-        args.how_long = 20
+        args.how_long = 15
         args.num_of_ckpoints = 30
     elif args.teammates_len == 2:
         args.how_long = 25
