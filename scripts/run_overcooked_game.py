@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
     # trajectories = tile locations. Top left of the layout is (0, 0), bottom right is (M, N)
-    teammates = [CustomAgent(args=args, name='joojoo', trajectories={args.layout: [(1, 4)]})]
+    teammates = [CustomAgent(args=args, name='joojoo', trajectories={args.layout: [(10, 1)]})]
     # teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
 
     # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
