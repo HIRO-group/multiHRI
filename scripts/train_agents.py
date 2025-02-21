@@ -318,8 +318,8 @@ def set_input(args):
     ]
 
     # two_chefs_layouts = classic_2_chefs_layouts
-    # two_chefs_layouts = complex_2_chefs_layouts
-    two_chefs_layouts = modified_complex_2_chefs_layouts
+    two_chefs_layouts = complex_2_chefs_layouts
+    # two_chefs_layouts = modified_complex_2_chefs_layouts
 
     three_chefs_layouts = complex_3_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
@@ -362,7 +362,7 @@ def set_input(args):
         elif args.layout_names == modified_complex_2_chefs_layouts:
             prefix = 'ModifiedComplex'
 
-        args.exp_dir = f'{prefix}/HP/{args.num_players}'
+        args.exp_dir = f'{prefix}/{args.num_players}'
 
     else: # Used for doing quick tests
         args.sb_verbose = 1
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 1
-    args.name_prefix = 'vf_0.1_fs'
+    args.name_prefix = 'one_adv_'
 
     if args.teammates_len == 1:
         args.how_long = 15
