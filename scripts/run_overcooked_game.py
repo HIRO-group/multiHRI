@@ -17,7 +17,7 @@ if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
 
-    args.layout = f'storage_room'
+    args.layout = f'secret_heaven'
     args.p_idx = 0
     args.layout_names = [args.layout]
     args.n_envs = 1
@@ -33,8 +33,9 @@ if __name__ == "__main__":
     # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
     # trajectories = tile locations. Top left of the layout is (0, 0), bottom right is (M, N)
-    # (3, 1), (3, 3), (9, 3)
-    teammates = [CustomAgent(args=args, name='joojoo', trajectories={args.layout: [(9, 3)]})]
+
+    # (1, 4), (2, 1), (3, 5)
+    teammates = [CustomAgent(args=args, name='joojoo', trajectories={args.layout: [(3, 5)]})]
     # teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
 
     # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'

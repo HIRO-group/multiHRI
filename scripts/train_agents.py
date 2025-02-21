@@ -385,7 +385,7 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 1
-    args.name_prefix = 'multi_random_adv_'
+    args.name_prefix = 'multi_adv_'
 
     if args.teammates_len == 1:
         args.how_long = 20

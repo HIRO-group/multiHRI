@@ -100,8 +100,8 @@ def generate_static_adversaries(args, all_tiles):
         # 'secret_resources': [(9, 5), (8, 5)],
         # 'resource_corridor': [(2, 1), (7, 1)],
 
-        'storage_room': [(3, 1), (3, 3), (9, 3)],
-        'secret_heaven': [(10, 1), (10, 4), (9, 3)], 
+        'storage_room': [(8, 1), (9, 1), (9, 2)],
+        'secret_heaven': [(1, 4), (2, 1), (3, 5)], 
 
         # 'counter_circuit': [(4, 1), (3, 1), (3, 3), (4, 3)],
         # 'cramped_room': [(1, 1), (3, 1), (1, 1), (3, 1)],
