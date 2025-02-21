@@ -269,7 +269,10 @@ def set_input(args):
     args.num_players = args.teammates_len + 1
 
     storage_room_1_chef_layouts = [
-        'storage_room_right_pot_single',
+        'storage_room_single_left_sym',
+        'storage_room_single_right_sym',
+        'storage_room_single_left_sym_blocked',
+        'storage_room_single_right_sym_blocked',
         # 'storage_room_left_pot_single',
         # 'cramped_room_single',
     ]
@@ -324,7 +327,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 1
+        args.total_ego_agents = 4
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'
@@ -333,7 +336,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
         elif args.layout_names == storage_room_1_chef_layouts:
-            prefix = 'DebugRightPot'
+            prefix = 'storage_room_1_chef_layouts'
 
         args.exp_dir = f'{prefix}/{args.num_players}'
 
@@ -348,16 +351,16 @@ def set_input(args):
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
         args.total_ego_agents = 2
-        args.exp_dir = f'Classic/{args.num_players}'
+        args.exp_dir = f'Test/{args.num_players}'
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 1
+    args.teammates_len = 0
 
     if args.teammates_len == 1 or args.teammates_len == 0:
         args.how_long = 20
@@ -368,11 +371,11 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    SPN_XSPCKP(args=args)
+    # SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
 
-    # SP(args)
+    SP(args)
 
     # FCP_mhri(args=args)
 

@@ -134,7 +134,10 @@ def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
     evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
     evaluation_hdims = [256] * len(evaluation_seeds)
 
-    training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
+    training_seeds = [
+        1010, 2020, 2602, 13,
+        68, 2907, 105, 128
+    ]
     training_hdims = [256] * len(training_seeds)
 
     if for_evaluation:

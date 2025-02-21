@@ -234,7 +234,7 @@ class RLAgentTrainer(OAITrainer):
             n_epochs = Number of epoch when optimizing the surrogate loss
             '''
             sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
-                            n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.001, vf_coef=0.3,
+                            n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.01, vf_coef=0.3,
                             gamma=0.99, gae_lambda=0.95, device=self.args.device)
             agent_name = f'{self.name}'
         return sb3_agent, agent_name

@@ -15,7 +15,7 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 
 if __name__ == "__main__":
     args = get_arguments()
-    args.num_players = 2
+    args.num_players = 1
 
     'dec_5_chefs_counter_circuit',
     'dec_5_chefs_storage_room',
@@ -24,19 +24,30 @@ if __name__ == "__main__":
 
 
     # args.layout = f'dec_5_chefs_counter_circuit'
-    args.layout = 'cramped_room'
     args.p_idx = 0
-    args.layout_names = [args.layout]
     args.n_envs = 1
 
-    teammates_path = [
-        'agent_models/Classic/2/SP_s1010_h256_tr[SP]_ran/ck_0'
+    if args.num_players == 1:
+        args.layout = 'storage_room_single_left_sym'
+        args.layout_names = [args.layout]
+        player_path = 'agent_models/storage_room_1_chef_layouts/1/SP_s2602_h256_tr[SP]_ran/best'
+        player = load_agent(Path(player_path), args)
+        teammates = []
+    elif args.num_players == 2:
+        args.layout = 'storage_room'
+        args.layout_names = [args.layout]
+        player_path = 'agent_models/Complex/2/SP_s1010_h256_tr[SP]_ran/best'
+        player = load_agent(Path(player_path), args)
+        teammates = [player]
+
+    # teammates_path = [
+    #     'agent_models/Classic/2/SP_s1010_h256_tr[SP]_ran/ck_0'
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
-    ]
+    # ]
 
     # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
@@ -44,9 +55,10 @@ if __name__ == "__main__":
     # teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(8, 1), (8, 2), (7, 2), (6, 2)]})]
     # teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
 
-    player_path = 'agent_models/Classic/2/SP_s1010_h256_tr[SP]_ran/ck_0'
-    teammates = [load_agent(Path(player_path), args)]
-    player = 'human' # blue
+    # player_path = 'agent_models/storage_room_1_chef_layouts/1/random_positions/SP_s2602_h256_tr[SP]_ran/best'
+    # player = load_agent(Path(player_path), args)
+    # teammates = []
+    # player = 'human' # blue
     # player = DummyAgent(action='random')
 
     # dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
