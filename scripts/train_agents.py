@@ -271,8 +271,10 @@ def set_input(args):
     storage_room_1_chef_layouts = [
         'storage_room_single_left_sym',
         'storage_room_single_right_sym',
-        'storage_room_single_left_sym_blocked',
-        'storage_room_single_right_sym_blocked',
+        'storage_room_single_left_sym_rightpotblocked',
+        'storage_room_single_right_sym_rightpotblocked',
+        'storage_room_single_left_sym_leftpotblocked',
+        'storage_room_single_right_sym_leftpotblocked',
         # 'storage_room_left_pot_single',
         # 'cramped_room_single',
     ]
@@ -327,7 +329,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 4
+        args.total_ego_agents = 8
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'

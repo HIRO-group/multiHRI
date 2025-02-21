@@ -104,7 +104,7 @@ def plot_heatmap(tiles_v, layout_features, feature_positions, title=''):
     # Remove x and y ticks and labels
     ax.set_xticks([])
     ax.set_yticks([])
-    
+
     # plt.title('Accumulated Value Function with Layout Features')
     plt.tight_layout()
     plt.savefig(f'data/plots/heatmap_{title}.png', dpi=300)
@@ -114,8 +114,8 @@ def plot_heatmap(tiles_v, layout_features, feature_positions, title=''):
 
 if __name__ == "__main__":
     args = get_arguments()
-    args.num_players = 5
-    args.layout = 'dec_5_chefs_counter_circuit'
+    args.num_players = 2
+    args.layout = 'storage_room'
 
     # grid_layout = """XXXPPXXX
     #                  X   2  X
@@ -123,12 +123,12 @@ if __name__ == "__main__":
     #                  X   1  X
     #                  XXXOOXXX"""
 
-    # grid_layout = """XPXXXXXXXXPX
-    #                  S   XODX   S
-    #                  X    12    X
-    #                  X   XDOX   X
-    #                  XXXXXXXXXXXX"""
-    
+    grid_layout = """XPXXXXXXXXPX
+                     S   XODX   S
+                     X    12    X
+                     X   XDOX   X
+                     XXXXXXXXXXXX"""
+
     # grid_layout = """XODSXXXXSDXX
     #                  X          X
     #                  S PP XX    X
@@ -137,21 +137,24 @@ if __name__ == "__main__":
     #                  X    SX    X
     #                  XSDOXXXXOPXX"""
 
-    grid_layout = """XXXPPXXX
-                     X  2 4 X
-                     S XXXX5S
-                     X  1 3 X
-                     XXDOODXX"""
+    # grid_layout = """XXXPPXXX
+    #                  X  2 4 X
+    #                  S XXXX5S
+    #                  X  1 3 X
+    #                  XXDOODXX"""
 
     args.p_idx = 0
     args.n_envs = 200
     args.layout_names = [args.layout]
-    
+
     # path = 'agent_models/Complex/5/FCP_s1010_h256_tr[AMX]_ran/last'
     # path = 'agent_models/Complex/5/SP_hd256_seed2602/last'
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/last'
-    path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/last'
+    # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/last'
+    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
+    path = 'agent_models/Complex_Ori/2/N-1-SP_s2020_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
+    # path = 'agent_models/Complex/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
 
     agent = load_agent(Path(path), args)
     title = f'{args.layout}_{path.split("/")[-2]}'

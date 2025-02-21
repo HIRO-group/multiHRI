@@ -28,9 +28,9 @@ if __name__ == "__main__":
     args.n_envs = 1
 
     if args.num_players == 1:
-        args.layout = 'storage_room_single_left_sym'
+        args.layout = 'storage_room_single_right_sym_blocked'
         args.layout_names = [args.layout]
-        player_path = 'agent_models/storage_room_1_chef_layouts/1/SP_s2602_h256_tr[SP]_ran/best'
+        player_path = 'agent_models/storage_room_1_chef_layouts/1/SP_s13_h256_tr[SP]_ran/best'
         player = load_agent(Path(player_path), args)
         teammates = []
     elif args.num_players == 2:
