@@ -122,6 +122,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
     heatmap_source = get_best_SP_agent(args=args, population=population)
 
     init_agent = load_agents(args, name=heatmap_source.name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=False)[0]
+    init_timesteps = init_agent.agent.num_timesteps
 
     teammates_collection = generate_TC(args=args,
                                         population=population,
@@ -171,8 +172,11 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                 checkpoint_rate= ck_rate,
                                                 )
 
-        n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps*(round + 1) + args.pop_total_training_timesteps,
-                                                    tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        n_x_sp_types_trainer.train_agents(
+            total_train_timesteps = total_train_timesteps*(round + 1) + init_timesteps,
+            tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL
+        )
+
         init_agent = n_x_sp_types_trainer.agents[0]
         new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, current_adversaries=adversaries, teammates_collection=teammates_collection, train_types=curriculum.train_types)
         adversaries = {key: adversaries.get(key, []) + new_adversaries.get(key, []) for key in set(adversaries) | set(new_adversaries)}

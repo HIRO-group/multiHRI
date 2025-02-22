@@ -345,7 +345,7 @@ class RLAgentTrainer(OAITrainer):
 
         self.steps = self.start_step
         self.learning_agent.num_timesteps = self.n_envs * self.start_timestep
-        
+
         ck_name_handler = CheckedModelNameHandler()
 
         while self.learning_agent.num_timesteps < total_train_timesteps:
