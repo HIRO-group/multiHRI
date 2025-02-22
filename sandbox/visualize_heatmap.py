@@ -152,9 +152,10 @@ if __name__ == "__main__":
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/last'
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/last'
-    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
-    path = 'agent_models/Complex_Ori/2/N-1-SP_s2020_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
-    # path = 'agent_models/Complex/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
+    path = 'agent_models/Complex_Ori/2/SP_hd256_seed13/best'
+    # path = 'agent_models/Complex_Ori/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
+    # path = 'agent_models/Complex_Ori/2/N-1-SP_s2020_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
+    # path = 'agent_models/Complex_Ori/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
 
     agent = load_agent(Path(path), args)
     title = f'{args.layout}_{path.split("/")[-2]}'
@@ -169,6 +170,7 @@ if __name__ == "__main__":
 
     # Initialize heatmap matrices dynamically based on extracted shape
     final_tiles_v = np.zeros(shape)
+    final_tiles_p = np.zeros(shape)
 
     for p_idx in range(args.num_players):
         for teammates in [low_perf_teammates, high_perf_teammates]:
@@ -176,6 +178,7 @@ if __name__ == "__main__":
             trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
             tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
             final_tiles_v += tile['V']
+            final_tiles_p += tile['P']
+    final_tiles = final_tiles_v/final_tiles_p
 
-
-    plot_heatmap(tiles_v=final_tiles_v, layout_features=layout_features, feature_positions=feature_positions, title=title)
+    plot_heatmap(tiles_v=final_tiles_p, layout_features=layout_features, feature_positions=feature_positions, title=title)
