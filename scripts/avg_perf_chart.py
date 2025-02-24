@@ -25,7 +25,7 @@ from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
-from utils import (
+from scripts.utils import (
     Complex, Classic,
 )
 
@@ -43,7 +43,7 @@ eval_key_lut = {
 DISPLAY_NAME_MAP = {
     'secret_heaven': "Secret Resources",
     'storage_room': "Resource Corridor",
-    
+
     'coordination_ring': "Coord. Ring",
     'counter_circuit': "Counter Circuit",
     'cramped_room': "Cramped Room",
@@ -262,7 +262,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     #ax.set_title(f"Avg. Number of Soup Deliveries")
     ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20')
     ax.set_yticks(np.arange(0, 30, 2))
-    ax.tick_params(axis='y', labelsize=20) 
+    ax.tick_params(axis='y', labelsize=20)
     ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
     ax.autoscale_view()
     ax.legend(loc='best', fontsize=20, fancybox=True, framealpha=0.5, ncol=2)
@@ -481,9 +481,47 @@ def get_2_player_input_classic(args):
     ]
     return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'classic'
 
+def get_2_player_input(args, exp_folder='Complex', seed=2602, layout_names=None, exp_name = 'complex'):
+    args.num_players = 2
+    if layout_names is None:
+        args.layout_names = [
+            'secret_heaven',
+            'storage_room'
+        ]
+    else:
+        args.layout_names = layout_names
+    p_idxes = [0, 1]
+    all_agents_paths = {
+        'SP': f'agent_models/{exp_folder}/2/SP_s{seed}_h256_tr[SP]_ran/best',
+        # 'FCP': f'agent_models/{exp_folder}/2/FCP_s{seed}_h256_tr[AMX]_ran/best',
+        'MEP': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'MEP PS': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL]_ps_originaler/best',
 
+        # 'dsALMH 1d[2t] 1s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[2t] 2s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'CAP 3d 3s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-def get_2_player_input_complex(args):
+        # 'sALMH 1s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 2s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'CAP 3s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+
+        # 'dALMH 1s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        # 'dALMH 2s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        # 'dALMH 3s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+
+        # 'dsALMH 1d[5t] 1s': f'agent_models/{exp_folder}/2/5_steps_in_dynamic_advs/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[5t] 2s': f'agent_models/{exp_folder}/2/5_steps_in_dynamic_advs/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        # 'dsALMH 3d[5t] 3s': f'agent_models/{exp_folder}/2/5_steps_in_dynamic_advs/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+
+    }
+    teammate_lvl_sets = [
+        [Eval.LOW],
+        [Eval.MEDIUM],
+        [Eval.HIGH]
+    ]
+    return args.layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, 'complex'
+
+def get_2_player_input_complex(args, exp_folder='Complex'):
     args.num_players = 2
     args.layout_names = [
         'secret_heaven',
@@ -491,24 +529,26 @@ def get_2_player_input_complex(args):
         ]
     p_idxes = [0, 1]
     all_agents_paths = {
-        'SP': 'agent_models/Complex/2/SP_hd256_seed1010/best',
-        'FCP': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
+        'SP': f'agent_models/{exp_folder}/2/SP_s2602_h256_tr[SP]_ran/best',
+        # 'FCP': f'agent_models/{exp_folder}/2/FCP_s2602_h256_tr[AMX]_ran/best',
+        'MEP': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'MEP PS': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL]_ps_originaler/best',
 
-        # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[2t] 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP 3d 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        # 'dsALMH 1d[2t] 1s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[2t] 2s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        'CAP 3d 3s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
-        # 'sALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        # 'sALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'CAP 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'sALMH 1s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'sALMH 2s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
+        'CAP 3s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
-        # 'dALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
-        # 'dALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
-        # 'dALMH 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
+        # 'dALMH 1s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
+        # 'dALMH 2s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
+        # 'dALMH 3s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
 
-        # 'dsALMH 1d[5t] 1s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[5t] 2s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        # 'dsALMH 3d[5t] 3s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        # 'dsALMH 1d[5t] 1s': f'agent_models/{exp_folder}/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
+        # 'dsALMH 2d[5t] 2s': f'agent_models/{exp_folder}/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
+        # 'dsALMH 3d[5t] 3s': f'agent_models/{exp_folder}/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
     }
     teammate_lvl_sets = [
@@ -564,7 +604,7 @@ def get_5_player_input_complex(args):
         'dec_5_chefs_secret_heaven',
         'selected_5_chefs_spacious_room_no_counter_space',
         ]
-    
+
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
         'SP_s1010_h256': 'agent_models/Complex/5/SP_hd256_seed1010/best',
@@ -604,9 +644,9 @@ def get_5_player_input_complex(args):
 if __name__ == "__main__":
     args = get_arguments()
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args, exp_folder='MEP_Complex_2')
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
