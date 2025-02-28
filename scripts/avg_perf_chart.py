@@ -256,7 +256,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
 
     c = 0
     for i, (agent_name, d) in enumerate(chart_data.items()):
-        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
+        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*2), capsize=4)
         c+=1
 
     #ax.set_title(f"Avg. Number of Soup Deliveries")
@@ -495,7 +495,7 @@ def get_2_player_input(args, exp_folder='Complex', seed=2602, layout_names=None,
         'SP': f'agent_models/{exp_folder}/2/SP_s{seed}_h256_tr[SP]_ran/best',
         # 'FCP': f'agent_models/{exp_folder}/2/FCP_s{seed}_h256_tr[AMX]_ran/best',
         'MEP': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-        'MEP PS': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL]_ps_originaler/best',
+        # 'MEP PS': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL]_ps_originaler/best',
 
         # 'dsALMH 1d[2t] 1s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2s': f'agent_models/{exp_folder}/2/N-1-SP_s{seed}_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
@@ -530,17 +530,14 @@ def get_2_player_input_complex(args, exp_folder='Complex'):
     p_idxes = [0, 1]
     all_agents_paths = {
         'SP': f'agent_models/{exp_folder}/2/SP_s2602_h256_tr[SP]_ran/best',
-        # 'FCP': f'agent_models/{exp_folder}/2/FCP_s2602_h256_tr[AMX]_ran/best',
         'MEP': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        # 'MEP PS': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL]_ps_originaler/best',
+        'MEP+CAP(3d3s)': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'MEP+CAP(3s)': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        'FCP': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL]_ran_fcp_originaler/best',
+        'FCP+CAP(3d3s)': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_fcp_originaler_attack2/best',
+        'FCP+CAP(3s)': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_fcp_originaler_attack2/best',
         'MEP PS': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL]_ps_originaler/best',
-
-        # 'dsALMH 1d[2t] 1s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[2t] 2s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP 3d 3s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
-        # 'sALMH 1s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        # 'sALMH 2s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'CAP 3s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
         # 'dALMH 1s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': f'agent_models/{exp_folder}/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
