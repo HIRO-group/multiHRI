@@ -63,7 +63,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
     parser.add_argument('--reward-magnifier', type=float, default=3.0)
 
-    parser.add_argument('--parallel', type=bool, default=False)
+    parser.add_argument('--parallel', type=bool, default=True)
 
     parser.add_argument('--dynamic-reward', type=bool, default=True)
     parser.add_argument('--final-sparse-r-ratio', type=float, default=0.5)
