@@ -275,9 +275,17 @@ def set_input(args):
         'storage_room_single_right_sym_rightpotblocked',
         'storage_room_single_left_sym_leftpotblocked',
         'storage_room_single_right_sym_leftpotblocked',
-        # 'storage_room_left_pot_single',
-        # 'cramped_room_single',
     ]
+
+    storage_room_2_chefs_layouts = [
+        'storage_room_pair_left_sym',
+        'storage_room_pair_right_sym',
+        'storage_room_pair_left_sym_rightpotblocked',
+        'storage_room_pair_right_sym_rightpotblocked',
+        'storage_room_pair_left_sym_leftpotblocked',
+        'storage_room_pair_right_sym_leftpotblocked',
+    ]
+
 
     classic_2_chefs_layouts = [
         'coordination_ring',
@@ -300,7 +308,7 @@ def set_input(args):
     ]
 
     one_chef_layouts = storage_room_1_chef_layouts
-    two_chefs_layouts = classic_2_chefs_layouts
+    two_chefs_layouts = storage_room_2_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
@@ -362,10 +370,11 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 0
+    args.teammates_len = 1
 
     if args.teammates_len == 1 or args.teammates_len == 0:
-        args.how_long = 20
+        # args.how_long = 20
+        args.how_long = 40
         args.num_of_ckpoints = 35
     elif args.teammates_len == 4:
         args.how_long = 35
