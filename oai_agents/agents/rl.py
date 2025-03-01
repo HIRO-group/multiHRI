@@ -238,10 +238,12 @@ class RLAgentTrainer(OAITrainer):
             #                 gamma=0.99, gae_lambda=0.95, device=self.args.device)
             # agent_name = f'{self.name}'
             # Initialize DQN agent with reasonable starting parameters
+            dqn_policy_kwargs = policy_kwargs.copy()
+            dqn_policy_kwargs["net_arch"] = policy_kwargs["net_arch"]["pi"]
             sb3_agent = DQN(
                 "MultiInputPolicy",            # Using the same policy as PPO for network consistency
                 self.env,                      # Your Overcooked environment (must have a discrete action space)
-                policy_kwargs=policy_kwargs,   # Re-use the same policy architecture
+                policy_kwargs=dqn_policy_kwargs,   # Re-use the same policy architecture
                 seed=self.seed,                # Same random seed for comparability
                 verbose=self.args.sb_verbose,  # Same verbosity level
                 learning_rate=0.0003,          # Same learning rate as PPO
