@@ -9,7 +9,7 @@ from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
 import random
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
@@ -233,10 +233,31 @@ class RLAgentTrainer(OAITrainer):
             https://stackoverflow.com/a/76198343/9102696
             n_epochs = Number of epoch when optimizing the surrogate loss
             '''
-            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
-                            n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.01, vf_coef=0.3,
-                            gamma=0.99, gae_lambda=0.95, device=self.args.device)
-            agent_name = f'{self.name}'
+            # sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
+            #                 n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.01, vf_coef=0.3,
+            #                 gamma=0.99, gae_lambda=0.95, device=self.args.device)
+            # agent_name = f'{self.name}'
+            # Initialize DQN agent with reasonable starting parameters
+            sb3_agent = DQN(
+                "MultiInputPolicy",            # Using the same policy as PPO for network consistency
+                self.env,                      # Your Overcooked environment (must have a discrete action space)
+                policy_kwargs=policy_kwargs,   # Re-use the same policy architecture
+                seed=self.seed,                # Same random seed for comparability
+                verbose=self.args.sb_verbose,  # Same verbosity level
+                learning_rate=0.0003,          # Same learning rate as PPO
+                batch_size=500,                # Matching PPO's batch size
+                gamma=0.99,                    # Same discount factor as PPO
+                buffer_size=100000,            # Replay buffer size; a common choice in discrete tasks
+                learning_starts=1000,          # Begin training after 1000 steps to accumulate diverse experiences
+                train_freq=4,                  # Update the network every 4 steps
+                gradient_steps=1,              # Perform one gradient step per update
+                target_update_interval=500,    # Update the target network every 500 steps
+                exploration_initial_eps=1.0,   # Start with full exploration
+                exploration_fraction=0.2,      # Linearly decay exploration over 20% of training timesteps
+                exploration_final_eps=0.1,       # Final epsilon value (10% random actions)
+                device=self.args.device        # Use the same device as PPO
+            )
+            agent_name = f'{self.name}_dqn'
         return sb3_agent, agent_name
 
 
