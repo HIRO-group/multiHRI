@@ -246,7 +246,8 @@ class RLAgentTrainer(OAITrainer):
                 policy_kwargs=dqn_policy_kwargs,   # Re-use the same policy architecture
                 seed=self.seed,                # Same random seed for comparability
                 verbose=self.args.sb_verbose,  # Same verbosity level
-                learning_rate=0.0003,          # Same learning rate as PPO
+                # learning_rate=0.0003,          # Same learning rate as PPO
+                learning_rate=0.001,
                 batch_size=500,                # Matching PPO's batch size
                 gamma=0.99,                    # Same discount factor as PPO
                 buffer_size=100000,            # Replay buffer size; a common choice in discrete tasks
