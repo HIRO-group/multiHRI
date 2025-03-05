@@ -233,16 +233,17 @@ def SPN_XSPCKP(args) -> None:
     '''
     unseen_teammates_len = 1
     primary_train_types = [
-        TeamType.SELF_PLAY_HIGH,
-        TeamType.SELF_PLAY_MEDIUM,
-        TeamType.SELF_PLAY_LOW,
+        # TeamType.SELF_PLAY_HIGH,
+        # TeamType.SELF_PLAY_MEDIUM,
+        # TeamType.SELF_PLAY_LOW,
         # TeamType.SELF_PLAY_DYNAMIC_ADV,
         TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH,
-                     TeamType.SELF_PLAY_LOW,
-                    #  TeamType.SELF_PLAY_DYNAMIC_ADV,
+        'generate': [
+                    # TeamType.SELF_PLAY_HIGH,
+                    # TeamType.SELF_PLAY_LOW,
+                    # TeamType.SELF_PLAY_DYNAMIC_ADV,
                      TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
@@ -317,9 +318,10 @@ def set_input(args):
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
 
-    # two_chefs_layouts = classic_2_chefs_layouts
-    two_chefs_layouts = complex_2_chefs_layouts
+    two_chefs_layouts = classic_2_chefs_layouts
+    # two_chefs_layouts = complex_2_chefs_layouts
     # two_chefs_layouts = modified_complex_2_chefs_layouts
+    # two_chefs_layouts = ['counter_circuit']
 
     three_chefs_layouts = complex_3_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
@@ -346,7 +348,7 @@ def set_input(args):
         args.pop_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_sp_total_training_timesteps = int(5e6 * args.how_long)
         args.fcp_total_training_timesteps = int(5e6 * args.how_long)
-        
+
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
@@ -357,7 +359,7 @@ def set_input(args):
             prefix = 'Complex'
         elif args.layout_names == complex_5_chefs_layouts:
             prefix = 'Complex'
-        elif args.layout_names == classic_2_chefs_layouts:
+        elif args.layout_names == classic_2_chefs_layouts or args.layout_names == ['counter_circuit']:
             prefix = 'Classic'
         elif args.layout_names == modified_complex_2_chefs_layouts:
             prefix = 'ModifiedComplex'
@@ -385,7 +387,7 @@ if __name__ == '__main__':
     args.adversary_force_training = False
     args.primary_force_training = False
     args.teammates_len = 1
-    args.name_prefix = 'multi_adv_'
+    args.name_prefix = 'two_ran_adv_best_fcp'
 
     if args.teammates_len == 1:
         args.how_long = 20

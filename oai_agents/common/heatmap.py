@@ -95,19 +95,24 @@ def generate_static_adversaries(args, all_tiles):
     #         layout_heatmap_top_xy_coords.extend(top_n_coords)
         
     #     heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
-    
+
     random_pos = {
         # 'secret_resources': [(9, 5), (8, 5)],
         # 'resource_corridor': [(2, 1), (7, 1)],
+        # 'storage_room': [(8, 1), (9, 1), (9, 2)],
+        # 'secret_heaven': [(1, 4), (2, 1), (3, 5)], 
 
-        'storage_room': [(8, 1), (9, 1), (9, 2)],
-        'secret_heaven': [(1, 4), (2, 1), (3, 5)], 
+        # 'counter_circuit': [(4, 1), (3, 1)],
+        # 'cramped_room': [(1, 1), (3, 1)],
+        # 'coordination_ring': [(1, 1), (3, 3)],
+        # 'asymmetric_advantages': [(3, 2), (5, 2)],
+        # 'forced_coordination': [(1, 2), (3, 1)]
 
-        # 'counter_circuit': [(4, 1), (3, 1), (3, 3), (4, 3)],
-        # 'cramped_room': [(1, 1), (3, 1), (1, 1), (3, 1)],
-        # 'coordination_ring': [(1, 1), (3, 3), (1, 1), (3, 3)],
-        # 'asymmetric_advantages': [(3, 2), (5, 2), (5, 3), (3, 2)],
-        # 'forced_coordination': [(1, 2), (3, 1), (3, 2), (1, 2)]
+        'counter_circuit':       [(1, 1), (6, 1)],
+        'cramped_room':          [(2, 2), (2, 2)],
+        'coordination_ring':     [(3, 2), (3, 2)],
+        'asymmetric_advantages': [(1, 3), (7, 3)],
+        'forced_coordination':   [(1, 2), (3, 1)],
     }
         
 

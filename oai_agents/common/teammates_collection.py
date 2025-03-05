@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, unseen_teammates_len:int, agent:RLAgentTrainer=None, use_entire_population:bool=False):
-    '''
+    ''' 
     Get the teammates for an agent to populate a TeammatesCollection
 
     :param agents_perftag_score: The population of agents to select from represented as a list of tuples (agent, performance tag, score for this layout)
@@ -37,8 +37,8 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 continue
             elif (team_type in TeamType.SELF_PLAY_X_TYPES):
                 required_population_size += unseen_teammates_len
-
-        assert len(agents_perftag_score) % required_population_size == 0, \
+        if required_population_size > 0:
+            assert len(agents_perftag_score) % required_population_size == 0, \
                 f"Requested use of entire population for teammate generation but provided population size is not evenly divisible by the minimum number of required agents\n"\
                 f"Population size: {len(agents_perftag_score)}\n"\
                 f"Minimum number of agents required for teammate generation: {required_population_size}\n"

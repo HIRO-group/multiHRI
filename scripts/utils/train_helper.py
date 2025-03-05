@@ -121,7 +121,8 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
 
     heatmap_source = get_best_SP_agent(args=args, population=population)
 
-    init_agent = load_agents(args, name=heatmap_source.name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=False)[0]
+    init_agent = load_agents(args, name='FCP_s1010_h256_tr[AMX]_ran', tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=False)[0]
+    print('init_agent is: ', init_agent.name)
     # init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
     #     args=args,
     #     name=name,

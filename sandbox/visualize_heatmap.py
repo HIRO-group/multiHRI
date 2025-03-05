@@ -115,13 +115,13 @@ def plot_heatmap(tiles_v, layout_features, feature_positions, title=''):
 if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
-    args.layout = 'secret_heaven'
+    args.layout = 'counter_circuit'
 
-    # grid_layout = """XXXPPXXX
-    #                  X   2  X
-    #                  D XXXX S
-    #                  X   1  X
-    #                  XXXOOXXX"""
+    grid_layout = """XXXPPXXX
+                     X   2  X
+                     D XXXX S
+                     X   1  X
+                     XXXOOXXX"""
 
     # grid_layout = """XPXXXXXXXXPX
     #                  S   XODX   S
@@ -129,13 +129,13 @@ if __name__ == "__main__":
     #                  X   XDOX   X
     #                  XXXXXXXXXXXX"""
     
-    grid_layout = """XODSXXXXSDXX
-                     X          X
-                     S PP XX    X
-                     D PP OX 1  X
-                     O PP DX 2  X
-                     X    SX    X
-                     XSDOXXXXOPXX"""
+    # grid_layout = """XODSXXXXSDXX
+    #                  X          X
+    #                  S PP XX    X
+    #                  D PP OX 1  X
+    #                  O PP DX 2  X
+    #                  X    SX    X
+    #                  XSDOXXXXOPXX"""
 
     # grid_layout = """XXXPPXXX
     #                  X  2 4 X
@@ -148,7 +148,8 @@ if __name__ == "__main__":
     args.layout_names = [args.layout]
     
     # path = 'agent_models/Complex/5/FCP_s1010_h256_tr[AMX]_ran/last'
-    path = 'agent_models/Complex/2/SP_hd256_seed2602/best'
+    # path = 'agent_models/Classic/2/SP_hd256_seed2602/best'
+    path = 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best'
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/last'
     # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/last'
