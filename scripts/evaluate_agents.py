@@ -437,32 +437,39 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
 def get_2_player_input_classic(args):
     args.num_players = 2
     args.layout_names = [
-        'coordination_ring',
+        # 'coordination_ring',
         'counter_circuit',
-        'cramped_room',
-        'asymmetric_advantages',
-        'forced_coordination'
+        # 'cramped_room',
+        # 'asymmetric_advantages',
+        # 'forced_coordination'
         ]
     p_idxes = [0, 1]
     all_agents_paths = {
         # 'SP_s13_h256': 'agent_models/Classic/2/SP_hd256_seed13/best',
-        'SP_s1010_h256': 'agent_models/Classic/2/SP_hd256_seed1010/best',
-        'FCP_s1010_h256': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
+        'SP': 'agent_models/Classic/2/SP_hd256_seed1010/best',
+        'Targ_ADV(SP)': 'agent_models/Classic/2/two_targ_adv_best_sp-N-1-SP_s1010_h256_tr[SPSA]_ran_originaler_attack0/best',
+        'Ran_ADV(SP)': 'agent_models/Classic/2/two_ran_adv_best_sp-N-1-SP_s1010_h256_tr[SPSA]_ran_originaler_attack0/best',
+
+        
+        # 'FCP': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
+        # 'Targ_ADV(FCP)':'agent_models/Classic/2/two_targ_adv_best_fcp-N-1-SP_s1010_h256_tr[SPSA]_ran_originaler_attack0/best',
+        # 'Ran_ADV(FCP)':'agent_models/Classic/2/two_ran_adv_best_fcp-N-1-SP_s1010_h256_tr[SPSA]_ran_originaler_attack0/best',
+
 
         # 'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
         # 'dsALMH 2d[2t] 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        # 'dsALMH 3d[2t] 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
 
         # 'sALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'sALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'sALMH 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
 
         # 'random static 1/3': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
         # 'random static 2/3': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
 
-        'random static': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-        'targetted static advs ran': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'targetted static advs cur': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack0/best', 
+        # 'random static': 'agent_models/Classic/RandomStaticAgents/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
+        # 'targetted static advs ran': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
+        # 'targetted static advs cur': 'agent_models/Classic/TargAdvs/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_cur_originaler_attack0/best', 
 
         # 'dALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
         # 'dALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
@@ -622,8 +629,8 @@ def get_5_player_input_complex(args):
 
 if __name__ == "__main__":
     args = get_arguments()
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
@@ -632,7 +639,7 @@ if __name__ == "__main__":
     number_of_eps = 5
 
     # Number of parallel workers for evaluation
-    args.max_workers = 4
+    args.max_workers = 2
 
     # For display_purposes
     unseen_counts = [1]
