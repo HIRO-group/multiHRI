@@ -271,12 +271,10 @@ def set_input(args):
     storage_room_1_chef_layouts = [
         'storage_room_single_left_sym',
         'storage_room_single_right_sym',
-        'storage_room_single_left_sym_rightpotblocked',
-        'storage_room_single_right_sym_rightpotblocked',
-        'storage_room_single_left_sym_leftpotblocked',
-        'storage_room_single_right_sym_leftpotblocked',
-        # 'storage_room_left_pot_single',
-        # 'cramped_room_single',
+        # 'storage_room_single_left_sym_rightpotblocked',
+        # 'storage_room_single_right_sym_rightpotblocked',
+        # 'storage_room_single_left_sym_leftpotblocked',
+        # 'storage_room_single_right_sym_leftpotblocked',
     ]
 
     classic_2_chefs_layouts = [
