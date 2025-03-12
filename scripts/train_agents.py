@@ -347,6 +347,8 @@ def set_input(args):
             prefix = 'Complex'
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
+        elif args.layout_names == cramped_room_ot_2_chef_layuouts:
+            prefix = 'cramped_room_ot_2_chef_layouts'
         elif args.layout_names == storage_room_1_chef_layouts:
             prefix = 'storage_room_1_chef_layouts'
         elif args.layout_names == cramped_room_ot_1_chef_layuouts:
