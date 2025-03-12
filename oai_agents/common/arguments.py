@@ -66,7 +66,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--parallel', type=bool, default=True)
 
     parser.add_argument('--dynamic-reward', type=bool, default=True)
-    parser.add_argument('--final-sparse-r-ratio', type=float, default=1.0)
+    parser.add_argument('--final-sparse-r-ratio', type=float, default=0.5)
     parser.add_argument('--prioritized-sampling', type=bool, default=False, help='Flag indicating whether or not to use prioritized sampling for teammate selection, if True the worst performing teammates will be prioritized')
     parser.add_argument('--exp-dir', type=str, help='Folder to save/load experiment result')
 
