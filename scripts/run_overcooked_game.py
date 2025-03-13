@@ -15,15 +15,9 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 
 if __name__ == "__main__":
     args = get_arguments()
-    args.num_players = 5
+    args.num_players = 2
 
-    'dec_5_chefs_counter_circuit',
-    'dec_5_chefs_storage_room',
-    'dec_5_chefs_secret_heaven',
-    'selected_5_chefs_spacious_room_no_counter_space',
-    
-
-    args.layout = f'dec_5_chefs_counter_circuit'
+    args.layout = f'counter_circuit'
     args.p_idx = 0
     args.layout_names = [args.layout]
     args.n_envs = 1
@@ -35,7 +29,6 @@ if __name__ == "__main__":
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     # ]
-
     # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
     # trajectories = tile locations. Top left of the layout is (0, 0), bottom right is (M, N)
@@ -44,6 +37,7 @@ if __name__ == "__main__":
 
     # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
     # player = load_agent(Path(player_path), args)
+    # player = teammates[0]
     player = 'human' # blue
 
     dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=10,
