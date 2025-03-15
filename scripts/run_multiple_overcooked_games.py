@@ -48,8 +48,8 @@ class CrampedRoomSingleOT(Experiment):
             exps_folder='cramped_room_ot_1_chef_layouts/1',
             methods=['unblocking', 'blocking'],
             layouts=[
-                'cramped_room_single_ot_oblocked',
-                'cramped_room_single_ot_tblocked',
+                # 'cramped_room_single_ot_oblocked',
+                # 'cramped_room_single_ot_tblocked',
                 'cramped_room_single_ot',
             ],
             num_players=1,
