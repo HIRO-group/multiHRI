@@ -15,7 +15,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
 import wandb
 import os
-from typing import Optional
+from typing import Optional, Literal
 
 VEC_ENV_CLS = DummyVecEnv #
 
@@ -28,7 +28,7 @@ class RLAgentTrainer(OAITrainer):
             train_types=[], eval_types=[],
             curriculum=None, num_layers=2, hidden_dim=256,
             checkpoint_rate=None, name=None, env=None, eval_envs=None,
-            use_cnn=False, use_lstm=False, use_frame_stack=False,
+            use_cnn=False, algo_name: Literal["RecurrentPPO", "PPO", "DQN"]="PPO", use_frame_stack=False,
             taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0
         ):
 
@@ -53,7 +53,11 @@ class RLAgentTrainer(OAITrainer):
         self.checkpoint_rate = checkpoint_rate
         self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
 
-        self.use_lstm = use_lstm
+        self.algo_name = algo_name
+        if self.algo_name == 'RecurrentPPO':
+            self.use_lstm = True
+        else:
+            self.use_lstm = False
         self.use_cnn = use_cnn
         self.taper_layers = taper_layers
         self.use_frame_stack = use_frame_stack
@@ -217,14 +221,13 @@ class RLAgentTrainer(OAITrainer):
             policy_kwargs.update(
                 features_extractor_class=OAISinglePlayerFeatureExtractor,
                 features_extractor_kwargs=dict(hidden_dim=self.hidden_dim))
-        if self.use_lstm:
+        if self.algo_name == "RecurrentPPO":
             policy_kwargs['n_lstm_layers'] = 2
             policy_kwargs['lstm_hidden_size'] = self.hidden_dim
             sb3_agent = RecurrentPPO('MultiInputLstmPolicy', self.env, seed=self.seed, policy_kwargs=policy_kwargs, verbose=1,
                                      n_steps=500, n_epochs=4, batch_size=500)
             agent_name = f'{self.name}_lstm'
-
-        else:
+        elif self.algo_name == "PPO":
             '''
             n_steps = n_steps is the number of experiences collected from a single environment
             number of updates = total_timesteps // (n_steps * n_envs)
@@ -233,11 +236,11 @@ class RLAgentTrainer(OAITrainer):
             https://stackoverflow.com/a/76198343/9102696
             n_epochs = Number of epoch when optimizing the surrogate loss
             '''
-            # sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
-            #                 n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.01, vf_coef=0.3,
-            #                 gamma=0.99, gae_lambda=0.95, device=self.args.device)
-            # agent_name = f'{self.name}'
-            # Initialize DQN agent with reasonable starting parameters
+            sb3_agent = PPO("MultiInputPolicy", self.env, policy_kwargs=policy_kwargs, seed=self.seed, verbose=self.args.sb_verbose, n_steps=500,
+                            n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.01, vf_coef=0.3,
+                            gamma=0.99, gae_lambda=0.95, device=self.args.device)
+            agent_name = f'{self.name}'
+        elif self.algo_name == "DQN":
             dqn_policy_kwargs = policy_kwargs.copy()
             dqn_policy_kwargs["net_arch"] = policy_kwargs["net_arch"]["pi"]
             sb3_agent = DQN(
@@ -246,8 +249,7 @@ class RLAgentTrainer(OAITrainer):
                 policy_kwargs=dqn_policy_kwargs,   # Re-use the same policy architecture
                 seed=self.seed,                # Same random seed for comparability
                 verbose=self.args.sb_verbose,  # Same verbosity level
-                # learning_rate=0.0003,          # Same learning rate as PPO
-                learning_rate=0.001,
+                learning_rate=0.0003,          # Same learning rate as PPO
                 batch_size=500,                # Matching PPO's batch size
                 gamma=0.99,                    # Same discount factor as PPO
                 buffer_size=100000,            # Replay buffer size; a common choice in discrete tasks

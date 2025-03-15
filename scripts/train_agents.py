@@ -286,7 +286,6 @@ def set_input(args):
         'storage_room_pair_right_sym_leftpotblocked',
     ]
 
-
     classic_2_chefs_layouts = [
         'coordination_ring',
         'counter_circuit',
@@ -337,7 +336,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 8
+        args.total_ego_agents = 2
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'
@@ -368,7 +367,7 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
@@ -376,7 +375,6 @@ if __name__ == '__main__':
 
     if args.teammates_len == 1 or args.teammates_len == 0:
         args.how_long = 20
-        # args.how_long = 40
         args.num_of_ckpoints = 35
     elif args.teammates_len == 4:
         args.how_long = 35
