@@ -286,6 +286,18 @@ def set_input(args):
         'storage_room_pair_right_sym_leftpotblocked',
     ]
 
+    cramped_room_ot_1_chef_layuouts = [
+        'cramped_room_single_ot_oblocked',
+        'cramped_room_single_ot_tblocked',
+        'cramped_room_single_ot',
+    ]
+
+    cramped_room_ot_2_chef_layuouts = [
+        'cramped_room_pair_ot_oblocked',
+        'cramped_room_pair_ot_tblocked',
+        'cramped_room_pair_ot',
+    ]
+
     classic_2_chefs_layouts = [
         'coordination_ring',
         'counter_circuit',
@@ -305,6 +317,7 @@ def set_input(args):
         'dec_5_chefs_secret_heaven',
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
+
 
     one_chef_layouts = storage_room_1_chef_layouts
     two_chefs_layouts = storage_room_2_chefs_layouts
@@ -346,8 +359,12 @@ def set_input(args):
             prefix = 'Classic'
         elif args.layout_names == storage_room_2_chefs_layouts:
             prefix = 'storage_room_2_chef_layouts_dqn'
+        elif args.layout_names == cramped_room_ot_2_chef_layuouts:
+            prefix = 'cramped_room_ot_2_chef_layouts'
         elif args.layout_names == storage_room_1_chef_layouts:
             prefix = 'storage_room_1_chef_layouts'
+        elif args.layout_names == cramped_room_ot_1_chef_layuouts:
+            prefix = 'cramped_room_ot_1_chef_layouts'
 
         args.exp_dir = f'{prefix}/{args.num_players}'
 
@@ -367,11 +384,11 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 0
+    args.teammates_len = 1
 
     if args.teammates_len == 1 or args.teammates_len == 0:
         args.how_long = 20
