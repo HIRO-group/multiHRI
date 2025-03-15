@@ -88,9 +88,6 @@ class OAIAgent(nn.Module, ABC):
                 obs['visual_obs'], _ = self.stackedobs.update(obs['visual_obs'], np.array([done]), [{}])
             obs['visual_obs'] = obs['visual_obs'].squeeze()
         if 'subtask_mask' in self.policy.observation_space.keys():
-            print("===================================")
-            print("===================================")
-            print("===================================")
             obs['subtask_mask'] = get_doable_subtasks(self.state, self.prev_subtask, self.layout_name, self.terrain, p_idx, self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 2)).astype(bool)
 
         obs = {k: v for k, v in obs.items() if k in self.policy.observation_space.keys()}
@@ -204,12 +201,25 @@ class SB3Wrapper(OAIAgent):
         self.policy.set_training_mode(False)
         obs, vectorized_env = self.policy.obs_to_tensor(obs)
         with th.no_grad():
-            if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.agent.action_space.n):
-                dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
+            if hasattr(self.policy, "get_distribution"):
+                if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.policy.action_space.n):
+                    dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
+                else:
+                    dist = self.policy.get_distribution(obs)
+            elif hasattr(self.policy, "q_net"):
+                q_values = self.policy.q_net(obs)
+                dist = th.distributions.Categorical(logits=q_values)
             else:
-                dist = self.policy.get_distribution(obs)
-
-            actions = dist.get_actions(deterministic=deterministic)
+                raise NotImplementedError("Policy does not support distribution extraction.")
+            # Get actions: if distribution has get_actions, use it;
+            # otherwise, handle torch Categorical manually.
+            if hasattr(dist, "get_actions"):
+                actions = dist.get_actions(deterministic=deterministic)
+            else:
+                if deterministic:
+                    actions = th.argmax(dist.logits, dim=1)
+                else:
+                    actions = dist.sample()
         # Convert to numpy, and reshape to the original action shape
         actions = actions.cpu().numpy().reshape((-1,) + self.agent.action_space.shape)
         # Remove batch dimension if needed

@@ -9,13 +9,13 @@ from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
 import random
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO, MaskablePPO
 import wandb
 import os
-from typing import Optional
+from typing import Optional, Literal
 
 VEC_ENV_CLS = DummyVecEnv #
 
@@ -28,7 +28,7 @@ class RLAgentTrainer(OAITrainer):
             train_types=[], eval_types=[],
             curriculum=None, num_layers=2, hidden_dim=256,
             checkpoint_rate=None, name=None, env=None, eval_envs=None,
-            use_cnn=False, use_lstm=False, use_frame_stack=False,
+            use_cnn=False, algo_name: Literal["RecurrentPPO", "PPO", "DQN"]="PPO", use_frame_stack=False,
             taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0
         ):
 
@@ -53,7 +53,11 @@ class RLAgentTrainer(OAITrainer):
         self.checkpoint_rate = checkpoint_rate
         self.encoding_fn = ENCODING_SCHEMES[args.encoding_fn]
 
-        self.use_lstm = use_lstm
+        self.algo_name = algo_name
+        if self.algo_name == 'RecurrentPPO':
+            self.use_lstm = True
+        else:
+            self.use_lstm = False
         self.use_cnn = use_cnn
         self.taper_layers = taper_layers
         self.use_frame_stack = use_frame_stack
@@ -217,14 +221,13 @@ class RLAgentTrainer(OAITrainer):
             policy_kwargs.update(
                 features_extractor_class=OAISinglePlayerFeatureExtractor,
                 features_extractor_kwargs=dict(hidden_dim=self.hidden_dim))
-        if self.use_lstm:
+        if self.algo_name == "RecurrentPPO":
             policy_kwargs['n_lstm_layers'] = 2
             policy_kwargs['lstm_hidden_size'] = self.hidden_dim
             sb3_agent = RecurrentPPO('MultiInputLstmPolicy', self.env, seed=self.seed, policy_kwargs=policy_kwargs, verbose=1,
                                      n_steps=500, n_epochs=4, batch_size=500)
             agent_name = f'{self.name}_lstm'
-
-        else:
+        elif self.algo_name == "PPO":
             '''
             n_steps = n_steps is the number of experiences collected from a single environment
             number of updates = total_timesteps // (n_steps * n_envs)
@@ -237,6 +240,29 @@ class RLAgentTrainer(OAITrainer):
                             n_epochs=4, learning_rate=0.0003, batch_size=500, ent_coef=0.01, vf_coef=0.3,
                             gamma=0.99, gae_lambda=0.95, device=self.args.device)
             agent_name = f'{self.name}'
+        elif self.algo_name == "DQN":
+            dqn_policy_kwargs = policy_kwargs.copy()
+            dqn_policy_kwargs["net_arch"] = policy_kwargs["net_arch"]["pi"]
+            sb3_agent = DQN(
+                "MultiInputPolicy",            # Using the same policy as PPO for network consistency
+                self.env,                      # Your Overcooked environment (must have a discrete action space)
+                policy_kwargs=dqn_policy_kwargs,   # Re-use the same policy architecture
+                seed=self.seed,                # Same random seed for comparability
+                verbose=self.args.sb_verbose,  # Same verbosity level
+                learning_rate=0.0003,          # Same learning rate as PPO
+                batch_size=500,                # Matching PPO's batch size
+                gamma=0.99,                    # Same discount factor as PPO
+                buffer_size=100000,            # Replay buffer size; a common choice in discrete tasks
+                learning_starts=1000,          # Begin training after 1000 steps to accumulate diverse experiences
+                train_freq=4,                  # Update the network every 4 steps
+                gradient_steps=1,              # Perform one gradient step per update
+                target_update_interval=500,    # Update the target network every 500 steps
+                exploration_initial_eps=1.0,   # Start with full exploration
+                exploration_fraction=0.2,      # Linearly decay exploration over 20% of training timesteps
+                exploration_final_eps=0.1,       # Final epsilon value (10% random actions)
+                device=self.args.device        # Use the same device as PPO
+            )
+            agent_name = f'{self.name}_dqn'
         return sb3_agent, agent_name
 
 
