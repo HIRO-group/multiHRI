@@ -268,6 +268,15 @@ def SPN_XSPCKP(args) -> None:
 def set_input(args):
     args.num_players = args.teammates_len + 1
 
+    storage_room_2_chef_layouts = [
+        'storage_room_pair_left_sym',
+        'storage_room_pair_right_sym',
+        'storage_room_pair_left_sym_rightpotblocked',
+        'storage_room_pair_right_sym_rightpotblocked',
+        'storage_room_pair_left_sym_leftpotblocked',
+        'storage_room_pair_right_sym_leftpotblocked',
+    ]
+
     storage_room_1_chef_layouts = [
         'storage_room_single_left_sym',
         'storage_room_single_right_sym',
@@ -310,7 +319,7 @@ def set_input(args):
     ]
 
     one_chef_layouts = storage_room_1_chef_layouts
-    two_chefs_layouts = cramped_room_ot_2_chef_layuouts
+    two_chefs_layouts = storage_room_2_chef_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
@@ -349,6 +358,8 @@ def set_input(args):
             prefix = 'Classic'
         elif args.layout_names == cramped_room_ot_2_chef_layuouts:
             prefix = 'cramped_room_ot_2_chef_layouts'
+        elif args.layout_names == storage_room_2_chef_layouts:
+            prefix = 'storage_room_2_chef_layouts'
         elif args.layout_names == storage_room_1_chef_layouts:
             prefix = 'storage_room_1_chef_layouts'
         elif args.layout_names == cramped_room_ot_1_chef_layuouts:
@@ -376,7 +387,7 @@ if __name__ == '__main__':
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 0
+    args.teammates_len = 1
 
     if args.teammates_len == 1 or args.teammates_len == 0:
         args.how_long = 20
