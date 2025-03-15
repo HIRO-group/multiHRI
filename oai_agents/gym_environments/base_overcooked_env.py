@@ -47,7 +47,7 @@ class OvercookedGymEnv(Env):
         if enc_fn == 'OAI_egocentric':
             # Override grid shape to make it egocentric
             assert grid_shape is None, 'Grid shape cannot be used when egocentric encodings are used!'
-            self.grid_shape = (12, 12)
+            self.grid_shape = (13, 13)
         elif grid_shape is None:
             base_layout_params = read_layout_dict(args.layout_names[0])
             grid = [layout_row.strip() for layout_row in base_layout_params['grid'].split("\n")]

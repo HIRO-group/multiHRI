@@ -271,10 +271,10 @@ def set_input(args):
     storage_room_1_chef_layouts = [
         'storage_room_single_left_sym',
         'storage_room_single_right_sym',
-        # 'storage_room_single_left_sym_rightpotblocked',
-        # 'storage_room_single_right_sym_rightpotblocked',
-        # 'storage_room_single_left_sym_leftpotblocked',
-        # 'storage_room_single_right_sym_leftpotblocked',
+        'storage_room_single_left_sym_rightpotblocked',
+        'storage_room_single_right_sym_rightpotblocked',
+        'storage_room_single_left_sym_leftpotblocked',
+        'storage_room_single_right_sym_leftpotblocked',
     ]
 
     cramped_room_ot_1_chef_layuouts = [
@@ -309,7 +309,7 @@ def set_input(args):
         'selected_5_chefs_spacious_room_no_counter_space',
     ]
 
-    one_chef_layouts = cramped_room_ot_1_chef_layuouts
+    one_chef_layouts = storage_room_1_chef_layouts
     two_chefs_layouts = cramped_room_ot_2_chef_layuouts
     five_chefs_layouts = complex_5_chefs_layouts
 
