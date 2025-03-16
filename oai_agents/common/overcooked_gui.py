@@ -203,9 +203,6 @@ class OvercookedGUI:
         curr_obj = self.env.state.players[self.p_idx].held_object.name if self.env.state.players[
             self.p_idx].held_object else None
 
-        # completed_task = calculate_completed_subtask(prev_obj, curr_obj, tile_in_front)
-        # print('----', completed_task)
-
         collision = self.env.mdp.prev_step_was_collision
         if collision:
             self.num_collisions += 1
