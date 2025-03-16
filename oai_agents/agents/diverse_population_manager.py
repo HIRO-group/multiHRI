@@ -205,7 +205,7 @@ if __name__ == "__main__":
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 0
+    args.teammates_len = 1
 
     if args.teammates_len == 1 or args.teammates_len == 0:
         args.how_long = 20
@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
     set_input(args=args)
 
-    args.total_ego_agents = 1
+    args.total_ego_agents = 4
 
     manager = DiversePopulationManager(population_size=args.total_ego_agents, args=args)
     manager.train_population()
