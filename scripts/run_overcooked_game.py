@@ -21,7 +21,7 @@ if __name__ == "__main__":
     'dec_5_chefs_storage_room',
     'dec_5_chefs_secret_heaven',
     'selected_5_chefs_spacious_room_no_counter_space',
-    
+
 
     args.layout = f'dec_5_chefs_counter_circuit'
     args.p_idx = 0
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     args.n_envs = 1
 
     # teammates_path = [
-    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green 
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',

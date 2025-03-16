@@ -48,7 +48,7 @@ class MultiSetupTrainer:
                 checkpoints_list = dill.loads(dilled_res)
         else:
             for inp in inputs:
-                checkpoints_list = self.get_trained_agent(seed=seeds[inp], h_dim=hdims[inp])
+                checkpoints_list = self.get_trained_agent(seed=inp[0], h_dim=inp[1])
 
     def get_reinforcement_agent(
             self,
@@ -134,7 +134,10 @@ def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
     evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
     evaluation_hdims = [256] * len(evaluation_seeds)
 
-    training_seeds = [1010, 2020, 2602, 13, 68, 2907, 105, 128]
+    training_seeds = [
+        1010, 2020, 2602, 13,
+        68, 2907, 105, 128
+    ]
     training_hdims = [256] * len(training_seeds)
 
     if for_evaluation:

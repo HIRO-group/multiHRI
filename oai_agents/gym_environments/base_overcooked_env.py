@@ -141,7 +141,7 @@ class OvercookedGymEnv(Env):
         self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'] for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
         self.valid_counters = [self.env.mdp.find_free_counters_valid_for_player(self.env.state, self.mlam, i) for i in
-                               range(2)]
+                               range(self.mdp.num_players)]
         self.reset()
 
     # def get_overcooked_from_mdp_kwargs(self, horizon=None):
@@ -165,7 +165,6 @@ class OvercookedGymEnv(Env):
                 self.reset_info['start_position'][t_idx] = tm.get_start_position(layout_name=self.layout_name, u_env_idx=self.unique_env_idx)
             if type(tm) == CustomAgent:
                 tm.reset()
-
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
@@ -234,11 +233,12 @@ class OvercookedGymEnv(Env):
         return self.teammates[id]
 
     def step(self, action):
-        if len(self.teammates) == 0:
+        if len(self.teammates) == 0 and self.args.num_players > 1:
             raise ValueError('set_teammates must be set called before starting game.')
 
         joint_action = [None for _ in range(self.mdp.num_players)]
         joint_action[self.p_idx] = action
+
         with th.no_grad():
             for t_idx in self.t_idxes:
                 teammate = self.get_teammate_from_idx(t_idx)
@@ -263,7 +263,6 @@ class OvercookedGymEnv(Env):
                     if type(tm) != CustomAgent:
                         joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
-
 
         self.state, reward, done, info = self.env.step(joint_action)
         for t_idx in self.t_idxes: # Should be right after env.step
