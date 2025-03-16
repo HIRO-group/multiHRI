@@ -112,9 +112,6 @@ class HMLProfileCollection:
         self.args = args
         self._population = {}
         self.add_sp_agents()
-        # self.add_dummy_agents()
-        # self.add_fcp_agents()
-        # self.add_advp_agents()
 
     def add_agent(self, agent_profile):
         """
@@ -168,18 +165,6 @@ class HMLProfileCollection:
                 name=f"pop_{layout}",
                 args=self.args,
             )
-            # rt = RLAgentTrainer(
-            #     name=f'pop_{layout_name}',
-            #     args=args,
-            #     agent=None,
-            #     teammates_collection={},
-            #     train_types=[TeamType.SELF_PLAY],
-            #     eval_types=[TeamType.SELF_PLAY],
-            #     epoch_timesteps=args.epoch_timesteps,
-            #     n_envs=args.n_envs,
-            #     learner_type=args.pop_learner_type,
-            #     seed=None,
-            # )
             pop.agents = self._population[layout]
             pop.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
 
