@@ -311,6 +311,12 @@ def set_input(args):
         'storage_room'
     ]
 
+    complex_3_chefs_layouts = [
+        'dec_3_chefs_storage_room',
+        'dec_3_chefs_secret_heaven',
+        'dec_3_chefs_counter_circuit',
+    ]
+
     complex_5_chefs_layouts = [
         'dec_5_chefs_counter_circuit',
         'dec_5_chefs_storage_room',
