@@ -327,10 +327,13 @@ def set_input(args):
 
     one_chef_layouts = storage_room_1_chef_layouts
     two_chefs_layouts = storage_room_2_chefs_layouts
+    three_chefs_layouts = complex_3_chefs_layouts
     five_chefs_layouts = complex_5_chefs_layouts
 
     if args.num_players == 2:
         args.layout_names = two_chefs_layouts
+    elif args.num_players == 3:
+        args.layout_names = three_chefs_layouts
     elif args.num_players == 5:
         args.layout_names = five_chefs_layouts
     elif args.num_players == 1:
@@ -355,7 +358,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 2
+        args.total_ego_agents = 4
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'
@@ -377,7 +380,7 @@ def set_input(args):
     else: # Used for doing quick tests
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
-        args.n_envs = 210
+        args.n_envs = 2
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 4000
         args.n_x_sp_total_training_timesteps = 4000
@@ -396,9 +399,12 @@ if __name__ == '__main__':
     args.primary_force_training = False
     args.teammates_len = 1
 
-    if args.teammates_len == 1 or args.teammates_len == 0:
+    if args.teammates_len <= 1:
         args.how_long = 20
         args.num_of_ckpoints = 35
+    elif args.teammates_len == 2:
+        args.how_long = 25
+        args.num_of_ckpoints = 40
     elif args.teammates_len == 4:
         args.how_long = 35
         args.num_of_ckpoints = 50
