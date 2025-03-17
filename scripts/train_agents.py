@@ -352,32 +352,25 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
-    args.pop_force_training = False
-    args.adversary_force_training = False
-    args.primary_force_training = False
-    args.teammates_len = 1
+    
+    if args.algo_name == 'SP':
+        SP(args=args)
+    
+    elif args.algo_name == 'SPN_XSPCKP':
+        SPN_XSPCKP(args=args)
+    
+    elif args.algo_name == 'FCP_traditional':
+        FCP_traditional(args=args)
+    
+    elif args.algo_name == 'FCP_mhri':
+        FCP_mhri(args=args)
+    
+    elif args.algo_name == 'SPN_1ADV':
+        SPN_1ADV(args=args)
+    
+    elif args.algo_name == 'N_1_FCP':
+        N_1_FCP(args=args)
+    
+    elif args.algo_name == 'SPN_1ADV_XSPCKP':
+        SPN_1ADV_XSPCKP(args=args)
 
-    if args.teammates_len == 1:
-        args.how_long = 20
-        args.num_of_ckpoints = 35
-    elif args.teammates_len == 2:
-        args.how_long = 25
-        args.num_of_ckpoints = 40
-    elif args.teammates_len == 4:
-        args.how_long = 35
-        args.num_of_ckpoints = 50
-
-    set_input(args=args)
-
-    SPN_XSPCKP(args=args)
-
-    # FCP_traditional(args=args)
-
-    # SP(args)
-
-    # FCP_mhri(args=args)
-
-    # SPN_1ADV(args=args)
-
-    # N_1_FCP(args=args)

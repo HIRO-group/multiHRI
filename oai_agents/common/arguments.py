@@ -34,6 +34,17 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--ADV-seed', type=int, default=68, help='seed used in adverary-play')
     parser.add_argument('--ADV-h-dim', type=int, default=512, help='hidden dimension used in adverary-play')
 
+    parser.add_argument('--algo-name', type=str)
+    parser.add_argument('--num-players', type=int, help='Number of players in the game')
+    parser.add_argument('--n-x-sp-total-training-timesteps', type=int, help='Number of timesteps to train the N-X-SP agent')
+    parser.add_argument('--adversary-total-training-timesteps', type=int,  help='Number of timesteps to train the adversary agent')
+    parser.add_argument('--n-x-fcp-total-training-timesteps', type=int, help='Number of timesteps to train the N-X-FCP agent')
+    parser.add_argument('--pop-force-training', type=bool, help='Flag indicating whether or not to force training of the population')
+    parser.add_argument('--quick-test', type=bool, help='Flag indicating whether or not to run a quick test')
+    parser.add_argument('--primary-force-training', type=bool, help='Flag indicating whether or not to force training of the primary agent')
+    parser.add_argument('--adversary-force-training', type=bool, help='Flag indicating whether or not to force training of the adversary agent')
+    parser.add_argument('--how-long', type=int)
+    
 
     parser.add_argument('--exp-name', type=str, default='last',
                         help='Name of experiment. Used to tag save files.')
@@ -80,9 +91,9 @@ def get_arguments(additional_args=[]):
 
     parser.add_argument("--use-val-func-for-heatmap-gen", type=bool, default=False)
     parser.add_argument("--num-eval-for-heatmap-gen", type=int, default=2)
-    parser.add_argument("--num-static-advs-per-heatmap", type=int, default=2)
-    parser.add_argument("--num-dynamic-advs-per-heatmap", type=int, default=2)
-    parser.add_argument("--num-steps-in-traj-for-dyn-adv", type=int, default=5)
+    parser.add_argument("--num-static-advs-per-heatmap", type=int, default=1)
+    parser.add_argument("--num-dynamic-advs-per-heatmap", type=int, default=1)
+    parser.add_argument("--num-steps-in-traj-for-dyn-adv", type=int, default=2)
     parser.add_argument("--custom-agent-ck-rate-generation", type=int)
 
     parser.add_argument('--gen-pop-for-eval', type=bool, default=False, help="Specifies whether to generate a population of agents for evaluation purposes. Currently, this functionality is limited to self-play agents, as support for other methods has not yet been implemented..)")
@@ -95,6 +106,8 @@ def get_arguments(additional_args=[]):
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
     args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+    args.layout_names = args.layout_names.split(',')
+
     return args
 
 def get_args_to_save(curr_args):
