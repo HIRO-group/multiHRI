@@ -39,10 +39,10 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--n-x-sp-total-training-timesteps', type=int, help='Number of timesteps to train the N-X-SP agent')
     parser.add_argument('--adversary-total-training-timesteps', type=int,  help='Number of timesteps to train the adversary agent')
     parser.add_argument('--n-x-fcp-total-training-timesteps', type=int, help='Number of timesteps to train the N-X-FCP agent')
-    parser.add_argument('--pop-force-training', type=bool, help='Flag indicating whether or not to force training of the population')
-    parser.add_argument('--quick-test', type=bool, help='Flag indicating whether or not to run a quick test')
-    parser.add_argument('--primary-force-training', type=bool, help='Flag indicating whether or not to force training of the primary agent')
-    parser.add_argument('--adversary-force-training', type=bool, help='Flag indicating whether or not to force training of the adversary agent')
+    parser.add_argument('--pop-force-training', type=str2bool, help='Flag indicating whether or not to force training of the population')
+    parser.add_argument('--quick-test', type=str2bool, help='Flag indicating whether or not to run a quick test')
+    parser.add_argument('--primary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the primary agent')
+    parser.add_argument('--adversary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the adversary agent')
     parser.add_argument('--how-long', type=int)
     
 
@@ -67,18 +67,18 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--epoch-timesteps', type=int)
     parser.add_argument('--n-envs', type=int, help='Number of environments to use while training')
     parser.add_argument('--teammates-len',  type=int)
-    parser.add_argument('--overcooked-verbose', type=bool, default=False, help="Disables the overcooked game logs")
+    parser.add_argument('--overcooked-verbose', type=str2bool, default=False, help="Disables the overcooked game logs")
 
     parser.add_argument('--pop-total-training-timesteps', type=int)
     parser.add_argument('--fcp-total-training-timesteps', type=int)
     parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
     parser.add_argument('--reward-magnifier', type=float, default=3.0)
 
-    parser.add_argument('--parallel', type=bool, default=True)
+    parser.add_argument('--parallel', type=str2bool, default=True)
 
-    parser.add_argument('--dynamic-reward', type=bool, default=True)
+    parser.add_argument('--dynamic-reward', type=str2bool, default=True)
     parser.add_argument('--final-sparse-r-ratio', type=float, default=1.0)
-    parser.add_argument('--prioritized-sampling', type=bool, default=False, help='Flag indicating whether or not to use prioritized sampling for teammate selection, if True the worst performing teammates will be prioritized')
+    parser.add_argument('--prioritized-sampling', type=str2bool, default=False, help='Flag indicating whether or not to use prioritized sampling for teammate selection, if True the worst performing teammates will be prioritized')
     parser.add_argument('--exp-dir', type=str, help='Folder to save/load experiment result')
 
     parser.add_argument('--primary-learner-type', type=str, default='originaler')
@@ -89,14 +89,14 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--num-of-ckpoints", type=int, default=15)
     parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint for population training only")
 
-    parser.add_argument("--use-val-func-for-heatmap-gen", type=bool, default=False)
+    parser.add_argument("--use-val-func-for-heatmap-gen", type=str2bool, default=False)
     parser.add_argument("--num-eval-for-heatmap-gen", type=int, default=2)
     parser.add_argument("--num-static-advs-per-heatmap", type=int, default=1)
     parser.add_argument("--num-dynamic-advs-per-heatmap", type=int, default=1)
     parser.add_argument("--num-steps-in-traj-for-dyn-adv", type=int, default=2)
     parser.add_argument("--custom-agent-ck-rate-generation", type=int)
 
-    parser.add_argument('--gen-pop-for-eval', type=bool, default=False, help="Specifies whether to generate a population of agents for evaluation purposes. Currently, this functionality is limited to self-play agents, as support for other methods has not yet been implemented..)")
+    parser.add_argument('--gen-pop-for-eval', type=str2bool, default=False, help="Specifies whether to generate a population of agents for evaluation purposes. Currently, this functionality is limited to self-play agents, as support for other methods has not yet been implemented..)")
     parser.add_argument("--total-ego-agents", type=int, default=4)
     parser.add_argument("--ck-list-offset", type=int, default=0)
 
@@ -118,3 +118,14 @@ def get_args_to_save(curr_args):
 def set_args_from_load(loaded_args, curr_args):
     for arg in ARGS_TO_SAVE_LOAD:
         setattr(curr_args, arg, loaded_args[arg])
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')

@@ -5,7 +5,7 @@ TEAMMATES_LEN=1
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="counter_circuit,coordination_ring,cramped_room,asymmetric_advantages,forced_coordination"
-EXP_DIR=${LAYOUT_NAMES}
+EXP_DIR="Classic"
 TOTAL_EGO_AGENTS=4
 QUICK_TEST=false
 
