@@ -280,10 +280,10 @@ def set_input(args):
     storage_room_2_chefs_layouts = [
         'storage_room_pair_left_sym',
         'storage_room_pair_right_sym',
-        'storage_room_pair_left_sym_rightpotblocked',
-        'storage_room_pair_right_sym_rightpotblocked',
-        'storage_room_pair_left_sym_leftpotblocked',
-        'storage_room_pair_right_sym_leftpotblocked',
+        # 'storage_room_pair_left_sym_rightpotblocked',
+        # 'storage_room_pair_right_sym_rightpotblocked',
+        # 'storage_room_pair_left_sym_leftpotblocked',
+        # 'storage_room_pair_right_sym_leftpotblocked',
     ]
 
     cramped_room_ot_1_chef_layuouts = [
@@ -358,7 +358,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 4
+        args.total_ego_agents = 8
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'
@@ -367,7 +367,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
         elif args.layout_names == storage_room_2_chefs_layouts:
-            prefix = 'storage_room_2_chef_layouts_dqn'
+            prefix = 'storage_room_2_chef_layouts'
         elif args.layout_names == cramped_room_ot_2_chef_layuouts:
             prefix = 'cramped_room_ot_2_chef_layouts'
         elif args.layout_names == storage_room_1_chef_layouts:

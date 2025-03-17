@@ -125,7 +125,7 @@ class OAIAgent(nn.Module, ABC):
         if is_haha:
             self.set_play_params(output_message, tune_subtasks)
         self.on_reset = True
-        self.grid_shape = (7, 7)
+        self.grid_shape = (13, 13)
 
     def action(self, state, deterministic=False):
         if self.p_idx is None or self.mdp is None or self.horizon is None:
