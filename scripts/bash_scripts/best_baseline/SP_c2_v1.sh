@@ -41,5 +41,5 @@ python scripts/train_agents.py \
     --wandb-mode ${WANDB_MODE} \
     --pop-force-training ${POP_FORCE_TRAINING} \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \
-    --primary-force-training ${PRIMARY_FORCE_TRAINING} \ 
+    --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \

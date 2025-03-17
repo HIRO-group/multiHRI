@@ -13,6 +13,7 @@ WANDB_MODE="online"
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
 PRIMARY_FORCE_TRAINING=false
+# EXP_NAME_PREFIX="unique_name_prefix"
 
 source scripts/bash_scripts/env_config.sh
 
@@ -41,5 +42,6 @@ python scripts/train_agents.py \
     --wandb-mode ${WANDB_MODE} \
     --pop-force-training ${POP_FORCE_TRAINING} \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \
-    --primary-force-training ${PRIMARY_FORCE_TRAINING} \ 
+    --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \
+    --exp-name-prefix "${EXP_NAME_PREFIX}" \

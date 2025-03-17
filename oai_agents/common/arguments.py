@@ -85,6 +85,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--adversary-learner-type', type=str, default='selfisher')
     parser.add_argument('--pop-learner-type', type=str, default='originaler')
     parser.add_argument("--max-concurrent-jobs", type=int, default=None)
+    parser.add_argument("--exp-name-prefix", default="", type=str)
 
     parser.add_argument("--num-of-ckpoints", type=int, default=15)
     parser.add_argument("--resume", action="store_true", default=False, help="Restart from last checkpoint for population training only")
