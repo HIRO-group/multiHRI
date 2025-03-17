@@ -294,13 +294,8 @@ class RLAgentTrainer(OAITrainer):
         print(f"args.num_of_ckpoints: {self.args.num_of_ckpoints if self.checkpoint_rate else None}")
         print(f"args.checkpoint_rate: {self.checkpoint_rate}")
         print(f"Learner type: {self.learner_type}")
-        print("Dynamic Reward: ", self.args.dynamic_reward)
-        print("Final sparse reward ratio: ", self.args.final_sparse_r_ratio)
-        print('args.custom_agent_ck_rate_generation: ', self.args.custom_agent_ck_rate_generation)
-        print('args.num_steps_in_traj_for_dyn_adv: ', self.args.num_steps_in_traj_for_dyn_adv)
-        print('args.num_static_advs_per_heatmap: ', self.args.num_static_advs_per_heatmap)
-        print('args.num_dynamic_advs_per_heatmap: ', self.args.num_dynamic_advs_per_heatmap)
-        print('args.use_val_func_for_heatmap_gen: ', self.args.use_val_func_for_heatmap_gen)
+        for arg in vars(self.args):
+            print(arg, getattr(self.args, arg))
 
 
     def save_init_model_and_cklist(self):
