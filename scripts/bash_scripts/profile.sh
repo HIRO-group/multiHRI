@@ -1,23 +1,25 @@
 #!/bin/sh
 
-ALGO="FCP_traditional"
+ALGO="SP"
 TEAMMATES_LEN=1
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
-LAYOUT_NAMES="counter_circuit,coordination_ring,cramped_room,asymmetric_advantages,forced_coordination"
-EXP_DIR="Classic/$NUM_PLAYERS" # When quick_test=True this will be overwritten to "Test/$EXP_DIR"
-TOTAL_EGO_AGENTS=4
-QUICK_TEST=false
+LAYOUT_NAMES="counter_circuit"
+TOTAL_EGO_AGENTS=1
+EXP_DIR="Test/Profile"
 
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
 PRIMARY_FORCE_TRAINING=false
-# EXP_NAME_PREFIX="unique_name_prefix"
 
 source scripts/bash_scripts/env_config.sh
-# Overwrite the default values from env_config here if needed
+# Overwrite the default values from env_config.sh here if needed:
+N_ENVS=2
+WANDB_MODE="disabled"
+EPOCH_TIMESTEPS=100000
+N_X_SP_TOTAL_TRAINING_TIMESTEPS=200000
 
-python scripts/train_agents.py \
+python -m cProfile -o profile_results.prof scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \
@@ -43,4 +45,3 @@ python scripts/train_agents.py \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \
     --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \
-    --exp-name-prefix "${EXP_NAME_PREFIX}" \

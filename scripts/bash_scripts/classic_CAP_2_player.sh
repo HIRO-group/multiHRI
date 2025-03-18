@@ -5,24 +5,23 @@ TEAMMATES_LEN=1
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="counter_circuit,coordination_ring,cramped_room,asymmetric_advantages,forced_coordination"
-EXP_DIR="Classic"
+EXP_DIR="Classic/$NUM_PLAYERS" # When quick_test=True this will be overwritten to "Test/$EXP_DIR"
 TOTAL_EGO_AGENTS=4
 QUICK_TEST=false
 
-WANDB_MODE="online"
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
 PRIMARY_FORCE_TRAINING=false
 # EXP_NAME_PREFIX="unique_name_prefix"
 
 source scripts/bash_scripts/env_config.sh
+# Overwrite the default values from env_config here if needed
 
 python scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \
     --num-of-ckpoints ${NUM_OF_CKPOINTS} \
-    --quick-test ${QUICK_TEST} \
     --teammates-len ${TEAMMATES_LEN} \
     --num-players ${NUM_PLAYERS} \
     --custom-agent-ck-rate-generation ${CUSTOM_AGENT_CK_RATE_GENERATION} \

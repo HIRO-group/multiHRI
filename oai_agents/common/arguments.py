@@ -40,7 +40,6 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--adversary-total-training-timesteps', type=int,  help='Number of timesteps to train the adversary agent')
     parser.add_argument('--n-x-fcp-total-training-timesteps', type=int, help='Number of timesteps to train the N-X-FCP agent')
     parser.add_argument('--pop-force-training', type=str2bool, help='Flag indicating whether or not to force training of the population')
-    parser.add_argument('--quick-test', type=str2bool, help='Flag indicating whether or not to run a quick test')
     parser.add_argument('--primary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the primary agent')
     parser.add_argument('--adversary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the adversary agent')
     parser.add_argument('--how-long', type=int)
