@@ -14,10 +14,10 @@ PRIMARY_FORCE_TRAINING=false
 source scripts/bash_scripts/env_config.sh
 # Overwrite the default values from env_config.sh here if needed:
 EXP_DIR="Test/Profile"
-N_ENVS=2
+N_ENVS=50
 WANDB_MODE="disabled"
-EPOCH_TIMESTEPS=10000
-N_X_SP_TOTAL_TRAINING_TIMESTEPS=10000
+EPOCH_TIMESTEPS=75000
+N_X_SP_TOTAL_TRAINING_TIMESTEPS=75000
 
 export CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 

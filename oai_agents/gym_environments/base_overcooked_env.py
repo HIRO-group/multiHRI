@@ -305,7 +305,7 @@ class OvercookedGymEnv(Env):
         if self.reset_info and 'start_position' in self.reset_info:
             self.reset_info['start_position'] = {}
             for id in range(len(teammates_ids)):
-                if not isinstance(self.teammates[id], CustomAgent):
+                if isinstance(self.teammates[id], CustomAgent):
                     self.teammates[id].reset()
                     self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)
         
