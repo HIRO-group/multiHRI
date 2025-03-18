@@ -225,7 +225,17 @@ class SB3Wrapper(OAIAgent):
         return dist
 
     def learn(self, epoch_timesteps):
+        import cProfile
+        import pstats
+        import time
+        profiler = cProfile.Profile()
+        profiler.enable()
+        
         self.agent.learn(total_timesteps=epoch_timesteps, reset_num_timesteps=False)
+        
+        profiler.disable()
+        c_time = time.strftime("%Y%m%d-%H%M%S")
+        profiler.dump_stats(f'data/profile/learn_{c_time}.prof')
         self.num_timesteps = self.agent.num_timesteps
 
     def save(self, path: Path) -> None:
