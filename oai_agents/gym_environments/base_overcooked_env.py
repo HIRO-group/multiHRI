@@ -1,7 +1,7 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
 from oai_agents.common.learner import LearnerType, Learner
-from oai_agents.agents.agent_utils import CustomAgent
+from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -335,15 +335,22 @@ register(
 
 if __name__ == '__main__':
     from oai_agents.common.arguments import get_arguments
-
     args = get_arguments()
-    env = OvercookedGymEnv(p1=DummyAgent(),
-                           args=args)  # make('overcooked_ai.agents:OvercookedGymEnv-v0', layout='asymmetric_advantages', encoding_fn=encode_state, args=args)
-    print(check_env(env))
-    env.setup_visualization()
-    env.reset()
-    env.render()
+
+    args.num_players = 2
+
+    env = OvercookedGymEnv(layout_name=args.layout_names[0], args=args, ret_completed_subtasks=False,
+                            is_eval_env=True, horizon=400, learner_type='originaler')
+    
+    p_idx = 0    
+    teammates = [DummyAgent()]
+    
+    env.set_teammates(teammates)
+    env.reset(p_idx=p_idx)
     done = False
+    
     while not done:
-        obs, reward, done, info = env.step(Action.ACTION_TO_INDEX[np.random.choice(Action.ALL_ACTIONS)])
+        action = np.random.randint(0, Action.NUM_ACTIONS)
+        action_idx = Action.ACTION_TO_INDEX[Action.STAY]
+        obs, reward, done, info = env.step(action_idx)
         env.render()

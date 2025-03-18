@@ -71,7 +71,6 @@ class OvercookedGUI:
         else:
             self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=False,
                                         is_eval_env=True, horizon=horizon, learner_type='originaler',
-                                        
                                         )
         self.agent = agent
         self.p_idx = p_idx
