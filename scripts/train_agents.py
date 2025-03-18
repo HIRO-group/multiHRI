@@ -5,6 +5,10 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
+from oai_agents.common.agents_finder import HMLProfileCollection, SelfPlayAgentsFinder
+from oai_agents.agents.diverse_population_manager import DiversePopulationManager
+
+from pathlib import Path
 
 from scripts.utils import (
     get_SP_agents,
@@ -12,6 +16,27 @@ from scripts.utils import (
     get_N_X_FCP_agents,
     get_N_X_SP_agents,
 )
+
+
+
+def MEP(args):
+    dir_path = Path(f"{args.exp_dir}/{args.num_players}")
+    dir_path.mkdir(parents=True, exist_ok=True)
+    # AgentsFinder can find agent under the directory, f"{args.exp_dir}/{args.num_players}",
+    # by its method get_agents_infos
+    agents_finder = SelfPlayAgentsFinder(args=args)
+    _, _, training_infos = agents_finder.get_agents_infos()
+    if len(training_infos)<=0:
+        manager = DiversePopulationManager(population_size=args.total_ego_agents, args=args)
+        manager.train_population(
+            total_timesteps=args.pop_total_training_timesteps,
+            num_of_ckpoints=args.num_of_ckpoints,
+            eval_interval = args.eval_steps_interval * args.epoch_timesteps
+        )
+    # HMLProfileCollection use agents_finder to find information of multiple agents and
+    # call save_population to save pop files under args.layout_names
+    hml_profiles = HMLProfileCollection(args=args, agents_finder=agents_finder)
+    hml_profiles.save_population()
 
 def SP(args):
     primary_train_types = [TeamType.SELF_PLAY]
@@ -381,6 +406,7 @@ def set_input(args):
         args.sb_verbose = 1
         args.wandb_mode = 'disabled'
         args.n_envs = 2
+        args.num_of_ckpoints = 5
         args.epoch_timesteps = 2
         args.pop_total_training_timesteps = 4000
         args.n_x_sp_total_training_timesteps = 4000
@@ -391,13 +417,14 @@ def set_input(args):
         args.exp_dir = f'Test/{args.num_players}'
 
 
+
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = False
+    args.quick_test = True
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 1
+    args.teammates_len = 0
 
     if args.teammates_len <= 1:
         args.how_long = 20
@@ -411,11 +438,13 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
+    MEP(args=args)
+
     # SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
 
-    SP(args)
+    # SP(args)
 
     # FCP_mhri(args=args)
 

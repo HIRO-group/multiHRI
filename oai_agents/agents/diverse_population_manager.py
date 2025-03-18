@@ -145,14 +145,12 @@ class DiversePopulationManager:
             trainer.learning_agent.learn(self.epoch_timesteps)
             self.timesteps += self.epoch_timesteps
 
-            print(f"Trained trainer of seed {trainer.seed} for {self.epoch_timesteps} timesteps. current timesteps: {self.timesteps}")
-            wandb.log({"train/episode_steps": int(self.epoch_timesteps), "train/timesteps": int(self.timesteps)}, step=int(self.timesteps))
-
             for t in self.population:
                 bonus_getter = self.bonus_getter_factory(ego_trainer=t)
                 t.env.env_method("set_bonus_getter", bonus_getter)
 
             if self.timesteps >= next_eval or self.timesteps >= next_checkpoint:
+                wandb.log({"train/episode_steps": int(self.epoch_timesteps), "train/timesteps": int(self.timesteps)}, step=int(self.timesteps))
                 for t in self.population:
                     mean_reward, rew_per_layout, rew_per_layout_per_teamtype = t.evaluate(
                         eval_agent=t.learning_agent,

@@ -61,6 +61,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--pop-total-training-timesteps', type=int)
     parser.add_argument('--fcp-total-training-timesteps', type=int)
     parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
+    parser.add_argument('--eval-steps-interval', type=int, default=40)
     parser.add_argument('--reward-magnifier', type=float, default=3.0)
 
     parser.add_argument('--parallel', type=bool, default=True)

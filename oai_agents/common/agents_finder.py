@@ -101,132 +101,75 @@ class AgentProfile:
             f")"
         )
 
-
-class HMLProfileCollection:
-    """
-    Stores and organizes a collection of agent profiles, providing utilities for querying by layout.
-    """
-    def __init__(self, args):
-        self.agent_profiles: List[AgentProfile] = []  # List to store all agent profiles
-        self.layout_map = {}  # Maps layouts to lists of agent profiles
-        self.args = args
-        self._population = {}
-        self.add_sp_agents()
-
-    def add_agent(self, agent_profile):
-        """
-        Adds an agent profile to the collection and updates the mappings.
-        """
-        self.agent_profiles.append(agent_profile)
-
-        # Update layout_map
-        for layout in agent_profile.layouts:
-            if layout not in self.layout_map:
-                self.layout_map[layout] = []
-            self.layout_map[layout].append(agent_profile)
-
-    def add_performance_agent(self, model, layout, category:AgentCategory):
-        """
-        Adds an agent to the collection with a specific performance category.
-        """
-        agent = AgentProfile(model=model, layouts=[layout])
-        agent.assign_category_weight(category=category)
-        self.add_agent(agent)
-
-    def add_sp_agents(self):
-        agent_finder = SelfPlayAgentsFinder(args=self.args)
-        agents, env_infos, training_infos = agent_finder.get_agents_infos()
-        for training_info in training_infos:
-            ck_list = training_info["ck_list"]
-            layouts = get_layouts_from_cklist(ck_list=ck_list)
-            for layout in layouts:
-                if layout not in self._population:
-                    self._population[layout] = []
-                h_agents, m_agents, l_agents = RLAgentTrainer.get_HML_agents_by_layout(
-                    args=self.args, ck_list=ck_list, layout_name=layout,
-                )
-                assert len(h_agents) == 1
-                self.add_performance_agent(model=h_agents[0], layout=layout, category=AgentCategory.HIGH_PERFORMANCE)
-                self._population[layout].append(h_agents[0])
-                assert len(m_agents) == 1
-                self.add_performance_agent(model=m_agents[0], layout=layout, category=AgentCategory.MEDIUM_PERFORMANCE)
-                self._population[layout].append(m_agents[0])
-                assert len(l_agents) == 1
-                self.add_performance_agent(model=l_agents[0], layout=layout, category=AgentCategory.LOW_PERFORMANCE)
-                self._population[layout].append(l_agents[0])
-
-
-    def get_population(self) -> dict:
-        return self._population
-
-    def save_population(self):
-        for layout in self._population.keys():
-            pop = OAITrainer(
-                name=f"pop_{layout}",
-                args=self.args,
-            )
-            pop.agents = self._population[layout]
-            pop.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
-
-    def get_agentprofiles_by_layout(self, layout):
-        """
-        Returns all agent profiles associated with a specific layout.
-        """
-        return self.layout_map.get(layout, [])
-
-    def __repr__(self):
-        return f"BasicProfileCollection({len(self.agent_profiles)} agent profiles stored)"
-
 class AgentsFinder:
     def __init__(self, args, folders=None):
         self.args = args
         self.folders = folders
         self.target_dir = get_experiment_models_dir(base_dir=self.args.base_dir, exp_folder=self.args.exp_dir)
 
+    def directory_exists_and_nonempty(self):
+        """Check if target_dir exists and contains at least one folder."""
+        if not os.path.exists(self.target_dir) or not os.path.isdir(self.target_dir):
+            print(f"Warning: Directory '{self.target_dir}' does not exist.")
+            return False
+        if not os.listdir(self.target_dir):  # Check if directory is empty
+            print(f"Warning: Directory '{self.target_dir}' is empty.")
+            return False
+        return True
+
     def get_agentfolders_with_prefix(self, prefix):
-        return [
-            folder for folder in os.listdir(self.target_dir)
-            if os.path.isdir(os.path.join(self.target_dir, folder)) and folder.startswith(prefix)
-        ]
+        if self.directory_exists_and_nonempty():
+            return [
+                folder for folder in os.listdir(self.target_dir)
+                if os.path.isdir(os.path.join(self.target_dir, folder)) and folder.startswith(prefix)
+            ]
+        else:
+            return []
 
     def get_agentfolders_with_suffix(self, suffix):
-        return [
-            folder for folder in os.listdir(self.target_dir)
-            if os.path.isdir(os.path.join(self.target_dir, folder)) and folder.endswith(suffix)
-        ]
+        if self.directory_exists_and_nonempty():
+            return [
+                folder for folder in os.listdir(self.target_dir)
+                if os.path.isdir(os.path.join(self.target_dir, folder)) and folder.endswith(suffix)
+            ]
+        else:
+            return []
 
     def get_agentfolders_containing(self, substring):
-        return [
-            folder for folder in os.listdir(self.target_dir)
-            if os.path.isdir(os.path.join(self.target_dir, folder)) and substring in folder
-        ]
+        if self.directory_exists_and_nonempty():
+            return [
+                folder for folder in os.listdir(self.target_dir)
+                if os.path.isdir(os.path.join(self.target_dir, folder)) and substring in folder
+            ]
+        else:
+            return []
 
     def get_agents_infos(self, tag=None):
         all_agents = []
         env_infos = []
         training_infos = []
-        assert len(self.folders)>0
-        for folder in self.folders:
-            if tag is not None:
-                agents, env_info, training_info = RLAgentTrainer.load_agents(
-                    args=self.args,
-                    name=folder,
-                    tag=tag
-                )
-            else:
-                last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
-                    base_dir=self.args.base_dir,
-                    exp_dir=self.args.exp_dir,
-                    name=folder,
-                )
-                agents, env_info, training_info = RLAgentTrainer.load_agents(
-                    args=self.args,
-                    name=folder,
-                    tag=last_ckpt
-                )
-            all_agents.append(agents[0])
-            env_infos.append(env_info)
-            training_infos.append(training_info)
+        if len(self.folders)>0:
+            for folder in self.folders:
+                if tag is not None:
+                    agents, env_info, training_info = RLAgentTrainer.load_agents(
+                        args=self.args,
+                        name=folder,
+                        tag=tag
+                    )
+                else:
+                    last_ckpt = KeyCheckpoints.get_most_recent_checkpoint(
+                        base_dir=self.args.base_dir,
+                        exp_dir=self.args.exp_dir,
+                        name=folder,
+                    )
+                    agents, env_info, training_info = RLAgentTrainer.load_agents(
+                        args=self.args,
+                        name=folder,
+                        tag=last_ckpt
+                    )
+                all_agents.append(agents[0])
+                env_infos.append(env_info)
+                training_infos.append(training_info)
 
         return all_agents, env_infos, training_infos
 
@@ -292,6 +235,82 @@ class AMMAS23AgentsFinderBySuffix(AMMAS23AgentsFinder):
     def get_agents(self, key, tag=None):
         self.folders = self.get_agentfolders_with_suffix(suffix=key)
         return super().get_agents(tag=tag)
+
+class HMLProfileCollection:
+    """
+    Stores and organizes a collection of agent profiles, providing utilities for querying by layout.
+    """
+    def __init__(self, args, agents_finder: AgentsFinder):
+        self.agent_profiles: List[AgentProfile] = []  # List to store all agent profiles
+        self.layout_map = {}  # Maps layouts to lists of agent profiles
+        self.args = args
+        self._population = {}
+        self.agents_finder: AgentsFinder = agents_finder
+        self.add_multiple_agents()
+
+    def add_agent(self, agent_profile):
+        """
+        Adds an agent profile to the collection and updates the mappings.
+        """
+        self.agent_profiles.append(agent_profile)
+
+        # Update layout_map
+        for layout in agent_profile.layouts:
+            if layout not in self.layout_map:
+                self.layout_map[layout] = []
+            self.layout_map[layout].append(agent_profile)
+
+    def add_performance_agent(self, model, layout, category:AgentCategory):
+        """
+        Adds an agent to the collection with a specific performance category.
+        """
+        agent = AgentProfile(model=model, layouts=[layout])
+        agent.assign_category_weight(category=category)
+        self.add_agent(agent)
+
+    def add_multiple_agents(self):
+        # agent_finder = SelfPlayAgentsFinder(args=self.args)
+        agents, env_infos, training_infos = self.agents_finder.get_agents_infos()
+        for training_info in training_infos:
+            ck_list = training_info["ck_list"]
+            layouts = get_layouts_from_cklist(ck_list=ck_list)
+            for layout in layouts:
+                if layout not in self._population:
+                    self._population[layout] = []
+                h_agents, m_agents, l_agents = RLAgentTrainer.get_HML_agents_by_layout(
+                    args=self.args, ck_list=ck_list, layout_name=layout,
+                )
+                assert len(h_agents) == 1
+                self.add_performance_agent(model=h_agents[0], layout=layout, category=AgentCategory.HIGH_PERFORMANCE)
+                self._population[layout].append(h_agents[0])
+                assert len(m_agents) == 1
+                self.add_performance_agent(model=m_agents[0], layout=layout, category=AgentCategory.MEDIUM_PERFORMANCE)
+                self._population[layout].append(m_agents[0])
+                assert len(l_agents) == 1
+                self.add_performance_agent(model=l_agents[0], layout=layout, category=AgentCategory.LOW_PERFORMANCE)
+                self._population[layout].append(l_agents[0])
+
+
+    def get_population(self) -> dict:
+        return self._population
+
+    def save_population(self):
+        for layout in self._population.keys():
+            pop = OAITrainer(
+                name=f"pop_{layout}",
+                args=self.args,
+            )
+            pop.agents = self._population[layout]
+            pop.save_agents(tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+
+    def get_agentprofiles_by_layout(self, layout):
+        """
+        Returns all agent profiles associated with a specific layout.
+        """
+        return self.layout_map.get(layout, [])
+
+    def __repr__(self):
+        return f"BasicProfileCollection({len(self.agent_profiles)} agent profiles stored)"
 
 if __name__ == '__main__':
     args = get_arguments()
