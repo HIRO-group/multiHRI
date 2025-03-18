@@ -16,8 +16,8 @@ source scripts/bash_scripts/env_config.sh
 EXP_DIR="Test/Profile"
 N_ENVS=2
 WANDB_MODE="disabled"
-EPOCH_TIMESTEPS=100000
-N_X_SP_TOTAL_TRAINING_TIMESTEPS=200000
+EPOCH_TIMESTEPS=10000
+N_X_SP_TOTAL_TRAINING_TIMESTEPS=10000
 
 export CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 

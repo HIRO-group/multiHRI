@@ -320,6 +320,7 @@ class PolicyClone(OAIAgent):
         # Updated to include action masking
         self.policy.set_training_mode(False)
         obs, vectorized_env = self.policy.obs_to_tensor(obs)
+        
         with th.no_grad():
             if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.policy.action_space.n):
                 dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])

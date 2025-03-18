@@ -195,6 +195,7 @@ class OvercookedGymEnv(Env):
         return get_doable_subtasks(self.state, self.prev_subtask[p_idx], self.layout_name, self.terrain, p_idx,
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
 
+
     def get_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
         enc_fn = enc_fn or self.encoding_fn
         obs = enc_fn(self.env.mdp, self.state, self.grid_shape, self.args.horizon, p_idx=c_idx,
@@ -237,19 +238,25 @@ class OvercookedGymEnv(Env):
         if len(self.teammates) == 0:
             raise ValueError('set_teammates must be set called before starting game.')
 
-        joint_action = [None for _ in range(self.mdp.num_players)]
+        # joint_action = [None for _ in range(self.mdp.num_players)]
+        # joint_action[self.p_idx] = action
+
+        joint_action = np.full(self.mdp.num_players, None, dtype=object)
         joint_action[self.p_idx] = action
+
         with th.no_grad():
             for t_idx in self.t_idxes:
                 teammate = self.get_teammate_from_idx(t_idx)
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
-                if type(teammate) == CustomAgent:
+                # if type(teammate) == CustomAgent:
+                if isinstance(teammate, CustomAgent):
                     info = {'layout_name': self.layout_name, 'u_env_idx': self.unique_env_idx}
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info=info)[0]
                 else:
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic)[0]
 
-        joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
+        # joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
+        joint_action = [Action.INDEX_TO_ACTION[a.squeeze() if isinstance(a, np.ndarray) else a] for a in joint_action]
         self.joint_action = joint_action
 
         # If the state didn't change from the previous timestep and the agent is choosing the same action
@@ -260,7 +267,8 @@ class OvercookedGymEnv(Env):
                 joint_action = deepcopy(self.joint_action)
                 for t_idx in self.t_idxes:
                     tm = self.get_teammate_from_idx(t_idx)
-                    if type(tm) != CustomAgent:
+                    # if type(tm) != CustomAgent:
+                    if not isinstance(tm, CustomAgent):
                         joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
@@ -268,7 +276,8 @@ class OvercookedGymEnv(Env):
         self.state, reward, done, info = self.env.step(joint_action)
         for t_idx in self.t_idxes: # Should be right after env.step
             tm = self.get_teammate_from_idx(t_idx)
-            if type(tm) == CustomAgent:
+            # if type(tm) == CustomAgent:
+            if isinstance(tm, CustomAgent):
                 tm.update_current_position(layout_name=self.layout_name, new_position=self.env.state.players[t_idx].position, u_env_idx=self.unique_env_idx)
 
         if self.shape_rewards and not self.is_eval_env:
