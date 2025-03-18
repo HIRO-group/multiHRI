@@ -21,7 +21,7 @@ N_X_SP_TOTAL_TRAINING_TIMESTEPS=200000
 
 export CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 
-python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scripts/train_agents.py \
+CUDA_VISIBLE_DEVICES=1 python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \
