@@ -1,63 +1,31 @@
-two_chefs_dec_layouts = [
-    'dec_2_chefs_counter_circuit',
-    'dec_2_chefs_storage_room',
-    'dec_2_chefs_cramped_room',
+storage_room_1_chef_layouts = [
+    'storage_room_single_left_sym',
+    'storage_room_single_right_sym',
+    'storage_room_single_left_sym_rightpotblocked',
+    'storage_room_single_right_sym_rightpotblocked',
+    'storage_room_single_left_sym_leftpotblocked',
+    'storage_room_single_right_sym_leftpotblocked',
 ]
 
-three_chefs_dec_layouts = [
-    'dec_3_chefs_counter_circuit',
-    'dec_3_chefs_storage_room',
-    'dec_3_chefs_cramped_room',
+storage_room_2_chefs_layouts = [
+    'storage_room_pair_left_sym',
+    'storage_room_pair_right_sym',
+    'storage_room_pair_left_sym_rightpotblocked',
+    'storage_room_pair_right_sym_rightpotblocked',
+    'storage_room_pair_left_sym_leftpotblocked',
+    'storage_room_pair_right_sym_leftpotblocked',
 ]
 
-five_chefs_dec_layouts = [
-    'dec_5_chefs_counter_circuit',
-    'dec_5_chefs_storage_room',
-    'dec_5_chefs_secret_heaven',
+cramped_room_ot_1_chef_layuouts = [
+    'cramped_room_single_ot_oblocked',
+    'cramped_room_single_ot_tblocked',
+    'cramped_room_single_ot',
 ]
 
-two_chefs_aamas24_layouts = [
-    'selected_2_chefs_coordination_ring',
-    'selected_2_chefs_counter_circuit',
-    'selected_2_chefs_cramped_room',
-    # 'selected_2_chefs_secret_coordination_ring',
-    # 'selected_2_chefs_storage_room'
-]
-
-three_chefs_aamas24_layouts = [
-    'selected_3_chefs_coordination_ring',
-    'selected_3_chefs_counter_circuit',
-    'selected_3_chefs_cramped_room',
-    'selected_3_chefs_secret_coordination_ring',
-    'selected_3_chefs_storage_room'
-]
-
-three_chefs_aamas24_layouts = [
-    'selected_3_chefs_coordination_ring',
-    'selected_3_chefs_counter_circuit',
-    'selected_3_chefs_cramped_room',
-    'selected_3_chefs_secret_coordination_ring',
-    'selected_3_chefs_storage_room'
-]
-
-four_chefs_aamas24_layouts = [
-    'selected_4_chefs_coordination_ring',
-    'selected_4_chefs_counter_circuit',
-    'selected_4_chefs_cramped_room',
-    'selected_4_chefs_secret_coordination_ring',
-    'selected_4_chefs_spacious_room_few_resources',
-    'selected_4_chefs_spacious_room_no_counter_space',
-    'selected_4_chefs_storage_room'
-]
-
-five_chefs_aamas24_layouts = [
-    'selected_5_chefs_coordination_ring',
-    'selected_5_chefs_counter_circuit',
-    'selected_5_chefs_cramped_room',
-    'selected_5_chefs_secret_coordination_ring',
-    'selected_5_chefs_spacious_room_few_resources',
-    'selected_5_chefs_spacious_room_no_counter_space',
-    'selected_5_chefs_storage_room'
+cramped_room_ot_2_chef_layuouts = [
+    'cramped_room_pair_ot_oblocked',
+    'cramped_room_pair_ot_tblocked',
+    'cramped_room_pair_ot',
 ]
 
 classic_2_chefs_layouts = [
@@ -71,6 +39,12 @@ classic_2_chefs_layouts = [
 complex_2_chefs_layouts = [
     'secret_heaven',
     'storage_room'
+]
+
+complex_3_chefs_layouts = [
+    'dec_3_chefs_storage_room',
+    'dec_3_chefs_secret_heaven',
+    'dec_3_chefs_counter_circuit',
 ]
 
 complex_5_chefs_layouts = [
