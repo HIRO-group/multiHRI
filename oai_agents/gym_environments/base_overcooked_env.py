@@ -238,10 +238,7 @@ class OvercookedGymEnv(Env):
         if len(self.teammates) == 0:
             raise ValueError('set_teammates must be set called before starting game.')
 
-        # joint_action = [None for _ in range(self.mdp.num_players)]
-        # joint_action[self.p_idx] = action
-
-        joint_action = np.full(self.mdp.num_players, None, dtype=object)
+        joint_action = [None for _ in range(self.mdp.num_players)]
         joint_action[self.p_idx] = action
 
         with th.no_grad():
@@ -255,8 +252,7 @@ class OvercookedGymEnv(Env):
                 else:
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic)[0]
 
-        # joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
-        joint_action = [Action.INDEX_TO_ACTION[a.squeeze() if isinstance(a, np.ndarray) else a] for a in joint_action]
+        joint_action = [Action.INDEX_TO_ACTION[(a.squeeze() if type(a) != int else a)] for a in joint_action]
         self.joint_action = joint_action
 
         # If the state didn't change from the previous timestep and the agent is choosing the same action
@@ -309,7 +305,7 @@ class OvercookedGymEnv(Env):
         if self.reset_info and 'start_position' in self.reset_info:
             self.reset_info['start_position'] = {}
             for id in range(len(teammates_ids)):
-                if type(self.teammates[id]) == CustomAgent:
+                if not isinstance(self.teammates[id], CustomAgent):
                     self.teammates[id].reset()
                     self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)
         
