@@ -11,7 +11,7 @@ def get_arguments(additional_args=[]):
     :return:
     """
     parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-    parser.add_argument('--layout-names', help='Overcooked maps to use')
+    parser.add_argument('--layout-names', help='Overcooked maps to use', default='default')
     parser.add_argument('--horizon', type=int, default=400, help='Max timesteps in a rollout')
     parser.add_argument('--num_stack', type=int, default=3, help='Number of frame stacks to use in training if frame stacks are being used')
     parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',

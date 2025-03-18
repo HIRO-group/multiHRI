@@ -4,7 +4,6 @@ from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
 from oai_agents.agents.agent_utils import CustomAgent
-from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
@@ -192,6 +191,7 @@ class RLAgentTrainer(OAITrainer):
 
 
     def get_envs(self, _env, _eval_envs, deterministic, learner_type, start_timestep: int = 0):
+        from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
                         'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep}
