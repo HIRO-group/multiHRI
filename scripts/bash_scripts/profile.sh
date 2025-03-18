@@ -6,20 +6,22 @@ HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="counter_circuit"
 TOTAL_EGO_AGENTS=1
-EXP_DIR="Test/Profile"
 
-POP_FORCE_TRAINING=false
+POP_FORCE_TRAINING=true
 ADVERSARY_FORCE_TRAINING=false
 PRIMARY_FORCE_TRAINING=false
 
 source scripts/bash_scripts/env_config.sh
 # Overwrite the default values from env_config.sh here if needed:
+EXP_DIR="Test/Profile"
 N_ENVS=2
 WANDB_MODE="disabled"
 EPOCH_TIMESTEPS=100000
 N_X_SP_TOTAL_TRAINING_TIMESTEPS=200000
 
-python -m cProfile -o profile_results.prof scripts/train_agents.py \
+export CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
+
+python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \
