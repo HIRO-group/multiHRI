@@ -234,13 +234,6 @@ class OvercookedGymEnv(Env):
         return self.teammates[id]
 
     def step(self, action):
-        import cProfile
-        import pstats
-        import time
-        profiler = cProfile.Profile()
-        profiler.enable()
-        
-        
         if len(self.teammates) == 0:
             raise ValueError('set_teammates must be set called before starting game.')
 
@@ -285,24 +278,12 @@ class OvercookedGymEnv(Env):
                 ratio = self.final_sparse_r_ratio
             reward = self.learner.calculate_reward(p_idx=self.p_idx, env_info=info, ratio=ratio, num_players=self.mdp.num_players)
         self.step_count += 1
-
-
-        profiler.disable()
-        c_time = time.strftime("%Y%m%d-%H%M%S")
-        profiler.dump_stats(f'data/profile/base_overcooked_env_step_{c_time}.prof')
         return self.get_obs(self.p_idx, done=done), reward, done, info
 
     def set_reset_p_idx(self, p_idx):
         self.reset_p_idx = p_idx
 
     def reset(self, p_idx=None):
-        import cProfile
-        import pstats
-        import time
-        profiler = cProfile.Profile()
-        profiler.enable()
-
-
         if p_idx is not None:
             self.p_idx = p_idx
         elif self.reset_p_idx is not None:
@@ -332,10 +313,6 @@ class OvercookedGymEnv(Env):
 
         # Reset subtask counts
         self.completed_tasks = [np.zeros(Subtasks.NUM_SUBTASKS), np.zeros(Subtasks.NUM_SUBTASKS)]
-        
-        profiler.disable()
-        c_time = time.strftime("%Y%m%d-%H%M%S")
-        profiler.dump_stats(f'data/profile/base_overcooked_env_reset_{c_time}.prof')
         return self.get_obs(self.p_idx, on_reset=True)
 
 
