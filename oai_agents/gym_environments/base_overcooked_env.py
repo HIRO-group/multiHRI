@@ -245,8 +245,8 @@ class OvercookedGymEnv(Env):
             for t_idx in self.t_idxes:
                 teammate = self.get_teammate_from_idx(t_idx)
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
-                # if type(teammate) == CustomAgent:
-                if isinstance(teammate, CustomAgent):
+                if type(teammate) == CustomAgent:
+                # if isinstance(teammate, CustomAgent):
                     info = {'layout_name': self.layout_name, 'u_env_idx': self.unique_env_idx}
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info=info)[0]
                 else:
@@ -263,8 +263,8 @@ class OvercookedGymEnv(Env):
                 joint_action = deepcopy(self.joint_action)
                 for t_idx in self.t_idxes:
                     tm = self.get_teammate_from_idx(t_idx)
-                    # if type(tm) != CustomAgent:
-                    if not isinstance(tm, CustomAgent):
+                    if type(tm) != CustomAgent:
+                    # if not isinstance(tm, CustomAgent):
                         joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
@@ -272,8 +272,8 @@ class OvercookedGymEnv(Env):
         self.state, reward, done, info = self.env.step(joint_action)
         for t_idx in self.t_idxes: # Should be right after env.step
             tm = self.get_teammate_from_idx(t_idx)
-            # if type(tm) == CustomAgent:
-            if isinstance(tm, CustomAgent):
+            if type(tm) == CustomAgent:
+            # if isinstance(tm, CustomAgent):
                 tm.update_current_position(layout_name=self.layout_name, new_position=self.env.state.players[t_idx].position, u_env_idx=self.unique_env_idx)
 
         if self.shape_rewards and not self.is_eval_env:
@@ -305,7 +305,8 @@ class OvercookedGymEnv(Env):
         if self.reset_info and 'start_position' in self.reset_info:
             self.reset_info['start_position'] = {}
             for id in range(len(teammates_ids)):
-                if isinstance(self.teammates[id], CustomAgent):
+                # if isinstance(self.teammates[id], CustomAgent):
+                if type(self.teammates[id]) == CustomAgent:
                     self.teammates[id].reset()
                     self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)
         
