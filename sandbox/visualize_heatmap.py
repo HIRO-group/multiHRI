@@ -129,7 +129,6 @@ if __name__ == "__main__":
                      X   XDOX   X
                      XXXXXXXXXXXX"""
 
-
     # grid_layout = """XODSXXXXSDXX
     #                  X          X
     #                  S PP XX    X
@@ -147,7 +146,7 @@ if __name__ == "__main__":
     args.p_idx = 0
     args.n_envs = 200
     args.layout_names = [args.layout]
-    
+
     # path = 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/last'
     path = 'agent_models/Complex/2/SP_hd256_seed2602/last'
     # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
@@ -174,5 +173,8 @@ if __name__ == "__main__":
             trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
             tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
             final_tiles_v += tile['V']
+
+    # final_tiles_v = not_used_function_get_tile_v_using_all_states(args=args, agent=agent, layout=args.layout, shape=shape)
+
 
     plot_heatmap(tiles_v=final_tiles_v, layout_features=layout_features, feature_positions=feature_positions, title=title)
