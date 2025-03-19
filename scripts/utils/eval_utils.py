@@ -5,8 +5,9 @@ class Eval:
     ALL = [LOW, MEDIUM, HIGH]
 
 POPULATION_EVAL_AGENTS = {
-    'secret_heaven':    'agent_models/ComplexTest/2/pop_secret_heaven',
-    'storage_room':     'agent_models/ComplexTest/2/pop_storage_room',
+    'selected_2_chefs_coordination_ring': 'agent_models/Result/Eval/2/pop_selected_2_chefs_coordination_ring',
+    'selected_2_chefs_counter_circuit':   'agent_models/Result/Eval/2/pop_selected_2_chefs_counter_circuit',
+    'selected_2_chefs_cramped_room':      'agent_models/Result/Eval/2/pop_selected_2_chefs_cramped_room',
 }
 
 
