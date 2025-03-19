@@ -7,7 +7,7 @@ from oai_agents.common.tags import TeamType
 from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
 
 
-def not_used_function_get_tile_v_using_all_states(args, agent, layout):
+def not_used_function_get_tile_v_using_all_states(args, agent, layout, shape):
     '''
     This function is currently NOT used in the codebase.
     Get the value function for all possible states in the layout
@@ -21,10 +21,12 @@ def not_used_function_get_tile_v_using_all_states(args, agent, layout):
     mdp = OvercookedGridworld.from_layout_name(layout)
     env = OvercookedEnv.from_mdp(mdp, horizon=400)
 
-    tiles_v = np.zeros((7, 7))
+    tiles_v = np.zeros(shape=shape)
     all_valid_joint_pos = env.mdp.get_valid_joint_player_positions()
+
     possible_objects = [None, "dish", "onion", "soup"]
     player_object_combinations = list(product(possible_objects, repeat=args.num_players))
+    
     for pos in all_valid_joint_pos:
         env.reset()
         for i in range(args.num_players):
@@ -39,6 +41,7 @@ def not_used_function_get_tile_v_using_all_states(args, agent, layout):
                     cooking_ticks = [-1]
                 for cooking_tick in cooking_ticks:
                     env.state.objects[pot_loc] = SoupState.get_soup(pot_loc, num_onions=n, cooking_tick=cooking_tick)
+                    
                     for objects_combination in player_object_combinations:
                         for player_idx, obj in enumerate(objects_combination):
                             if env.state.players[player_idx].has_object():
@@ -51,15 +54,17 @@ def not_used_function_get_tile_v_using_all_states(args, agent, layout):
                                 held_obj = ObjectState(obj, pos[player_idx])
                                 env.state.players[player_idx].set_object(held_obj)
 
-                        obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)
-                        value = get_value_function(args=args, agent=agent, observation=obs)
-                        tiles_v[pos[0][0], pos[0][1]] += value
+                            obs = OAI_egocentric_encode_state(env.mdp, env.state, (7, 7), 400)
+                            value = get_value_function(args=args, agent=agent, observation=obs)
+                            tiles_v[pos[0][0], pos[0][1]] += value
+
     return tiles_v
 
 
 def get_value_function(args, agent, observation):
     obs_tensor = obs_as_tensor(observation, args.device)
     visual_obs = obs_tensor['visual_obs'].clone().detach()
+    # repeated_obs = visual_obs
     repeated_obs = visual_obs.unsqueeze(0).repeat(args.n_envs, 1, 1, 1)
     obs_tensor['visual_obs'] = repeated_obs
     with th.no_grad():

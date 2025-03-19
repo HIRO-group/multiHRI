@@ -4,7 +4,7 @@ from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
 from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
-from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
+# from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action
 from overcooked_ai_py.planning.planners import MediumLevelActionManager
@@ -174,7 +174,7 @@ class OAIAgent(nn.Module, ABC):
         """
         device = args.device
         load_path = path / 'agent_file'
-        saved_variables = th.load(load_path, map_location=device)
+        saved_variables = th.load(load_path, map_location=device, weights_only=False)
         set_args_from_load(saved_variables['args'], args)
         saved_variables['const_params']['args'] = args
         # Create agent object
@@ -267,7 +267,7 @@ class SB3Wrapper(OAIAgent):
         """
         device = args.device
         load_path = path / 'agent_file'
-        saved_variables = th.load(load_path)
+        saved_variables = th.load(load_path, weights_only=False)
         set_args_from_load(saved_variables['args'], args)
         saved_variables['const_params']['args'] = args
         # Create agent object
@@ -534,7 +534,7 @@ class OAITrainer(ABC):
         env_path = path / tag / "env_file"
         agent_path = path / tag / 'agents_dir'
         device = args.device
-        saved_variables = th.load(load_path, map_location=device)
+        saved_variables = th.load(load_path, map_location=device, weights_only=False)
 
         # Load weights
         agents = []

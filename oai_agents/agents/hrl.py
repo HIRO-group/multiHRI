@@ -4,7 +4,7 @@ from oai_agents.agents.rl import RLAgentTrainer, SB3Wrapper, SB3LSTMWrapper, VEC
 from oai_agents.agents.agent_utils import DummyAgent, is_held_obj, load_agent
 from oai_agents.common.arguments import get_arguments, get_args_to_save, set_args_from_load
 from oai_agents.common.subtasks import Subtasks
-from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
+# from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
 from oai_agents.gym_environments.manager_env import OvercookedManagerGymEnv
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action, OvercookedGridworld
@@ -388,7 +388,7 @@ class HierarchicalRL(OAIAgent):
         """
         device = args.device
         load_path = path / 'agent_file'
-        saved_variables = th.load(load_path, map_location=device)
+        saved_variables = th.load(load_path, map_location=device, weights_only=False)
         set_args_from_load(saved_variables['args'], args)
         worker = saved_variables['worker_type'].load(path / 'worker', args)
         manager = saved_variables['manager_type'].load(path / 'manager', args)

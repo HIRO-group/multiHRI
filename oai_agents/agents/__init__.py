@@ -14,7 +14,7 @@ def fix_save_pickle(agent_path, args=None):
     agent_path = Path(agent_path)
 
     try:
-        load_dict = th.load(agent_path / 'agent_file')
+        load_dict = th.load(agent_path / 'agent_file', weights_only=False)
         print(load_dict)
     except FileNotFoundError as e:
         raise ValueError(f'Could not find file:{e}') # TODO print options

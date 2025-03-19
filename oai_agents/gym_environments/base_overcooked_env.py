@@ -24,8 +24,8 @@ import random
 # DEPRECATED NOTE: For counter circuit, trained workers with 8, but trained manager with 4. Only 4 spots are useful add
 # more during subtask worker training for robustness
 # Max number of counters the agents should use
-USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'asymmetric_advantages': 2,
-                    'cramped_room': 2, 'coordination_ring': 2}  # FOR WORKER TRAINING
+# USEABLE_COUNTERS = {'counter_circuit_o_1order': 2, 'forced_coordination': 2, 'asymmetric_advantages': 2,
+#                     'cramped_room': 2, 'coordination_ring': 2}  # FOR WORKER TRAINING
 
 
 # USEABLE_COUNTERS = {'counter_circuit_o_1order': 4, 'forced_coordination': 3, 'asymmetric_advantages': 2, 'cramped_room': 3, 'coordination_ring': 3} # FOR MANAGER TRAINING

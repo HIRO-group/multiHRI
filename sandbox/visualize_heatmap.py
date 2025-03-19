@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from oai_agents.common.heatmap import get_tile_map
+from oai_agents.common.heatmap import get_tile_map, not_used_function_get_tile_v_using_all_states
 from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
@@ -129,6 +129,7 @@ if __name__ == "__main__":
                      X   XDOX   X
                      XXXXXXXXXXXX"""
 
+
     # grid_layout = """XODSXXXXSDXX
     #                  X          X
     #                  S PP XX    X
@@ -146,16 +147,12 @@ if __name__ == "__main__":
     args.p_idx = 0
     args.n_envs = 200
     args.layout_names = [args.layout]
-
-    # path = 'agent_models/Complex/5/FCP_s1010_h256_tr[AMX]_ran/last'
-    # path = 'agent_models/Complex/5/SP_hd256_seed2602/last'
-    # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
-    # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/last'
-    # path = 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/last'
-    path = 'agent_models/Complex_Ori/2/SP_hd256_seed13/best'
-    # path = 'agent_models/Complex_Ori/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
-    # path = 'agent_models/Complex_Ori/2/N-1-SP_s2020_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
-    # path = 'agent_models/Complex_Ori/2/N-1-SP_s2602_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best'
+    
+    # path = 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/last'
+    path = 'agent_models/Complex/2/SP_hd256_seed2602/last'
+    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
+    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/last'
+    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/last'
 
     agent = load_agent(Path(path), args)
     title = f'{args.layout}_{path.split("/")[-2]}'
