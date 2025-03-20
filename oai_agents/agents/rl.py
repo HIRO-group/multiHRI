@@ -16,7 +16,9 @@ import wandb
 import os
 from typing import Optional
 
-VEC_ENV_CLS = DummyVecEnv #
+# VEC_ENV_CLS = DummyVecEnv #
+VEC_ENV_CLS = SubprocVecEnv
+
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
@@ -59,19 +61,17 @@ class RLAgentTrainer(OAITrainer):
         self.use_policy_clone = use_policy_clone
 
         self.learner_type = learner_type
-        self.env, self.eval_envs = self.get_envs(env, eval_envs, deterministic, learner_type, start_timestep)
+        self.env, self.eval_envs = self.get_envs(_env=env, _eval_envs=eval_envs,
+                                                 deterministic=deterministic, learner_type=learner_type,
+                                                 start_timestep=start_timestep, teammates_collection=teammates_collection,
+                                                 curriculum=self.curriculum)
+
         # Episode to start training from (usually 0 unless restarted)
         self.start_step = start_step
         self.steps = self.start_step
         # Cumm. timestep to start training from (usually 0 unless restarted)
         self.start_timestep = start_timestep
         self.learning_agent, self.agents = self.get_learning_agent(agent)
-        self.teammates_collection, self.eval_teammates_collection = self.get_teammates_collection(
-            _tms_clctn = teammates_collection,
-            learning_agent = self.learning_agent,
-            train_types = train_types,
-            eval_types = eval_types
-        )
         self.best_score, self.best_training_rew = -1, float('-inf')
 
     @classmethod
@@ -120,62 +120,6 @@ class RLAgentTrainer(OAITrainer):
         agents = [learning_agent]
         return learning_agent, agents
 
-
-    def get_teammates_collection(self, _tms_clctn, learning_agent, train_types=[], eval_types=[]):
-        '''
-        Returns a dictionary of teammates_collection for training and evaluation
-            dict
-            teammates_collection = {
-                'layout_name': {
-                    'TeamType.HIGH_FIRST': [[agent1, agent2], ...],
-                    'TeamType.MEDIUM_FIRST': [[agent3, agent4], ...],
-                    'TeamType.LOW_FIRST': [[agent5, agent6], ..],
-                    'TeamType.RANDOM': [[agent7, agent8], ...],
-                },
-            }
-        '''
-        if _tms_clctn == {}:
-            _tms_clctn = {
-                TeammatesCollection.TRAIN: {
-                    layout_name:
-                        {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
-                    for layout_name in self.args.layout_names
-                },
-                TeammatesCollection.EVAL: {
-                    layout_name:
-                        {TeamType.SELF_PLAY: [[learning_agent for _ in range(self.teammates_len)]]}
-                    for layout_name in self.args.layout_names
-                }
-            }
-
-        else:
-            for layout in self.args.layout_names:
-                for tt in _tms_clctn[TeammatesCollection.TRAIN][layout]:
-                    if tt == TeamType.SELF_PLAY:
-                        _tms_clctn[TeammatesCollection.TRAIN][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
-                for tt in _tms_clctn[TeammatesCollection.EVAL][layout]:
-                    if tt == TeamType.SELF_PLAY:
-                        _tms_clctn[TeammatesCollection.EVAL][layout][TeamType.SELF_PLAY] = [[learning_agent for _ in range(self.teammates_len)]]
-
-        train_teammates_collection = _tms_clctn[TeammatesCollection.TRAIN]
-        eval_teammates_collection = _tms_clctn[TeammatesCollection.EVAL]
-
-        if train_types:
-            train_teammates_collection = {
-                layout: {team_type: train_teammates_collection[layout][team_type] for team_type in train_types}
-                for layout in train_teammates_collection
-            }
-        if eval_types:
-            eval_teammates_collection = {
-                layout: {team_type: eval_teammates_collection[layout][team_type] for team_type in eval_types}
-                for layout in eval_teammates_collection
-            }
-
-        self.check_teammates_collection_structure(train_teammates_collection)
-        self.check_teammates_collection_structure(eval_teammates_collection)
-        return train_teammates_collection, eval_teammates_collection
-
-
     def print_tc_helper(self, teammates_collection, message=None):
         print("-------------------")
         if message:
@@ -190,15 +134,19 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
 
 
-    def get_envs(self, _env, _eval_envs, deterministic, learner_type, start_timestep: int = 0):
+    def get_envs(self, _env, _eval_envs, deterministic, learner_type, teammates_collection, curriculum, start_timestep: int = 0):
         from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
-                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep}
+                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep, 
+                        'teammates_collection': teammates_collection, 'curriculum': curriculum
+                        }
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed, vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
-                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type}
+                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type, 
+                                 'teammates_collection': teammates_collection, 'curriculum': curriculum
+                                 }
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs, 'unique_env_idx':self.args.n_envs+i}) for i in range(self.n_layouts)]
         else:
             env = _env
@@ -282,10 +230,9 @@ class RLAgentTrainer(OAITrainer):
 
     def log_details(self, experiment_name, total_train_timesteps):
         print("Training agent: " + self.name + ", for experiment: " + experiment_name)
-        self.print_tc_helper(self.teammates_collection, "Train TC")
-        self.print_tc_helper(self.eval_teammates_collection, "Eval TC")
+        self.print_tc_helper(self.eval_envs[0].teammates_collection[TeammatesCollection.EVAL], "Eval TC")
+        self.print_tc_helper(self.eval_envs[0].teammates_collection[TeammatesCollection.TRAIN], "Train TC")
         self.curriculum.print_curriculum()
-        print("How Long: ", self.args.how_long)
         print(f"Epoch timesteps: {self.epoch_timesteps}")
         print(f"Total training timesteps: {total_train_timesteps}")
         print(f"Number of environments: {self.n_envs}")
@@ -345,10 +292,11 @@ class RLAgentTrainer(OAITrainer):
 
         while self.learning_agent.num_timesteps < total_train_timesteps:
             self.curriculum.update(current_step=self.steps)
-            self.set_new_teammates(curriculum=self.curriculum)
+            self.set_new_teammates()
 
             # In each iteration the agent collects n_envs * n_steps experiences. This continues until self.learning_agent.num_timesteps > epoch_timesteps is reached.
             self.learning_agent.learn(self.epoch_timesteps)
+
             self.steps += 1
 
             if self.should_evaluate(steps=self.steps):

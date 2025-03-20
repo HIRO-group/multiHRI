@@ -123,6 +123,15 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
 
     init_agent = load_agents(args, name=heatmap_source.name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=False)[0]
 
+    # init_agent = RLAgentTrainer.generate_randomly_initialized_agent( # need a cleaner way to do this
+    #         args=args,
+    #         name=name,
+    #         learner_type=args.primary_learner_type,
+    #         hidden_dim=args.N_X_SP_h_dim,
+    #         seed=args.N_X_SP_seed,
+    #         n_envs=args.n_envs
+    #) 
+
     teammates_collection = generate_TC(args=args,
                                         population=population,
                                         agent=init_agent,
@@ -131,6 +140,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                         eval_types_to_read_from_file=n_x_sp_eval_types['load'],
                                         unseen_teammates_len=unseen_teammates_len,
                                         use_entire_population_for_train_types_teammates=True)
+
 
     adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, current_adversaries={}, teammates_collection=teammates_collection, train_types=curriculum.train_types)
 
@@ -157,7 +167,6 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                                             adversaries=adversaries)
         init_agent.name = name
         args.ck_list_offset = (args.num_of_ckpoints - 1) + ((args.num_of_ckpoints - 1) * round // (args.custom_agent_ck_rate_generation))
-
         n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                                 args=args,
                                                 agent=init_agent,
@@ -170,9 +179,10 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                 learner_type=args.primary_learner_type,
                                                 checkpoint_rate= ck_rate,
                                                 )
-
-        n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps*(round + 1) + args.pop_total_training_timesteps,
-                                                    tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        train_time = total_train_timesteps * (round + 1)
+        # train_time = total_train_timesteps*(round + 1) + args.pop_total_training_timesteps
+        n_x_sp_types_trainer.train_agents(total_train_timesteps=train_time,
+                                          tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         init_agent = n_x_sp_types_trainer.agents[0]
         new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, current_adversaries=adversaries, teammates_collection=teammates_collection, train_types=curriculum.train_types)
         adversaries = {key: adversaries.get(key, []) + new_adversaries.get(key, []) for key in set(adversaries) | set(new_adversaries)}
@@ -285,7 +295,8 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         learner_type=args.primary_learner_type,
         hidden_dim=args.N_X_SP_h_dim,
         seed=args.N_X_SP_seed,
-        n_envs=args.n_envs
+        n_envs=args.n_envs,
+         
     )
 
     teammates_collection = generate_TC(

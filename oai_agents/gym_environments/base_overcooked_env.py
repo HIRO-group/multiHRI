@@ -2,6 +2,7 @@ from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
 from oai_agents.common.learner import LearnerType, Learner
 from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
+from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -35,7 +36,7 @@ import random
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+    def __init__(self, learner_type, teammates_collection, curriculum, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, enc_fn=None, full_init=True, args=None, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
@@ -89,6 +90,8 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
+        self.teammates_collection = teammates_collection
+        self.curriculum = curriculum
 
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
@@ -154,11 +157,17 @@ class OvercookedGymEnv(Env):
     def get_joint_action(self):
         return self.joint_action
 
-    def set_teammates(self, teammates):
-        assert isinstance(teammates, list)
+    def set_teammates(self, teamtype=None):
+        if teamtype:
+            assert self.is_eval_env is True, "Teamtype should only be set for evaluation environments"
+            population_teamtypes = self.teammates_collection[TeammatesCollection.EVAL][self.layout_name]
+            teammates = population_teamtypes[teamtype][np.random.randint(len(population_teamtypes[teamtype]))]
+        else:    
+            population_teamtypes = self.teammates_collection[TeammatesCollection.TRAIN][self.layout_name]
+            teammates = self.curriculum.select_teammates_for_layout(population_teamtypes=population_teamtypes, layout=self.layout_name)
+
         self.teammates = teammates
         self.reset_info['start_position'] = {}
-
         for t_idx in self.t_idxes:
             tm = self.get_teammate_from_idx(t_idx)
             if tm.get_start_position(self.layout_name, u_env_idx=self.unique_env_idx) is not None:
@@ -245,6 +254,7 @@ class OvercookedGymEnv(Env):
             for t_idx in self.t_idxes:
                 teammate = self.get_teammate_from_idx(t_idx)
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
+
                 if type(teammate) == CustomAgent:
                 # if isinstance(teammate, CustomAgent):
                     info = {'layout_name': self.layout_name, 'u_env_idx': self.unique_env_idx}
