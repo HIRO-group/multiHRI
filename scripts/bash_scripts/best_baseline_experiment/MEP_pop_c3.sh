@@ -1,12 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
-ALGO="SP"
+ALGO="MEP"
 TEAMMATES_LEN=1
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
-LAYOUT_NAMES="c1_v4"
-EXP_DIR=${LAYOUT_NAMES}
-TOTAL_EGO_AGENTS=1
+LAYOUT_NAMES="c3"
+EXP_DIR="${ALGO}_${LAYOUT_NAMES}"
+TOTAL_EGO_AGENTS=4
 QUICK_TEST=false
 
 WANDB_MODE="online"
@@ -21,7 +21,6 @@ python scripts/train_agents.py \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \
     --num-of-ckpoints ${NUM_OF_CKPOINTS} \
-    --quick-test ${QUICK_TEST} \
     --teammates-len ${TEAMMATES_LEN} \
     --num-players ${NUM_PLAYERS} \
     --custom-agent-ck-rate-generation ${CUSTOM_AGENT_CK_RATE_GENERATION} \

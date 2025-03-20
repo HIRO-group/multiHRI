@@ -21,6 +21,7 @@ python scripts/train_agents.py \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \
     --num-of-ckpoints ${NUM_OF_CKPOINTS} \
+    --quick-test ${QUICK_TEST} \
     --teammates-len ${TEAMMATES_LEN} \
     --num-players ${NUM_PLAYERS} \
     --custom-agent-ck-rate-generation ${CUSTOM_AGENT_CK_RATE_GENERATION} \
