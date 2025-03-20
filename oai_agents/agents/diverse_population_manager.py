@@ -197,7 +197,7 @@ class DiversePopulationManager:
 
 if __name__ == "__main__":
     from oai_agents.common.arguments import get_arguments
-    from scripts.train_agents import set_input
+    from scripts.train_agents_without_bashing import set_input
     args = get_arguments()
     args.quick_test = False
     args.pop_force_training = False
