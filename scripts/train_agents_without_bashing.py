@@ -17,7 +17,7 @@ from scripts.utils import (
     get_N_X_SP_agents,
 )
 
-from scripts.utils import (
+from scripts.utils.layout_config import (
     storage_room_1_chef_layouts,
     storage_room_2_chefs_layouts,
     cramped_room_ot_1_chef_layuouts,
@@ -337,7 +337,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 4
+        args.total_ego_agents = 8
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'
@@ -346,7 +346,7 @@ def set_input(args):
         elif args.layout_names == classic_2_chefs_layouts:
             prefix = 'Classic'
         elif args.layout_names == storage_room_2_chefs_layouts:
-            prefix = 'storage_room_2_chef_layouts_dqn'
+            prefix = 'storage_room_2_chef_layouts'
         elif args.layout_names == cramped_room_ot_2_chef_layuouts:
             prefix = 'cramped_room_ot_2_chef_layouts'
         elif args.layout_names == storage_room_1_chef_layouts:
@@ -374,11 +374,11 @@ def set_input(args):
 
 if __name__ == '__main__':
     args = get_arguments()
-    args.quick_test = True
+    args.quick_test = False
     args.pop_force_training = False
     args.adversary_force_training = False
     args.primary_force_training = False
-    args.teammates_len = 0
+    args.teammates_len = 1
 
     if args.teammates_len <= 1:
         args.how_long = 20
@@ -392,13 +392,13 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    MEP(args=args)
+    # MEP(args=args)
 
     # SPN_XSPCKP(args=args)
 
     # FCP_traditional(args=args)
 
-    # SP(args)
+    SP(args)
 
     # FCP_mhri(args=args)
 

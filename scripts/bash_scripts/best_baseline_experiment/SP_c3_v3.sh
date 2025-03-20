@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ALGO="SP"
 TEAMMATES_LEN=1

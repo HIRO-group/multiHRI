@@ -43,7 +43,7 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--primary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the primary agent')
     parser.add_argument('--adversary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the adversary agent')
     parser.add_argument('--how-long', type=int)
-    
+
 
     parser.add_argument('--exp-name', type=str, default='last',
                         help='Name of experiment. Used to tag save files.')
@@ -107,7 +107,11 @@ def get_arguments(additional_args=[]):
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
     args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
-    args.layout_names = args.layout_names.split(',')
+    if isinstance(args.layout_names, str):
+        args.layout_names = args.layout_names.split(',')
+    elif not isinstance(args.layout_names, list):
+        raise TypeError(f"Unexpected type for args.layout_names: {type(args.layout_names)}. Expected str or list.")
+
 
     return args
 
