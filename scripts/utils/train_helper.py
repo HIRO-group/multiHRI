@@ -6,7 +6,7 @@ from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
 from oai_agents.agents.agent_utils import CustomAgent
 from .common import load_agents, generate_name
-from oai_agents.common.tags import Prefix, KeyCheckpoints
+from oai_agents.common.tags import Prefix, KeyCheckpoints, TeammatesCollection
 
 
 def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_agent):
@@ -527,3 +527,67 @@ def get_N_X_FCP_agents(
         tag_for_returning_agent=tag
     )
     return fcp_trainer.get_agents()[0], teammates_collection
+
+
+
+def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculum):
+    '''Code purposed for a very specific experiment, assumes n_players = 2'''
+    from pathlib import Path
+
+    eval_collection = {
+        layout_name: {ttype: [] for ttype in primary_eval_types['generate']} for layout_name in args.layout_names
+    }
+    train_collection = {
+        layout_name: {ttype: [] for ttype in primary_train_types} for layout_name in args.layout_names
+    }
+
+    all_perfs = args.low_perfs + args.med_perfs + args.high_perfs
+    for agent_address in all_perfs:
+
+        path_tag = agent_address.split('/')
+        path = '/'.join(path_tag[:-1])
+        tag = path_tag[-1]
+        agents, _, _ = RLAgentTrainer.load_agents(args=args, tag=tag, path=Path('agent_models/'+path))
+        agent = agents[0]
+
+
+        for layout_name in args.layout_names:
+            if agent_address in args.low_perfs:
+                ttype = TeamType.SELF_PLAY_LOW
+            elif agent_address in args.med_perfs:
+                ttype = TeamType.SELF_PLAY_MEDIUM
+            elif agent_address in args.high_perfs:
+                ttype = TeamType.SELF_PLAY_HIGH
+            
+            if ttype in train_collection[layout_name]:
+                train_collection[layout_name][ttype].append([agent])
+
+            if ttype in eval_collection[layout_name]:
+                eval_collection[layout_name][ttype] = [[agent]]
+    
+    teammates_collection = {
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
+    }
+    
+    best_ego_trainer = RLAgentTrainer(
+        name=f'best_{args.layout_names[0]}',
+        args=args,
+        agent=None,
+        teammates_collection=teammates_collection,
+        epoch_timesteps=args.epoch_timesteps,
+        n_envs=args.n_envs,
+
+        seed=args.N_X_SP_seed,
+        hidden_dim=args.N_X_SP_h_dim,
+        curriculum=curriculum,
+        
+        learner_type=args.primary_learner_type,
+        checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
+    )
+
+    best_ego_trainer.train_agents(
+        total_train_timesteps=args.n_x_fcp_total_training_timesteps,
+        tag_for_returning_agent=tag
+    )
+        

@@ -130,7 +130,7 @@ class RLAgentTrainer(OAITrainer):
                 teammates_c = teammates_collection[layout_name][tag]
                 for teammates in teammates_c:
                     for agent in teammates:
-                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, start_pos: {agent.get_start_position(layout_name, 0)}, len: {len(teammates)}')
+                        print(f'\t{agent.name}, score for layout {layout_name} is:, start_pos: {agent.get_start_position(layout_name, 0)}, len: {len(teammates)}')
         print("-------------------")
 
 

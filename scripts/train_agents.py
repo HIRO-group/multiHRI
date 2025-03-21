@@ -11,6 +11,7 @@ from scripts.utils import (
     get_FCP_agent_w_pop,
     get_N_X_FCP_agents,
     get_N_X_SP_agents,
+    get_best_EGO_agents,
 )
 
 def SP(args):
@@ -266,6 +267,37 @@ def SPN_XSPCKP(args) -> None:
     )
 
 
+def best_EGO(args) -> None:
+    '''only for 2 players'''
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
+    ]
+    primary_eval_types = {
+        'generate': [
+                    TeamType.SELF_PLAY_HIGH,
+                    TeamType.SELF_PLAY_LOW,
+                    ],
+        'load': []
+    }
+    if args.prioritized_sampling:
+        curriculum = Curriculum(train_types=primary_train_types, 
+                                eval_types=primary_eval_types, 
+                                is_random=False, 
+                                prioritized_sampling=True,
+                                priority_scaling=2.0)
+    else:
+        curriculum = Curriculum(train_types=primary_train_types, is_random=True)
+
+    get_best_EGO_agents(
+        args,
+        curriculum=curriculum,
+        primary_eval_types=primary_eval_types,
+        primary_train_types=curriculum.train_types,
+    )
+
+
 if __name__ == '__main__':
     args = get_arguments()
     
@@ -277,6 +309,9 @@ if __name__ == '__main__':
     
     elif args.algo_name == 'FCP_traditional':
         FCP_traditional(args=args)
+
+    elif args.algo_name == 'best_EGO':
+        best_EGO(args=args)
     
     # elif args.algo_name == 'FCP_mhri':
     #     FCP_mhri(args=args)
