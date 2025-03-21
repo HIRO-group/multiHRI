@@ -85,3 +85,25 @@ class OvercookedSimulation:
             trajectory = self._run_simulation()
             trajectories.append(trajectory)
         return trajectories
+
+
+
+if __name__ == '__main__':
+    from oai_agents.common.arguments import get_arguments
+    from oai_agents.agents.agent_utils import DummyAgent, CustomAgent, load_agent
+    from pathlib import Path
+
+    args = get_arguments()
+    args.num_players = 2
+    args.layout_names = ['counter_circuit']
+    args.n_envs = 4
+    p_idx = 0
+
+    path = 'agent_models/Complex/2/SP_hd256_seed2602/last'
+    agent = load_agent(Path(path), args)
+
+    # teammates = [agent]
+    teammates = [CustomAgent(args=args, name='tm', trajectories={args.layout_names[0]: [(1, 1), (1, 2)]})]
+
+    simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout_names[0], p_idx=p_idx, horizon=400)
+    trajectories = simulation.run_simulation(how_many_times=4)

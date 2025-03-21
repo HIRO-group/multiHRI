@@ -5,7 +5,7 @@ from oai_agents.agents.agent_utils import DummyAgent, is_held_obj, load_agent
 from oai_agents.common.arguments import get_arguments, get_args_to_save, set_args_from_load
 from oai_agents.common.subtasks import Subtasks
 # from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
-from oai_agents.gym_environments.manager_env import OvercookedManagerGymEnv
+# from oai_agents.gym_environments.manager_env import OvercookedManagerGymEnv
 
 from overcooked_ai_py.mdp.overcooked_mdp import Action, OvercookedGridworld
 

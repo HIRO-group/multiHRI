@@ -6,7 +6,7 @@ from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
 from oai_agents.agents.agent_utils import CustomAgent
 from .common import load_agents, generate_name
-from oai_agents.common.tags import Prefix, KeyCheckpoints
+from oai_agents.common.tags import Prefix, KeyCheckpoints, TeammatesCollection
 
 
 def get_SP_agents(args, train_types, eval_types, curriculum, tag_for_returning_agent):
@@ -123,6 +123,15 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
 
     init_agent = load_agents(args, name=heatmap_source.name, tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL, force_training=False)[0]
 
+    # init_agent = RLAgentTrainer.generate_randomly_initialized_agent( # need a cleaner way to do this
+    #         args=args,
+    #         name=name,
+    #         learner_type=args.primary_learner_type,
+    #         hidden_dim=args.N_X_SP_h_dim,
+    #         seed=args.N_X_SP_seed,
+    #         n_envs=args.n_envs
+    #) 
+
     teammates_collection = generate_TC(args=args,
                                         population=population,
                                         agent=init_agent,
@@ -131,6 +140,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                         eval_types_to_read_from_file=n_x_sp_eval_types['load'],
                                         unseen_teammates_len=unseen_teammates_len,
                                         use_entire_population_for_train_types_teammates=True)
+
 
     adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=heatmap_source, current_adversaries={}, teammates_collection=teammates_collection, train_types=curriculum.train_types)
 
@@ -157,7 +167,6 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                                             adversaries=adversaries)
         init_agent.name = name
         args.ck_list_offset = (args.num_of_ckpoints - 1) + ((args.num_of_ckpoints - 1) * round // (args.custom_agent_ck_rate_generation))
-
         n_x_sp_types_trainer = RLAgentTrainer(name=name,
                                                 args=args,
                                                 agent=init_agent,
@@ -170,9 +179,10 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
                                                 learner_type=args.primary_learner_type,
                                                 checkpoint_rate= ck_rate,
                                                 )
-
-        n_x_sp_types_trainer.train_agents(total_train_timesteps = total_train_timesteps*(round + 1) + args.pop_total_training_timesteps,
-                                                    tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
+        train_time = total_train_timesteps * (round + 1)
+        # train_time = total_train_timesteps*(round + 1) + args.pop_total_training_timesteps
+        n_x_sp_types_trainer.train_agents(total_train_timesteps=train_time,
+                                          tag_for_returning_agent=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL)
         init_agent = n_x_sp_types_trainer.agents[0]
         new_adversaries = generate_adversaries_based_on_heatmap(args=args, heatmap_source=init_agent, current_adversaries=adversaries, teammates_collection=teammates_collection, train_types=curriculum.train_types)
         adversaries = {key: adversaries.get(key, []) + new_adversaries.get(key, []) for key in set(adversaries) | set(new_adversaries)}
@@ -285,7 +295,8 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         learner_type=args.primary_learner_type,
         hidden_dim=args.N_X_SP_h_dim,
         seed=args.N_X_SP_seed,
-        n_envs=args.n_envs
+        n_envs=args.n_envs,
+         
     )
 
     teammates_collection = generate_TC(
@@ -516,3 +527,67 @@ def get_N_X_FCP_agents(
         tag_for_returning_agent=tag
     )
     return fcp_trainer.get_agents()[0], teammates_collection
+
+
+
+def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculum):
+    '''Code purposed for a very specific experiment, assumes n_players = 2'''
+    from pathlib import Path
+
+    eval_collection = {
+        layout_name: {ttype: [] for ttype in primary_eval_types['generate']} for layout_name in args.layout_names
+    }
+    train_collection = {
+        layout_name: {ttype: [] for ttype in primary_train_types} for layout_name in args.layout_names
+    }
+
+    all_perfs = args.low_perfs + args.med_perfs + args.high_perfs
+    for agent_address in all_perfs:
+
+        path_tag = agent_address.split('/')
+        path = '/'.join(path_tag[:-1])
+        tag = path_tag[-1]
+        agents, _, _ = RLAgentTrainer.load_agents(args=args, tag=tag, path=Path('agent_models/'+path))
+        agent = agents[0]
+
+
+        for layout_name in args.layout_names:
+            if agent_address in args.low_perfs:
+                ttype = TeamType.SELF_PLAY_LOW
+            elif agent_address in args.med_perfs:
+                ttype = TeamType.SELF_PLAY_MEDIUM
+            elif agent_address in args.high_perfs:
+                ttype = TeamType.SELF_PLAY_HIGH
+            
+            if ttype in train_collection[layout_name]:
+                train_collection[layout_name][ttype].append([agent])
+
+            if ttype in eval_collection[layout_name]:
+                eval_collection[layout_name][ttype] = [[agent]]
+    
+    teammates_collection = {
+        TeammatesCollection.TRAIN: train_collection,
+        TeammatesCollection.EVAL: eval_collection
+    }
+    
+    best_ego_trainer = RLAgentTrainer(
+        name=f'best_{args.layout_names[0]}',
+        args=args,
+        agent=None,
+        teammates_collection=teammates_collection,
+        epoch_timesteps=args.epoch_timesteps,
+        n_envs=args.n_envs,
+
+        seed=args.N_X_SP_seed,
+        hidden_dim=args.N_X_SP_h_dim,
+        curriculum=curriculum,
+        
+        learner_type=args.primary_learner_type,
+        checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
+    )
+
+    best_ego_trainer.train_agents(
+        total_train_timesteps=args.n_x_fcp_total_training_timesteps,
+        tag_for_returning_agent=tag
+    )
+        

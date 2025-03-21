@@ -1,30 +1,41 @@
 #!/bin/sh
 
-ALGO="SPN_XSPCKP"
+ALGO="best_EGO"
 TEAMMATES_LEN=1
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
-LAYOUT_NAMES="counter_circuit"
-TOTAL_EGO_AGENTS=2
+LAYOUT_NAMES="c1"
+EXP_DIR="${LAYOUT_NAMES}_best_EGO"
+TOTAL_EGO_AGENTS=1
+QUICK_TEST=false
 
+L0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_0"
+L1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_0"
+L2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_0"
+L3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_0"
+
+M0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_252.0"
+M1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_284.0"
+M2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_234.0"
+M3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_246.0"
+
+H0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/best"
+H1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/best"
+H2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/best"
+H3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/best"
+
+L="${L0},${L1},${L2},${L3}"
+M="${M0},${M1},${M2},${M3}"
+H="${H0},${H1},${H2},${H3}"
+
+WANDB_MODE="online"
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
-PRIMARY_FORCE_TRAINING=true
+PRIMARY_FORCE_TRAINING=false
 
 source scripts/bash_scripts/env_config.sh
-# Overwrite the default values from env_config.sh here if needed:
-EXP_DIR="Test/Profile/pop"
-N_ENVS=10
-WANDB_MODE="disabled"
-EPOCH_TIMESTEPS=7500
-N_X_SP_TOTAL_TRAINING_TIMESTEPS=75000
-FCP_TOTAL_TRAINING_TIMESTEPS=75000
-CUSTOM_AGENT_CK_RATE_GENERATION=1
-# POP_TOTAL_TRAINING_TIMESTEPS=300000
 
-export CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
-
-python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scripts/train_agents.py \
+python scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \
@@ -50,3 +61,7 @@ python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scri
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \
     --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \
+    --exp-name-prefix "${EXP_NAME_PREFIX}" \
+    --low-perfs ${L} \
+    --med-perfs ${M} \
+    --high-perfs ${H} \

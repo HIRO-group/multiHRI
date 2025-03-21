@@ -11,7 +11,7 @@ def get_arguments(additional_args=[]):
     :return:
     """
     parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-    parser.add_argument('--layout-names', help='Overcooked maps to use')
+    parser.add_argument('--layout-names', help='Overcooked maps to use', default='default')
     parser.add_argument('--horizon', type=int, default=400, help='Max timesteps in a rollout')
     parser.add_argument('--num_stack', type=int, default=3, help='Number of frame stacks to use in training if frame stacks are being used')
     parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',
@@ -100,13 +100,22 @@ def get_arguments(additional_args=[]):
     parser.add_argument("--total-ego-agents", type=int, default=4)
     parser.add_argument("--ck-list-offset", type=int, default=0)
 
+    parser.add_argument('--low-perfs', help='shitty code to run ult baseline exp', default='default')
+    parser.add_argument('--med-perfs', help='shitty code to run ult baseline exp', default='default')
+    parser.add_argument('--high-perfs', help='shitty code to run ult baseline exp', default='default')
+
+
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
 
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
-    args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+    # args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+    args.device = th.device('cpu')
     args.layout_names = args.layout_names.split(',')
+    args.low_perfs = args.low_perfs.split(',')
+    args.med_perfs = args.med_perfs.split(',')
+    args.high_perfs = args.high_perfs.split(',')
 
     return args
 
