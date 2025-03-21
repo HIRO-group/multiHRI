@@ -24,7 +24,7 @@ CUSTOM_AGENT_CK_RATE_GENERATION=1
 
 export CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 
-CUDA_VISIBLE_DEVICES=1 python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scripts/train_agents.py \
+python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
     --algo-name ${ALGO} \
     --exp-dir ${EXP_DIR} \

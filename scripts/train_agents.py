@@ -278,15 +278,15 @@ if __name__ == '__main__':
     elif args.algo_name == 'FCP_traditional':
         FCP_traditional(args=args)
     
-    elif args.algo_name == 'FCP_mhri':
-        FCP_mhri(args=args)
+    # elif args.algo_name == 'FCP_mhri':
+    #     FCP_mhri(args=args)
     
-    elif args.algo_name == 'SPN_1ADV':
-        SPN_1ADV(args=args)
+    # elif args.algo_name == 'SPN_1ADV':
+    #     SPN_1ADV(args=args)
     
-    elif args.algo_name == 'N_1_FCP':
-        N_1_FCP(args=args)
+    # elif args.algo_name == 'N_1_FCP':
+    #     N_1_FCP(args=args)
     
-    elif args.algo_name == 'SPN_1ADV_XSPCKP':
-        SPN_1ADV_XSPCKP(args=args)
+    # elif args.algo_name == 'SPN_1ADV_XSPCKP':
+    #     SPN_1ADV_XSPCKP(args=args)
 
