@@ -20,8 +20,6 @@ from scripts.utils import (
 
 
 def MEP(args):
-    dir_path = Path(f"{args.exp_dir}/{args.num_players}")
-    dir_path.mkdir(parents=True, exist_ok=True)
     # AgentsFinder can find agent under the directory, f"{args.exp_dir}/{args.num_players}",
     # by its method get_agents_infos
     agents_finder = SelfPlayAgentsFinder(args=args)

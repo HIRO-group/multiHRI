@@ -107,10 +107,9 @@ def get_arguments(additional_args=[]):
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
     args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+
     if isinstance(args.layout_names, str):
         args.layout_names = args.layout_names.split(',')
-    elif not isinstance(args.layout_names, list):
-        raise TypeError(f"Unexpected type for args.layout_names: {type(args.layout_names)}. Expected str or list.")
 
 
     return args

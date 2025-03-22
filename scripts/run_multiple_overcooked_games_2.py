@@ -57,14 +57,16 @@ class CrampedRoomSingleOT(Experiment):
             exp_seeds=seeds,
         )
 
-class StoragedRoomPair(Experiment):
+class StorageRoomPair(Experiment):
     def __init__(self):
         super().__init__(
             exps_folder='storage_room_2_chef_layouts/2',
             methods=[
-                'dense_reward_unblocking',
-                'dense_reward_blocking',
-                'sparse_reward_blocking'
+                'dense_reward_unblocking_7obs',
+                'dense_reward_blocking_7obs',
+                # 'dense_reward_unblocking_13obs',
+                # 'dense_reward_blocking_13obs',
+                # 'sparse_reward_blocking'
             ],
             layouts=[
                 'storage_room_pair_right_sym_leftpotblocked',
@@ -127,7 +129,7 @@ if __name__ == "__main__":
     args.n_envs = 1
 
     # Choose your experiment
-    exp: Experiment = StorageRoomSingle()
+    exp: Experiment = StorageRoomPair()
     args.num_players = exp.num_players
 
     # 1. Run experiment and store results in a DataFrame
