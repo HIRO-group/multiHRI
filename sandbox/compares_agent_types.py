@@ -18,7 +18,7 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
     # #     "3_chefs_small_kitchen",
     # #     "3_chefs_small_kitchen_two_resources",
     # #     "3_chefs_4P_4O_4D_4S",
-    #     '3_chefs_forced_coordination_3OP2S1D', 
+    #     '3_chefs_forced_coordination_3OP2S1D',
     #     '3_chefs_forced_coordination',
     # #     '3_chefs_storage_room'
     # ]
@@ -28,7 +28,7 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
     df = df[df['Trained on ... Layout(s)'].str.contains(trained_on_number_of_layouts, na=False)]
     df['Reward'] = pd.to_numeric(df['Reward'], errors='coerce')
     df = df.dropna(subset=['Reward'])
-    
+
     df_A = df[(df['Agent Type'] == agent_type_A) & (df['LearnerType'].isin(learner_types))]
     df_B = df[(df['Agent Type'] == agent_type_B) & (df['LearnerType'].isin(learner_types))]
 
@@ -50,12 +50,12 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
         layout_df = df[df['Which layout? (write the layout name as it exactly appears on the repository)'] == layout]
         layout_df = layout_df[layout_df['LearnerType'].isin(learner_types)]
         layout_df = layout_df.sort_values(by='Reward', ascending=False)
-        
+
         layout_df['Label'] = layout_df.apply(
             lambda row: f"{row['Agent Type']}\n{row['LearnerType']}\n Trained on {row['Trained on ... Layout(s)']} layout(s)",
             axis=1
         )
-        
+
         sns.barplot(x='Label', y='Reward', data=layout_df, ax=axes[i, 0], palette='viridis')
         axes[i, 0].set_title(f"Layout: {layout} - Sorted by Reward")
         axes[i, 0].set_ylabel("Reward")
@@ -72,11 +72,11 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
                 patch.set_facecolor('grey')
 
         for p, note in zip(axes[i, 0].patches, layout_df['Notes']):
-            axes[i, 0].annotate(format(p.get_height(), '.2f'), 
-                                (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                ha='center', va='center', 
+            axes[i, 0].annotate(format(p.get_height(), '.2f'),
+                                (p.get_x() + p.get_width() / 2., p.get_height()),
+                                ha='center', va='center',
                                 xytext=(0, 9), textcoords='offset points')
-            
+
             if isinstance(note, str):
                 wrapped_note = "\n".join(textwrap.wrap(note, width=15))
                 lines = wrapped_note.split("\n")
@@ -85,8 +85,8 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
 
                 for j, line in enumerate(lines):
                     y_pos = p.get_height() - (j + 1) * line_height
-                    axes[i, 0].text(p.get_x() + p.get_width() / 2., y_pos, 
-                                    line, ha='center', va='center', 
+                    axes[i, 0].text(p.get_x() + p.get_width() / 2., y_pos,
+                                    line, ha='center', va='center',
                                     fontsize=10, color='white')
 
         layout_image_path = os.path.join(LAYOUTS_IMAGES_DIR, f"{layout}/-1.png")
@@ -98,8 +98,10 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
             axes[i, 1].text(0.5, 0.5, "Image not found", ha='center', va='center', fontsize=12)
             axes[i, 1].axis('off')
 
-    if layouts_prefix == '': layouts_prefix = 'all'
-    if trained_on_number_of_layouts == '': trained_on_number_of_layouts = 'OneOrMultiple'
+    if layouts_prefix == '':
+        layouts_prefix = 'all'
+    if trained_on_number_of_layouts == '':
+        trained_on_number_of_layouts = 'OneOrMultiple'
 
     plt.tight_layout()
     agent_type_A = agent_type_A.replace('/', '_')
@@ -111,11 +113,11 @@ def plot_agent_comparison(agent_type_A, agent_type_B, questionnaire_file_name, l
 if __name__ == "__main__":
     questionnaire_file_name = '2'
     layouts_prefix = ''
-    
+
     agent_type_A = AgentType.n_1_sp_new_cur
     agent_type_B = AgentType.n_1_sp_w_cur
     learner_types = [LearnerType.originaler]
-    trained_on_number_of_layouts = TrainedOnLayouts.multiple 
+    trained_on_number_of_layouts = TrainedOnLayouts.multiple
 
     plot_agent_comparison(agent_type_A=agent_type_A,
                           agent_type_B=agent_type_B,

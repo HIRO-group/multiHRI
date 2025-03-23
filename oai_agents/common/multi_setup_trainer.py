@@ -1,8 +1,6 @@
 import concurrent.futures
-import random
 from scripts.utils.common import generate_name
-from oai_agents.common.learner import LearnerType
-from oai_agents.common.tags import Prefix, KeyCheckpoints
+from oai_agents.common.tags import Prefix
 from oai_agents.agents.rl import RLAgentTrainer
 import dill
 

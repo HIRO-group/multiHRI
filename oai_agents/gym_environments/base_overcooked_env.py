@@ -1,6 +1,6 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
-from oai_agents.common.learner import LearnerType, Learner
+from oai_agents.common.subtasks import Subtasks, get_doable_subtasks
+from oai_agents.common.learner import Learner
 from oai_agents.agents.agent_utils import CustomAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
@@ -14,7 +14,6 @@ from gym import Env, spaces, register
 import numpy as np
 import pygame
 from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
-from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import torch as th
@@ -290,7 +289,7 @@ class OvercookedGymEnv(Env):
             self.p_idx = self.reset_p_idx
         else:
             self.p_idx = random.randint(0, self.mdp.num_players - 1)
-        
+
         teammates_ids = list(range(self.mdp.num_players))
         teammates_ids.remove(self.p_idx)
 
@@ -303,7 +302,7 @@ class OvercookedGymEnv(Env):
                 if type(self.teammates[id]) == CustomAgent:
                     self.teammates[id].reset()
                     self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)
-        
+
         self.t_idxes = teammates_ids
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)

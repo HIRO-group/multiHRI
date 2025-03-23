@@ -1,14 +1,10 @@
 import multiprocessing as mp
-import os
 from pathlib import Path
 
 import matplotlib
-from torch import index_select
-from wandb import agent
 mp.set_start_method('spawn', force=True)
 
 import hashlib
-import sys
 from typing import Sequence
 import itertools
 import concurrent.futures
@@ -16,7 +12,6 @@ from tqdm import tqdm
 from stable_baselines3.common.evaluation import evaluate_policy
 
 import matplotlib.pyplot as plt
-from pathlib import Path
 import numpy as np
 import pickle as pkl
 import warnings
@@ -43,7 +38,7 @@ eval_key_lut = {
 DISPLAY_NAME_MAP = {
     'secret_heaven': "Secret Resources",
     'storage_room': "Resource Corridor",
-    
+
     'coordination_ring': "Coord. Ring",
     'counter_circuit': "Counter Circuit",
     'cramped_room': "Cramped Room",
@@ -142,7 +137,7 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
                 for i in range(unseen_count):
                     try:
                         teammates.append(agents[i + (num_teams)])
-                    except:
+                    except RuntimeError:
                         continue
                 if len(teammates) == N-1:
                     teammates_list.append(teammates)
@@ -162,7 +157,8 @@ def generate_plot_name(prefix, num_players, deterministic, p_idxes, num_eps, max
     return plot_name
 
 
-def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False):
+def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=None, display_delivery=False):
+    unseen_counts = unseen_counts or [0]
     #cmap = matplotlib.colormaps.get_cmap("Set3")
     plot_name = plot_name + "_delivery" if display_delivery else plot_name
     uc = ''.join([str(u) for u in unseen_counts])
@@ -230,7 +226,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
 
             x = x_values + idx * width - width * (num_agents - 1) / 2
 
-            if not (agent_name in chart_data):
+            if agent_name not in chart_data:
                 chart_data[agent_name] = {
                     "mean": [],
                     "std": [],
@@ -254,15 +250,13 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     idxs = np.arange(len(layouts))
     cmap = matplotlib.colormaps["tab20b"]
 
-    c = 0
     for i, (agent_name, d) in enumerate(chart_data.items()):
-        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
-        c+=1
+        ax.bar(idxs + (i * width), d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(i*5), capsize=4)
 
     #ax.set_title(f"Avg. Number of Soup Deliveries")
     ax.set_xticks(idxs + (num_agents/3 * width), labels=layouts, fontsize='20')
     ax.set_yticks(np.arange(0, 30, 2))
-    ax.tick_params(axis='y', labelsize=20) 
+    ax.tick_params(axis='y', labelsize=20)
     ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
     ax.autoscale_view()
     ax.legend(loc='best', fontsize=20, fancybox=True, framealpha=0.5, ncol=2)
@@ -564,7 +558,7 @@ def get_5_player_input_complex(args):
         'dec_5_chefs_secret_heaven',
         'selected_5_chefs_spacious_room_no_counter_space',
         ]
-    
+
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
         'SP_s1010_h256': 'agent_models/Complex/5/SP_hd256_seed1010/best',

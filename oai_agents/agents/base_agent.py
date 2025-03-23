@@ -1,8 +1,8 @@
 from oai_agents.agents.agent_utils import load_agent, CustomAgent
-from oai_agents.common.arguments import get_args_to_save, set_args_from_load, get_arguments
+from oai_agents.common.arguments import get_args_to_save, set_args_from_load
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
-from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints
+from oai_agents.common.subtasks import get_doable_subtasks, Subtasks
+from oai_agents.common.tags import AgentPerformance, KeyCheckpoints
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 # from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
@@ -25,7 +25,6 @@ import wandb
 import os
 import random
 import pickle as pkl
-import re
 
 class OAIAgent(nn.Module, ABC):
     """
@@ -50,12 +49,8 @@ class OAIAgent(nn.Module, ABC):
         self.use_hrl_obs = False
         self.on_reset = True
 
-        self.layout_scores = {
-            layout_name: -1 for layout_name in args.layout_names
-        }
-        self.layout_performance_tags = {
-            layout_name: AgentPerformance.NOTSET for layout_name in args.layout_names
-        }
+        self.layout_scores = dict.fromkeys(args.layout_names, -1)
+        self.layout_performance_tags = dict.fromkeys(args.layout_names, AgentPerformance.NOTSET)
 
     def get_start_position(self, layout_name, u_env_idx):
         return None
@@ -443,7 +438,7 @@ class OAITrainer(ABC):
                     wandb.log({f'eval_mean_reward_{env.layout_name}_teamtype_{teamtype}': rew_per_layout_per_teamtype[env.layout_name][teamtype], 'timestep': timestep})
 
         if log_wandb:
-            wandb.log({f'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
+            wandb.log({'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
         return np.mean(tot_mean_reward), rew_per_layout, rew_per_layout_per_teamtype
 
 

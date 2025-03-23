@@ -3,7 +3,6 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
-from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 
 from scripts.utils import (
@@ -236,7 +235,7 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_DYNAMIC_ADV, # TODO: read from command line arg 
+        TeamType.SELF_PLAY_DYNAMIC_ADV, # TODO: read from command line arg
         TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
@@ -248,9 +247,9 @@ def SPN_XSPCKP(args) -> None:
         'load': []
     }
     if args.prioritized_sampling:
-        curriculum = Curriculum(train_types=primary_train_types, 
-                                eval_types=primary_eval_types, 
-                                is_random=False, 
+        curriculum = Curriculum(train_types=primary_train_types,
+                                eval_types=primary_eval_types,
+                                is_random=False,
                                 prioritized_sampling=True,
                                 priority_scaling=2.0)
     else:
@@ -267,25 +266,25 @@ def SPN_XSPCKP(args) -> None:
 
 if __name__ == '__main__':
     args = get_arguments()
-    
+
     if args.algo_name == 'SP':
         SP(args=args)
-    
+
     elif args.algo_name == 'SPN_XSPCKP':
         SPN_XSPCKP(args=args)
-    
+
     elif args.algo_name == 'FCP_traditional':
         FCP_traditional(args=args)
-    
+
     elif args.algo_name == 'FCP_mhri':
         FCP_mhri(args=args)
-    
+
     elif args.algo_name == 'SPN_1ADV':
         SPN_1ADV(args=args)
-    
+
     elif args.algo_name == 'N_1_FCP':
         N_1_FCP(args=args)
-    
+
     elif args.algo_name == 'SPN_1ADV_XSPCKP':
         SPN_1ADV_XSPCKP(args=args)
 

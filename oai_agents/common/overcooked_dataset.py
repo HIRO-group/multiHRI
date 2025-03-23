@@ -1,6 +1,5 @@
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedState, OvercookedGridworld, Action
 
@@ -8,7 +7,6 @@ import json
 import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
-from tqdm import tqdm
 
 
 class OvercookedDataset(Dataset):
@@ -38,7 +36,7 @@ class OvercookedDataset(Dataset):
         self.main_trials = self.main_trials[self.main_trials['joint_action'] != '[[0, 0], [0, 0]]']
         print(f'Number of {str(layouts)} trials without double noops: {len(self.main_trials)}')
 
-        self.action_ratios = {k: 0 for k in Action.ALL_ACTIONS}
+        self.action_ratios = dict.fromkeys(Action.ALL_ACTIONS, 0)
 
         def str_to_actions(joint_action):
             """

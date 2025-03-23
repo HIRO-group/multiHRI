@@ -16,7 +16,7 @@ class OvercookedManagerGymEnv(OvercookedGymEnv):
         super(OvercookedManagerGymEnv, self).__init__(**kwargs)
         self.action_space = spaces.Discrete(Subtasks.NUM_SUBTASKS)
         self.worker = worker
-        self.worker_failures = {k: 0 for k in range(Subtasks.NUM_SUBTASKS)}
+        self.worker_failures = dict.fromkeys(range(Subtasks.NUM_SUBTASKS), 0)
         self.base_env_timesteps = 0
 
     def get_obs(self, p_idx, for_worker=False, **kwargs):
@@ -28,7 +28,7 @@ class OvercookedManagerGymEnv(OvercookedGymEnv):
 
     def get_worker_failures(self):
         failures = self.worker_failures
-        self.worker_failures = {k: 0 for k in range(Subtasks.NUM_SUBTASKS)}
+        self.worker_failures = dict.fromkeys(range(Subtasks.NUM_SUBTASKS), 0)
         return (self.layout_name, failures)
 
     def action_masks(self, p_idx=None):

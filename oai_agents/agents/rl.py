@@ -1,5 +1,5 @@
-from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer, PolicyClone, OAIAgent
-from oai_agents.common.arguments import get_arguments
+from typing import Optional, List
+from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer, OAIAgent
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
@@ -8,14 +8,12 @@ from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
-import random
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-from sb3_contrib import RecurrentPPO, MaskablePPO
+from stable_baselines3.common.vec_env import DummyVecEnv
+from sb3_contrib import RecurrentPPO
 import wandb
 import os
-from typing import Optional
 
 VEC_ENV_CLS = DummyVecEnv #
 
@@ -25,13 +23,14 @@ class RLAgentTrainer(OAITrainer):
             self, teammates_collection, args,
             agent, epoch_timesteps, n_envs,
             seed, learner_type,
-            train_types=[], eval_types=[],
+            train_types: Optional[List]=None, eval_types: Optional[List]=None,
             curriculum=None, num_layers=2, hidden_dim=256,
             checkpoint_rate=None, name=None, env=None, eval_envs=None,
             use_cnn=False, use_lstm=False, use_frame_stack=False,
             taper_layers=False, use_policy_clone=False, deterministic=False, start_step: int=0, start_timestep: int=0
         ):
-
+        train_types = train_types if train_types is not None else []
+        eval_types = eval_types if eval_types is not None else []
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
@@ -122,7 +121,7 @@ class RLAgentTrainer(OAITrainer):
         return learning_agent, agents
 
 
-    def get_teammates_collection(self, _tms_clctn, learning_agent, train_types=[], eval_types=[]):
+    def get_teammates_collection(self, _tms_clctn, learning_agent, train_types: Optional[List]=None, eval_types:Optional[List]=None):
         '''
         Returns a dictionary of teammates_collection for training and evaluation
             dict
@@ -135,6 +134,8 @@ class RLAgentTrainer(OAITrainer):
                 },
             }
         '''
+        train_types = train_types if train_types is not None else []
+        eval_types = eval_types if eval_types is not None else []
         if _tms_clctn == {}:
             _tms_clctn = {
                 TeammatesCollection.TRAIN: {
@@ -301,7 +302,7 @@ class RLAgentTrainer(OAITrainer):
     def save_init_model_and_cklist(self):
         self.ck_list = []
         path, tag = self.save_agents(tag=f'{KeyCheckpoints.CHECKED_MODEL_PREFIX}{0}')
-        self.ck_list.append(({k: 0 for k in self.args.layout_names}, path, tag))
+        self.ck_list.append((dict.fromkeys(self.args.layout_names, 0), path, tag))
 
     def train_agents(self, total_train_timesteps, tag_for_returning_agent, resume_ck_list=None):
         experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name=self.name)
@@ -331,7 +332,7 @@ class RLAgentTrainer(OAITrainer):
                         sorted_idxs = np.argsort(ckpts_nums)
                         ckpts = [ckpts[i] for i in sorted_idxs]
                         self.ck_list = [(c[0], path, c[2]) for c in resume_ck_list] if resume_ck_list else [
-                                ({k: 0 for k in self.args.layout_names}, path, ck) for ck in ckpts]
+                                (dict.fromkeys(self.args.layout_names, 0), path, ck) for ck in ckpts]
             else:
                 self.save_init_model_and_cklist()
 
@@ -340,7 +341,7 @@ class RLAgentTrainer(OAITrainer):
 
         self.steps = self.start_step
         self.learning_agent.num_timesteps = self.n_envs * self.start_timestep
-        
+
         ck_name_handler = CheckedModelNameHandler()
 
         while self.learning_agent.num_timesteps < total_train_timesteps:

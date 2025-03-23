@@ -11,12 +11,12 @@ class Curriculum:
             (TeamType.MEDIUM_FIRST): 0.125,                           next 12.5% of the training time
             (TeamType.HIGH_FIRST): 0.125,                             next 12.5% of the training time
         },
-    
+
     For the rest of the training time (12.55%)
     Choose training types with the following probabilities
         rest_of_the_training_probabilities={
             TeamType.LOW_FIRST: 0.4,
-            TeamType.MEDIUM_FIRST: 0.3, 
+            TeamType.MEDIUM_FIRST: 0.3,
             TeamType.HIGH_FIRST: 0.3,
         },
 
@@ -24,7 +24,7 @@ class Curriculum:
     Everytime an update_happens, the probabilities will be updated
     probability_of_playing becomes:
         TeamType.LOW_FIRST: 0.4 - 0.1,
-        TeamType.MEDIUM_FIRST: 0.3 + (0.1/2), 
+        TeamType.MEDIUM_FIRST: 0.3 + (0.1/2),
         TeamType.HIGH_FIRST: 0.3 + (0.1/2),
 
 
@@ -35,8 +35,8 @@ class Curriculum:
     Prioritized sampling can also be used to sample teammates such that the teammates with the worst historical
     performance are given the highest probability of selection. In this case, TeamTypes are ignored.
     '''
-    def __init__(self, 
-                 train_types, 
+    def __init__(self,
+                 train_types,
                  is_random,
                  eval_types=None,
                  prioritized_sampling=False,
@@ -58,7 +58,7 @@ class Curriculum:
         self.rest_of_the_training_probabilities = rest_of_the_training_probabilities
         self.probabilities_decay_over_time = probabilities_decay_over_time
         self.is_valid()
-    
+
     def is_valid(self):
         if self.is_random:
             assert self.total_steps is None, "total_steps should be None for random curriculums"
@@ -116,7 +116,7 @@ class Curriculum:
         for team_type_tuple, duration in self.training_phases_durations_in_order.items():
             cumulative_duration += duration
             if self.current_step / self.total_steps <= cumulative_duration:
-                
+
                 if type(team_type_tuple) is tuple:
                     team_type = random.choice(team_type_tuple)
                 else:
@@ -125,7 +125,7 @@ class Curriculum:
                 teammates_per_type = population_teamtypes[team_type]
                 wandb.log({"team_type_index": TeamType.map_to_index(team_type)})
                 return random.choice(teammates_per_type)
-        
+
         # If the current_step is in the remaining training time
         decay = self.probabilities_decay_over_time * (self.current_step / self.total_steps)
         adjusted_probabilities = {
@@ -134,7 +134,7 @@ class Curriculum:
         }
         adjusted_probabilities = {k: v / sum(adjusted_probabilities.values()) for k, v in adjusted_probabilities.items()}
         team_type = np.random.choice(
-            list(adjusted_probabilities.keys()), 
+            list(adjusted_probabilities.keys()),
             p=list(adjusted_probabilities.values())
         )
         wandb.log({"team_type_index": TeamType.map_to_index(team_type)})
@@ -165,7 +165,7 @@ class Curriculum:
             scores = list(teamtype_performances_for_layout.values())
             max_score = np.max(scores)
             # Invert scores
-            priorities = max_score + 1 - scores 
+            priorities = max_score + 1 - scores
 
             # Apply power transformation to increase contrast between priorities
             priorities = np.power(priorities, self.priority_scaling)
@@ -178,7 +178,8 @@ class Curriculum:
             probabilities = priorities / np.sum(priorities)
 
             # Create dict for easier logging
-            teamtype_proabilities = {tt : prob for tt, prob in zip(teamtype_options, probabilities)}
+
+            teamtype_proabilities = dict(zip(teamtype_options, probabilities))
 
             # Sample the teamtypes using the calculated probabilities
             prioritized_teamtype = np.random.choice(teamtype_options, p=probabilities)

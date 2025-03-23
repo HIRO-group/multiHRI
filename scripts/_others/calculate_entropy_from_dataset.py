@@ -4,7 +4,6 @@ from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 import numpy as np
 from pathlib import Path
 import pandas as pd
-from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask
 from scipy.stats import entropy
 
 
@@ -24,7 +23,7 @@ main_trials = main_trials[main_trials['joint_action'] != '[[0, 0], [0, 0]]']
 print(f'Number of {str(layouts)} trials without double noops: {len(main_trials)}')
 # print(main_trials['layout_name'])
 
-action_ratios = {k: 0 for k in Action.ALL_ACTIONS}
+action_ratios = dict.fromkeys(Action.ALL_ACTIONS, 0)
 all_noops, p1_noops, p2_noops, double_noops = 0, 0, 0, 0
 
 #TODO a lot of this code is copy and pasted from overcooked dataset. Consider just making resuable functions
@@ -82,7 +81,7 @@ for index, row in main_trials.iterrows():
     for i in range(2):
         state_hash = row["state"].specific_hash(i)
         if state_hash not in actions_per_state:
-            actions_per_state[state_hash] = {k: 0 for k in range(len(Action.ALL_ACTIONS))}
+            actions_per_state[state_hash] = dict.fromkeys(range(len(Action.ALL_ACTIONS)), 0)
             # print('!')
         # print(actions_per_state[state_hash])
         actions_per_state[state_hash][row['joint_action'][i]] += 1

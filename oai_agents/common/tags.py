@@ -1,4 +1,3 @@
-from enum import Enum
 class AgentPerformance:
     '''
     Agent performance refers to the reward an agent receives after playing in

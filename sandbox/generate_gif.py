@@ -8,7 +8,7 @@ def generate_gif(screenshots_folder_name, output_gif_name=None):
     image_folder = f'{SCREENSHOTS_DIR}/{screenshots_folder_name}'
     output_gif_name = output_gif_name if output_gif_name else screenshots_folder_name
     output_gif = f'{GIFS_DIR}/{output_gif_name}.gif'
-    
+
     images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
     images.sort(key=lambda x: int(os.path.splitext(x)[0]))
     frames = [Image.open(os.path.join(image_folder, image)) for image in images]

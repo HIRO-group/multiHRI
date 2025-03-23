@@ -2,21 +2,16 @@ import json
 import numpy as np
 import pandas as pd
 import pygame
-import pylsl
 from pygame import K_UP, K_LEFT, K_RIGHT, K_DOWN, K_SPACE, K_s
-from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE, FULLSCREEN
+from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
 import matplotlib
 import time
 
 matplotlib.use('TkAgg')
 
 import os
-from os import listdir, environ, system, name
-from os.path import isfile, join
-import re
-import time
+from os import environ, name
 
-from pathlib import Path
 import pathlib
 USING_WINDOWS = (name == 'nt')
 # Windows path
@@ -27,35 +22,26 @@ if USING_WINDOWS:
 
 
 # Lab streaming layer
-from pylsl import StreamInfo, StreamOutlet, local_clock
+from pylsl import local_clock
 
 # Used to activate game window at game start for immediate game play
 if USING_WINDOWS:
     import pygetwindow as gw
 
-from oai_agents.agents.agent_utils import DummyPolicy
-from oai_agents.agents.base_agent import OAIAgent
-from oai_agents.agents.il import BehaviouralCloningAgent
-from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.hrl import HierarchicalRL
 # from oai_agents.agents import Manager
-from oai_agents.common.arguments import get_arguments
-from oai_agents.common.subtasks import Subtasks, get_doable_subtasks, facing, calculate_completed_subtask
+from oai_agents.common.subtasks import facing, calculate_completed_subtask
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
-from oai_agents.agents.agent_utils import load_agent, DummyAgent
 from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
-from oai_agents.gym_environments.manager_env import OvercookedManagerGymEnv
-from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from overcooked_ai_py.mdp.overcooked_mdp import Direction, Action, OvercookedState, OvercookedGridworld
+from overcooked_ai_py.mdp.overcooked_mdp import Direction, Action
 # from overcooked_ai_py.planning.planners import MediumLevelPlanner
 from overcooked_ai_py.visualization.state_visualizer import StateVisualizer, roboto_path
-from overcooked_ai_py.planning.planners import MediumLevelActionManager
 # from scripts.train_agents import get_bc_and_human_proxy
 
 class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
-    
+
     def __init__(self, args, layout_name=None, agent=None, teammates=None, p_idx=0, horizon=400,
                  trial_id=None, user_id=None, stream=None, outlet=None, fps=5, gif_name='gif'):
         self.x = None
@@ -71,7 +57,7 @@ class OvercookedGUI:
         else:
             self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=False,
                                         is_eval_env=True, horizon=horizon, learner_type='originaler',
-                                        
+
                                         )
         self.agent = agent
         self.p_idx = p_idx
