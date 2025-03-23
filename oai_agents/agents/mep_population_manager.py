@@ -108,7 +108,6 @@ class MEPPopulationManager:
 
     def train_population(self, total_timesteps: int, num_of_ckpoints: int, eval_interval: int):
         checkpoint_interval = total_timesteps // self.args.num_of_ckpoints
-
         experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name="maximum_entropy_population")
         run = wandb.init(
             project="overcooked_ai",

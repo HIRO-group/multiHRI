@@ -1,6 +1,5 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from stable_baselines3.common.env_util import make_vec_env
-# Import both classes from base_overcooked_env.py
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv, BonusOvercookedGymEnv
 from stable_baselines3.common.vec_env import DummyVecEnv as VEC_ENV_CLS
 
@@ -48,7 +47,6 @@ class DiversityRLAgentTrainer(RLAgentTrainer):
             env = _env
             eval_envs = _eval_envs
 
-        # --- Configure each training environment's layout if needed ---
         for i in range(self.n_envs):
             env.env_method('set_env_layout', indices=i, env_index=i % self.n_layouts, unique_env_idx=i)
         return env, eval_envs
