@@ -25,10 +25,10 @@ class StorageRoomSingle(Experiment):
         super().__init__(
             exps_folder='storage_room_1_chef_layouts/1',
             methods=[
-                # 'nonblocked_7obs',
+                'nonblocked_7obs',
                 # 'eitherblocked_7obs',
-                'nonblocked_13obs',
-                'eitherblocked_13obs',
+                # 'nonblocked_13obs',
+                # 'eitherblocked_13obs',
             ],
             layouts=[
                 # 'storage_room_single_right_sym_leftpotblocked',

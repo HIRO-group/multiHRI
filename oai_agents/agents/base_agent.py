@@ -201,25 +201,25 @@ class SB3Wrapper(OAIAgent):
         self.policy.set_training_mode(False)
         obs, vectorized_env = self.policy.obs_to_tensor(obs)
         with th.no_grad():
+            # When OAIAgent uses stable_baseline_3's PPO, its self.policy will have get_distribution method
             if hasattr(self.policy, "get_distribution"):
                 if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.policy.action_space.n):
                     dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
                 else:
                     dist = self.policy.get_distribution(obs)
+                actions = dist.get_actions(deterministic=deterministic)
+            # When OAIAgent uses stable_baseline_3's DQN, its self.policy will not have get_distribution method.
+            # Instead, it has q_net, which tells the values when taking different actions. 
+            # torch.distributions.Categorical can transform it to policy distribution. 
             elif hasattr(self.policy, "q_net"):
                 q_values = self.policy.q_net(obs)
                 dist = th.distributions.Categorical(logits=q_values)
-            else:
-                raise NotImplementedError("Policy does not support distribution extraction.")
-            # Get actions: if distribution has get_actions, use it;
-            # otherwise, handle torch Categorical manually.
-            if hasattr(dist, "get_actions"):
-                actions = dist.get_actions(deterministic=deterministic)
-            else:
                 if deterministic:
                     actions = th.argmax(dist.logits, dim=1)
                 else:
                     actions = dist.sample()
+            else:
+                raise NotImplementedError("Policy does not support distribution extraction.")
         # Convert to numpy, and reshape to the original action shape
         actions = actions.cpu().numpy().reshape((-1,) + self.agent.action_space.shape)
         # Remove batch dimension if needed
