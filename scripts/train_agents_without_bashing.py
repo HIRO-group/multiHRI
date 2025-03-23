@@ -30,7 +30,7 @@ from scripts.utils.layout_config import (
 
 from scripts.train_agents import (
     SP, SPN_1ADV, SPN_1ADV_XSPCKP, SPN_XSPCKP, 
-    FCP_mhri, FCP_traditional, N_1_FCP, MEP
+    FCP_mhri, FCP_traditional, N_1_FCP, MEP_POPULATION
 )
 
 
@@ -94,7 +94,7 @@ def set_input(args):
         args.wandb_mode = 'disabled'
         args.n_envs = 2
         args.num_of_ckpoints = 5
-        args.epoch_timesteps = 2
+        args.epoch_timesteps = 800
         args.pop_total_training_timesteps = 4000
         args.n_x_sp_total_training_timesteps = 4000
         args.adversary_total_training_timesteps = 1500
@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
     set_input(args=args)
 
-    MEP(args=args)
+    # MEP_POPULATION(args=args)
 
     # SPN_XSPCKP(args=args)
 
