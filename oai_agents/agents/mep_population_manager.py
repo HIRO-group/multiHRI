@@ -14,7 +14,7 @@ from scripts.utils.common import generate_name
 from stable_baselines3.common.utils import obs_as_tensor
 from stable_baselines3.common.distributions import CategoricalDistribution
 
-class DiversePopulationManager:
+class MEPPopulationManager:
     def __init__(self, population_size, args):
         self.population_size = population_size
         self.args = args
@@ -62,9 +62,6 @@ class DiversePopulationManager:
         self.timesteps = self.start_timestep
         self.experiment_name = RLAgentTrainer.get_experiment_name(
             exp_folder=args.exp_dir, model_name="maximum_entropy_population")
-        # # Evaluation and checkpoint intervals
-        # self.eval_interval = getattr(args, "eval_interval", 50000)
-        # self.checkpoint_interval = getattr(args, "checkpoint_interval", 100000)
 
     def get_other_policies(self, current_trainer):
         """Return a list of policy networks for all trainers except the current one."""
@@ -219,5 +216,5 @@ if __name__ == "__main__":
 
     args.total_ego_agents = 4
 
-    manager = DiversePopulationManager(population_size=args.total_ego_agents, args=args)
+    manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
     manager.train_population()

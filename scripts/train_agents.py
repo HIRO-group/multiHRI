@@ -6,7 +6,7 @@ from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.agents_finder import HMLProfileCollection, SelfPlayAgentsFinder
-from oai_agents.agents.diverse_population_manager import DiversePopulationManager
+from oai_agents.agents.mep_population_manager import MEPPopulationManager
 
 from pathlib import Path
 
@@ -25,7 +25,7 @@ def MEP_POPULATION(args):
     agents_finder = SelfPlayAgentsFinder(args=args)
     _, _, training_infos = agents_finder.get_agents_infos()
     if len(training_infos)<=0:
-        manager = DiversePopulationManager(population_size=args.total_ego_agents, args=args)
+        manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
         manager.train_population(
             total_timesteps=args.pop_total_training_timesteps,
             num_of_ckpoints=args.num_of_ckpoints,
