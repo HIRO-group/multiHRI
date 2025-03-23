@@ -33,7 +33,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest"]
-dev = ["ruff"]
+dev = ["ruff>=0.11.2"]
 
 [tool.ruff]
 # NOTE: Synchoronize the ignores with .flake8
