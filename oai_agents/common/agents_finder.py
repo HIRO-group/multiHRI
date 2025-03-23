@@ -249,27 +249,18 @@ class HMLProfileCollection:
         self.add_multiple_agents()
 
     def add_agent(self, agent_profile):
-        """
-        Adds an agent profile to the collection and updates the mappings.
-        """
         self.agent_profiles.append(agent_profile)
-
-        # Update layout_map
         for layout in agent_profile.layouts:
             if layout not in self.layout_map:
                 self.layout_map[layout] = []
             self.layout_map[layout].append(agent_profile)
 
     def add_performance_agent(self, model, layout, category:AgentCategory):
-        """
-        Adds an agent to the collection with a specific performance category.
-        """
         agent = AgentProfile(model=model, layouts=[layout])
         agent.assign_category_weight(category=category)
         self.add_agent(agent)
 
     def add_multiple_agents(self):
-        # agent_finder = SelfPlayAgentsFinder(args=self.args)
         agents, env_infos, training_infos = self.agents_finder.get_agents_infos()
         for training_info in training_infos:
             ck_list = training_info["ck_list"]
@@ -317,7 +308,8 @@ if __name__ == '__main__':
     args.exp_dir = 'Complex/5'
     args.layout_names = complex_5_chefs_layouts
     args.num_players = 5
-    hml_profiles = HMLProfileCollection(args=args)
+    agents_finder = SelfPlayAgentsFinder(args=args)
+    hml_profiles = HMLProfileCollection(args=args, agents_finder=agents_finder)
     hml_profiles.save_population()
     agent = get_best_SP_agent(args=args, population=hml_profiles.get_population())
     print(f"agent.name: {agent.name}")

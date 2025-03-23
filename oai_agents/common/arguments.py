@@ -25,12 +25,10 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--FCP-seed', type=int, default=1010, help='seed used in train_helper')
     parser.add_argument('--N-X-SP-seed', type=int, default=1010, help='seed used in train_helper')
     parser.add_argument('--N-X-FCP-seed', type=int, default=1010, help='seed used in train_helper')
-
     parser.add_argument('--SP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
     parser.add_argument('--FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
     parser.add_argument('--N-X-SP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
     parser.add_argument('--N-X-FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
-
     parser.add_argument('--ADV-seed', type=int, default=68, help='seed used in adverary-play')
     parser.add_argument('--ADV-h-dim', type=int, default=512, help='hidden dimension used in adverary-play')
 
@@ -43,7 +41,6 @@ def get_arguments(additional_args=[]):
     parser.add_argument('--primary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the primary agent')
     parser.add_argument('--adversary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the adversary agent')
     parser.add_argument('--how-long', type=int)
-
 
     parser.add_argument('--exp-name', type=str, default='last',
                         help='Name of experiment. Used to tag save files.')
