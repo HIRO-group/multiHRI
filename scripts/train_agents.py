@@ -17,8 +17,6 @@ from scripts.utils import (
     get_N_X_SP_agents,
 )
 
-
-
 def MEP_POPULATION(args):
     # AgentsFinder can find agent under the directory, f"{args.exp_dir}/{args.num_players}",
     # by its method get_agents_infos

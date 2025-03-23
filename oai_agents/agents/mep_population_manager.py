@@ -106,14 +106,7 @@ class MEPPopulationManager:
             other_agents=self.get_other_agents(ego_trainer=ego_trainer)
         )
 
-    def train_population(self, total_timesteps=None, num_of_ckpoints=None, eval_interval=None):
-        # Ensure that wandb is initialized at the start of training.
-        if total_timesteps is None:
-            total_timesteps = self.args.pop_total_training_timesteps
-        if num_of_ckpoints is None:
-            num_of_ckpoints = self.args.num_of_ckpoints
-        if eval_interval is None:
-            eval_interval = 40 * self.epoch_timesteps
+    def train_population(self, total_timesteps: int, num_of_ckpoints: int, eval_interval: int):
         checkpoint_interval = total_timesteps // self.args.num_of_ckpoints
 
         experiment_name = RLAgentTrainer.get_experiment_name(exp_folder=self.args.exp_dir, model_name="maximum_entropy_population")
@@ -217,4 +210,8 @@ if __name__ == "__main__":
     args.total_ego_agents = 4
 
     manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
-    manager.train_population()
+    manager.train_population(
+        total_timesteps=args.pop_total_training_timesteps,
+        num_of_ckpoints=args.num_of_ckpoints,
+        eval_interval = args.eval_steps_interval * args.epoch_timesteps
+    )
