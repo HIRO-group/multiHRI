@@ -22,7 +22,7 @@ def MEP_POPULATION(args):
     # by its method get_agents_infos
     agents_finder = SelfPlayAgentsFinder(args=args)
     _, _, training_infos = agents_finder.get_agents_infos()
-    if len(training_infos)<=0:
+    if len(training_infos)==0:
         manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
         manager.train_population(
             total_timesteps=args.pop_total_training_timesteps,

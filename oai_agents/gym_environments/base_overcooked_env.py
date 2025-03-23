@@ -335,7 +335,6 @@ class BonusOvercookedGymEnv(OvercookedGymEnv):
         obs = self.get_obs(c_idx=self.p_idx)
         bonus = self.bonus_getter(obs=obs, action=action)
         obs, reward, done, info = super().step(action)
-        # print(f"bonus: {bonus}")
         return obs, reward + bonus, done, info
 
     def set_bonus_getter(self, bonus_getter):
