@@ -1,5 +1,20 @@
 #!/bin/sh
 
+#SBATCH --partition=amem
+#SBATCH --job-name=SP_c3_best
+#SBATCH --output=SP_c3_best.%j.out
+#SBATCH --time=36:00:00
+#SBATCH --qos=mem
+#SBATCH --nodes=1
+#SBATCH --ntasks=50
+#SBATCH --mem=256G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=nasi4978@colorado.edu
+
+./scripts/bash_scripts/rc_config.sh
+
+source .venv/bin/activate
+
 ALGO="best_EGO"
 TEAMMATES_LEN=1
 HOW_LONG=20
@@ -14,10 +29,10 @@ L1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_0"
 L2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_0"
 L3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_0"
 
-# M0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_252.0"
-# M1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_284.0"
-# M2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_234.0"
-# M3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_246.0"
+M0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_12_rew_236.0"
+M1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_40_rew_170.0"
+M2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_10_rew_180.0"
+M3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_31_rew_194.0"
 
 H0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/best"
 H1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/best"
