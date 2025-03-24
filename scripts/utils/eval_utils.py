@@ -88,7 +88,7 @@ class Complex:
 
 
 
-class Classic: 
+class Classic:
     L_2 = [
         'agent_models/ClassicTest/2/SP_hd256_seed3031/ck_0',
         'agent_models/ClassicTest/2/SP_hd256_seed3708/ck_0',

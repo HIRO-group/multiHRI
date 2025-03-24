@@ -104,7 +104,7 @@ def plot_heatmap(tiles_v, layout_features, feature_positions, title=''):
     # Remove x and y ticks and labels
     ax.set_xticks([])
     ax.set_yticks([])
-    
+
     # plt.title('Accumulated Value Function with Layout Features')
     plt.tight_layout()
     plt.savefig(f'data/plots/heatmap_{title}.png', dpi=300)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                      X    12    X
                      X   XDOX   X
                      XXXXXXXXXXXX"""
-    
+
     # grid_layout = """XODSXXXXSDXX
     #                  X          X
     #                  S PP XX    X
@@ -146,7 +146,7 @@ if __name__ == "__main__":
     args.p_idx = 0
     args.n_envs = 200
     args.layout_names = [args.layout]
-    
+
     # path = 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/last'
     path = 'agent_models/Complex/2/SP_hd256_seed2602/last'
     # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'

@@ -23,7 +23,7 @@ if __name__ == "__main__":
     args.n_envs = 1
 
     # teammates_path = [
-    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green 
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
