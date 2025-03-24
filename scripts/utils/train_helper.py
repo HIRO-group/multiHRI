@@ -587,7 +587,7 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
     )
 
     best_ego_trainer.train_agents(
-        total_train_timesteps=args.n_x_fcp_total_training_timesteps,
+        total_train_timesteps=args.n_x_sp_total_training_timesteps,
         tag_for_returning_agent=tag
     )
         
