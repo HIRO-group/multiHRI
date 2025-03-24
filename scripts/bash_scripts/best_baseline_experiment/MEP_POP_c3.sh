@@ -1,6 +1,21 @@
 #!/bin/bash
 
-ALGO="MEP_POPULATION"
+#SBATCH --partition=amem
+#SBATCH --job-name=SP_c3_best
+#SBATCH --output=SP_c3_best.%j.out
+#SBATCH --time=36:00:00
+#SBATCH --qos=mem
+#SBATCH --nodes=1
+#SBATCH --ntasks=50
+#SBATCH --mem=256G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=nasi4978@colorado.edu
+
+./scripts/bash_scripts/rc_config.sh
+
+source .venv/bin/activate
+
+ALGO="best_EGO"
 TEAMMATES_LEN=1
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
@@ -8,6 +23,25 @@ LAYOUT_NAMES="c3"
 EXP_DIR="${ALGO}_${LAYOUT_NAMES}/${NUM_PLAYERS}"
 TOTAL_EGO_AGENTS=4
 QUICK_TEST=false
+
+L0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_0"
+L1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_0"
+L2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_0"
+L3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_0"
+
+M0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_12_rew_236.0"
+M1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_40_rew_170.0"
+M2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_10_rew_180.0"
+M3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_31_rew_194.0"
+
+H0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/best"
+H1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/best"
+H2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/best"
+H3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/best"
+
+L="${L0},${L1},${L2},${L3}"
+M="${M0},${M1},${M2},${M3}"
+H="${H0},${H1},${H2},${H3}"
 
 WANDB_MODE="online"
 POP_FORCE_TRAINING=false
@@ -42,3 +76,7 @@ python scripts/train_agents.py \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \
     --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \
+    --exp-name-prefix "${EXP_NAME_PREFIX}" \
+    --low-perfs ${L} \
+    --med-perfs ${M} \
+    --high-perfs ${H} \
