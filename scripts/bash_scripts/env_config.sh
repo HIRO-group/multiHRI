@@ -1,5 +1,8 @@
 #!/bin/bash
 
+WANDB_API_KEY=$(cat /home/$USER/.wandb_api_key)
+WANDB_CACHE_DIR="/scratch/alpine/$USER/.wandb_cache"
+
 NUM_PLAYERS=$((TEAMMATES_LEN + 1))
 CUSTOM_AGENT_CK_RATE_GENERATION=$((NUM_PLAYERS + 1))
 NUM_STEPS_IN_TRAJ_FOR_DYN_ADV=2
