@@ -24,9 +24,9 @@ if __name__ == "__main__":
 
     teammates_path = [
         # 'agent_models/c1_v4/SP_s1010_h256_tr[SP]_ran/best'
-        # 'agent_models/c1_best_EGO/best_c1/best'
+        'agent_models/c1_best_EGO/best_c1/best'
 
-        'agent_models/c4_v4/SP_s1010_h256_tr[SP]_ran/best'
+        # 'agent_models/c4_v4/SP_s1010_h256_tr[SP]_ran/best'
         # 'agent_models/c4_best_EGO/best_c4/best'
 
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green 
@@ -38,14 +38,14 @@ if __name__ == "__main__":
     teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
     # trajectories = tile locations. Top left of the layout is (0, 0), bottom right is (M, N)
-    teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(2, 1), (3, 1)]})]
+    # teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(2, 1), (3, 1)]})]
     # teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
 
     # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
     # player_path = 'agent_models/c4_best_EGO/best_c4/best'
     # player = load_agent(Path(player_path), args)
-    # player = teammates[0]
-    player = 'human' # blue
+    player = teammates[0]
+    # player = 'human' # blue
 
     dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=50,
                         horizon=400, gif_name=args.layout)

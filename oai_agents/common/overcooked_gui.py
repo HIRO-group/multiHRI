@@ -120,6 +120,22 @@ class OvercookedGUI:
         self.gif_name = gif_name
         if not os.path.exists(f'data/screenshots/{self.gif_name}'):
             os.makedirs(f'data/screenshots/{self.gif_name}')
+        
+
+        self.resource_locations = {}
+        for y, row in enumerate(self.env.env.mdp.terrain_mtx):
+            for x, cell in enumerate(row):
+                if cell in ['S', 'D', 'P', 'O']:
+                    self.resource_locations[(x, y)] = cell
+
+        self.resource_usage = {
+            agent_idx: {pos: 0 for pos in self.resource_locations}
+            for agent_idx in range(len(self.env.state.players))
+        }
+
+        print(f"Resource locations: {self.resource_locations}")
+
+
 
     def start_screen(self):
         pygame.init()
@@ -211,6 +227,17 @@ class OvercookedGUI:
         completed_task = calculate_completed_subtask(prev_obj, curr_obj, tile_in_front)
         # print('----', completed_task)
 
+        joint_action = self.env.get_joint_action()
+        for idx, player in enumerate(self.env.state.players):
+            # pos_in_front = facing(self.env.env.mdp.terrain_mtx, player)
+
+            x, y = player.position[0] + player.orientation[0], player.position[1] + player.orientation[1]
+            pos_in_front = (x, y)
+
+            action = joint_action[idx]
+            if action == Action.INTERACT:
+                if pos_in_front in self.resource_locations:
+                    self.resource_usage[idx][pos_in_front] += 1
 
         # Log data
         curr_reward = sum(info['sparse_r_by_agent'])
@@ -300,6 +327,36 @@ class OvercookedGUI:
 
         self.on_cleanup()
         print(f'Trial finished in {self.curr_tick} steps with total reward {self.score}')
+
+        # print("Resource usage breakdown by agent and resource position:")
+        # for agent_idx, usage in self.resource_usage.items():
+        #     print(f"Agent {agent_idx}:")
+        #     for pos, count in usage.items():
+        #         if count > 0:
+        #             res_type = self.resource_locations[pos]
+        #             print(f"  {res_type} at {pos}: {count} times")
+
+        from collections import defaultdict
+
+        # Step 1: Gather all resource locations and types
+        all_resource_entries = []
+        for pos, res_type in self.resource_locations.items():
+            all_resource_entries.append((res_type, pos))
+
+        # Step 2: Sort by resource type then position
+        all_resource_entries.sort(key=lambda x: (x[0], x[1]))  # Sort by type, then position
+
+        # Step 3: Print header and values
+        print("Resource usage comparison (Agent 0 vs Agent 1):\n")
+        print(f"{'Type':<4} {'Position':<10} | {'Agent 0':<8} {'Agent 1':<8}")
+        print("-" * 36)
+
+        for res_type, pos in all_resource_entries:
+            a0_count = self.resource_usage[0].get(pos, 0)
+            a1_count = self.resource_usage[1].get(pos, 0)
+            if a0_count > 0 or a1_count > 0:  # Only show if someone used it
+                print(f"{res_type:<4} {str(pos):<10} | {a0_count:<8} {a1_count:<8}")
+
 
     def save_trajectory(self, data_path):
         df = pd.DataFrame(self.trajectory)
