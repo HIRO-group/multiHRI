@@ -1,10 +1,9 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
-from oai_agents.common.population import get_performance_based_population_by_layouts, generate_hdim_and_seed
+from oai_agents.common.population import get_performance_based_population_by_layouts
 from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.heatmap import generate_adversaries_based_on_heatmap
-from oai_agents.agents.agent_utils import CustomAgent
 from .common import load_agents, generate_name
 from oai_agents.common.tags import Prefix, KeyCheckpoints
 

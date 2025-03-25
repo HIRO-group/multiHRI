@@ -3,8 +3,6 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
-from pathlib import Path
-from tqdm import tqdm
 from scripts.train_agents import get_bc_and_human_proxy
 from scipy.stats import entropy
 from torch.distributions.categorical import Categorical

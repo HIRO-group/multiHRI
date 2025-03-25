@@ -4,16 +4,12 @@ NOTE: Currently only plot_evaluation_results_bar_multi_seed supports aggregation
 '''
 
 import multiprocessing as mp
-import os
 from pathlib import Path
 
 import matplotlib
-from torch import index_select
-from wandb import agent
 mp.set_start_method('spawn', force=True)
 
 import hashlib
-import sys
 from typing import Sequence
 import itertools
 import concurrent.futures
@@ -21,7 +17,6 @@ from tqdm import tqdm
 from stable_baselines3.common.evaluation import evaluate_policy
 
 import matplotlib.pyplot as plt
-from pathlib import Path
 import numpy as np
 import pickle as pkl
 import warnings
@@ -48,7 +43,7 @@ eval_key_lut = {
 DISPLAY_NAME_MAP = {
     'secret_heaven': "Secret Resources",
     'storage_room': "Resource Corridor",
-    
+
     'coordination_ring': "Coord. Ring",
     'counter_circuit': "Counter Circuit",
     'cramped_room': "Cramped Room",
@@ -147,7 +142,7 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
                 for i in range(unseen_count):
                     try:
                         teammates.append(agents[i + (num_teams)])
-                    except:
+                    except RuntimeError:
                         continue
                 if len(teammates) == N-1:
                     teammates_list.append(teammates)
@@ -167,8 +162,8 @@ def generate_plot_name(prefix, num_players, deterministic, p_idxes, num_eps, max
     return plot_name
 
 
-def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, agent_groups, plot_name, unseen_counts=[0], display_delivery=False, only_plot_summary_fig=False):
-    
+def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, agent_groups, plot_name, unseen_counts=None, display_delivery=False, only_plot_summary_fig=False):
+    unseen_counts = unseen_counts or [0]
     # Check that we have data for each agent in the group
     for group_name in agent_groups:
         for agt_name in agent_groups[group_name]:
@@ -191,7 +186,7 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
     chart_data = {}
 
     if not only_plot_summary_fig:
-        # Plot performance with each individual teamtype 
+        # Plot performance with each individual teamtype
 
         x_values = np.arange(len(unseen_counts))
         num_groups = len(agent_groups)
@@ -199,7 +194,7 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
         group_center_offset = (num_groups - 1) * width / 2
 
         fig, axes = plt.subplots(num_teamsets + 1, num_layouts, figsize=(5 * num_layouts, 5 * (num_teamsets + 1)), sharey=True)
-        
+
         if num_layouts == 1:
             axes = [[axes]]
 
@@ -299,7 +294,7 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
                             cross_exp_std[agent_name] = [0] * len(unseen_counts)
                         cross_exp_mean[agent_name][unseen_counts.index(unseen_count)] += mean_values[-1]
                         cross_exp_std[agent_name][unseen_counts.index(unseen_count)] += std_values[-1]
-            
+
             # Average plot across all groups
             # {group_name : [agent1, agent2, ...], ...}
             for group_name in agent_groups:
@@ -320,7 +315,7 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
                 group_means_for_layout = group_means_for_layout / num_agents_in_group
                 group_std_for_layout = np.sqrt( group_variances_for_layout / num_agents_in_group )
 
-                if not (group_name in chart_data):
+                if group_name not in chart_data:
                     chart_data[group_name] = {
                         "mean": [],
                         "std": [],
@@ -340,16 +335,14 @@ def plot_evaluation_results_bar_multi_seed(all_mean_rewards, all_std_rewards, la
         cmap = matplotlib.colormaps["tab20b"]
 
         group_center_offset = (num_agents - 1) * width / 2
-        c = 0
         for i, (agent_name, d) in enumerate(chart_data.items()):
             bar_positions = idxs - group_center_offset + (i * width)
-            ax.bar(bar_positions, d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(c*5), capsize=4)
-            c+=1
+            ax.bar(bar_positions, d["mean"], width, yerr=d["std"], label=agent_name, color=cmap(i*5), capsize=4)
 
         ax.set_xticks(idxs)
         ax.set_xticklabels(layouts, fontsize='20')
         ax.set_yticks(np.arange(0, 30, 2))
-        ax.tick_params(axis='y', labelsize=20) 
+        ax.tick_params(axis='y', labelsize=20)
         ax.set_ylabel("Number of Soup Deliveries", fontsize='20')
         ax.autoscale_view()
         ax.legend(loc='best', fontsize=20, fancybox=True, framealpha=0.5, ncol=2)
@@ -541,7 +534,7 @@ def get_2_player_input_classic(args):
         ]
     p_idxes = [0, 1]
     all_agents_paths = {
-        
+
         'SP': 'agent_models/Classic/2/SP_hd256_seed1010/best',
         'FCP': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
 
@@ -667,7 +660,7 @@ def get_5_player_input_complex(args):
         'dec_5_chefs_secret_heaven',
         'selected_5_chefs_spacious_room_no_counter_space',
         ]
-    
+
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
         'SP_s1010_h256': 'agent_models/Complex/5/SP_hd256_seed1010/best',

@@ -1,4 +1,3 @@
-from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld
 
 
@@ -7,24 +6,24 @@ def find_all_paths(grid, start, end, path=None, all_paths=None):
         path = []
     if all_paths is None:
         all_paths = []
-    
+
     new_path = path.copy()
     new_path.append(start)
-    
+
     if start == end:
         all_paths.append(new_path)
         return
-    
+
     directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-    
+
     for dx, dy in directions:
         new_row, new_col = start[0] + dx, start[1] + dy
 
-        if (0 <= new_row < len(grid) and 
-            0 <= new_col < len(grid[0]) and 
-            grid[new_row][new_col] != "X" and 
+        if (0 <= new_row < len(grid) and
+            0 <= new_col < len(grid[0]) and
+            grid[new_row][new_col] != "X" and
             (new_row, new_col) not in new_path):
-            
+
             find_all_paths(grid, (new_row, new_col), end, new_path, all_paths)
     return all_paths
 
@@ -36,7 +35,7 @@ def get_resource_locations(grid):
         "serving": [],
         'pot': []
     }
-    
+
     for i in range(len(grid)):
         for j in range(len(grid[0])):
             if grid[i][j] == "O":
@@ -47,7 +46,7 @@ def get_resource_locations(grid):
                 resources["serving"].append((i, j))
             elif grid[i][j] == "P":
                 resources["pot"].append((i, j))
-    
+
     return resources
 
 def find_all_resource_paths(grid):
@@ -80,7 +79,7 @@ def find_all_resource_paths(grid):
             paths = find_all_paths(grid, pot_pos, serving_pos)
             if paths:
                 all_resource_paths["pot_to_serving"].extend(paths)
-    
+
 
     # Find all paths from serving station to onions
     for serving_pos in resources["serving"]:
@@ -88,7 +87,7 @@ def find_all_resource_paths(grid):
             paths = find_all_paths(grid, serving_pos, onion_pos)
             if paths:
                 all_resource_paths["serving_to_onion"].extend(paths)
-    
+
     # Find all paths from serving station to dish
     for serving_pos in resources["serving"]:
         for dish_pos in resources["dish"]:
@@ -115,7 +114,7 @@ def main(layout_name):
     #     print(f"{key} paths, len: ", len(value))
     #     for i, path in enumerate(value):
     #         print(f"  Path {i+1}: {format_path(path)}")
-    
+
     total_paths = sum(len(paths) for paths in resource_paths.values())
     print(f"{layout_name}, Total paths: {total_paths} \n")
 

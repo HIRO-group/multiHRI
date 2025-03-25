@@ -1,15 +1,18 @@
+from typing import Optional, List
+
 import argparse
 from pathlib import Path
 import torch as th
-from oai_agents.common.tags import TeamType
 
 ARGS_TO_SAVE_LOAD = ['encoding_fn']
 
-def get_arguments(additional_args=[]):
+def get_arguments(additional_args: Optional[List] = None):
     """
     Arguments for training agents
     :return:
     """
+    additional_args = additional_args if additional_args is not None else []
+
     parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
     parser.add_argument('--layout-names', help='Overcooked maps to use')
     parser.add_argument('--horizon', type=int, default=400, help='Max timesteps in a rollout')

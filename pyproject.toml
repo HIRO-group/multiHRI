@@ -1,0 +1,189 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oai_agents"
+version = "0.1.0"
+description = "Cooperative multi-agent environment based on Overcooked"
+readme = "README.md"
+authors = [
+    { name = "Stéphane Aroca-Ouellette", email = "stephane.aroca-ouellette@colorado.edu" },
+]
+urls = { Homepage = "https://github.com/StephAO/oai_agents" }
+keywords = [
+    "Overcooked",
+    "AI",
+    "Reinforcement Learning",
+    "Human Agent Collaboration",
+]
+dependencies = [
+    "numpy",
+    "stable-baselines3==1.8.0",
+    "sb3-contrib==1.8.0",
+    "gymnasium==0.28.1",
+    "pylsl==1.16.2",
+    "cloudpickle==3.1.0",
+    "tqdm",
+    "wandb",
+    "pygame",
+    "dill",
+]
+
+
+[project.optional-dependencies]
+test = ["pytest"]
+dev = ["ruff>=0.11.2"]
+
+[tool.ruff]
+# NOTE: Synchoronize the ignores with .flake8
+lint.ignore = [
+    # these ignores are from flake8-bugbear; please fix!
+    "B007",
+    "B008",
+    "B017",
+    "B018",   # Useless expression
+    "B019",
+    "B020",
+    "B023",
+    "B024",
+    "B026",
+    "B028",   # No explicit `stacklevel` keyword argument found
+    "B904",
+    "B905",
+    "E402",
+    "C408",   # C408 ignored because we like the dict keyword argument syntax
+    "C416",   # Ignored because its unclear why some of these are flagged
+    "C419",
+    "E501",   # E501 is not flexible enough, we're using B950 instead
+    "E721",
+    "E731",   # Assign lambda expression
+    "E741",
+    "EXE001",
+    "F405",
+    "F821",
+    "F841",
+    # these ignores are from flake8-logging-format; please fix!
+    "G101",
+    "G201",
+    "G202",
+    "G003",
+    "G004",
+    # these ignores are from RUFF perf; please fix!
+    "PERF203",
+    "PERF4",
+    "SIM102",
+    "SIM103",
+    "SIM112",  # flake8-simplify code styles
+    "SIM105",  # these ignores are from flake8-simplify. please fix or ignore with commented reason
+    "SIM108",
+    "SIM110",
+    "SIM114",  # Combine `if` branches using logical `or` operator
+    "SIM115",
+    "SIM116",  # Disable Use a dictionary instead of consecutive `if` statements
+    "SIM117",
+    "SIM118",
+]
+#line-length = 120
+lint.select = [
+    "B",
+    "C4",
+    "G",
+    "E",
+    "F",
+    "SIM1",
+    "W",
+    # Not included in flake8
+    "PERF",
+    "PLE",
+    "TRY203",
+]
+
+# Allow unused variables when underscore-prefixed.
+lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+lint.fixable = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "I",
+    "N",
+    "Q",
+    "S",
+    "T",
+    "W",
+    "ANN",
+    "ARG",
+    "BLE",
+    "COM",
+    "DJ",
+    "DTZ",
+    "EM",
+    "ERA",
+    "EXE",
+    "FBT",
+    "ICN",
+    "INP",
+    "ISC",
+    "NPY",
+    "PD",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PTH",
+    "PYI",
+    "RET",
+    "RSE",
+    "RUF",
+    "SIM",
+    "SLF",
+    "TCH",
+    "TID",
+    "TRY",
+    "UP",
+    "YTT",
+]
+lint.unfixable = []
+target-version = "py39"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "env",
+    ".github",
+    "examples",
+    "tests",
+    "tools",
+    "docs",
+    "docsrc",
+    "tests",
+    "setup.py",
+    "noxfile.py",
+    "__init__.py",
+]

@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as mpimg
 import textwrap
 
@@ -51,10 +50,10 @@ def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix,
 
         for p, note in zip(axes[i, 0].patches, layout_df['Notes']):
             # reward
-            axes[i, 0].annotate(format(p.get_height(), '.2f'), 
-                            (p.get_x() + p.get_width() / 2., p.get_height()), 
-                            ha = 'center', va = 'center', 
-                            xytext = (0, 9), 
+            axes[i, 0].annotate(format(p.get_height(), '.2f'),
+                            (p.get_x() + p.get_width() / 2., p.get_height()),
+                            ha = 'center', va = 'center',
+                            xytext = (0, 9),
                             textcoords = 'offset points')
             # notes
             if not isinstance(note, str):
@@ -66,10 +65,10 @@ def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix,
 
             for j, line in enumerate(lines):
                 y_pos = p.get_height() - (j + 1) * line_height
-                axes[i, 0].text(p.get_x() + p.get_width() / 2., y_pos, 
-                                line, ha='center', va='center', 
+                axes[i, 0].text(p.get_x() + p.get_width() / 2., y_pos,
+                                line, ha='center', va='center',
                                 fontsize=10, color='white')
-        
+
         layout_image_path = os.path.join(LAYOUTS_IMAGES_DIR, f"{layout}/-1.png")
         if os.path.exists(layout_image_path):
             img = mpimg.imread(layout_image_path)
@@ -79,9 +78,11 @@ def plot_best_type_layouts(agent_types, questionnaire_file_name, layouts_prefix,
             axes[i, 1].text(0.5, 0.5, "Image not found", ha='center', va='center', fontsize=12)
             axes[i, 1].axis('off')
     plt.tight_layout()
-    
-    if layouts_prefix == '': layouts_prefix = 'all'
-    if trained_on_number_of_layouts == '': trained_on_number_of_layouts = 'OneOrMultiple'
+
+    if layouts_prefix == '':
+        layouts_prefix = 'all'
+    if trained_on_number_of_layouts == '':
+        trained_on_number_of_layouts = 'OneOrMultiple'
     # replace / with _ in agent types
     agent_types = '_'.join(agent_types).replace('/', '+')
 

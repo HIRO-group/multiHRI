@@ -3,12 +3,10 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
-from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.agents_finder import HMLProfileCollection, SelfPlayAgentsFinder
 from oai_agents.agents.mep_population_manager import MEPPopulationManager
 
-from pathlib import Path
 
 from scripts.utils import (
     get_SP_agents,

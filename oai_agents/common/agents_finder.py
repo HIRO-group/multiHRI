@@ -1,20 +1,17 @@
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import AgentPerformance, Prefix, KeyCheckpoints
+from oai_agents.common.tags import Prefix, KeyCheckpoints
 from oai_agents.agents.base_agent import OAIAgent, OAITrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.path_helper import get_experiment_models_dir
 from oai_agents.common.learner import LearnerType
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 from oai_agents.common.teammates_collection import get_best_SP_agent
-from pathlib import Path
 from typing import List
 
 
 import os
 
 from scripts.utils.layout_config import (
-    classic_2_chefs_layouts,
-    complex_2_chefs_layouts,
     complex_5_chefs_layouts
 )
 
@@ -48,7 +45,7 @@ class AgentCategory:
     def default_weights(cls):
         """Returns default uniform weights for all categories."""
         weight = 1 / len(cls.CATEGORY_NAMES)
-        return {name: weight for name in cls.CATEGORY_NAMES}
+        return dict.fromkeys(cls.CATEGORY_NAMES, weight)
 
     @classmethod
     def pure_weight(cls, category):

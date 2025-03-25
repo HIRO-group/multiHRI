@@ -1,13 +1,11 @@
 from pathlib import Path
-import torch as th
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from oai_agents.common.heatmap import get_tile_map, not_used_function_get_tile_v_using_all_states
+from oai_agents.common.heatmap import get_tile_map
 from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.overcooked_gui import OvercookedGUI
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 
 

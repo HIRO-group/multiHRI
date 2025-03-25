@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from oai_agents.agents.agent_utils import DummyAgent, load_agent, CustomAgent
+from oai_agents.agents.agent_utils import DummyAgent
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
 
-    args.layout = f'counter_circuit'
+    args.layout = 'counter_circuit'
     args.p_idx = 0
     args.layout_names = [args.layout]
     args.n_envs = 1

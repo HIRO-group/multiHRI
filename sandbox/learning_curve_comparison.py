@@ -3,7 +3,7 @@ import hashlib
 from pathlib import Path
 import pickle as pkl
 import matplotlib.pyplot as plt
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple
 
 import wandb
 
@@ -21,7 +21,7 @@ def cache_run_data(run, key):
         with open(cache_path, "wb") as f:
             pkl.dump(data, f)
         print(f"Cached data for {run.name}.")
-    
+
     return data
 
 def get_runs_data(layout_name):
@@ -31,7 +31,7 @@ def get_runs_data(layout_name):
     almh_ran = api.run("ava-abd/overcooked_ai/gu07go47")
     almh_cur = api.run("ava-abd/overcooked_ai/fv8gp8i0")
     key = f"eval_mean_reward_{layout_name}_teamtype_SPL"
-    
+
     runs = [amh_cur, amh_ran, almh_ran, almh_cur]
     runs_data = {
         run.name: cache_run_data(run, key) for run in runs
@@ -59,32 +59,32 @@ def analyze_convergence(
     """
     convergence_points = {}
     converged_flags = {}
-    
+
     fig, ax = plt.subplots(figsize=(12, 6))
-    
+
     for idx, (run_name, curve) in enumerate(runs_data.items()):
         rolling_mean = np.convolve(curve, np.ones(window_size)/window_size, mode='valid')
         relative_changes = np.abs(np.diff(rolling_mean) / rolling_mean[:-1])
         stable_points = relative_changes < threshold
         convergence_point = -1
         converged = False
-        
+
         for i in range(min_epochs, len(stable_points)):
             if np.all(stable_points[i:i+window_size]):
                 convergence_point = i + window_size
                 converged = True
                 break
-        
+
         convergence_points[run_name] = convergence_point
         converged_flags[run_name] = converged
         epochs = np.arange(len(curve))
         ax.plot(epochs, curve, label=run_name, alpha=0.7)
-        
+
         if converged:
             ax.axvline(x=convergence_point, color=f'C{idx}', linestyle='--', alpha=0.5)
-            ax.plot(convergence_point, curve[convergence_point], 'o', 
+            ax.plot(convergence_point, curve[convergence_point], 'o',
                    color=f'C{idx}', markersize=10)
-    
+
     ax.set_xlabel('Epochs')
     ax.set_ylabel('Mean Reward')
     ax.set_title('Learning Curves Convergence Analysis')
@@ -103,11 +103,10 @@ if __name__ == "__main__":
         threshold=0.01,
         min_epochs=10,
     )
-    
+
     for run_name in runs_data.keys():
         epoch = convergence_points[run_name]
         status = "converged" if converged_flags[run_name] else "not converged"
         print(f"{run_name}: {status} at timestep {epoch if epoch != -1 else 'N/A'}")
 
     plt.show()
-    

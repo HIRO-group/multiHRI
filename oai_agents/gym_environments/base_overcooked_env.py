@@ -1,6 +1,6 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
-from oai_agents.common.learner import LearnerType, Learner
+from oai_agents.common.subtasks import Subtasks, get_doable_subtasks
+from oai_agents.common.learner import Learner
 from oai_agents.agents.agent_utils import CustomAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
@@ -14,7 +14,6 @@ from gym import Env, spaces, register
 import numpy as np
 import pygame
 from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
-from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import torch as th

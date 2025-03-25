@@ -2,20 +2,8 @@ import multiprocessing as mp
 mp.set_start_method('spawn', force=True) # should be called before any other module imports
 
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
-from oai_agents.common.learner import LearnerType
-from oai_agents.common.curriculum import Curriculum
-from oai_agents.common.agents_finder import HMLProfileCollection, SelfPlayAgentsFinder
-from oai_agents.agents.mep_population_manager import MEPPopulationManager
 
-from pathlib import Path
 
-from scripts.utils import (
-    get_SP_agents,
-    get_FCP_agent_w_pop,
-    get_N_X_FCP_agents,
-    get_N_X_SP_agents,
-)
 
 from scripts.utils.layout_config import (
     storage_room_1_chef_layouts,
@@ -28,10 +16,6 @@ from scripts.utils.layout_config import (
     complex_5_chefs_layouts
 )
 
-from scripts.train_agents import (
-    SP, SPN_1ADV, SPN_1ADV_XSPCKP, SPN_XSPCKP, 
-    FCP_mhri, FCP_traditional, N_1_FCP, MEP_POPULATION
-)
 
 
 def set_input(args):

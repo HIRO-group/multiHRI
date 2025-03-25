@@ -1,19 +1,13 @@
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.common.subtasks import Subtasks, get_doable_subtasks, calculate_completed_subtask, facing
 
-from overcooked_ai_py.planning.planners import MediumLevelActionManager
-from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld
-from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 
 from copy import deepcopy
-from gym import spaces
 import numpy as np
 from overcooked_ai_py.mdp.overcooked_mdp import Action, Direction
 import torch as th
-import wandb
 
 
-import math
 
 
 class OvercookedSubtaskGymEnv(OvercookedGymEnv):
@@ -93,7 +87,7 @@ class OvercookedSubtaskGymEnv(OvercookedGymEnv):
 
         if smallest_dist == float('inf'):
             # No other spot to pick it up
-            reward = 0 
+            reward = 0
         elif curr_dist == float('inf'):
             # Impossible to reach feature anyway, distance doesn't matter
             reward = 0
@@ -180,7 +174,7 @@ class OvercookedSubtaskGymEnv(OvercookedGymEnv):
         prev_obj = [(self.state.players[i].held_object.name if self.state.players[i].held_object else None) for i in range(2)]
 
         #self.state, env_reward, self.requires_hard_reset, info = self.env.step(joint_action)
-        agent_action = Action.INDEX_TO_ACTION[action] 
+        agent_action = Action.INDEX_TO_ACTION[action]
         self.base_step(agent_action)
 
         done = self.goal_subtask_id == Subtasks.SUBTASKS_TO_IDS['unknown'] or self.requires_hard_reset

@@ -1,14 +1,10 @@
 import multiprocessing as mp
-import os
 from pathlib import Path
 
 import matplotlib
-from torch import index_select
-from wandb import agent
 mp.set_start_method('spawn', force=True)
 
 import hashlib
-import sys
 from typing import Sequence
 import itertools
 import concurrent.futures
@@ -16,7 +12,6 @@ from tqdm import tqdm
 from stable_baselines3.common.evaluation import evaluate_policy
 
 import matplotlib.pyplot as plt
-from pathlib import Path
 import numpy as np
 import pickle as pkl
 import warnings
@@ -26,18 +21,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from utils import (
-    Complex, Classic,
-    TWO_PLAYERS_LOW_EVAL,
-    TWO_PLAYERS_MEDIUM_EVAL,
-    TWO_PLAYERS_HIGH_EVAL,
-    THREE_PLAYERS_LOW_EVAL,
-    THREE_PLAYERS_MEDIUM_EVAL,
-    THREE_PLAYERS_HIGH_EVAL,
-    FIVE_PLAYERS_LOW_EVAL,
-    FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
-    FIVE_PLAYERS_HIGH_STORAGE_EVAL
+    Complex, Classic
 )
 
 class Eval:
@@ -142,7 +126,7 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
                 for i in range(unseen_count):
                     try:
                         teammates.append(agents[i + (num_teams)])
-                    except:
+                    except RuntimeError:
                         continue
                 if len(teammates) == N-1:
                     teammates_list.append(teammates)
@@ -162,7 +146,8 @@ def generate_plot_name(prefix, num_players, deterministic, p_idxes, num_eps, max
     return plot_name
 
 
-def plot_evaluation_results_bar(fig, axes, all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False, start=0):
+def plot_evaluation_results_bar(fig, axes, all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=None, display_delivery=False, start=0):
+    unseen_counts = unseen_counts or [0]
     #cmap = matplotlib.colormaps.get_cmap("Set3")
     plot_name = plot_name + "_delivery" if display_delivery else plot_name
     uc = ''.join([str(u) for u in unseen_counts])
@@ -229,7 +214,7 @@ def plot_evaluation_results_bar(fig, axes, all_mean_rewards, all_std_rewards, la
 
             x = x_values + idx * width - width * (num_agents - 1) / 2
 
-            if not (agent_name in chart_data):
+            if agent_name not in chart_data:
                 chart_data[agent_name] = {
                     "mean": [],
                     "std": [],

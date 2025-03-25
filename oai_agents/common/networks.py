@@ -3,7 +3,6 @@ import numpy as np
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 import torch as th
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.utils import spectral_norm
 
 

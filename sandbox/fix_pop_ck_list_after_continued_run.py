@@ -5,8 +5,6 @@ import re
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, KeyCheckpoints
-from oai_agents.common.learner import LearnerType
-from oai_agents.common.tags import KeyCheckpoints
 
 def fix_ck_list(initial_run_root, continued_run_root, corrected_run_root, ck_starts_from):
     ck_regex = re.compile(r'ck_(\d+)(.*)')

@@ -1,15 +1,14 @@
 from pathlib import Path
-from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from oai_agents.common.arguments import get_arguments
-from oai_agents.common.tags import TeamType, TeammatesCollection, KeyCheckpoints
+from oai_agents.common.tags import KeyCheckpoints
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.agent_utils import load_agent
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from utils import Eval, POPULATION_EVAL_AGENTS, print_selected_agents_for_evaluation
+from utils import Eval, POPULATION_EVAL_AGENTS
 
 def get_2_player_input(args):
     args.teammates_len = 1
@@ -132,7 +131,7 @@ def evaluate_all_agents(args, all_players_and_their_teammates):
     mean_rewards = {
         primary_agent.name: {
             layout_name: {
-                unseen_count: {teammate_lvl: -1 for teammate_lvl in Eval.ALL}
+                unseen_count: dict.fromkeys(Eval.ALL, -1)
                     for unseen_count in range(args.num_players)}
             for layout_name in args.layout_names}
         for primary_agent in all_players_and_their_teammates.keys()}
@@ -140,7 +139,7 @@ def evaluate_all_agents(args, all_players_and_their_teammates):
     std_rewards = {
         primary_agent.name: {
             layout_name: {
-                unseen_count: {teammate_lvl: -1 for teammate_lvl in Eval.ALL}
+                unseen_count: dict.fromkeys(Eval.ALL, -1)
                 for unseen_count in range(args.num_players)}
             for layout_name in args.layout_names}
         for primary_agent in all_players_and_their_teammates.keys()}

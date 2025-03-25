@@ -26,7 +26,7 @@ def not_used_function_get_tile_v_using_all_states(args, agent, layout, shape):
 
     possible_objects = [None, "dish", "onion", "soup"]
     player_object_combinations = list(product(possible_objects, repeat=args.num_players))
-    
+
     for pos in all_valid_joint_pos:
         env.reset()
         for i in range(args.num_players):
@@ -41,12 +41,13 @@ def not_used_function_get_tile_v_using_all_states(args, agent, layout, shape):
                     cooking_ticks = [-1]
                 for cooking_tick in cooking_ticks:
                     env.state.objects[pot_loc] = SoupState.get_soup(pot_loc, num_onions=n, cooking_tick=cooking_tick)
-                    
+
                     for objects_combination in player_object_combinations:
                         for player_idx, obj in enumerate(objects_combination):
                             if env.state.players[player_idx].has_object():
                                 env.state.players[player_idx].remove_object()
-                            if obj is None: continue                                    
+                            if obj is None:
+                                continue
                             elif obj == "soup":
                                 held_obj = SoupState.get_soup(pos[player_idx], num_onions=3, finished=True)
                                 env.state.players[player_idx].set_object(held_obj)
@@ -98,11 +99,11 @@ def generate_static_adversaries(args, all_tiles):
             top_n_indices = np.argsort(tiles.ravel())[-args.num_static_advs_per_heatmap:][::-1]
             top_n_coords = np.column_stack(np.unravel_index(top_n_indices, tiles.shape))
             layout_heatmap_top_xy_coords.extend(top_n_coords)
-        
+
         heatmap_xy_coords[layout] = random.choices(layout_heatmap_top_xy_coords, k=args.num_static_advs_per_heatmap)
     agents = []
     for adv_idx in range(args.num_static_advs_per_heatmap):
-        start_position = {layout: (-1, -1) for layout in args.layout_names}
+        start_position = dict.fromkeys(args.layout_names, (-1, -1))
         for layout in args.layout_names:
             start_position[layout] = [tuple(map(int, heatmap_xy_coords[layout][adv_idx]))]
         agents.append(CustomAgent(args=args, name=f'SA{adv_idx}', trajectories=start_position))
@@ -175,7 +176,7 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
         for p_idx in range(args.num_players):
             for teammates in [
                 [DummyAgent(action='random') for _ in range(args.num_players - 1)], # lowest performance teammates
-                [heatmap_source for _ in range(args.num_players - 1)] # highest performance teammates 
+                [heatmap_source for _ in range(args.num_players - 1)] # highest performance teammates
             ]:
                 simulation = OvercookedSimulation(args=args, agent=heatmap_source, teammates=teammates, layout_name=layout, p_idx=p_idx, horizon=400)
                 trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
@@ -195,6 +196,6 @@ def generate_adversaries_based_on_heatmap(args, heatmap_source, teammates_collec
 
     if TeamType.SELF_PLAY_DYNAMIC_ADV in train_types:
         dynamic_advs = generate_dynamic_adversaries(args, all_tiles)
-        adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV] = dynamic_advs 
+        adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV] = dynamic_advs
 
     return adversaries

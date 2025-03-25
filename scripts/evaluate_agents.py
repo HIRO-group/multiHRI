@@ -1,10 +1,8 @@
 import multiprocessing as mp
-import os
 from pathlib import Path
 mp.set_start_method('spawn', force=True)
 
 import hashlib
-import sys
 from typing import Sequence
 import itertools
 import concurrent.futures
@@ -12,7 +10,6 @@ from tqdm import tqdm
 from stable_baselines3.common.evaluation import evaluate_policy
 
 import matplotlib.pyplot as plt
-from pathlib import Path
 import numpy as np
 import pickle as pkl
 
@@ -21,18 +18,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from utils import (
-    Complex, Classic,
-    TWO_PLAYERS_LOW_EVAL,
-    TWO_PLAYERS_MEDIUM_EVAL,
-    TWO_PLAYERS_HIGH_EVAL,
-    THREE_PLAYERS_LOW_EVAL,
-    THREE_PLAYERS_MEDIUM_EVAL,
-    THREE_PLAYERS_HIGH_EVAL,
-    FIVE_PLAYERS_LOW_EVAL,
-    FIVE_PLAYERS_MEDIUM_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    FIVE_PLAYERS_HIGH_FOR_ALL_BESIDES_STORAGE_ROOM_EVAL,
-    FIVE_PLAYERS_MEDIUM_STORAGE_EVAL,
-    FIVE_PLAYERS_HIGH_STORAGE_EVAL
+    Complex, Classic
 )
 
 class Eval:
@@ -162,11 +148,11 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
         for unseen_count in X:
             teammates_list = []
             for num_teams in range(max_num_teams_per_layout_per_x):
-                teammates = [primary_agent] * (N-1-unseen_count) 
+                teammates = [primary_agent] * (N-1-unseen_count)
                 for i in range(unseen_count):
                     try:
                         teammates.append(agents[i + (num_teams)])
-                    except:
+                    except RuntimeError:
                         continue
                 if len(teammates) == N-1:
                     teammates_list.append(teammates)
@@ -186,7 +172,8 @@ def generate_plot_name(prefix, num_players, deterministic, p_idxes, num_eps, max
     return plot_name
 
 
-def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=[0], display_delivery=False):
+def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, plot_name, unseen_counts=None, display_delivery=False):
+    unseen_counts = unseen_counts or [0]
     plot_name = plot_name + "_delivery" if display_delivery else plot_name
     uc = ''.join([str(u) for u in unseen_counts])
     plot_name += f"_uc{uc}"
@@ -557,7 +544,7 @@ def get_5_player_input_complex(args):
         'dec_5_chefs_secret_heaven',
         'selected_5_chefs_spacious_room_no_counter_space',
         ]
-    
+
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
         'SP_s1010_h256': 'agent_models/Complex/5/SP_hd256_seed1010/best',

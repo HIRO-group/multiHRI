@@ -72,8 +72,7 @@ if __name__ == "__main__":
                                               total_ego_agents=args.total_ego_agents,
                                               total_training_timesteps = args.pop_total_training_timesteps,
                                               force_training=pop_force_training,
-                                               ,
-                                              )
+                                            )
 
     teammates_collection[TeammatesCollection.EVAL] = teammates_collection[TeammatesCollection.TRAIN]
 
