@@ -267,7 +267,7 @@ def SPN_XSPCKP(args) -> None:
     )
 
 
-def best_EGO(args) -> None:
+def best_EGO(args, add_adv=False) -> None:
     '''only for 2 players'''
     primary_train_types = [
         TeamType.SELF_PLAY_HIGH,
@@ -295,6 +295,7 @@ def best_EGO(args) -> None:
         curriculum=curriculum,
         primary_eval_types=primary_eval_types,
         primary_train_types=curriculum.train_types,
+        add_adv=add_adv
     )
 
 
@@ -311,7 +312,10 @@ if __name__ == '__main__':
         FCP_traditional(args=args)
 
     elif args.algo_name == 'best_EGO':
-        best_EGO(args=args)
+        best_EGO(args=args, add_adv=False)
+
+    elif args.algo_name == 'best_EGO_with_CAP':
+        best_EGO(args=args, add_adv=True)
     
     # elif args.algo_name == 'FCP_mhri':
     #     FCP_mhri(args=args)

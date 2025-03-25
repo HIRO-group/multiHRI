@@ -1,39 +1,28 @@
 #!/bin/sh
 
-ALGO="best_EGO"
+ALGO="SPN_XSPCKP"
 TEAMMATES_LEN=1
-HOW_LONG=20
-NUM_OF_CKPOINTS=40
-LAYOUT_NAMES="c3"
-EXP_DIR="${LAYOUT_NAMES}_best_EGO"
-TOTAL_EGO_AGENTS=1
-QUICK_TEST=false
+NUM_PLAYERS=$((TEAMMATES_LEN + 1))
+NUM_OF_CKPOINTS=10
+LAYOUT_NAMES="counter_circuit"
+EXP_DIR="$NUM_PLAYERS" # When quick_test=True this will be overwritten to "Test/$EXP_DIR"
+TOTAL_EGO_AGENTS=4
+QUICK_TEST=true
+HOW_LONG=1
 
-L0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_0"
-L1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_0"
-L2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_0"
-L3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_0"
-
-M0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_16.0"
-M1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_14.0"
-M2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_108.0"
-M3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_90.0"
-
-H0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/best"
-H1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/best"
-H2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/best"
-H3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/best"
-
-L="${L0},${L1},${L2},${L3}"
-M="${M0},${M1},${M2},${M3}"
-H="${H0},${H1},${H2},${H3}"
-
-WANDB_MODE="online"
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
 PRIMARY_FORCE_TRAINING=false
+# EXP_NAME_PREFIX="test_"
 
 source scripts/bash_scripts/env_config.sh
+# Overwrite the default values from env_config here if needed
+N_ENVS=5
+WANDB_MODE="disabled"
+EPOCH_TIMESTEPS=3500
+N_X_SP_TOTAL_TRAINING_TIMESTEPS=10000
+FCP_TOTAL_TRAINING_TIMESTEPS=75000
+
 
 python scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
@@ -62,6 +51,3 @@ python scripts/train_agents.py \
     --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \
     --exp-name-prefix "${EXP_NAME_PREFIX}" \
-    --low-perfs ${L} \
-    --med-perfs ${M} \
-    --high-perfs ${H} \

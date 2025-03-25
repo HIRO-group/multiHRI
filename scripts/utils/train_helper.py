@@ -530,7 +530,7 @@ def get_N_X_FCP_agents(
 
 
 
-def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculum):
+def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculum, add_adv=False):
     '''Code purposed for a very specific experiment, assumes n_players = 2'''
     from pathlib import Path
 
@@ -565,13 +565,32 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
             if ttype in eval_collection[layout_name]:
                 eval_collection[layout_name][ttype] = [[agent]]
     
+    name = f'best_{args.layout_names[0]}'
+
+    if add_adv:
+        random_pos = {
+            'c1': [(1, 1), (2, 1), (3, 1), (4, 1), (1, 2), (2, 2), (3, 2), (4, 2)],
+            'c2': [(2, 1), (4, 1), (6, 1), (1, 2), (7, 2), (2, 3), (4, 3), (6, 3)],
+            'c3': [(2, 1), (4, 1), (6, 1), (1, 2), (7, 2), (2, 3), (4, 3), (6, 3)],
+            'c4': [(3, 1), (5, 1), (7, 1), (1, 2), (9, 2), (3, 3), (5, 3), (7, 3)],
+        }
+
+        custom_agents = []
+        for adv_idx in range(len(random_pos[args.layout_names[0]])):
+            start_position = {layout: [random_pos[layout][adv_idx]] for layout in args.layout_names}
+            custom_agents.append([CustomAgent(args=args, name=f'SA{adv_idx}', trajectories=start_position)])
+
+        train_collection[args.layout_names[0]][TeamType.SELF_PLAY_STATIC_ADV] = custom_agents
+        eval_collection[args.layout_names[0]][TeamType.SELF_PLAY_STATIC_ADV] = custom_agents
+        name = f'best_{args.layout_names[0]}_adv'
+
     teammates_collection = {
         TeammatesCollection.TRAIN: train_collection,
         TeammatesCollection.EVAL: eval_collection
     }
     
     best_ego_trainer = RLAgentTrainer(
-        name=f'best_{args.layout_names[0]}',
+        name=name,
         args=args,
         agent=None,
         teammates_collection=teammates_collection,
@@ -587,7 +606,10 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
     )
 
     best_ego_trainer.train_agents(
-        total_train_timesteps=args.n_x_sp_total_training_timesteps,
+        total_train_timesteps=args.n_x_fcp_total_training_timesteps,
         tag_for_returning_agent=tag
     )
-        
+
+
+
+

@@ -64,17 +64,23 @@ class OvercookedGUI:
         self.args = args
         self.layout_name = layout_name or 'asymmetric_advantages'
 
-        self.use_subtask_env = False
-        if self.use_subtask_env:
-            kwargs = {'single_subtask_id': 10, 'args': args, 'is_eval_env': True}
-            self.env = OvercookedSubtaskGymEnv(**p_kwargs, **kwargs)
-        else:
-            self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=False,
+        teammates_collection = {
+            'eval': {
+                args.layout: {
+                    'run_type': [teammates]
+                }
+            }
+        }
+
+        self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=False,
                                         is_eval_env=True, horizon=horizon, learner_type='originaler',
+                                        teammates_collection=teammates_collection, curriculum=None,
                                         )
         self.agent = agent
         self.p_idx = p_idx
-        self.env.set_teammates(teammates)
+        
+        self.env.set_teammates('run_type')
+        
         self.env.reset(p_idx=self.p_idx)
         if self.agent != 'human':
             self.agent.set_encoding_params(self.p_idx, self.args.horizon, env=self.env, is_haha=isinstance(self.agent, HierarchicalRL), tune_subtasks=False)
@@ -205,9 +211,6 @@ class OvercookedGUI:
         completed_task = calculate_completed_subtask(prev_obj, curr_obj, tile_in_front)
         # print('----', completed_task)
 
-        collision = self.env.mdp.prev_step_was_collision
-        if collision:
-            self.num_collisions += 1
 
         # Log data
         curr_reward = sum(info['sparse_r_by_agent'])
@@ -231,7 +234,6 @@ class OvercookedGUI:
             # TEAMMATE and POP(TODO): uncommment it and replace teammate_name by teammate_names
             # "agent": self.teammate_name,
             "p_idx": self.p_idx,
-            "collision": collision,
             "num_collisions": self.num_collisions
         }
         trans_str = json.dumps(transition)

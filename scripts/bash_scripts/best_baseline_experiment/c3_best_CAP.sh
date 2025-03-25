@@ -1,11 +1,11 @@
 #!/bin/sh
 
-ALGO="best_EGO"
+ALGO="best_EGO_with_CAP"
 TEAMMATES_LEN=1
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="c3"
-EXP_DIR="${LAYOUT_NAMES}_best_EGO"
+EXP_DIR="${LAYOUT_NAMES}_best_EGO_with_CAP"
 TOTAL_EGO_AGENTS=1
 QUICK_TEST=false
 
@@ -14,10 +14,10 @@ L1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_0"
 L2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_0"
 L3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_0"
 
-M0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_16.0"
-M1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_14.0"
-M2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_108.0"
-M3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_90.0"
+M0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_252.0"
+M1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_284.0"
+M2="${LAYOUT_NAMES}_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_234.0"
+M3="${LAYOUT_NAMES}_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_246.0"
 
 H0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/best"
 H1="${LAYOUT_NAMES}_v2/SP_s1010_h256_tr[SP]_ran/best"
