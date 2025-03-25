@@ -28,12 +28,10 @@ def get_arguments(additional_args: Optional[List] = None):
     parser.add_argument('--FCP-seed', type=int, default=1010, help='seed used in train_helper')
     parser.add_argument('--N-X-SP-seed', type=int, default=1010, help='seed used in train_helper')
     parser.add_argument('--N-X-FCP-seed', type=int, default=1010, help='seed used in train_helper')
-
     parser.add_argument('--SP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
     parser.add_argument('--FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
     parser.add_argument('--N-X-SP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
     parser.add_argument('--N-X-FCP-h-dim', type=int, default=256, help='hidden dimension used in train_helper')
-
     parser.add_argument('--ADV-seed', type=int, default=68, help='seed used in adverary-play')
     parser.add_argument('--ADV-h-dim', type=int, default=512, help='hidden dimension used in adverary-play')
 
@@ -46,7 +44,6 @@ def get_arguments(additional_args: Optional[List] = None):
     parser.add_argument('--primary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the primary agent')
     parser.add_argument('--adversary-force-training', type=str2bool, help='Flag indicating whether or not to force training of the adversary agent')
     parser.add_argument('--how-long', type=int)
-
 
     parser.add_argument('--exp-name', type=str, default='last',
                         help='Name of experiment. Used to tag save files.')
@@ -74,12 +71,13 @@ def get_arguments(additional_args: Optional[List] = None):
     parser.add_argument('--pop-total-training-timesteps', type=int)
     parser.add_argument('--fcp-total-training-timesteps', type=int)
     parser.add_argument('--fcp-w-sp-total-training-timesteps', type=int)
+    parser.add_argument('--eval-steps-interval', type=int, default=40)
     parser.add_argument('--reward-magnifier', type=float, default=3.0)
 
     parser.add_argument('--parallel', type=str2bool, default=True)
 
     parser.add_argument('--dynamic-reward', type=str2bool, default=True)
-    parser.add_argument('--final-sparse-r-ratio', type=float, default=1.0)
+    parser.add_argument('--final-sparse-r-ratio', type=float, default=0.5)
     parser.add_argument('--prioritized-sampling', type=str2bool, default=False, help='Flag indicating whether or not to use prioritized sampling for teammate selection, if True the worst performing teammates will be prioritized')
     parser.add_argument('--exp-dir', type=str, help='Folder to save/load experiment result')
 
@@ -109,7 +107,10 @@ def get_arguments(additional_args: Optional[List] = None):
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
     args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
-    args.layout_names = args.layout_names.split(',')
+
+    if isinstance(args.layout_names, str):
+        args.layout_names = args.layout_names.split(',')
+
 
     return args
 

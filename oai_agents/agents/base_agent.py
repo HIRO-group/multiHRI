@@ -108,7 +108,7 @@ class OAIAgent(nn.Module, ABC):
             }
             self.mlam = MediumLevelActionManager.from_pickle_or_compute(mdp, COUNTERS_PARAMS, force_compute=False)
             self.valid_counters = [self.mdp.find_free_counters_valid_for_player(mdp.get_standard_start_state(), self.mlam, i)
-                                   for i in range(2)]
+                                   for i in range(self.mdp.num_players)]
         else:
             self.mdp = env.mdp
             self.layout_name = env.layout_name
@@ -196,12 +196,25 @@ class SB3Wrapper(OAIAgent):
         self.policy.set_training_mode(False)
         obs, vectorized_env = self.policy.obs_to_tensor(obs)
         with th.no_grad():
-            if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.agent.action_space.n):
-                dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
+            # When OAIAgent uses stable_baseline_3's PPO, its self.policy will have get_distribution method
+            if hasattr(self.policy, "get_distribution"):
+                if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.policy.action_space.n):
+                    dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
+                else:
+                    dist = self.policy.get_distribution(obs)
+                actions = dist.get_actions(deterministic=deterministic)
+            # When OAIAgent uses stable_baseline_3's DQN, its self.policy will not have get_distribution method.
+            # Instead, it has q_net, which tells the values when taking different actions. 
+            # torch.distributions.Categorical can transform it to policy distribution. 
+            elif hasattr(self.policy, "q_net"):
+                q_values = self.policy.q_net(obs)
+                dist = th.distributions.Categorical(logits=q_values)
+                if deterministic:
+                    actions = th.argmax(dist.logits, dim=1)
+                else:
+                    actions = dist.sample()
             else:
-                dist = self.policy.get_distribution(obs)
-
-            actions = dist.get_actions(deterministic=deterministic)
+                raise NotImplementedError("Policy does not support distribution extraction.")
         # Convert to numpy, and reshape to the original action shape
         actions = actions.cpu().numpy().reshape((-1,) + self.agent.action_space.shape)
         # Remove batch dimension if needed
@@ -377,6 +390,7 @@ class OAITrainer(ABC):
             for split in combinations(range(self.n_layouts), split_size + 1):
                 self.splits.append(split)
         self.env_setup_idx, self.weighted_ratio = 0, 0.9
+        self.env = None
         # TODO: Claim eval_envs
 
     def _get_constructor_parameters(self):
@@ -441,7 +455,6 @@ class OAITrainer(ABC):
             wandb.log({'eval_mean_reward': np.mean(tot_mean_reward), 'timestep': timestep})
         return np.mean(tot_mean_reward), rew_per_layout, rew_per_layout_per_teamtype
 
-
     def set_new_teammates(self, curriculum):
         for i in range(self.args.n_envs):
             layout_name = self.env.env_method('get_layout_name', indices=i)[0]
@@ -488,14 +501,20 @@ class OAITrainer(ABC):
             save_dict["n_envs"] = self.n_envs
         th.save(save_dict, save_path)
         with open(env_path, "wb") as f:
-            step_counts = self.env.get_attr("step_count")
-            # Should be the same but to be safe save the min
-            timestep_count = min(step_counts)
+            if self.env is not None:
+                step_counts = self.env.get_attr("step_count")
+                # Should be the same but to be safe save the min
+                timestep_count = min(step_counts)
+            else:
+                timestep_count = 0
+                self.steps = 0
+                self.n_envs = 0
             pkl.dump({
                 "timestep_count": timestep_count,
                 "step_count": self.steps
             }, f)
             print(f"Saved on timestep_count: {self.n_envs*timestep_count} and step_count:{self.steps} for tag: {tag}")
+
         return path, tag
 
     @staticmethod
