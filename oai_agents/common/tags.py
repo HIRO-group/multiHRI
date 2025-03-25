@@ -1,4 +1,3 @@
-from enum import Enum
 import os
 from oai_agents.common.path_helper import get_model_path, get_experiment_models_dir
 

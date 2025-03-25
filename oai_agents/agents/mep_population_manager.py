@@ -1,6 +1,6 @@
 import torch as th
-import torch.nn.functional as F
-import random, wandb
+import random
+import wandb
 from typing import List
 from oai_agents.agents.base_agent import OAITrainer, OAIAgent
 from oai_agents.agents.diversity_rl_trainer import DiversityRLAgentTrainer
@@ -11,8 +11,6 @@ from oai_agents.common.learner import LearnerType
 from oai_agents.common.multi_setup_trainer import generate_hdim_and_seed
 from oai_agents.common.tags import TeamType, Prefix, KeyCheckpoints
 from scripts.utils.common import generate_name
-from stable_baselines3.common.utils import obs_as_tensor
-from stable_baselines3.common.distributions import CategoricalDistribution
 
 class MEPPopulationManager:
     def __init__(self, population_size, args):

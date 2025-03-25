@@ -7,7 +7,6 @@ from oai_agents.common.curriculum import Curriculum
 from oai_agents.common.agents_finder import HMLProfileCollection, SelfPlayAgentsFinder
 from oai_agents.agents.mep_population_manager import MEPPopulationManager
 
-from pathlib import Path
 
 from scripts.utils import (
     get_SP_agents,

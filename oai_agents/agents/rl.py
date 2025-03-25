@@ -8,14 +8,13 @@ from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
 import numpy as np
-import random
 from stable_baselines3 import PPO, DQN
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv
 from sb3_contrib import RecurrentPPO
 import wandb
 import os
-from typing import Optional, Literal
+from typing import Literal
 
 VEC_ENV_CLS = DummyVecEnv #
 

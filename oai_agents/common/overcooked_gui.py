@@ -30,7 +30,7 @@ if USING_WINDOWS:
 
 from oai_agents.agents.hrl import HierarchicalRL
 # from oai_agents.agents import Manager
-from oai_agents.common.subtasks import facing, calculate_completed_subtask
+from oai_agents.common.subtasks import facing
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
 from overcooked_ai_py.mdp.overcooked_mdp import Direction, Action

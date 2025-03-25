@@ -204,8 +204,8 @@ class SB3Wrapper(OAIAgent):
                     dist = self.policy.get_distribution(obs)
                 actions = dist.get_actions(deterministic=deterministic)
             # When OAIAgent uses stable_baseline_3's DQN, its self.policy will not have get_distribution method.
-            # Instead, it has q_net, which tells the values when taking different actions. 
-            # torch.distributions.Categorical can transform it to policy distribution. 
+            # Instead, it has q_net, which tells the values when taking different actions.
+            # torch.distributions.Categorical can transform it to policy distribution.
             elif hasattr(self.policy, "q_net"):
                 q_values = self.policy.q_net(obs)
                 dist = th.distributions.Categorical(logits=q_values)
