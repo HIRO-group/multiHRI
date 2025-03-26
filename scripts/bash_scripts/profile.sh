@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ALGO="SPN_XSPCKP"
 TEAMMATES_LEN=1

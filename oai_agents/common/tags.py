@@ -1,4 +1,6 @@
-from enum import Enum
+import os
+from oai_agents.common.path_helper import get_model_path, get_experiment_models_dir
+
 class AgentPerformance:
     '''
     Agent performance refers to the reward an agent receives after playing in
@@ -91,11 +93,54 @@ class KeyCheckpoints: # Tags to identify the type of model checkpoint to save/lo
     CHECKED_MODEL_PREFIX = 'ck_'
     REWARD_SUBSTR = '_rew_'
 
+    @staticmethod
+    def get_most_recent_checkpoint(base_dir, exp_dir, name: str) -> str:
+        path = get_model_path(
+            base_dir=base_dir,
+            exp_folder=exp_dir,
+            model_name=name
+        )
+        if not path.exists():
+            print(f"Warning: The directory {path} does not exist.")
+            return None
+        ckpts = [name for name in os.listdir(path) if name.startswith(KeyCheckpoints.CHECKED_MODEL_PREFIX)]
+        if not ckpts:
+            print(f"Warning: No checkpoints found in {path} with prefix '{KeyCheckpoints.CHECKED_MODEL_PREFIX}'.")
+            return None
+        ckpts_nums = [int(c.split('_')[1]) for c in ckpts]
+        last_ckpt_num = max(ckpts_nums)
+        return [c for c in ckpts if c.startswith(f"{KeyCheckpoints.CHECKED_MODEL_PREFIX}{last_ckpt_num}")][0]
+
+
 class Prefix:
     SELF_PLAY = 'SP'
     FICTITIOUS_CO_PLAY = 'FCP'
     ADVERSARY = 'adv'
     ADVERSARY_PLAY = 'pwadv'
+
+    @classmethod
+    def find_folders_with_prefix(cls, base_dir, exp_dir, prefix):
+        """
+        Finds folders in a directory starting with the given prefix.
+
+        Args:
+            base_dir (str): Base directory path.
+            exp_dir (str): Experiment directory path.
+            prefix (str): Prefix to filter folders.
+
+        Returns:
+            list: List of matching folder names.
+        """
+        target_dir = get_experiment_models_dir(base_dir=base_dir, exp_folder=exp_dir)
+        if not os.path.exists(target_dir):
+            raise ValueError(f"The directory {target_dir} does not exist.")
+
+        # List all items in the directory and filter for those starting with the prefix
+        matching_folders = [
+            folder for folder in os.listdir(target_dir)
+            if os.path.isdir(os.path.join(target_dir, folder)) and folder.startswith(prefix)
+        ]
+        return matching_folders
 
 class AdversaryPlayConfig:
     MAP = 'MultiAdversaryPlay' # adapts to a list of adversary [adv0, adv1, adv2]

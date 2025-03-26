@@ -1,5 +1,4 @@
 from oai_agents.agents.rl import RLAgentTrainer
-from oai_agents.common.tags import KeyCheckpoints
 from oai_agents.common.curriculum import Curriculum
 
 
@@ -15,7 +14,7 @@ def load_agents(args, name, tag, path=None, force_training=False):
 
 
 def generate_name(args, prefix, seed, h_dim, train_types:list=None, curriculum:Curriculum=None, suffix=None):
-    
+
     assert ((train_types is not None) or (curriculum is not None)), "Must provide either train_types or curriculum to generate name for model"
 
     if (train_types is None):

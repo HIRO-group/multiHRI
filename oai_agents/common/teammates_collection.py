@@ -25,7 +25,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
         # If train types are duplicated, only 1 set of teammates will be provided e.g. if TrainTypes = [SPH, SPH, SPM]
         # The TC will only have one list for SPH
         # {layout_name: {'SPH' : [[team1], [team2]] }, 'SPM' : [...]}
-        assert len(teamtypes) == len(set(teamtypes)), f"Duplicate teamtypes detected, When using entire population to generate TC, the teamtypes should be unqiue"
+        assert len(teamtypes) == len(set(teamtypes)), "Duplicate teamtypes detected, When using entire population to generate TC, the teamtypes should be unqiue"
 
         # If we want to use the entire population, we must check that the population is evenly divisible by the number of required agents
         required_population_size = 0
@@ -56,7 +56,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
         num_perf_categories = len(AgentPerformance.ALL)
 
         # TODO: Update this to support any number of performance tags and train types
-        assert num_perf_categories == 3, f'Current TC generation assumes only three performance types are present in the population'
+        assert num_perf_categories == 3, 'Current TC generation assumes only three performance types are present in the population'
 
         PERFORMANCE_LEVELS = ['H', 'M', 'L']
         # Number of elements in each partition
@@ -361,7 +361,7 @@ def update_TC_w_dynamic_and_static_ADV_teammates(args, train_types, eval_types, 
         if TeamType.SELF_PLAY_DYNAMIC_ADV in train_types:
             dyn_advs = adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV]
             teammates_collection[TeammatesCollection.TRAIN][layout_name][TeamType.SELF_PLAY_DYNAMIC_ADV] = [[dyn_advs[i]] + itself for i in range(len(dyn_advs))]
-        
+
         if TeamType.SELF_PLAY_DYNAMIC_ADV in eval_types:
             dyn_advs = adversaries[TeamType.SELF_PLAY_DYNAMIC_ADV]
             teammates_collection[TeammatesCollection.EVAL][layout_name][TeamType.SELF_PLAY_DYNAMIC_ADV] = [[dyn_advs[i]] + itself for i in range(len(dyn_advs))]

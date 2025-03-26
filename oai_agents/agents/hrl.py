@@ -1,22 +1,17 @@
 from oai_agents.agents.base_agent import OAIAgent, PolicyClone
-from oai_agents.agents.il import BehavioralCloningTrainer
-from oai_agents.agents.rl import RLAgentTrainer, SB3Wrapper, SB3LSTMWrapper, VEC_ENV_CLS
-from oai_agents.agents.agent_utils import DummyAgent, is_held_obj, load_agent
-from oai_agents.common.arguments import get_arguments, get_args_to_save, set_args_from_load
+from oai_agents.agents.rl import RLAgentTrainer, VEC_ENV_CLS
+from oai_agents.common.arguments import get_args_to_save, set_args_from_load
 from oai_agents.common.subtasks import Subtasks
 # from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
 # from oai_agents.gym_environments.manager_env import OvercookedManagerGymEnv
 
-from overcooked_ai_py.mdp.overcooked_mdp import Action, OvercookedGridworld
+from overcooked_ai_py.mdp.overcooked_mdp import Action
 
-from copy import deepcopy
 import numpy as np
 from pathlib import Path
 from stable_baselines3.common.env_util import make_vec_env
 import torch as th
 from torch.distributions.categorical import Categorical
-import torch.nn.functional as F
-from typing import Tuple, List
 
 class RLManagerTrainer(RLAgentTrainer):
     ''' Train an RL agent to play with a provided agent '''
@@ -41,7 +36,7 @@ class RLManagerTrainer(RLAgentTrainer):
         # However, currently it's just a reference to the agent, so the "self-teammate" could update the main agents subtask
         # To do this correctly, the "self-teammate" would have to be cloned before every epoch
         if inc_sp:
-            playable_self = HierarchicalRL(self.worker, self.learning_agent, self.args, name=f'playable_self')
+            playable_self = HierarchicalRL(self.worker, self.learning_agent, self.args, name='playable_self')
             for i in range(3):
                 if self.use_policy_clone:
                     manager = PolicyClone(self.learning_agent, self.args)
@@ -51,13 +46,13 @@ class RLManagerTrainer(RLAgentTrainer):
             if type(self.eval_teammates) == dict :
                 if self.use_policy_clone:
                     manager = PolicyClone(self.learning_agent, self.args)
-                    playable_self = HierarchicalRL(self.worker, manager, self.args, name=f'playable_self')
+                    playable_self = HierarchicalRL(self.worker, manager, self.args, name='playable_self')
                 for k in self.eval_teammates:
                     self.eval_teammates[k].append(playable_self)
             elif self.eval_teammates is not None:
                 if self.use_policy_clone:
                     manager = PolicyClone(self.learning_agent, self.args)
-                    playable_self = HierarchicalRL(self.worker, manager, self.args, name=f'playable_self')
+                    playable_self = HierarchicalRL(self.worker, manager, self.args, name='playable_self')
                 self.eval_teammates.append(playable_self)
 
         if self.eval_teammates is None:
@@ -71,7 +66,7 @@ class RLManagerTrainer(RLAgentTrainer):
             if tm.name == f'playable_self_{idx}':
                 tm.manager = PolicyClone(self.learning_agent, self.args)
         if type(self.eval_teammates) == dict:
-            pc = PolicyClone(self.learning_agent, self.args, name=f'playable_self')
+            pc = PolicyClone(self.learning_agent, self.args, name='playable_self')
             for k in self.eval_teammates:
                 for tm in self.eval_teammates[k]:
                     if tm.name == 'playable_self':
@@ -79,7 +74,7 @@ class RLManagerTrainer(RLAgentTrainer):
         elif self.eval_teammates is not None:
             for i, tm in enumerate(self.eval_teammates):
                 if tm.name == 'playable_self':
-                    tm.manager = PolicyClone(self.learning_agent, self.args, name=f'playable_self')
+                    tm.manager = PolicyClone(self.learning_agent, self.args, name='playable_self')
 
 
 class HierarchicalRL(OAIAgent):
@@ -209,7 +204,7 @@ class HierarchicalRL(OAIAgent):
         probs = dist.distribution.probs
         probs = probs[0]
         assert np.isclose(np.sum(probs.cpu().numpy()), 1)
-        if self.layout_name == None:
+        if self.layout_name is None:
             raise ValueError("Set current layout using set_curr_layout before attempting manual adjustment")
 
         subtasks_to_weigh = []#Subtasks.SUBTASKS_TO_IDS['unknown']]
@@ -398,4 +393,3 @@ class HierarchicalRL(OAIAgent):
         model = cls(manager=manager, worker=worker, args=args)  # pytype: disable=not-instantiable
         model.to(device)
         return model
-

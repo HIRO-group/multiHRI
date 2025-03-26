@@ -3,6 +3,9 @@ from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, ge
 from oai_agents.common.learner import LearnerType, Learner
 from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
 from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection
+from oai_agents.common.subtasks import Subtasks, get_doable_subtasks
+from oai_agents.common.learner import Learner
+from oai_agents.agents.agent_utils import CustomAgent
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -15,7 +18,6 @@ from gym import Env, spaces, register
 import numpy as np
 import pygame
 from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
-from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import torch as th
@@ -144,7 +146,7 @@ class OvercookedGymEnv(Env):
         self.prev_subtask = [Subtasks.SUBTASKS_TO_IDS['unknown'] for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
         self.valid_counters = [self.env.mdp.find_free_counters_valid_for_player(self.env.state, self.mlam, i) for i in
-                               range(2)]
+                               range(self.mdp.num_players)]
         self.reset()
 
     # def get_overcooked_from_mdp_kwargs(self, horizon=None):
@@ -174,7 +176,6 @@ class OvercookedGymEnv(Env):
                 self.reset_info['start_position'][t_idx] = tm.get_start_position(layout_name=self.layout_name, u_env_idx=self.unique_env_idx)
             if type(tm) == CustomAgent:
                 tm.reset()
-
         assert self.mdp.num_players == len(self.teammates) + 1, f"MDP num players: {self.mdp.num_players} != " \
                                                                     f"num teammates: {len(self.teammates)} + main agent: 1"
         self.stack_frames_need_reset = [True for i in range(self.mdp.num_players)]
@@ -244,7 +245,7 @@ class OvercookedGymEnv(Env):
         return self.teammates[id]
 
     def step(self, action):
-        if len(self.teammates) == 0:
+        if len(self.teammates) == 0 and self.args.num_players > 1:
             raise ValueError('set_teammates must be set called before starting game.')
 
         joint_action = [None for _ in range(self.mdp.num_players)]
@@ -278,7 +279,6 @@ class OvercookedGymEnv(Env):
                         joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
-
         self.state, reward, done, info = self.env.step(joint_action)
         for t_idx in self.t_idxes: # Should be right after env.step
             tm = self.get_teammate_from_idx(t_idx)
@@ -305,7 +305,7 @@ class OvercookedGymEnv(Env):
             self.p_idx = self.reset_p_idx
         else:
             self.p_idx = random.randint(0, self.mdp.num_players - 1)
-        
+
         teammates_ids = list(range(self.mdp.num_players))
         teammates_ids.remove(self.p_idx)
 
@@ -319,7 +319,7 @@ class OvercookedGymEnv(Env):
                 if type(self.teammates[id]) == CustomAgent:
                     self.teammates[id].reset()
                     self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)
-        
+
         self.t_idxes = teammates_ids
         self.stack_frames_need_reset = [True for _ in range(self.mdp.num_players)]
         self.env.reset(reset_info=self.reset_info)
@@ -343,6 +343,19 @@ class OvercookedGymEnv(Env):
     def close(self):
         pygame.quit()
 
+class BonusOvercookedGymEnv(OvercookedGymEnv):
+    def __init__(self, *args, bonus_getter=lambda obs, action: 0.0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bonus_getter = bonus_getter
+
+    def step(self, action):
+        obs = self.get_obs(c_idx=self.p_idx)
+        bonus = self.bonus_getter(obs=obs, action=action)
+        obs, reward, done, info = super().step(action)
+        return obs, reward + bonus, done, info
+
+    def set_bonus_getter(self, bonus_getter):
+        self.bonus_getter = bonus_getter
 
 register(
     id='OvercookedGymEnv-v0',

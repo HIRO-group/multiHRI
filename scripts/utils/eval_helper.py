@@ -1,4 +1,4 @@
-from oai_agents.common.tags import TeamType, KeyCheckpoints
+from oai_agents.common.tags import TeamType
 
 class EvalMembersToBeLoaded:
     def __init__(self, load_from_pop_structure, names, team_type, tags, layout_name):

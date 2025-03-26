@@ -238,8 +238,8 @@ class BehavioralCloningTrainer(OAITrainer):
         tag = tag or self.args.exp_name
         agent_path = path / tag / 'agents_dir'
         Path(agent_path).mkdir(parents=True, exist_ok=True)
-        self.bc.save(agent_path / f'bc')
-        self.human_proxy.save(agent_path / f'human_proxy')
+        self.bc.save(agent_path / 'bc')
+        self.human_proxy.save(agent_path / 'human_proxy')
         return path, tag
 
 

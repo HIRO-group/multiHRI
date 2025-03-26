@@ -1,6 +1,5 @@
 import numpy as np
 
-import numpy as np
 
 def create_latex_table(methods, chart_data):
     # Start of the LaTeX table
@@ -8,22 +7,22 @@ def create_latex_table(methods, chart_data):
     latex_table.append("\\begin{table}[htbp]")
     latex_table.append("\\centering")
     latex_table.append("\\small")
-    
+
     # Calculate the tabular format based on number of methods
     tabular_format = "l|" + "c" * len(methods)
     latex_table.append("\\begin{tabular}{" + tabular_format + "}")
     latex_table.append("\\hline")
-    
+
     # Add headers (methods)
     latex_table.append("Layout & " + " & ".join(methods) + " \\\\")
     latex_table.append("\\hline")
-    
+
     # Get layouts (using first method since they're the same for all)
     layouts = chart_data[methods[0]]['layout']
-    
+
     # Store means for average calculation
     all_means = {method: [] for method in methods}
-    
+
     # Add data for each layout
     for layout_idx, layout in enumerate(layouts):
         row_values = []
@@ -32,13 +31,13 @@ def create_latex_table(methods, chart_data):
             std = chart_data[method]['std'][layout_idx]
             all_means[method].append(mean)
             row_values.append(f"{mean:.2f} $\\pm$ {std:.2f}")
-        
+
         # Add the row
         latex_table.append(f"{layout} & " + " & ".join(row_values) + " \\\\")
-    
+
     # Add horizontal line before average row
     latex_table.append("\\hline")
-    
+
     # Calculate and add average row
     avg_values = []
     for method in methods:
@@ -46,16 +45,16 @@ def create_latex_table(methods, chart_data):
         # Calculate standard error of the mean
         method_std = np.std(all_means[method]) / np.sqrt(len(all_means[method]))
         avg_values.append(f"{method_mean:.2f} $\\pm$ {method_std:.2f}")
-    
+
     latex_table.append("\\textbf{Average} & " + " & ".join(avg_values) + " \\\\")
-    
+
     # Close the table
     latex_table.append("\\hline")
     latex_table.append("\\end{tabular}")
     latex_table.append("\\caption{Performance comparison across different methods}")
     latex_table.append("\\label{tab:performance}")
     latex_table.append("\\end{table}")
-    
+
     return "\n".join(latex_table)
 
 
@@ -67,7 +66,6 @@ def create_latex_table(methods, chart_data):
 # print(latex_output)
 
 
-import numpy as np
 
 # Define the data
 # data = {

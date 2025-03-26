@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
 # Function to load and process CSV data
 def load_and_process_csv(file_path):

@@ -1,5 +1,5 @@
-from overcooked_ai_py.mdp.overcooked_mdp import OvercookedState, OvercookedGridworld, Direction, Action, PlayerState
-from overcooked_ai_py.planning.planners import MediumLevelActionManager, NO_COUNTERS_PARAMS
+from overcooked_ai_py.mdp.overcooked_mdp import OvercookedState, OvercookedGridworld, Direction, PlayerState
+from overcooked_ai_py.planning.planners import MediumLevelActionManager
 from typing import Dict, Tuple
 import numpy as np
 
@@ -126,7 +126,7 @@ ENCODING_SCHEMES = {
 if __name__ == '__main__':
     import timeit
     from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
-    from overcooked_ai_py.mdp.overcooked_mdp import OvercookedState, OvercookedGridworld, Direction, Action
+    from overcooked_ai_py.mdp.overcooked_mdp import OvercookedState, OvercookedGridworld, Direction
     env = OvercookedEnv.from_mdp(OvercookedGridworld.from_layout_name('asymmetric_advantages'), horizon=400)
     env.reset()
     for name, encoding_fn in ENCODING_SCHEMES.items():

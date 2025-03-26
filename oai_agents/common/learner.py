@@ -5,7 +5,7 @@ class LearnerType:
     Saboteur and Selfisher weight personal reward positively and group reward negatively.
     Soloworker, weight individual reward positively, and group reward with a zero.
     Collaborator, and Supporter weight both rewards positively.
-    If we grade how much they care about group: 
+    If we grade how much they care about group:
     Supporter > Collaborator > Soloworker >> Selfisher > Saboteur.
     If more details are desired, learner.py define these learners.
     '''
@@ -33,26 +33,26 @@ class Learner:
         instance = super().__new__(learner_classes[learner_type])
         instance.__init__(learner_type=learner_type, magnifier=magnifier)
         return instance
-    
+
     def __init__(self, learner_type: str, magnifier: float):
         '''
-        magnifier is used to magnify the received reward. 
+        magnifier is used to magnify the received reward.
         This magnification would maginify the advantage.
         This further increase the gradient for the policy optimization.
         '''
         self.learner_type = learner_type
-        self.magnifier = magnifier 
+        self.magnifier = magnifier
         self.personal_reward = 0
         self.group_reward = 0
-    
+
     def extract_reward(self, p_idx, env_info, ratio, num_players):
         group_sparse_r = sum(env_info['sparse_r_by_agent'])
-        group_shaped_r = sum(env_info['shaped_r_by_agent'])               
+        group_shaped_r = sum(env_info['shaped_r_by_agent'])
         sparse_r = env_info['sparse_r_by_agent'][p_idx] if p_idx is not None else group_sparse_r
         shaped_r = env_info['shaped_r_by_agent'][p_idx] if p_idx is not None else group_shaped_r
         self.personal_reward = group_sparse_r * ratio + shaped_r * (1 - ratio)
         self.group_reward = (1/num_players) * (num_players * group_sparse_r * ratio + group_shaped_r * (1 - ratio))
-    
+
     def calculate_reward(self, p_idx, env_info, ratio):
         raise NotImplementedError("This method should be overridden by subclasses")
 

@@ -2,21 +2,16 @@ import json
 import numpy as np
 import pandas as pd
 import pygame
-import pylsl
 from pygame import K_UP, K_LEFT, K_RIGHT, K_DOWN, K_SPACE, K_s
-from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE, FULLSCREEN
+from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
 import matplotlib
 import time
 
 matplotlib.use('TkAgg')
 
 import os
-from os import listdir, environ, system, name
-from os.path import isfile, join
-import re
-import time
+from os import environ, name
 
-from pathlib import Path
 import pathlib
 USING_WINDOWS = (name == 'nt')
 # Windows path
@@ -27,35 +22,26 @@ if USING_WINDOWS:
 
 
 # Lab streaming layer
-from pylsl import StreamInfo, StreamOutlet, local_clock
+from pylsl import local_clock
 
 # Used to activate game window at game start for immediate game play
 if USING_WINDOWS:
     import pygetwindow as gw
 
-from oai_agents.agents.agent_utils import DummyPolicy
-from oai_agents.agents.base_agent import OAIAgent
-from oai_agents.agents.il import BehaviouralCloningAgent
-from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.agents.hrl import HierarchicalRL
 # from oai_agents.agents import Manager
-from oai_agents.common.arguments import get_arguments
-from oai_agents.common.subtasks import Subtasks, get_doable_subtasks, facing, calculate_completed_subtask
+from oai_agents.common.subtasks import facing
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
-from oai_agents.agents.agent_utils import load_agent, DummyAgent
 from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
-from oai_agents.gym_environments.manager_env import OvercookedManagerGymEnv
-from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from overcooked_ai_py.mdp.overcooked_mdp import Direction, Action, OvercookedState, OvercookedGridworld
+from overcooked_ai_py.mdp.overcooked_mdp import Direction, Action
 # from overcooked_ai_py.planning.planners import MediumLevelPlanner
 from overcooked_ai_py.visualization.state_visualizer import StateVisualizer, roboto_path
-from overcooked_ai_py.planning.planners import MediumLevelActionManager
 # from scripts.train_agents import get_bc_and_human_proxy
 
 class OvercookedGUI:
     """Class to run an Overcooked Gridworld game, leaving one of the agents as fixed.
     Useful for debugging. Most of the code from http://pygametutorials.wikidot.com/tutorials-basic."""
-    
+
     def __init__(self, args, layout_name=None, agent=None, teammates=None, p_idx=0, horizon=400,
                  trial_id=None, user_id=None, stream=None, outlet=None, fps=5, gif_name='gif'):
         self.x = None
@@ -224,20 +210,9 @@ class OvercookedGUI:
         curr_obj = self.env.state.players[self.p_idx].held_object.name if self.env.state.players[
             self.p_idx].held_object else None
 
-        completed_task = calculate_completed_subtask(prev_obj, curr_obj, tile_in_front)
-        # print('----', completed_task)
-
-        joint_action = self.env.get_joint_action()
-        for idx, player in enumerate(self.env.state.players):
-            # pos_in_front = facing(self.env.env.mdp.terrain_mtx, player)
-
-            x, y = player.position[0] + player.orientation[0], player.position[1] + player.orientation[1]
-            pos_in_front = (x, y)
-
-            action = joint_action[idx]
-            if action == Action.INTERACT:
-                if pos_in_front in self.resource_locations:
-                    self.resource_usage[idx][pos_in_front] += 1
+        collision = self.env.mdp.prev_step_was_collision
+        if collision:
+            self.num_collisions += 1
 
         # Log data
         curr_reward = sum(info['sparse_r_by_agent'])
@@ -327,35 +302,6 @@ class OvercookedGUI:
 
         self.on_cleanup()
         print(f'Trial finished in {self.curr_tick} steps with total reward {self.score}')
-
-        # print("Resource usage breakdown by agent and resource position:")
-        # for agent_idx, usage in self.resource_usage.items():
-        #     print(f"Agent {agent_idx}:")
-        #     for pos, count in usage.items():
-        #         if count > 0:
-        #             res_type = self.resource_locations[pos]
-        #             print(f"  {res_type} at {pos}: {count} times")
-
-        from collections import defaultdict
-
-        # Step 1: Gather all resource locations and types
-        all_resource_entries = []
-        for pos, res_type in self.resource_locations.items():
-            all_resource_entries.append((res_type, pos))
-
-        # Step 2: Sort by resource type then position
-        all_resource_entries.sort(key=lambda x: (x[0], x[1]))  # Sort by type, then position
-
-        # Step 3: Print header and values
-        print("Resource usage comparison (Agent 0 vs Agent 1):\n")
-        print(f"{'Type':<4} {'Position':<10} | {'Agent 0':<8} {'Agent 1':<8}")
-        print("-" * 36)
-
-        for res_type, pos in all_resource_entries:
-            a0_count = self.resource_usage[0].get(pos, 0)
-            a1_count = self.resource_usage[1].get(pos, 0)
-            if a0_count > 0 or a1_count > 0:  # Only show if someone used it
-                print(f"{res_type:<4} {str(pos):<10} | {a0_count:<8} {a1_count:<8}")
 
 
     def save_trajectory(self, data_path):

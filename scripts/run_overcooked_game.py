@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from oai_agents.agents.agent_utils import DummyAgent, load_agent, CustomAgent
+from oai_agents.agents.agent_utils import DummyAgent, load_agent
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI

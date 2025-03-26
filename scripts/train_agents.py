@@ -3,8 +3,10 @@ mp.set_start_method('spawn', force=True) # should be called before any other mod
 
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.tags import TeamType, AdversaryPlayConfig, KeyCheckpoints
-from oai_agents.common.learner import LearnerType
 from oai_agents.common.curriculum import Curriculum
+from oai_agents.common.agents_finder import HMLProfileCollection, SelfPlayAgentsFinder
+from oai_agents.agents.mep_population_manager import MEPPopulationManager
+
 
 from scripts.utils import (
     get_SP_agents,
@@ -13,6 +15,23 @@ from scripts.utils import (
     get_N_X_SP_agents,
     get_best_EGO_agents,
 )
+
+def MEP_POPULATION(args):
+    # AgentsFinder can find agent under the directory, f"{args.exp_dir}/{args.num_players}",
+    # by its method get_agents_infos
+    agents_finder = SelfPlayAgentsFinder(args=args)
+    _, _, training_infos = agents_finder.get_agents_infos()
+    if len(training_infos)==0:
+        manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
+        manager.train_population(
+            total_timesteps=args.pop_total_training_timesteps,
+            num_of_ckpoints=args.num_of_ckpoints,
+            eval_interval = args.eval_steps_interval * args.epoch_timesteps
+        )
+    # HMLProfileCollection use agents_finder to find information of multiple agents and
+    # call save_population to save pop files under args.layout_names
+    hml_profiles = HMLProfileCollection(args=args, agents_finder=agents_finder)
+    hml_profiles.save_population()
 
 def SP(args):
     primary_train_types = [TeamType.SELF_PLAY]
@@ -237,22 +256,22 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        TeamType.SELF_PLAY_DYNAMIC_ADV, # TODO: read from command line arg 
-        TeamType.SELF_PLAY_STATIC_ADV,
+        # TeamType.SELF_PLAY_DYNAMIC_ADV, # TODO: read from command line arg
+        # TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
         'generate': [
                     TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
-                     TeamType.SELF_PLAY_DYNAMIC_ADV,
-                     TeamType.SELF_PLAY_STATIC_ADV,
+                    #  TeamType.SELF_PLAY_DYNAMIC_ADV,
+                    #  TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
     }
     if args.prioritized_sampling:
-        curriculum = Curriculum(train_types=primary_train_types, 
-                                eval_types=primary_eval_types, 
-                                is_random=False, 
+        curriculum = Curriculum(train_types=primary_train_types,
+                                eval_types=primary_eval_types,
+                                is_random=False,
                                 prioritized_sampling=True,
                                 priority_scaling=2.0)
     else:
@@ -301,31 +320,28 @@ def best_EGO(args, add_adv=False) -> None:
 
 if __name__ == '__main__':
     args = get_arguments()
-    
+
     if args.algo_name == 'SP':
         SP(args=args)
-    
+
     elif args.algo_name == 'SPN_XSPCKP':
         SPN_XSPCKP(args=args)
-    
+
     elif args.algo_name == 'FCP_traditional':
         FCP_traditional(args=args)
 
-    elif args.algo_name == 'best_EGO':
-        best_EGO(args=args, add_adv=False)
+    elif args.algo_name == 'FCP_mhri':
+        FCP_mhri(args=args)
 
-    elif args.algo_name == 'best_EGO_with_CAP':
-        best_EGO(args=args, add_adv=True)
-    
-    # elif args.algo_name == 'FCP_mhri':
-    #     FCP_mhri(args=args)
-    
-    # elif args.algo_name == 'SPN_1ADV':
-    #     SPN_1ADV(args=args)
-    
-    # elif args.algo_name == 'N_1_FCP':
-    #     N_1_FCP(args=args)
-    
-    # elif args.algo_name == 'SPN_1ADV_XSPCKP':
-    #     SPN_1ADV_XSPCKP(args=args)
+    elif args.algo_name == 'SPN_1ADV':
+        SPN_1ADV(args=args)
+
+    elif args.algo_name == 'N_1_FCP':
+        N_1_FCP(args=args)
+
+    elif args.algo_name == 'SPN_1ADV_XSPCKP':
+        SPN_1ADV_XSPCKP(args=args)
+
+    elif args.algo_name == 'MEP':
+        MEP_POPULATION(args=args)
 

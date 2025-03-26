@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ALGO="FCP_traditional"
 TEAMMATES_LEN=1

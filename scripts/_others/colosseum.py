@@ -1,12 +1,9 @@
 from oai_agents.agents.agent_utils import load_agent, DummyAgent
-from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 import numpy as np
-import pandas as pd
 from pathlib import Path
-from stable_baselines3.common.evaluation import evaluate_policy
 from tqdm import tqdm
 from scripts.train_agents import get_bc_and_human_proxy
 
