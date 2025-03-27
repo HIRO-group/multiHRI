@@ -1,5 +1,5 @@
 from oai_agents.agents.base_agent import OAIAgent, PolicyClone
-from oai_agents.agents.rl import RLAgentTrainer, VEC_ENV_CLS
+from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_args_to_save, set_args_from_load
 from oai_agents.common.subtasks import Subtasks
 # from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv

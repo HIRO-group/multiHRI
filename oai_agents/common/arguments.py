@@ -98,7 +98,10 @@ def get_arguments(additional_args: Optional[List] = None):
     parser.add_argument("--custom-agent-ck-rate-generation", type=int)
 
     parser.add_argument('--gen-pop-for-eval', type=str2bool, default=False, help="Specifies whether to generate a population of agents for evaluation purposes. Currently, this functionality is limited to self-play agents, as support for other methods has not yet been implemented..)")
-    parser.add_argument("--total-ego-agents", type=int, default=4)
+    parser.add_argument('--use-cuda', type=str2bool, help="Specifies whether to use cuda for training.")
+    parser.add_argument('--use-multipleprocesses', type=str2bool, help="SubprocVecEnv vs DummyVecEnv")
+
+    parser.add_argument("--total-sp-agents", type=int, default=4)
     parser.add_argument("--ck-list-offset", type=int, default=0)
 
     parser.add_argument('--low-perfs', help='shitty code to run ult baseline exp', default='default')
@@ -112,8 +115,7 @@ def get_arguments(additional_args: Optional[List] = None):
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
     
-    # args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
-    args.device = th.device('cpu')
+    args.device = th.device('cuda' if args.use_cuda and th.cuda.is_available() else 'cpu')
     
     args.layout_names = args.layout_names.split(',')
     args.low_perfs = args.low_perfs.split(',')

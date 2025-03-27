@@ -22,7 +22,7 @@ def MEP_POPULATION(args):
     agents_finder = SelfPlayAgentsFinder(args=args)
     _, _, training_infos = agents_finder.get_agents_infos()
     if len(training_infos)==0:
-        manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
+        manager = MEPPopulationManager(population_size=args.total_sp_agents, args=args)
         manager.train_population(
             total_timesteps=args.pop_total_training_timesteps,
             num_of_ckpoints=args.num_of_ckpoints,
@@ -287,7 +287,7 @@ def SPN_XSPCKP(args) -> None:
 
 
 def best_EGO(args, add_adv=False) -> None:
-    '''only for 2 players'''
+    '''for a very specifric experimetn: only for 2 players:: ignore this'''
     primary_train_types = [
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
@@ -327,21 +327,24 @@ if __name__ == '__main__':
     elif args.algo_name == 'SPN_XSPCKP':
         SPN_XSPCKP(args=args)
 
+    elif args.algo_name == 'MEP':
+        MEP_POPULATION(args=args)
+
     elif args.algo_name == 'FCP_traditional':
         FCP_traditional(args=args)
 
-    elif args.algo_name == 'FCP_mhri':
-        FCP_mhri(args=args)
+    # elif args.algo_name == 'best_EGO':
+    #     best_EGO(args=args, add_adv=False)
 
-    elif args.algo_name == 'SPN_1ADV':
-        SPN_1ADV(args=args)
+    # elif args.algo_name == 'FCP_mhri':
+    #     FCP_mhri(args=args)
 
-    elif args.algo_name == 'N_1_FCP':
-        N_1_FCP(args=args)
+    # elif args.algo_name == 'SPN_1ADV':
+    #     SPN_1ADV(args=args)
 
-    elif args.algo_name == 'SPN_1ADV_XSPCKP':
-        SPN_1ADV_XSPCKP(args=args)
+    # elif args.algo_name == 'N_1_FCP':
+    #     N_1_FCP(args=args)
 
-    elif args.algo_name == 'MEP':
-        MEP_POPULATION(args=args)
+    # elif args.algo_name == 'SPN_1ADV_XSPCKP':
+    #     SPN_1ADV_XSPCKP(args=args)
 

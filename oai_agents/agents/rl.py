@@ -9,15 +9,11 @@ from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 import numpy as np
 from stable_baselines3 import PPO, DQN
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from sb3_contrib import RecurrentPPO
 import wandb
 import os
 from typing import Literal
-
-# VEC_ENV_CLS = DummyVecEnv #
-VEC_ENV_CLS = SubprocVecEnv
-
 
 class RLAgentTrainer(OAITrainer):
     ''' Train an RL agent to play with a teammates_collection of agents.'''
@@ -33,6 +29,8 @@ class RLAgentTrainer(OAITrainer):
         ):
         train_types = train_types if train_types is not None else []
         eval_types = eval_types if eval_types is not None else []
+        
+        # assert teammates_collection, "Teammates collection must be provided"
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
@@ -140,6 +138,12 @@ class RLAgentTrainer(OAITrainer):
 
     def get_envs(self, _env, _eval_envs, deterministic, learner_type, teammates_collection, curriculum, start_timestep: int = 0):
         from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+
+        if self.args.use_multipleprocesses:
+            VEC_ENV_CLS = SubprocVecEnv
+        else:
+            VEC_ENV_CLS = DummyVecEnv
+
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
                         'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep, 

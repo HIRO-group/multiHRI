@@ -6,7 +6,7 @@ HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="c3"
 EXP_DIR="${LAYOUT_NAMES}_best_EGO_with_CAP"
-TOTAL_EGO_AGENTS=1
+TOTAL_SP_AGENTS=1
 QUICK_TEST=false
 
 L0="${LAYOUT_NAMES}_v1/SP_s1010_h256_tr[SP]_ran/ck_0"
@@ -55,7 +55,7 @@ python scripts/train_agents.py \
     --fcp-total-training-timesteps ${FCP_TOTAL_TRAINING_TIMESTEPS} \
     --adversary-total-training-timesteps ${ADVERSARY_TOTAL_TRAINING_TIMESTEPS} \
     --n-x-fcp-total-training-timesteps ${N_X_FCP_TOTAL_TRAINING_TIMESTEPS} \
-    --total-ego-agents ${TOTAL_EGO_AGENTS} \
+    --total-sp-agents ${TOTAL_SP_AGENTS} \
     --wandb-mode ${WANDB_MODE} \
     --pop-force-training ${POP_FORCE_TRAINING} \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \

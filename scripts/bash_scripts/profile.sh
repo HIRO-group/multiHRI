@@ -2,10 +2,11 @@
 
 ALGO="SPN_XSPCKP"
 TEAMMATES_LEN=1
+NUM_PLAYERS=$((TEAMMATES_LEN + 1))
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="counter_circuit"
-TOTAL_EGO_AGENTS=2
+TOTAL_SP_AGENTS=2
 
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
@@ -44,7 +45,7 @@ python -m cProfile -o data/profile/profile_results_all_${CURRENT_TIME}.prof scri
     --fcp-total-training-timesteps ${FCP_TOTAL_TRAINING_TIMESTEPS} \
     --adversary-total-training-timesteps ${ADVERSARY_TOTAL_TRAINING_TIMESTEPS} \
     --n-x-fcp-total-training-timesteps ${N_X_FCP_TOTAL_TRAINING_TIMESTEPS} \
-    --total-ego-agents ${TOTAL_EGO_AGENTS} \
+    --total-sp-agents ${TOTAL_SP_AGENTS} \
     --wandb-mode ${WANDB_MODE} \
     --pop-force-training ${POP_FORCE_TRAINING} \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \

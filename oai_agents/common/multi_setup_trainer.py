@@ -1,8 +1,10 @@
 import concurrent.futures
+import dill
+
 from scripts.utils.common import generate_name
 from oai_agents.common.tags import Prefix
 from oai_agents.agents.rl import RLAgentTrainer
-import dill
+from oai_agents.common.teammates_collection import generate_TC
 
 
 class MultiSetupTrainer:
@@ -21,7 +23,7 @@ class MultiSetupTrainer:
         self.tag_for_returning_agent = tag_for_returning_agent
 
         self.parallel = args.parallel
-        self.total_ego_agents = args.total_ego_agents
+        self.total_sp_agents = args.total_sp_agents
         self.for_evaluation = args.gen_pop_for_eval
 
     def get_trained_agent(self, seed, h_dim):
@@ -31,10 +33,10 @@ class MultiSetupTrainer:
         agents = []
 
         seeds, hdims = generate_hdim_and_seed(
-            for_evaluation=self.for_evaluation, total_ego_agents=self.total_ego_agents)
+            for_evaluation=self.for_evaluation, total_sp_agents=self.total_sp_agents)
         inputs = [
             (seeds[i], hdims[i])
-            for i in range(self.total_ego_agents)
+            for i in range(self.total_sp_agents)
         ]
 
         if self.args.parallel:
@@ -117,9 +119,30 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             curriculum=self.curriculum
         )
 
+        # print('before generate_randomly_initialized_agent')
+        init_agent = RLAgentTrainer.generate_randomly_initialized_agent( # need a cleaner way to do this
+            args=self.args,
+            name=name,
+            learner_type=self.args.primary_learner_type,
+            hidden_dim=h_dim,
+            seed=seed,
+            n_envs=self.args.n_envs
+        ) 
+
+        population = {layout_name: [] for layout_name in self.args.layout_names}
+        teammates_collection = generate_TC(args=self.args,
+                                            population=population,
+                                            agent=init_agent,
+                                            train_types=self.train_types,
+                                            eval_types_to_generate=self.eval_types['generate'],
+                                            eval_types_to_read_from_file=self.eval_types['load'],
+                                            unseen_teammates_len=0,
+                                            use_entire_population_for_train_types_teammates=True)
+
+
         return self.get_reinforcement_agent(
             name=name,
-            teammates_collection={},
+            teammates_collection=teammates_collection,
             curriculum=self.curriculum,
             h_dim=h_dim,
             seed=seed,
@@ -128,7 +151,7 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             total_train_timesteps=self.args.pop_total_training_timesteps,
         )
 
-def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
+def generate_hdim_and_seed(for_evaluation: bool, total_sp_agents: int):
     evaluation_seeds = [3031, 4041, 5051, 3708, 3809, 3910, 4607, 5506]
     evaluation_hdims = [256] * len(evaluation_seeds)
 
@@ -139,23 +162,23 @@ def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
     training_hdims = [256] * len(training_seeds)
 
     if for_evaluation:
-        assert total_ego_agents <= len(evaluation_seeds), (
-            f"Total ego agents ({total_ego_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
+        assert total_sp_agents <= len(evaluation_seeds), (
+            f"Total ego agents ({total_sp_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
             "Please either increase the number of evaluation seeds in the `generate_hdim_and_seed` function or decrease "
-            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+            f"`self.total_sp_agents` (currently set to {total_sp_agents}, based on `args.total_sp_agents`)."
         )
         seeds = evaluation_seeds
         hdims = evaluation_hdims
     else:
-        assert total_ego_agents <= len(training_seeds), (
-            f"Total ego agents ({total_ego_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
+        assert total_sp_agents <= len(training_seeds), (
+            f"Total ego agents ({total_sp_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
             "Please either increase the number of training seeds in the `generate_hdim_and_seed` function or decrease "
-            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+            f"`self.total_sp_agents` (currently set to {total_sp_agents}, based on `args.total_sp_agents`)."
         )
         seeds = training_seeds
         hdims = training_hdims
 
-    selected_seeds = seeds[:total_ego_agents]
-    selected_hdims = hdims[:total_ego_agents]
+    selected_seeds = seeds[:total_sp_agents]
+    selected_hdims = hdims[:total_sp_agents]
 
     return selected_seeds, selected_hdims

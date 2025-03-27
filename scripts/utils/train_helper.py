@@ -1,5 +1,6 @@
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import TeamType
+from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.common.population import get_performance_based_population_by_layouts
 from oai_agents.common.teammates_collection import generate_TC, get_best_SP_agent, generate_TC_for_ADV_agent, update_TC_w_ADV_teammates, update_TC_w_dynamic_and_static_ADV_teammates
 from oai_agents.common.curriculum import Curriculum
@@ -71,7 +72,7 @@ def get_N_X_SP_agents(
         train_types=n_x_sp_train_types,
         eval_types=n_x_sp_eval_types['generate'],
         unseen_teammates_len = unseen_teammates_len,
-        total_ego_agents=args.total_ego_agents,
+        total_sp_agents=args.total_sp_agents,
         force_training=args.pop_force_training,
         tag=tag
     )
@@ -406,7 +407,7 @@ def get_FCP_agent_w_pop(
         total_training_timesteps=args.pop_total_training_timesteps,
         train_types=fcp_train_types,
         eval_types=fcp_eval_types['generate'],
-        total_ego_agents=args.total_ego_agents,
+        total_sp_agents=args.total_sp_agents,
         force_training=args.pop_force_training,
         tag=tag
     )
@@ -529,8 +530,9 @@ def get_N_X_FCP_agents(
 
 
 
+
 def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculum, add_adv=False):
-    '''Code purposed for a very specific experiment, assumes n_players = 2'''
+    '''Ignore: Code purposed for a very specific experiment, assumes n_players = 2'''
     from pathlib import Path
 
     eval_collection = {
