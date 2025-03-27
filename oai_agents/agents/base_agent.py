@@ -1,10 +1,8 @@
-from oai_agents.agents.agent_utils import load_agent, CustomAgent
+from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_args_to_save, set_args_from_load
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.subtasks import calculate_completed_subtask, get_doable_subtasks, Subtasks
-from oai_agents.common.tags import AgentPerformance, TeamType, KeyCheckpoints, TeammatesCollection
 from oai_agents.common.subtasks import get_doable_subtasks, Subtasks
-from oai_agents.common.tags import AgentPerformance, KeyCheckpoints
+from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeammatesCollection
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 # from oai_agents.gym_environments.base_overcooked_env import USEABLE_COUNTERS
 
@@ -327,7 +325,7 @@ class PolicyClone(OAIAgent):
         # Updated to include action masking
         self.policy.set_training_mode(False)
         obs, vectorized_env = self.policy.obs_to_tensor(obs)
-        
+
         with th.no_grad():
             if 'subtask_mask' in obs and np.prod(obs['subtask_mask'].shape) == np.prod(self.policy.action_space.n):
                 dist = self.policy.get_distribution(obs, action_masks=obs['subtask_mask'])
@@ -428,7 +426,7 @@ class OAITrainer(ABC):
         selected_p_indexes = random.sample(range(self.args.num_players), min(3, self.args.num_players))
 
         for _, env in enumerate(self.eval_envs):
-            
+
             rew_per_layout_per_teamtype[env.layout_name] = {
                 teamtype: [] for teamtype in env.teammates_collection[TeammatesCollection.EVAL][env.layout_name]
             }

@@ -114,14 +114,14 @@ def get_arguments(additional_args: Optional[List] = None):
 
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
-    
+
     args.device = th.device('cuda' if args.use_cuda and th.cuda.is_available() else 'cpu')
-    
+
     args.layout_names = args.layout_names.split(',')
     args.low_perfs = args.low_perfs.split(',')
     args.med_perfs = args.med_perfs.split(',')
     args.high_perfs = args.high_perfs.split(',')
-    
+
 
     if isinstance(args.layout_names, str):
         args.layout_names = args.layout_names.split(',')

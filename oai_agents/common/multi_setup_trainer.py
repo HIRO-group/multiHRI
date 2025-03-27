@@ -127,7 +127,7 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             hidden_dim=h_dim,
             seed=seed,
             n_envs=self.args.n_envs
-        ) 
+        )
 
         population = {layout_name: [] for layout_name in self.args.layout_names}
         teammates_collection = generate_TC(args=self.args,

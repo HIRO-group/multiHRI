@@ -32,7 +32,6 @@ from oai_agents.agents.hrl import HierarchicalRL
 # from oai_agents.agents import Manager
 from oai_agents.common.subtasks import facing
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
-from oai_agents.gym_environments.worker_env import OvercookedSubtaskGymEnv
 from overcooked_ai_py.mdp.overcooked_mdp import Direction, Action
 # from overcooked_ai_py.planning.planners import MediumLevelPlanner
 from overcooked_ai_py.visualization.state_visualizer import StateVisualizer, roboto_path
@@ -64,9 +63,9 @@ class OvercookedGUI:
                                         )
         self.agent = agent
         self.p_idx = p_idx
-        
+
         self.env.set_teammates('run_type')
-        
+
         self.env.reset(p_idx=self.p_idx)
         if self.agent != 'human':
             self.agent.set_encoding_params(self.p_idx, self.args.horizon, env=self.env, is_haha=isinstance(self.agent, HierarchicalRL), tune_subtasks=False)
@@ -106,7 +105,7 @@ class OvercookedGUI:
         self.gif_name = gif_name
         if not os.path.exists(f'data/screenshots/{self.gif_name}'):
             os.makedirs(f'data/screenshots/{self.gif_name}')
-        
+
 
         self.resource_locations = {}
         for y, row in enumerate(self.env.env.mdp.terrain_mtx):
@@ -115,7 +114,7 @@ class OvercookedGUI:
                     self.resource_locations[(x, y)] = cell
 
         self.resource_usage = {
-            agent_idx: {pos: 0 for pos in self.resource_locations}
+            agent_idx: dict.fromkeys(self.resource_locations, 0)
             for agent_idx in range(len(self.env.state.players))
         }
 

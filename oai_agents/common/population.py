@@ -32,7 +32,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
             n_envs = training_info["n_envs"]
             print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
 
-    
+
     init_agent = RLAgentTrainer.generate_randomly_initialized_agent( # need a cleaner way to do this
             args=args,
             name=name,
@@ -40,10 +40,10 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
             hidden_dim=h_dim,
             seed=seed,
             n_envs=args.n_envs
-        ) 
-    
+        )
+
     population = {layout_name: [] for layout_name in args.layout_names}
-    
+
     teammates_collection = generate_TC(args=args,
                                         population=population,
                                         agent=init_agent,

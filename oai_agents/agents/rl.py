@@ -2,7 +2,7 @@ from typing import Optional, List
 from oai_agents.agents.base_agent import SB3Wrapper, SB3LSTMWrapper, OAITrainer, OAIAgent
 from oai_agents.common.networks import OAISinglePlayerFeatureExtractor
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection, KeyCheckpoints
+from oai_agents.common.tags import AgentPerformance, TeammatesCollection, KeyCheckpoints
 from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
 
@@ -29,7 +29,7 @@ class RLAgentTrainer(OAITrainer):
         ):
         train_types = train_types if train_types is not None else []
         eval_types = eval_types if eval_types is not None else []
-        
+
         # assert teammates_collection, "Teammates collection must be provided"
 
         name = name or 'rl_agent'
@@ -146,13 +146,13 @@ class RLAgentTrainer(OAITrainer):
 
         if _env is None:
             env_kwargs = {'shape_rewards': True, 'full_init': False, 'stack_frames': self.use_frame_stack,
-                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep, 
+                        'deterministic': deterministic,'args': self.args, 'learner_type': learner_type, 'start_timestep': start_timestep,
                         'teammates_collection': teammates_collection, 'curriculum': curriculum
                         }
             env = make_vec_env(OvercookedGymEnv, n_envs=self.args.n_envs, seed=self.seed, vec_env_cls=VEC_ENV_CLS, env_kwargs=env_kwargs)
 
             eval_envs_kwargs = {'is_eval_env': True, 'horizon': 400, 'stack_frames': self.use_frame_stack,
-                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type, 
+                                 'deterministic': deterministic, 'args': self.args, 'learner_type': learner_type,
                                  'teammates_collection': teammates_collection, 'curriculum': curriculum
                                  }
             eval_envs = [OvercookedGymEnv(**{'env_index': i, **eval_envs_kwargs, 'unique_env_idx':self.args.n_envs+i}) for i in range(self.n_layouts)]

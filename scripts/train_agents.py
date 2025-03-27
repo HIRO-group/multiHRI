@@ -301,9 +301,9 @@ def best_EGO(args, add_adv=False) -> None:
         'load': []
     }
     if args.prioritized_sampling:
-        curriculum = Curriculum(train_types=primary_train_types, 
-                                eval_types=primary_eval_types, 
-                                is_random=False, 
+        curriculum = Curriculum(train_types=primary_train_types,
+                                eval_types=primary_eval_types,
+                                is_random=False,
                                 prioritized_sampling=True,
                                 priority_scaling=2.0)
     else:

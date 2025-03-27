@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from oai_agents.agents.agent_utils import DummyAgent, load_agent
+from oai_agents.agents.agent_utils import load_agent
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
 
-    args.layout = f'c1'
+    args.layout = 'c1'
     args.p_idx = 0
     args.layout_names = [args.layout]
     args.n_envs = 1
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         # 'agent_models/c4_v4/SP_s1010_h256_tr[SP]_ran/best'
         # 'agent_models/c4_best_EGO/best_c4/best'
 
-    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green 
+    #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
     #     'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',

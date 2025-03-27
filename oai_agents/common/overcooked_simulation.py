@@ -98,7 +98,7 @@ class OvercookedSimulation:
 
 if __name__ == '__main__':
     from oai_agents.common.arguments import get_arguments
-    from oai_agents.agents.agent_utils import DummyAgent, CustomAgent, load_agent
+    from oai_agents.agents.agent_utils import CustomAgent, load_agent
     from pathlib import Path
 
     args = get_arguments()

@@ -1,11 +1,8 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
-from oai_agents.common.subtasks import Subtasks, calculate_completed_subtask, get_doable_subtasks
-from oai_agents.common.learner import LearnerType, Learner
-from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
-from oai_agents.common.tags import AgentPerformance, TeamType, TeammatesCollection
 from oai_agents.common.subtasks import Subtasks, get_doable_subtasks
 from oai_agents.common.learner import Learner
-from oai_agents.agents.agent_utils import CustomAgent
+from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
+from oai_agents.common.tags import TeammatesCollection
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -18,7 +15,6 @@ from gym import Env, spaces, register
 import numpy as np
 import pygame
 from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
-from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import torch as th
 import random
@@ -164,7 +160,7 @@ class OvercookedGymEnv(Env):
             assert self.is_eval_env is True, "Teamtype should only be set for evaluation environments"
             population_teamtypes = self.teammates_collection[TeammatesCollection.EVAL][self.layout_name]
             teammates = population_teamtypes[teamtype][np.random.randint(len(population_teamtypes[teamtype]))]
-        else:    
+        else:
             population_teamtypes = self.teammates_collection[TeammatesCollection.TRAIN][self.layout_name]
             teammates = self.curriculum.select_teammates_for_layout(population_teamtypes=population_teamtypes, layout=self.layout_name)
 
@@ -370,14 +366,14 @@ if __name__ == '__main__':
 
     env = OvercookedGymEnv(layout_name=args.layout_names[0], args=args, ret_completed_subtasks=False,
                             is_eval_env=True, horizon=400, learner_type='originaler')
-    
-    p_idx = 0    
+
+    p_idx = 0
     teammates = [DummyAgent()]
-    
+
     env.set_teammates(teammates)
     env.reset(p_idx=p_idx)
     done = False
-    
+
     while not done:
         action = np.random.randint(0, Action.NUM_ACTIONS)
         action_idx = Action.ACTION_TO_INDEX[Action.STAY]

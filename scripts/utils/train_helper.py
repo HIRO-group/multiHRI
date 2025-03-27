@@ -130,7 +130,7 @@ def gen_ADV_train_N_X_SP(args, population, curriculum, unseen_teammates_len, n_x
     #         hidden_dim=args.N_X_SP_h_dim,
     #         seed=args.N_X_SP_seed,
     #         n_envs=args.n_envs
-    #) 
+    #)
 
     teammates_collection = generate_TC(args=args,
                                         population=population,
@@ -296,7 +296,7 @@ def N_X_SP(args, population, curriculum, unseen_teammates_len, n_x_sp_eval_types
         hidden_dim=args.N_X_SP_h_dim,
         seed=args.N_X_SP_seed,
         n_envs=args.n_envs,
-         
+
     )
 
     teammates_collection = generate_TC(
@@ -559,13 +559,13 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
                 ttype = TeamType.SELF_PLAY_MEDIUM
             elif agent_address in args.high_perfs:
                 ttype = TeamType.SELF_PLAY_HIGH
-            
+
             if ttype in train_collection[layout_name]:
                 train_collection[layout_name][ttype].append([agent])
 
             if ttype in eval_collection[layout_name]:
                 eval_collection[layout_name][ttype] = [[agent]]
-    
+
     name = f'best_{args.layout_names[0]}'
 
     if add_adv:
@@ -589,7 +589,7 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
         TeammatesCollection.TRAIN: train_collection,
         TeammatesCollection.EVAL: eval_collection
     }
-    
+
     best_ego_trainer = RLAgentTrainer(
         name=name,
         args=args,
@@ -601,7 +601,7 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
         seed=args.N_X_SP_seed,
         hidden_dim=args.N_X_SP_h_dim,
         curriculum=curriculum,
-        
+
         learner_type=args.primary_learner_type,
         checkpoint_rate=args.n_x_sp_total_training_timesteps // args.num_of_ckpoints,
     )
