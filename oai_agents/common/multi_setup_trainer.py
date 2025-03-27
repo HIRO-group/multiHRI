@@ -119,8 +119,7 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             curriculum=self.curriculum
         )
 
-        # print('before generate_randomly_initialized_agent')
-        init_agent = RLAgentTrainer.generate_randomly_initialized_agent( # need a cleaner way to do this
+        init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
             args=self.args,
             name=name,
             learner_type=self.args.primary_learner_type,
@@ -128,7 +127,6 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
             seed=seed,
             n_envs=self.args.n_envs
         )
-
         population = {layout_name: [] for layout_name in self.args.layout_names}
         teammates_collection = generate_TC(args=self.args,
                                             population=population,
@@ -138,7 +136,7 @@ class MultiSetupSPTrainer(MultiSetupTrainer):
                                             eval_types_to_read_from_file=self.eval_types['load'],
                                             unseen_teammates_len=0,
                                             use_entire_population_for_train_types_teammates=True)
-
+        # we can't no longer pass empty teammates_collection to the RlAgentTrainer, so for SP we should do this ^
 
         return self.get_reinforcement_agent(
             name=name,

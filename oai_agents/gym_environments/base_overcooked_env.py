@@ -156,6 +156,10 @@ class OvercookedGymEnv(Env):
         return self.joint_action
 
     def set_teammates(self, teamtype=None):
+        '''
+        When teamtype is None, teammate is set according to the curriculum
+        When teamtype is not None, teammate is set according to the teamtype which is only used for evaluation purposes
+        '''
         if teamtype:
             assert self.is_eval_env is True, "Teamtype should only be set for evaluation environments"
             population_teamtypes = self.teammates_collection[TeammatesCollection.EVAL][self.layout_name]
@@ -253,7 +257,6 @@ class OvercookedGymEnv(Env):
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
 
                 if type(teammate) == CustomAgent:
-                # if isinstance(teammate, CustomAgent):
                     info = {'layout_name': self.layout_name, 'u_env_idx': self.unique_env_idx}
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info=info)[0]
                 else:
@@ -279,7 +282,6 @@ class OvercookedGymEnv(Env):
         for t_idx in self.t_idxes: # Should be right after env.step
             tm = self.get_teammate_from_idx(t_idx)
             if type(tm) == CustomAgent:
-            # if isinstance(tm, CustomAgent):
                 tm.update_current_position(layout_name=self.layout_name, new_position=self.env.state.players[t_idx].position, u_env_idx=self.unique_env_idx)
 
         if self.shape_rewards and not self.is_eval_env:
@@ -311,7 +313,6 @@ class OvercookedGymEnv(Env):
         if self.reset_info and 'start_position' in self.reset_info:
             self.reset_info['start_position'] = {}
             for id in range(len(teammates_ids)):
-                # if isinstance(self.teammates[id], CustomAgent):
                 if type(self.teammates[id]) == CustomAgent:
                     self.teammates[id].reset()
                     self.reset_info['start_position'][teammates_ids[id]] = self.teammates[id].get_start_position(self.layout_name, u_env_idx=self.unique_env_idx)

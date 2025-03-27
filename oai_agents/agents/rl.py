@@ -5,6 +5,8 @@ from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.tags import AgentPerformance, TeammatesCollection, KeyCheckpoints
 from oai_agents.agents.agent_utils import CustomAgent
 from oai_agents.common.checked_model_name_handler import CheckedModelNameHandler
+from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
+
 
 import numpy as np
 from stable_baselines3 import PPO, DQN
@@ -29,8 +31,6 @@ class RLAgentTrainer(OAITrainer):
         ):
         train_types = train_types if train_types is not None else []
         eval_types = eval_types if eval_types is not None else []
-
-        # assert teammates_collection, "Teammates collection must be provided"
 
         name = name or 'rl_agent'
         super(RLAgentTrainer, self).__init__(name, args, seed=seed)
@@ -63,6 +63,8 @@ class RLAgentTrainer(OAITrainer):
         self.use_policy_clone = use_policy_clone
 
         self.learner_type = learner_type
+
+        # teammates_collection and curriculum are passed to the environment instead.
         self.env, self.eval_envs = self.get_envs(_env=env, _eval_envs=eval_envs,
                                                  deterministic=deterministic, learner_type=learner_type,
                                                  start_timestep=start_timestep, teammates_collection=teammates_collection,
@@ -137,8 +139,6 @@ class RLAgentTrainer(OAITrainer):
 
 
     def get_envs(self, _env, _eval_envs, deterministic, learner_type, teammates_collection, curriculum, start_timestep: int = 0):
-        from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
-
         if self.args.use_multipleprocesses:
             VEC_ENV_CLS = SubprocVecEnv
         else:

@@ -233,14 +233,7 @@ class SB3Wrapper(OAIAgent):
         return dist
 
     def learn(self, epoch_timesteps):
-        # import cProfile
-        # import time
-        # profiler = cProfile.Profile()
-        # profiler.enable()
         self.agent.learn(total_timesteps=epoch_timesteps, reset_num_timesteps=False)
-        # profiler.disable()
-        # c_time = time.strftime("%Y-%m-%d_%H-%M-%S")
-        # profiler.dump_stats(f'data/profile/learn_{c_time}.prof')
         self.num_timesteps = self.agent.num_timesteps
 
     def save(self, path: Path) -> None:
@@ -457,6 +450,13 @@ class OAITrainer(ABC):
         return np.mean(tot_mean_reward), rew_per_layout, rew_per_layout_per_teamtype
 
     def set_new_teammates(self):
+        """
+        The logic for selecting teammates has been moved to `base_overcooked_env` to support
+        running environments with the SubProcEnv flag enabled.
+        `teammates_collection` and `curriculum` are now managed within the environment.
+        The `set_teammates` method in `base_overcooked_env` selects an appropriate teammate
+        based on the current curriculum settings.
+        """
         for i in range(self.args.n_envs):
             self.env.env_method('set_teammates', indices=i)
 

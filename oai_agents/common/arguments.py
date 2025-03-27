@@ -104,9 +104,10 @@ def get_arguments(additional_args: Optional[List] = None):
     parser.add_argument("--total-sp-agents", type=int, default=4)
     parser.add_argument("--ck-list-offset", type=int, default=0)
 
-    parser.add_argument('--low-perfs', help='shitty code to run ult baseline exp', default='default')
-    parser.add_argument('--med-perfs', help='shitty code to run ult baseline exp', default='default')
-    parser.add_argument('--high-perfs', help='shitty code to run ult baseline exp', default='default')
+    # The next three args are only to run the ultimate baseline exp, I will clean it later
+    parser.add_argument('--low-perfs', help='code to run ult baseline exp', default='default')
+    parser.add_argument('--med-perfs', help='code to run ult baseline exp', default='default')
+    parser.add_argument('--high-perfs', help='code to run ult baseline exp', default='default')
 
 
     for parser_arg, parser_kwargs in additional_args:

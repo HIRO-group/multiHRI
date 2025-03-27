@@ -48,14 +48,7 @@ class OvercookedGUI:
         self._display_surf = None
         self.args = args
         self.layout_name = layout_name or 'asymmetric_advantages'
-
-        teammates_collection = {
-            'eval': {
-                args.layout: {
-                    'run_type': [teammates]
-                }
-            }
-        }
+        teammates_collection = {'eval': {self.layout_name: {'run_type': [teammates]}}}
 
         self.env = OvercookedGymEnv(layout_name=self.layout_name, args=args, ret_completed_subtasks=False,
                                         is_eval_env=True, horizon=horizon, learner_type='originaler',
@@ -64,7 +57,7 @@ class OvercookedGUI:
         self.agent = agent
         self.p_idx = p_idx
 
-        self.env.set_teammates('run_type')
+        self.env.set_teammates(teamtype='run_type')
 
         self.env.reset(p_idx=self.p_idx)
         if self.agent != 'human':
@@ -105,21 +98,6 @@ class OvercookedGUI:
         self.gif_name = gif_name
         if not os.path.exists(f'data/screenshots/{self.gif_name}'):
             os.makedirs(f'data/screenshots/{self.gif_name}')
-
-
-        self.resource_locations = {}
-        for y, row in enumerate(self.env.env.mdp.terrain_mtx):
-            for x, cell in enumerate(row):
-                if cell in ['S', 'D', 'P', 'O']:
-                    self.resource_locations[(x, y)] = cell
-
-        self.resource_usage = {
-            agent_idx: dict.fromkeys(self.resource_locations, 0)
-            for agent_idx in range(len(self.env.state.players))
-        }
-
-        print(f"Resource locations: {self.resource_locations}")
-
 
 
     def start_screen(self):

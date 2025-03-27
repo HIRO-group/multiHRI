@@ -10,13 +10,7 @@ class OvercookedSimulation:
         self.args = args
         self.layout_name = layout_name
 
-        teammates_collection = {
-            'eval': {
-                self.layout_name: {
-                    'run_type': [teammates]
-                }
-            }
-        }
+        teammates_collection = {'eval': {self.layout_name: {'run_type': [teammates]}}}
 
         self.env = OvercookedGymEnv(args=args,
                                     layout_name=self.layout_name,
@@ -30,7 +24,7 @@ class OvercookedSimulation:
 
         self.agent = agent
         self.p_idx = p_idx
-        self.env.set_teammates('run_type')
+        self.env.set_teammates(teamtype='run_type')
         self.env.reset(p_idx=self.p_idx)
 
         assert self.agent != 'human'

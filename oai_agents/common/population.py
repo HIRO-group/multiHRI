@@ -33,7 +33,7 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
             print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
 
 
-    init_agent = RLAgentTrainer.generate_randomly_initialized_agent( # need a cleaner way to do this
+    init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
             args=args,
             name=name,
             learner_type=args.primary_learner_type,
