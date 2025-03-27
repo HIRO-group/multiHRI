@@ -1,12 +1,12 @@
 #!/bin/sh
 
-ALGO="SP"
+ALGO="FCP_traditional"
 TEAMMATES_LEN=1
 NUM_PLAYERS=$((TEAMMATES_LEN + 1))
 NUM_OF_CKPOINTS=10
 LAYOUT_NAMES="counter_circuit"
 EXP_DIR="$NUM_PLAYERS" # When quick_test=True this will be overwritten to "Test/$EXP_DIR"
-TOTAL_SP_AGENTS=1
+TOTAL_SP_AGENTS=2
 QUICK_TEST=true
 HOW_LONG=1
 USE_CUDA=false
@@ -21,9 +21,9 @@ source scripts/bash_scripts/env_config.sh
 # Overwrite the default values from env_config here if needed
 N_ENVS=5
 WANDB_MODE="disabled"
-EPOCH_TIMESTEPS=3500
+EPOCH_TIMESTEPS=2500
 N_X_SP_TOTAL_TRAINING_TIMESTEPS=10000
-FCP_TOTAL_TRAINING_TIMESTEPS=75000
+FCP_TOTAL_TRAINING_TIMESTEPS=10000
 
 
 python scripts/train_agents.py \

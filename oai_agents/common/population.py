@@ -4,7 +4,7 @@ import dill
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
-
+from oai_agents.common.teammates_collection import generate_TC
 
 from .curriculum import Curriculum
 
@@ -32,12 +32,32 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
             n_envs = training_info["n_envs"]
             print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
 
+    
+    init_agent = RLAgentTrainer.generate_randomly_initialized_agent( # need a cleaner way to do this
+            args=args,
+            name=name,
+            learner_type=args.primary_learner_type,
+            hidden_dim=h_dim,
+            seed=seed,
+            n_envs=args.n_envs
+        ) 
+    
+    population = {layout_name: [] for layout_name in args.layout_names}
+    
+    teammates_collection = generate_TC(args=args,
+                                        population=population,
+                                        agent=init_agent,
+                                        train_types=[TeamType.SELF_PLAY],
+                                        eval_types_to_generate=[TeamType.SELF_PLAY],
+                                        eval_types_to_read_from_file=[],
+                                        unseen_teammates_len=0,
+                                        use_entire_population_for_train_types_teammates=True)
 
     rlat = RLAgentTrainer(
         name=name,
         args=args,
         agent=agent_ckpt,
-        teammates_collection={}, # automatically creates SP type
+        teammates_collection=teammates_collection, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
         n_envs=n_envs,
         hidden_dim=h_dim,

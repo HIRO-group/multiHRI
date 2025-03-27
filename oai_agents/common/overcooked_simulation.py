@@ -10,12 +10,23 @@ class OvercookedSimulation:
         self.args = args
         self.layout_name = layout_name
 
+        teammates_collection = {
+            'eval': {
+                self.layout_name: {
+                    'run_type': [teammates]
+                }
+            }
+        }
+
         self.env = OvercookedGymEnv(args=args,
                                     layout_name=self.layout_name,
                                     ret_completed_subtasks=False,
                                     is_eval_env=True,
                                     horizon=horizon,
-                                    learner_type='originaler')
+                                    learner_type='originaler',
+                                    teammates_collection=teammates_collection,
+                                    curriculum=None,
+                                    )
 
         self.agent = agent
         self.p_idx = p_idx
