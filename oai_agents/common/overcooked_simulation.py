@@ -10,16 +10,21 @@ class OvercookedSimulation:
         self.args = args
         self.layout_name = layout_name
 
+        teammates_collection = {'eval': {self.layout_name: {'run_type': [teammates]}}}
+
         self.env = OvercookedGymEnv(args=args,
                                     layout_name=self.layout_name,
                                     ret_completed_subtasks=False,
                                     is_eval_env=True,
                                     horizon=horizon,
-                                    learner_type='originaler')
+                                    learner_type='originaler',
+                                    teammates_collection=teammates_collection,
+                                    curriculum=None,
+                                    )
 
         self.agent = agent
         self.p_idx = p_idx
-        self.env.set_teammates(teammates)
+        self.env.set_teammates(teamtype='run_type')
         self.env.reset(p_idx=self.p_idx)
 
         assert self.agent != 'human'
@@ -82,3 +87,25 @@ class OvercookedSimulation:
             trajectory = self._run_simulation()
             trajectories.append(trajectory)
         return trajectories
+
+
+
+if __name__ == '__main__':
+    from oai_agents.common.arguments import get_arguments
+    from oai_agents.agents.agent_utils import CustomAgent, load_agent
+    from pathlib import Path
+
+    args = get_arguments()
+    args.num_players = 2
+    args.layout_names = ['counter_circuit']
+    args.n_envs = 4
+    p_idx = 0
+
+    path = 'agent_models/Complex/2/SP_hd256_seed2602/last'
+    agent = load_agent(Path(path), args)
+
+    # teammates = [agent]
+    teammates = [CustomAgent(args=args, name='tm', trajectories={args.layout_names[0]: [(1, 1), (1, 2)]})]
+
+    simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout_names[0], p_idx=p_idx, horizon=400)
+    trajectories = simulation.run_simulation(how_many_times=4)

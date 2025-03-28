@@ -54,7 +54,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = int(5e6 * args.how_long)
         args.n_x_fcp_total_training_timesteps = int(2 * args.fcp_total_training_timesteps * args.how_long)
 
-        args.total_ego_agents = 8
+        args.total_sp_agents = 8
         print(f"args.layout_names: {args.layout_names}")
         if args.layout_names == complex_2_chefs_layouts:
             prefix = 'Complex'
@@ -84,7 +84,7 @@ def set_input(args):
         args.adversary_total_training_timesteps = 1500
         args.fcp_total_training_timesteps = 1500
         args.n_x_fcp_total_training_timesteps = 1500 * 2
-        args.total_ego_agents = 2
+        args.total_sp_agents = 2
         args.exp_dir = f'Test/{args.num_players}'
 
 

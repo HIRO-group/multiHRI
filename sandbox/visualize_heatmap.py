@@ -4,16 +4,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from oai_agents.common.heatmap import get_tile_map
-from oai_agents.agents.agent_utils import DummyAgent, load_agent
+from oai_agents.agents.agent_utils import load_agent
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_simulation import OvercookedSimulation
 
 
-def extract_layout_features(grid):
-    """
-    Extracts layout features such as counters, pots, onions, and player starting positions.
-    Returns a dictionary with their coordinates and the grid shape.
-    """
+def extract_layout_features(args):
+    from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld
+    mdp = OvercookedGridworld.from_layout_name(args.layout)
+    grid = mdp.terrain_mtx
+
     layout_features = {
         "P": [],
         "O": [],
@@ -23,11 +23,11 @@ def extract_layout_features(grid):
     }
     feature_positions = set()  # Store all feature coordinates for masking
 
-    grid_lines = [line.strip() for line in grid.strip().split("\n")]
-    grid_height = len(grid_lines)
-    grid_width = max(len(line) for line in grid_lines)  # Accounts for irregular widths
+    # grid_lines = [line.strip() for line in grid.strip().split("\n")]
+    grid_height = len(grid)
+    grid_width = max(len(line) for line in grid)  # Accounts for irregular widths
 
-    for y, row in enumerate(grid_lines):
+    for y, row in enumerate(grid):
         for x, char in enumerate(row):
             if char == "P":
                 layout_features["P"].append((x, y))
@@ -113,64 +113,40 @@ def plot_heatmap(tiles_v, layout_features, feature_positions, title=''):
 if __name__ == "__main__":
     args = get_arguments()
     args.num_players = 2
-    args.layout = 'storage_room'
-
-    # grid_layout = """XXXPPXXX
-    #                  X   2  X
-    #                  D XXXX S
-    #                  X   1  X
-    #                  XXXOOXXX"""
-
-    grid_layout = """XPXXXXXXXXPX
-                     S   XODX   S
-                     X    12    X
-                     X   XDOX   X
-                     XXXXXXXXXXXX"""
-
-    # grid_layout = """XODSXXXXSDXX
-    #                  X          X
-    #                  S PP XX    X
-    #                  D PP OX 1  X
-    #                  O PP DX 2  X
-    #                  X    SX    X
-    #                  XSDOXXXXOPXX"""
-
-    # grid_layout = """XXXPPXXX
-    #                  X  2 4 X
-    #                  S XXXX5S
-    #                  X  1 3 X
-    #                  XXDOODXX"""
+    args.layout = 'c4'
 
     args.p_idx = 0
     args.n_envs = 200
     args.layout_names = [args.layout]
 
-    # path = 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/last'
-    path = 'agent_models/Complex/2/SP_hd256_seed2602/last'
-    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/last'
-    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/last'
-    # path = 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/last'
+    path = 'agent_models/c4_best_EGO_with_CAP/best_c4_adv/best'
+    # path = 'agent_models/c4_best_EGO/best_c4/best'
 
     agent = load_agent(Path(path), args)
     title = f'{args.layout}_{path.split("/")[-2]}'
 
-    high_perf_teammates = [agent for _ in range(args.num_players - 1)]
-    low_perf_teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
 
-    # Define the environment grid layout (modify this based on the actual layout)
+    high_perf_paths = [
+        'agent_models/c4_v4/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/c4_v3/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/c4_v2/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/c4_v1/SP_s1010_h256_tr[SP]_ran/best',
+    ]
+    high_perf_teammates = [[load_agent(Path(tm_path), args)] for tm_path in high_perf_paths[:args.num_players - 1]]
+    # high_perf_teammates = [agent for _ in range(args.num_players - 1)]
+    # low_perf_teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
+    low_perf_teammates = []
 
-    # Extract layout features, feature positions, and shape dynamically
-    layout_features, feature_positions, shape = extract_layout_features(grid_layout)
 
-    # Initialize heatmap matrices dynamically based on extracted shape
+    layout_features, feature_positions, shape = extract_layout_features(args)
+
     final_tiles_v = np.zeros(shape)
-
     for p_idx in range(args.num_players):
-        for teammates in [low_perf_teammates, high_perf_teammates]:
+        for teammates in high_perf_teammates:
             simulation = OvercookedSimulation(args=args, agent=agent, teammates=teammates, layout_name=args.layout, p_idx=p_idx, horizon=400)
             trajectories = simulation.run_simulation(how_many_times=args.num_eval_for_heatmap_gen)
             tile = get_tile_map(args=args, shape=shape, agent=agent, p_idx=p_idx, trajectories=trajectories, interact_actions_only=False)
-            final_tiles_v += tile['V']
+            final_tiles_v += tile['P']
 
     # final_tiles_v = not_used_function_get_tile_v_using_all_states(args=args, agent=agent, layout=args.layout, shape=shape)
 

@@ -14,7 +14,7 @@ def get_arguments(additional_args: Optional[List] = None):
     additional_args = additional_args if additional_args is not None else []
 
     parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-    parser.add_argument('--layout-names', help='Overcooked maps to use')
+    parser.add_argument('--layout-names', help='Overcooked maps to use', default='default')
     parser.add_argument('--horizon', type=int, default=400, help='Max timesteps in a rollout')
     parser.add_argument('--num_stack', type=int, default=3, help='Number of frame stacks to use in training if frame stacks are being used')
     parser.add_argument('--encoding-fn', type=str, default='OAI_egocentric',
@@ -98,15 +98,31 @@ def get_arguments(additional_args: Optional[List] = None):
     parser.add_argument("--custom-agent-ck-rate-generation", type=int)
 
     parser.add_argument('--gen-pop-for-eval', type=str2bool, default=False, help="Specifies whether to generate a population of agents for evaluation purposes. Currently, this functionality is limited to self-play agents, as support for other methods has not yet been implemented..)")
-    parser.add_argument("--total-ego-agents", type=int, default=4)
+    parser.add_argument('--use-cuda', type=str2bool, help="Specifies whether to use cuda for training.")
+    parser.add_argument('--use-multipleprocesses', type=str2bool, help="SubprocVecEnv vs DummyVecEnv")
+
+    parser.add_argument("--total-sp-agents", type=int, default=4)
     parser.add_argument("--ck-list-offset", type=int, default=0)
+
+    # The next three args are only to run the ultimate baseline exp, I will clean it later
+    parser.add_argument('--low-perfs', help='code to run ult baseline exp', default='default')
+    parser.add_argument('--med-perfs', help='code to run ult baseline exp', default='default')
+    parser.add_argument('--high-perfs', help='code to run ult baseline exp', default='default')
+
 
     for parser_arg, parser_kwargs in additional_args:
         parser.add_argument(parser_arg, **parser_kwargs)
 
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
-    args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+
+    args.device = th.device('cuda' if args.use_cuda and th.cuda.is_available() else 'cpu')
+
+    args.layout_names = args.layout_names.split(',')
+    args.low_perfs = args.low_perfs.split(',')
+    args.med_perfs = args.med_perfs.split(',')
+    args.high_perfs = args.high_perfs.split(',')
+
 
     if isinstance(args.layout_names, str):
         args.layout_names = args.layout_names.split(',')

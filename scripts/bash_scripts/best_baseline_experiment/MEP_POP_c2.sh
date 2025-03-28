@@ -6,7 +6,7 @@ HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="c2"
 EXP_DIR="${ALGO}_${LAYOUT_NAMES}/${NUM_PLAYERS}"
-TOTAL_EGO_AGENTS=4
+TOTAL_SP_AGENTS=4
 QUICK_TEST=false
 
 WANDB_MODE="online"
@@ -36,7 +36,7 @@ python scripts/train_agents.py \
     --fcp-total-training-timesteps ${FCP_TOTAL_TRAINING_TIMESTEPS} \
     --adversary-total-training-timesteps ${ADVERSARY_TOTAL_TRAINING_TIMESTEPS} \
     --n-x-fcp-total-training-timesteps ${N_X_FCP_TOTAL_TRAINING_TIMESTEPS} \
-    --total-ego-agents ${TOTAL_EGO_AGENTS} \
+    --total-sp-agents ${TOTAL_SP_AGENTS} \
     --wandb-mode ${WANDB_MODE} \
     --pop-force-training ${POP_FORCE_TRAINING} \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \

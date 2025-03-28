@@ -13,6 +13,7 @@ from scripts.utils import (
     get_FCP_agent_w_pop,
     get_N_X_FCP_agents,
     get_N_X_SP_agents,
+    get_best_EGO_agents,
 )
 
 def MEP_POPULATION(args):
@@ -21,7 +22,7 @@ def MEP_POPULATION(args):
     agents_finder = SelfPlayAgentsFinder(args=args)
     _, _, training_infos = agents_finder.get_agents_infos()
     if len(training_infos)==0:
-        manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
+        manager = MEPPopulationManager(population_size=args.total_sp_agents, args=args)
         manager.train_population(
             total_timesteps=args.pop_total_training_timesteps,
             num_of_ckpoints=args.num_of_ckpoints,
@@ -255,14 +256,15 @@ def SPN_XSPCKP(args) -> None:
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,
         TeamType.SELF_PLAY_LOW,
-        # TeamType.SELF_PLAY_DYNAMIC_ADV, # TODO: read from command line arg
-        # TeamType.SELF_PLAY_STATIC_ADV,
+        TeamType.SELF_PLAY_DYNAMIC_ADV, # TODO: read from command line arg
+        TeamType.SELF_PLAY_STATIC_ADV,
     ]
     primary_eval_types = {
-        'generate': [TeamType.SELF_PLAY_HIGH,
+        'generate': [
+                    TeamType.SELF_PLAY_HIGH,
                      TeamType.SELF_PLAY_LOW,
-                    #  TeamType.SELF_PLAY_DYNAMIC_ADV,
-                    #  TeamType.SELF_PLAY_STATIC_ADV,
+                     TeamType.SELF_PLAY_DYNAMIC_ADV,
+                     TeamType.SELF_PLAY_STATIC_ADV,
                     ],
         'load': []
     }
@@ -284,6 +286,38 @@ def SPN_XSPCKP(args) -> None:
     )
 
 
+def best_EGO(args, add_adv=False) -> None:
+    '''for a very specifric experimetn: only for 2 players:: ignore this'''
+    primary_train_types = [
+        TeamType.SELF_PLAY_HIGH,
+        TeamType.SELF_PLAY_MEDIUM,
+        TeamType.SELF_PLAY_LOW,
+    ]
+    primary_eval_types = {
+        'generate': [
+                    TeamType.SELF_PLAY_HIGH,
+                    TeamType.SELF_PLAY_LOW,
+                    ],
+        'load': []
+    }
+    if args.prioritized_sampling:
+        curriculum = Curriculum(train_types=primary_train_types,
+                                eval_types=primary_eval_types,
+                                is_random=False,
+                                prioritized_sampling=True,
+                                priority_scaling=2.0)
+    else:
+        curriculum = Curriculum(train_types=primary_train_types, is_random=True)
+
+    get_best_EGO_agents(
+        args,
+        curriculum=curriculum,
+        primary_eval_types=primary_eval_types,
+        primary_train_types=curriculum.train_types,
+        add_adv=add_adv
+    )
+
+
 if __name__ == '__main__':
     args = get_arguments()
 
@@ -293,21 +327,24 @@ if __name__ == '__main__':
     elif args.algo_name == 'SPN_XSPCKP':
         SPN_XSPCKP(args=args)
 
+    elif args.algo_name == 'MEP':
+        MEP_POPULATION(args=args)
+
     elif args.algo_name == 'FCP_traditional':
         FCP_traditional(args=args)
 
-    elif args.algo_name == 'FCP_mhri':
-        FCP_mhri(args=args)
+    # elif args.algo_name == 'best_EGO':
+    #     best_EGO(args=args, add_adv=False)
 
-    elif args.algo_name == 'SPN_1ADV':
-        SPN_1ADV(args=args)
+    # elif args.algo_name == 'FCP_mhri':
+    #     FCP_mhri(args=args)
 
-    elif args.algo_name == 'N_1_FCP':
-        N_1_FCP(args=args)
+    # elif args.algo_name == 'SPN_1ADV':
+    #     SPN_1ADV(args=args)
 
-    elif args.algo_name == 'SPN_1ADV_XSPCKP':
-        SPN_1ADV_XSPCKP(args=args)
+    # elif args.algo_name == 'N_1_FCP':
+    #     N_1_FCP(args=args)
 
-    elif args.algo_name == 'MEP':
-        MEP(args=args)
+    # elif args.algo_name == 'SPN_1ADV_XSPCKP':
+    #     SPN_1ADV_XSPCKP(args=args)
 

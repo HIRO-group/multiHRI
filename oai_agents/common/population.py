@@ -4,7 +4,7 @@ import dill
 
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.tags import AgentPerformance, KeyCheckpoints, TeamType
-
+from oai_agents.common.teammates_collection import generate_TC
 
 from .curriculum import Curriculum
 
@@ -33,11 +33,31 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
             print(f"Restarting training from step: {start_step} (timestep: {start_timestep})")
 
 
+    init_agent = RLAgentTrainer.generate_randomly_initialized_agent(
+            args=args,
+            name=name,
+            learner_type=args.primary_learner_type,
+            hidden_dim=h_dim,
+            seed=seed,
+            n_envs=args.n_envs
+        )
+
+    population = {layout_name: [] for layout_name in args.layout_names}
+
+    teammates_collection = generate_TC(args=args,
+                                        population=population,
+                                        agent=init_agent,
+                                        train_types=[TeamType.SELF_PLAY],
+                                        eval_types_to_generate=[TeamType.SELF_PLAY],
+                                        eval_types_to_read_from_file=[],
+                                        unseen_teammates_len=0,
+                                        use_entire_population_for_train_types_teammates=True)
+
     rlat = RLAgentTrainer(
         name=name,
         args=args,
         agent=agent_ckpt,
-        teammates_collection={}, # automatically creates SP type
+        teammates_collection=teammates_collection, # automatically creates SP type
         epoch_timesteps=args.epoch_timesteps,
         n_envs=n_envs,
         hidden_dim=h_dim,
@@ -68,11 +88,11 @@ def train_SP_with_checkpoints(args, total_training_timesteps, ck_rate, seed, h_d
 def ensure_enough_SP_agents(teammates_len,
                             train_types,
                             eval_types,
-                            total_ego_agents,
+                            total_sp_agents,
                             unseen_teammates_len=0, # only used for SPX teamtypes
                         ):
 
-    total_population_len = len(AgentPerformance.ALL) * total_ego_agents
+    total_population_len = len(AgentPerformance.ALL) * total_sp_agents
 
     train_agents_len, eval_agents_len = 0, 0
 
@@ -93,14 +113,14 @@ def ensure_enough_SP_agents(teammates_len,
             eval_agents_len += unseen_teammates_len
 
     assert total_population_len >= train_agents_len + eval_agents_len, "Not enough agents to train and evaluate." \
-                                                                        " Should increase total_ego_agents." \
+                                                                        " Should increase total_sp_agents." \
                                                                         f" Total population len: {total_population_len}," \
                                                                         f" train_agents len: {train_agents_len}," \
                                                                         f" eval_agents len: {eval_agents_len}, "\
-                                                                        f" total_ego_agents: {total_ego_agents}."
+                                                                        f" total_sp_agents: {total_sp_agents}."
 
 
-def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
+def generate_hdim_and_seed(for_evaluation: bool, total_sp_agents: int):
     '''
     Generates lists of seeds and hidden dimensions for a given number of agents for training or evaluation.
 
@@ -111,7 +131,7 @@ def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
 
     Arguments:
     for_evaluation -- a boolean indicating whether to generate settings for evluation (True) or training (False).
-    total_ego_agents -- the number of (hidden_dim, seed) pairs to generate.
+    total_sp_agents -- the number of (hidden_dim, seed) pairs to generate.
 
     Returns:
     selected_seeds -- list of selected seeds
@@ -128,25 +148,25 @@ def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):
 
     # Select appropriate predefined settings based on the input setting
     if for_evaluation:
-        assert total_ego_agents <= len(evaluation_seeds), (
-            f"Total ego agents ({total_ego_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
+        assert total_sp_agents <= len(evaluation_seeds), (
+            f"Total ego agents ({total_sp_agents}) cannot exceed the number of evaluation seeds ({len(evaluation_seeds)}). "
             "Please either increase the number of evaluation seeds in the `generate_hdim_and_seed` function or decrease "
-            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+            f"`self.total_sp_agents` (currently set to {total_sp_agents}, based on `args.total_sp_agents`)."
         )
         seeds = evaluation_seeds
         hdims = evaluation_hdims
     else:
-        assert total_ego_agents <= len(training_seeds), (
-            f"Total ego agents ({total_ego_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
+        assert total_sp_agents <= len(training_seeds), (
+            f"Total ego agents ({total_sp_agents}) cannot exceed the number of training seeds ({len(training_seeds)}). "
             "Please either increase the number of training seeds in the `generate_hdim_and_seed` function or decrease "
-            f"`self.total_ego_agents` (currently set to {total_ego_agents}, based on `args.total_ego_agents`)."
+            f"`self.total_sp_agents` (currently set to {total_sp_agents}, based on `args.total_sp_agents`)."
         )
         seeds = training_seeds
         hdims = training_hdims
 
     # Initialize selected lists
-    selected_seeds = seeds[:total_ego_agents]
-    selected_hdims = hdims[:total_ego_agents]
+    selected_seeds = seeds[:total_sp_agents]
+    selected_hdims = hdims[:total_sp_agents]
 
     return selected_seeds, selected_hdims
 
@@ -175,7 +195,7 @@ def get_performance_based_population_by_layouts(
         total_training_timesteps,
         train_types,
         eval_types,
-        total_ego_agents,
+        total_sp_agents,
         unseen_teammates_len=0,
         force_training=False,
         tag=KeyCheckpoints.MOST_RECENT_TRAINED_MODEL,
@@ -198,14 +218,14 @@ def get_performance_based_population_by_layouts(
             unseen_teammates_len=unseen_teammates_len,
             train_types=train_types,
             eval_types=eval_types,
-            total_ego_agents=total_ego_agents
+            total_sp_agents=total_sp_agents
         )
 
         seed, h_dim = generate_hdim_and_seed(
-            for_evaluation=args.gen_pop_for_eval, total_ego_agents=total_ego_agents)
+            for_evaluation=args.gen_pop_for_eval, total_sp_agents=total_sp_agents)
         inputs = [
             (args, total_training_timesteps, ck_rate, seed[i], h_dim[i], True)
-            for i in range(total_ego_agents)
+            for i in range(total_sp_agents)
         ]
 
 

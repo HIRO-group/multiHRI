@@ -1,7 +1,8 @@
 from oai_agents.common.state_encodings import ENCODING_SCHEMES
 from oai_agents.common.subtasks import Subtasks, get_doable_subtasks
 from oai_agents.common.learner import Learner
-from oai_agents.agents.agent_utils import CustomAgent
+from oai_agents.agents.agent_utils import CustomAgent, DummyAgent
+from oai_agents.common.tags import TeammatesCollection
 
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action, Direction
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -14,7 +15,6 @@ from gym import Env, spaces, register
 import numpy as np
 import pygame
 from pygame.locals import HWSURFACE, DOUBLEBUF, RESIZABLE
-from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.vec_env.stacked_observations import StackedObservations
 import torch as th
 import random
@@ -34,7 +34,7 @@ import random
 class OvercookedGymEnv(Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, learner_type, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
+    def __init__(self, learner_type, teammates_collection, curriculum, grid_shape=None, ret_completed_subtasks=False, stack_frames=False, is_eval_env=False,
                  shape_rewards=False, enc_fn=None, full_init=True, args=None, deterministic=False, start_timestep: int = 0,
                  **kwargs):
         self.is_eval_env = is_eval_env
@@ -88,6 +88,8 @@ class OvercookedGymEnv(Env):
         self.reset_p_idx = None
 
         self.learner = Learner(learner_type, args.reward_magnifier)
+        self.teammates_collection = teammates_collection
+        self.curriculum = curriculum
 
         self.dynamic_reward = args.dynamic_reward
         self.final_sparse_r_ratio = args.final_sparse_r_ratio
@@ -153,11 +155,21 @@ class OvercookedGymEnv(Env):
     def get_joint_action(self):
         return self.joint_action
 
-    def set_teammates(self, teammates):
-        assert isinstance(teammates, list)
+    def set_teammates(self, teamtype=None):
+        '''
+        When teamtype is None, teammate is set according to the curriculum
+        When teamtype is not None, teammate is set according to the teamtype which is only used for evaluation purposes
+        '''
+        if teamtype:
+            assert self.is_eval_env is True, "Teamtype should only be set for evaluation environments"
+            population_teamtypes = self.teammates_collection[TeammatesCollection.EVAL][self.layout_name]
+            teammates = population_teamtypes[teamtype][np.random.randint(len(population_teamtypes[teamtype]))]
+        else:
+            population_teamtypes = self.teammates_collection[TeammatesCollection.TRAIN][self.layout_name]
+            teammates = self.curriculum.select_teammates_for_layout(population_teamtypes=population_teamtypes, layout=self.layout_name)
+
         self.teammates = teammates
         self.reset_info['start_position'] = {}
-
         for t_idx in self.t_idxes:
             tm = self.get_teammate_from_idx(t_idx)
             if tm.get_start_position(self.layout_name, u_env_idx=self.unique_env_idx) is not None:
@@ -192,6 +204,7 @@ class OvercookedGymEnv(Env):
     def action_masks(self, p_idx):
         return get_doable_subtasks(self.state, self.prev_subtask[p_idx], self.layout_name, self.terrain, p_idx,
                                    self.valid_counters, USEABLE_COUNTERS.get(self.layout_name, 5)).astype(bool)
+
 
     def get_obs(self, c_idx, done=False, enc_fn=None, on_reset=False, goal_objects=None):
         enc_fn = enc_fn or self.encoding_fn
@@ -242,6 +255,7 @@ class OvercookedGymEnv(Env):
             for t_idx in self.t_idxes:
                 teammate = self.get_teammate_from_idx(t_idx)
                 tm_obs = self.get_obs(c_idx=t_idx, enc_fn=teammate.encoding_fn)
+
                 if type(teammate) == CustomAgent:
                     info = {'layout_name': self.layout_name, 'u_env_idx': self.unique_env_idx}
                     joint_action[t_idx] = teammate.predict(obs=tm_obs, deterministic=self.deterministic, info=info)[0]
@@ -260,6 +274,7 @@ class OvercookedGymEnv(Env):
                 for t_idx in self.t_idxes:
                     tm = self.get_teammate_from_idx(t_idx)
                     if type(tm) != CustomAgent:
+                    # if not isinstance(tm, CustomAgent):
                         joint_action[t_idx] = Direction.INDEX_TO_DIRECTION[self.step_count % 4]
             self.prev_state, self.prev_actions = deepcopy(self.state), deepcopy(joint_action)
 
@@ -346,15 +361,22 @@ register(
 
 if __name__ == '__main__':
     from oai_agents.common.arguments import get_arguments
-
     args = get_arguments()
-    env = OvercookedGymEnv(p1=DummyAgent(),
-                           args=args)  # make('overcooked_ai.agents:OvercookedGymEnv-v0', layout='asymmetric_advantages', encoding_fn=encode_state, args=args)
-    print(check_env(env))
-    env.setup_visualization()
-    env.reset()
-    env.render()
+
+    args.num_players = 2
+
+    env = OvercookedGymEnv(layout_name=args.layout_names[0], args=args, ret_completed_subtasks=False,
+                            is_eval_env=True, horizon=400, learner_type='originaler')
+
+    p_idx = 0
+    teammates = [DummyAgent()]
+
+    env.set_teammates(teammates)
+    env.reset(p_idx=p_idx)
     done = False
+
     while not done:
-        obs, reward, done, info = env.step(Action.ACTION_TO_INDEX[np.random.choice(Action.ALL_ACTIONS)])
+        action = np.random.randint(0, Action.NUM_ACTIONS)
+        action_idx = Action.ACTION_TO_INDEX[Action.STAY]
+        obs, reward, done, info = env.step(action_idx)
         env.render()
