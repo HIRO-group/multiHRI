@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from oai_agents.agents.agent_utils import load_agent
+from oai_agents.agents.agent_utils import load_agent, CustomAgent
 from oai_agents.agents.rl import RLAgentTrainer
 from oai_agents.common.arguments import get_arguments
 from oai_agents.common.overcooked_gui import OvercookedGUI
@@ -32,17 +32,19 @@ if __name__ == "__main__":
         'agent_models/c4_best_EGO_with_CAP/best_c4_adv/best'
     ]
 
-    teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
+    # teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
 
     # trajectories = tile locations. Top left of the layout is (0, 0), bottom right is (M, N)
-    # teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(2, 1), (3, 1)]})]
+    teammates = [CustomAgent(args=args, name='human', trajectories={args.layout: [(7, 1)]})]
     # teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
+
+    # (5, 1)
 
     # player_path = 'agent_models/c4_best_EGO_with_CAP/best_c4_adv/best'
     # # player_path = 'agent_models/c4_best_EGO/best_c4/best'
     # player = load_agent(Path(player_path), args)
-    player = teammates[0]
-    # player = 'human' # blue
+    # player = teammates[0]
+    player = 'human' # blue
 
     dc = OvercookedGUI(args, agent=player, teammates=teammates, layout_name=args.layout, p_idx=args.p_idx, fps=50,
                         horizon=400, gif_name=args.layout)

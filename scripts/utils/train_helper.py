@@ -570,10 +570,10 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
 
     if add_adv:
         random_pos = {
-            'c1': [(1, 1), (2, 1), (3, 1), (4, 1), (1, 2), (2, 2), (3, 2), (4, 2)],
-            'c2': [(2, 1), (4, 1), (6, 1), (1, 2), (7, 2), (2, 3), (4, 3), (6, 3)],
-            'c3': [(2, 1), (4, 1), (6, 1), (1, 2), (7, 2), (2, 3), (4, 3), (6, 3)],
-            'c4': [(3, 1), (5, 1), (7, 1), (1, 2), (9, 2), (3, 3), (5, 3), (7, 3)],
+            # 'c1': [(1, 1), (2, 1), (3, 1), (4, 1), (1, 2), (2, 2), (3, 2), (4, 2)],
+            # 'c2': [(2, 1), (4, 1), (6, 1), (1, 2), (7, 2), (2, 3), (4, 3), (6, 3)],
+            # 'c3': [(2, 1), (4, 1), (6, 1), (1, 2), (7, 2), (2, 3), (4, 3), (6, 3)],
+            'c4': [(5, 1), (7, 1)],
         }
 
         custom_agents = []
@@ -607,7 +607,7 @@ def get_best_EGO_agents(args, primary_train_types, primary_eval_types, curriculu
     )
 
     best_ego_trainer.train_agents(
-        total_train_timesteps=args.n_x_fcp_total_training_timesteps,
+        total_train_timesteps=args.n_x_sp_total_training_timesteps,
         tag_for_returning_agent=tag
     )
 
