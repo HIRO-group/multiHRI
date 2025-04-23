@@ -93,6 +93,42 @@ LAYOUT_NAMES_PATHs = {
         Eval.MEDIUM: Classic.M_2,
         Eval.HIGH: Classic.H_2,
     },
+
+    'dec_5_chefs_counter_circuit': {
+        Eval.LOW: Complex.L_5,
+        Eval.MEDIUM: Complex.M_5,
+        Eval.HIGH: Complex.H_5,
+    },
+    'dec_5_chefs_storage_room': {
+        Eval.LOW: Complex.L_5,
+        Eval.MEDIUM: Complex.M_5,
+        Eval.HIGH: Complex.H_5,
+    },
+    'dec_5_chefs_secret_heaven': {
+        Eval.LOW: Complex.L_5,
+        Eval.MEDIUM: Complex.M_5,
+        Eval.HIGH: Complex.H_5,
+    },
+    'selected_5_chefs_spacious_room_no_counter_space': {
+        Eval.LOW: Complex.L_5,
+        Eval.MEDIUM: Complex.M_5,
+        Eval.HIGH: Complex.H_5,
+    },
+    'dec_3_chefs_storage_room': {
+        Eval.LOW: Complex.L_3,
+        Eval.MEDIUM: Complex.M_3,
+        Eval.HIGH: Complex.H_3,
+    },
+    'dec_3_chefs_secret_heaven': {
+        Eval.LOW: Complex.L_3,
+        Eval.MEDIUM: Complex.M_3,
+        Eval.HIGH: Complex.H_3,
+    },
+    'dec_3_chefs_counter_circuit': {
+        Eval.LOW: Complex.L_3,
+        Eval.MEDIUM: Complex.M_3,
+        Eval.HIGH: Complex.H_3,
+    },
 }
 
 def print_all_teammates(all_teammates):
@@ -111,6 +147,7 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
 
     N = num_players
     X = list(range(N))
+    # X = [1]
 
     # Contains all the agents which are later used to create all_teammates
     all_agents = {layout_name: [] for layout_name in layout_names}
@@ -132,12 +169,18 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
 
         for unseen_count in X:
             teammates_list = []
-            for num_teams in range(max_num_teams_per_layout_per_x):
+            
+            if unseen_count == 0:
+                num_teams_max = 1
+            else:
+                num_teams_max = min(max_num_teams_per_layout_per_x, len(agents)//unseen_count)
+
+            for num_teams in range(num_teams_max):
                 teammates = [primary_agent] * (N-1-unseen_count)
                 for i in range(unseen_count):
                     try:
                         teammates.append(agents[i + (num_teams)])
-                    except RuntimeError:
+                    except Exception as e:
                         continue
                 if len(teammates) == N-1:
                     teammates_list.append(teammates)
@@ -265,7 +308,7 @@ def plot_evaluation_results_bar(all_mean_rewards, all_std_rewards, layout_names,
     plt.savefig(f'data/plots/{plot_name}_{"deliveries" if display_delivery else "rewards"}_bar.png')
 
 
-def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name):
+def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names, teammate_lvl_sets, num_players, plot_name, display_delivery=True):
     num_layouts = len(layout_names)
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
@@ -277,6 +320,9 @@ def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names
 
     x_values = np.arange(num_players)
 
+    def process_reward(reward):
+        return reward / 20 if display_delivery else reward
+
     for i, layout_name in enumerate(layout_names):
         cross_exp_mean = {}
         cross_exp_std = {}
@@ -287,8 +333,11 @@ def plot_evaluation_results_line(all_mean_rewards, all_std_rewards, layout_names
                 std_values = []
 
                 for unseen_count in range(num_players):
-                    mean_rewards = all_mean_rewards[agent_name][team][layout_name][unseen_count]
-                    std_rewards = all_std_rewards[agent_name][team][layout_name][unseen_count]
+
+                    mean_rewards = [process_reward(r) for r in all_mean_rewards[agent_name][team][layout_name][unseen_count]]
+                    std_rewards = [process_reward(r) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
+                    # mean_rewards = all_mean_rewards[agent_name][team][layout_name][unseen_count]
+                    # std_rewards = all_std_rewards[agent_name][team][layout_name][unseen_count]
 
                     mean_values.append(np.mean(mean_rewards))
                     std_values.append(np.mean(std_rewards))
@@ -348,6 +397,7 @@ def evaluate_agent(args,
     }
 
     for layout_name in layout_names:
+        # for unseen_count in [1]:
         for unseen_count in range(args.num_players):
             for teammates in all_teammates[layout_name][unseen_count]:
                 env = OvercookedGymEnv(args=args,
@@ -448,24 +498,8 @@ def get_2_player_input_classic(args):
         ]
     p_idxes = [0, 1]
     all_agents_paths = {
-        'SP': 'agent_models/Classic/2/SP_hd256_seed1010/best',
-        'FCP': 'agent_models/Classic/2/FCP_s1010_h256_tr[AMX]_ran/best',
-
-        # 'dsALMH 1d[2t] 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[2t] 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP 3d 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
-        # 'sALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        # 'sALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        # 'sALMH 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-
-        # 'dALMH 1s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
-        # 'dALMH 2s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
-        'CAP 3s': 'agent_models/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
-
-        # 'dsALMH 1d[5t] 1s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[5t] 2s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        # 'dsALMH 3d[5t] 3s': 'agent_models/Classic/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
+        'SP':    'agent_models/RSS_MRS/Training/Classic/2/SP_hd256_seed1010/best',
+        'N-1SP': 'agent_models/RSS_MRS/Training/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
 
     teammate_lvl_sets = [
@@ -485,26 +519,10 @@ def get_2_player_input_complex(args):
         ]
     p_idxes = [0, 1]
     all_agents_paths = {
-        'SP': 'agent_models/Complex/2/SP_hd256_seed1010/best',
-        'FCP': 'agent_models/Complex/2/FCP_s1010_h256_tr[AMX]_ran/best',
-
-        # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[2t] 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'CAP 3d 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
-        # 'sALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        # 'sALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'CAP 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-
-        # 'dALMH 1s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
-        # 'dALMH 2s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
-        # 'dALMH 3s': 'agent_models/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
-
-        # 'dsALMH 1d[5t] 1s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 2d[5t] 2s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        # 'dsALMH 3d[5t] 3s': 'agent_models/Complex/2/5_steps_in_dynamic_advs/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-
+        'SP':    'agent_models/RSS_MRS/Training/Complex/2/SP_hd256_seed1010/best',
+        'N-1SP': 'agent_models/RSS_MRS/Training/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
+
     teammate_lvl_sets = [
         [Eval.LOW],
         [Eval.MEDIUM],
@@ -523,23 +541,8 @@ def get_3_player_input_complex(args):
 
     p_idxes = [0, 1, 2]
     all_agents_paths = {
-        'SP_s1010_h256': 'agent_models/Complex/3/SP_hd256_seed1010/best',
-        'FCP_s1010_h256': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-
-        'dsALMH 1d[2t] 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        'dsALMH 2d[2t] 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-        'dsALMH 3d[2t] 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-        'dsALMH 4d[2t] 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
-
-        'sALMH 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        'sALMH 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        'sALMH 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-        'sALMH 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack3/best',
-
-        'dALMH 1s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
-        'dALMH 2s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
-        'dALMH 3s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
-        'dALMH 4s': 'agent_models/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack3/best',
+        'SP':    'agent_models/RSS_MRS/Training/Complex/3/SP_hd256_seed1010/best',
+        'N-1SP': 'agent_models/RSS_MRS/Training/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -561,30 +564,8 @@ def get_5_player_input_complex(args):
 
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
-        'SP_s1010_h256': 'agent_models/Complex/5/SP_hd256_seed1010/best',
-        'FCP_s1010_h256': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-
-        # 'dsALMH 1d[2t] 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack0/best',
-        # 'dsALMH 3d[2t] 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack2/best',
-        # 'dsALMH 4d[2t] 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack3/best',
-        # 'dsALMH 5d[2t] 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack4/best',
-        'CAP 6d 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack5/best',
-
-        # 'sALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack0/best',
-        # 'sALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack1/best',
-        # 'sALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack2/best',
-        # 'sALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack3/best',
-        # 'sALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack4/best',
-        'CAP 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPSA]_ran_originaler_attack5/best',
-
-        'CAP 2d 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA_SPSA]_ran_originaler_attack1/best',
-
-        # 'dALMH 1s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack0/best',
-        # 'dALMH 2s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack1/best',
-        # 'dALMH 3s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack2/best',
-        # 'dALMH 4s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack3/best',
-        # 'dALMH 5s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack4/best',
-        # 'dALMH 6s': 'agent_models/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL_SPDA]_ran_originaler_attack5/best',
+        'SP':    'agent_models/RSS_MRS/Training/Complex/5/SP_hd256_seed1010/best',
+        'N-1SP': 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -599,10 +580,10 @@ if __name__ == "__main__":
     args = get_arguments()
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
-    deterministic = False # deterministic = True does not actually work :sweat_smile:
+    deterministic = True # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
     number_of_eps = 5
 
@@ -610,7 +591,7 @@ if __name__ == "__main__":
     args.max_workers = 4
 
     # For display_purposes
-    unseen_counts = [1]
+    unseen_counts = [1, 2]
     show_delivery_num = True
 
     plot_name = generate_plot_name( prefix=prefix,
@@ -632,18 +613,18 @@ if __name__ == "__main__":
             teammate_lvl_sets=teammate_lvl_sets
     )
 
-    plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
-                           all_std_rewards=all_std_rewards,
-                           layout_names=layout_names,
-                           teammate_lvl_sets=teammate_lvl_sets,
-                           unseen_counts=unseen_counts,
-                           display_delivery=show_delivery_num,
-                           plot_name=plot_name)
+    # plot_evaluation_results_bar(all_mean_rewards=all_mean_rewards,
+    #                        all_std_rewards=all_std_rewards,
+    #                        layout_names=layout_names,
+    #                        teammate_lvl_sets=teammate_lvl_sets,
+    #                        unseen_counts=unseen_counts,
+    #                        display_delivery=show_delivery_num,
+    #                        plot_name=plot_name)
 
 
-    # plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
-    #                                  all_std_rewards=all_std_rewards,
-    #                                  layout_names=layout_names,
-    #                                  teammate_lvl_sets=teammate_lvl_sets,
-    #                                  num_players=args.num_players,
-    #                                  plot_name=plot_name)
+    plot_evaluation_results_line(all_mean_rewards=all_mean_rewards,
+                                     all_std_rewards=all_std_rewards,
+                                     layout_names=layout_names,
+                                     teammate_lvl_sets=teammate_lvl_sets,
+                                     num_players=args.num_players,
+                                     plot_name=plot_name)

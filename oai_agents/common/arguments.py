@@ -106,7 +106,8 @@ def get_arguments(additional_args: Optional[List] = None):
 
     args = parser.parse_args()
     args.base_dir = Path(args.base_dir)
-    args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+    # args.device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+    args.device = th.device('cpu')
 
     if isinstance(args.layout_names, str):
         args.layout_names = args.layout_names.split(',')

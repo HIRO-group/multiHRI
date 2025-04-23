@@ -124,8 +124,8 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
     '''
 
     N = num_players
-    # X = list(range(N))
-    X = [1]
+    X = list(range(N))
+    # X = [1]
 
     # Contains all the agents which are later used to create all_teammates
     all_agents = {layout_name: [] for layout_name in layout_names}
@@ -147,7 +147,13 @@ def get_all_teammates_for_evaluation(args, primary_agent, num_players, layout_na
 
         for unseen_count in X:
             teammates_list = []
-            for num_teams in range(max_num_teams_per_layout_per_x):
+
+            if unseen_count == 0:
+                num_teams_max = 1
+            else:
+                num_teams_max = min(max_num_teams_per_layout_per_x, len(agents)//unseen_count)
+
+            for num_teams in range(num_teams_max):
                 teammates = [primary_agent] * (N-1-unseen_count)
                 for i in range(unseen_count):
                     try:
@@ -332,7 +338,8 @@ def evaluate_agent(args,
     }
 
     for layout_name in layout_names:
-        for unseen_count in [1]:
+        # for unseen_count in [1]:
+        for unseen_count in range(args.num_players):
             for teammates in all_teammates[layout_name][unseen_count]:
                 env = OvercookedGymEnv(args=args,
                                        layout_name=layout_name,

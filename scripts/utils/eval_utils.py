@@ -26,86 +26,86 @@ def print_selected_agents_for_evaluation(selected_agents_for_evaluation):
 
 class Complex:
     L_2 = [
-        'agent_models/ComplexTest/2/SP_hd256_seed3031/ck_0',
-        'agent_models/ComplexTest/2/SP_hd256_seed3708/ck_0',
-        'agent_models/ComplexTest/2/SP_hd256_seed4041/ck_0',
-        'agent_models/ComplexTest/2/SP_hd256_seed5051/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed3031/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed3708/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed4041/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed5051/ck_0',
     ]
     M_2 = [
-        'agent_models/ComplexTest/2/SP_hd256_seed3031/ck_4_rew_140.0',
-        'agent_models/ComplexTest/2/SP_hd256_seed3708/ck_3_rew_132.0',
-        'agent_models/ComplexTest/2/SP_hd256_seed4041/ck_4_rew_164.0',
-        'agent_models/ComplexTest/2/SP_hd256_seed5051/ck_3_rew_120.0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed3031/ck_4_rew_140.0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed3708/ck_3_rew_132.0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed4041/ck_4_rew_164.0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed5051/ck_3_rew_120.0',
     ]
     H_2 = [
-        'agent_models/ComplexTest/2/SP_hd256_seed3031/best',
-        'agent_models/ComplexTest/2/SP_hd256_seed3708/best',
-        'agent_models/ComplexTest/2/SP_hd256_seed4041/best',
-        'agent_models/ComplexTest/2/SP_hd256_seed5051/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed3031/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed3708/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed4041/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed5051/best',
     ]
 
 
     L_3 = [
-        'agent_models/ComplexTest/3/SP_hd256_seed3031/ck_0',
-        'agent_models/ComplexTest/3/SP_hd256_seed3708/ck_0',
-        'agent_models/ComplexTest/3/SP_hd256_seed4041/ck_0',
-        'agent_models/ComplexTest/3/SP_hd256_seed5051/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed3031/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed3708/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed4041/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed5051/ck_0',
     ]
     M_3 = [
-        'agent_models/ComplexTest/3/SP_hd256_seed3031/ck_4_rew_120.88888888888889',
-        'agent_models/ComplexTest/3/SP_hd256_seed3708/ck_4_rew_95.55555555555556',
-        'agent_models/ComplexTest/3/SP_hd256_seed4041/ck_4_rew_103.55555555555556',
-        'agent_models/ComplexTest/3/SP_hd256_seed5051/ck_3_rew_69.77777777777777',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed3031/ck_4_rew_120.88888888888889',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed3708/ck_4_rew_95.55555555555556',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed4041/ck_4_rew_103.55555555555556',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed5051/ck_3_rew_69.77777777777777',
     ]
     H_3 = [
-        'agent_models/ComplexTest/3/SP_hd256_seed3031/best',
-        'agent_models/ComplexTest/3/SP_hd256_seed3708/best',
-        'agent_models/ComplexTest/3/SP_hd256_seed4041/best',
-        'agent_models/ComplexTest/3/SP_hd256_seed5051/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed3031/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed3708/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed4041/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/3/SP_hd256_seed5051/best',
     ]
 
 
     L_5 = [
-        'agent_models/ComplexTest/5/SP_hd256_seed3031/ck_0',
-        'agent_models/ComplexTest/5/SP_hd256_seed3708/ck_0',
-        'agent_models/ComplexTest/5/SP_hd256_seed4041/ck_0',
-        'agent_models/ComplexTest/5/SP_hd256_seed5051/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed3031/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed3708/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed4041/ck_0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed5051/ck_0',
     ]
 
     M_5 = [
-        'agent_models/ComplexTest/5/SP_hd256_seed3031/ck_2_rew_120.0',
-        'agent_models/ComplexTest/5/SP_hd256_seed3708/ck_3_rew_157.66666666666666',
-        'agent_models/ComplexTest/5/SP_hd256_seed4041/ck_3_rew_157.0',
-        'agent_models/ComplexTest/5/SP_hd256_seed5051/ck_3_rew_172.0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed3031/ck_2_rew_120.0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed3708/ck_3_rew_157.66666666666666',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed4041/ck_3_rew_157.0',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed5051/ck_3_rew_172.0',
     ]
 
     H_5 = [
-        'agent_models/ComplexTest/5/SP_hd256_seed3031/best',
-        'agent_models/ComplexTest/5/SP_hd256_seed3708/best',
-        'agent_models/ComplexTest/5/SP_hd256_seed4041/best',
-        'agent_models/ComplexTest/5/SP_hd256_seed5051/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed3031/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed3708/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed4041/best',
+        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed5051/best',
     ]
 
 
 
 class Classic:
     L_2 = [
-        'agent_models/ClassicTest/2/SP_hd256_seed3031/ck_0',
-        'agent_models/ClassicTest/2/SP_hd256_seed3708/ck_0',
-        'agent_models/ClassicTest/2/SP_hd256_seed4041/ck_0',
-        'agent_models/ClassicTest/2/SP_hd256_seed5051/ck_0',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed3031/ck_0',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed3708/ck_0',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed4041/ck_0',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed5051/ck_0',
     ]
     M_2 = [
-        'agent_models/ClassicTest/2/SP_hd256_seed3031/ck_1_rew_121.2',
-        'agent_models/ClassicTest/2/SP_hd256_seed3708/ck_1_rew_111.6',
-        'agent_models/ClassicTest/2/SP_hd256_seed4041/ck_1_rew_136.8',
-        'agent_models/ClassicTest/2/SP_hd256_seed5051/ck_1_rew_114.8',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed3031/ck_1_rew_121.2',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed3708/ck_1_rew_111.6',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed4041/ck_1_rew_136.8',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed5051/ck_1_rew_114.8',
     ]
     H_2 = [
-        'agent_models/ClassicTest/2/SP_hd256_seed3031/best',
-        'agent_models/ClassicTest/2/SP_hd256_seed3708/best',
-        'agent_models/ClassicTest/2/SP_hd256_seed4041/best',
-        'agent_models/ClassicTest/2/SP_hd256_seed5051/best',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed3031/best',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed3708/best',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed4041/best',
+        'agent_models/RSS_MRS/Eval/ClassicTest/2/SP_hd256_seed5051/best',
     ]
 
 
