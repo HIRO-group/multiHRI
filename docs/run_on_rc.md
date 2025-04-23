@@ -8,10 +8,10 @@ You should now be able to log in to the Research Cluster using SSH (`ssh [identi
 
 You will be dropped into the home directory (`/home/[identikey]`) of the login node. Only use this space for configuration files and occasional scripts. Do not store any data here.
 
-The majority of your space will be available in the scratch directory (`/scratch/[identikey]`).
+The majority of your space will be available in the scratch directory (`/scratch/alpine/[identikey]`).
 
 ## Step 1: Setting up your environment
-
+First, set git ssh keys in /home/[identikey]
 Clone the repository and overcooked, preferably in the scratch directory:
 
 ```bash
@@ -21,12 +21,14 @@ git clone https://github.com/hiro-group/overcooked_ai.git
 
 ## Step 2: Writing a SLURM script
 
+First, enter a compute node by running: `acompile`
+
 Slurm uses the prefix `#SBATCH` to specify job parameters inside a shell script. Here is an example script:
 
 ```bash
 #!/bin/sh
 
-#SBATCH --partition=amem
+#SBATCH --partition=amilian
 #SBATCH --job-name=SP_c3_v2
 #SBATCH --output=SP_c3_v2.%j.out
 #SBATCH --time=36:00:00

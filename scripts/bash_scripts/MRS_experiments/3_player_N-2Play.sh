@@ -15,7 +15,7 @@ QUICK_TEST=false
 
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
-PRIMARY_FORCE_TRAINING=true
+PRIMARY_FORCE_TRAINING=false
 
 source scripts/bash_scripts/env_config.sh
 
