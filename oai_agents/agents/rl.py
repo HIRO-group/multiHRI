@@ -187,13 +187,16 @@ class RLAgentTrainer(OAITrainer):
         print("-------------------")
         if message:
             print(message)
+        
+        print("Ego agent: ", self.learning_agent.name   )
         for layout_name in teammates_collection:
             for tag in teammates_collection[layout_name]:
                 print(f'\t{tag}:')
                 teammates_c = teammates_collection[layout_name][tag]
                 for teammates in teammates_c:
+                    print("\t\tteam_number: ", teammates_c.index(teammates), ", team_size:", len(teammates))
                     for agent in teammates:
-                        print(f'\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, start_pos: {agent.get_start_position(layout_name, 0)}, len: {len(teammates)}')
+                        print(f'\t\t\t{agent.name}, score for layout {layout_name} is: {agent.layout_scores[layout_name]}, start_pos: {agent.get_start_position(layout_name, 0)}')
         print("-------------------")
 
 

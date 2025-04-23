@@ -100,6 +100,7 @@ if __name__ == '__main__':
     if args.teammates_len <= 1:
         args.how_long = 20
         args.num_of_ckpoints = 35
+        
     elif args.teammates_len == 2:
         args.how_long = 25
         args.num_of_ckpoints = 40

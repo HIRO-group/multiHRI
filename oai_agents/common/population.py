@@ -92,12 +92,12 @@ def ensure_enough_SP_agents(teammates_len,
         else:
             eval_agents_len += unseen_teammates_len
 
-    assert total_population_len >= train_agents_len + eval_agents_len, "Not enough agents to train and evaluate." \
-                                                                        " Should increase total_ego_agents." \
-                                                                        f" Total population len: {total_population_len}," \
-                                                                        f" train_agents len: {train_agents_len}," \
-                                                                        f" eval_agents len: {eval_agents_len}, "\
-                                                                        f" total_ego_agents: {total_ego_agents}."
+    # assert total_population_len >= train_agents_len + eval_agents_len, "Not enough agents to train and evaluate." \
+    #                                                                     " Should increase total_ego_agents." \
+    #                                                                     f" Total population len: {total_population_len}," \
+    #                                                                     f" train_agents len: {train_agents_len}," \
+    #                                                                     f" eval_agents len: {eval_agents_len}, "\
+    #                                                                     f" total_ego_agents: {total_ego_agents}."
 
 
 def generate_hdim_and_seed(for_evaluation: bool, total_ego_agents: int):

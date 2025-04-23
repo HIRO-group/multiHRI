@@ -250,7 +250,7 @@ def SPN_XSPCKP(args) -> None:
     - X is the number of unseen teammate.
     - X is assigned by the variable, unseen_teammates_len, in the funciton.
     '''
-    unseen_teammates_len = 1
+    unseen_teammates_len = args.unseen_teammates_len
     primary_train_types = [
         TeamType.SELF_PLAY_HIGH,
         TeamType.SELF_PLAY_MEDIUM,

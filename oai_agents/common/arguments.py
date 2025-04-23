@@ -37,6 +37,8 @@ def get_arguments(additional_args: Optional[List] = None):
 
     parser.add_argument('--algo-name', type=str)
     parser.add_argument('--num-players', type=int, help='Number of players in the game')
+    parser.add_argument('--unseen-teammates-len', type=int, help='The X in N-XPlay')
+
     parser.add_argument('--n-x-sp-total-training-timesteps', type=int, help='Number of timesteps to train the N-X-SP agent')
     parser.add_argument('--adversary-total-training-timesteps', type=int,  help='Number of timesteps to train the adversary agent')
     parser.add_argument('--n-x-fcp-total-training-timesteps', type=int, help='Number of timesteps to train the N-X-FCP agent')

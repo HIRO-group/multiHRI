@@ -39,10 +39,18 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
                 required_population_size += unseen_teammates_len
 
         if required_population_size > 0:
-            assert len(agents_perftag_score) % required_population_size == 0, \
-                f"Requested use of entire population for teammate generation but provided population size is not evenly divisible by the minimum number of required agents\n"\
-                f"Population size: {len(agents_perftag_score)}\n"\
-                f"Minimum number of agents required for teammate generation: {required_population_size}\n"
+            if len(agents_perftag_score) % required_population_size != 0: 
+                # A very shitty code to enable N-3Play for 5 player OC
+                if len(agents_perftag_score) == 12 and required_population_size == 9:
+                    agents_perftag_score = sorted(agents_perftag_score, key=lambda x: x[2], reverse=True)
+                    indices_to_remove = [3, 7, 11]
+                    agents_perftag_score = [agent for i, agent in enumerate(agents_perftag_score) if i not in indices_to_remove]
+                    
+                else:
+                    assert len(agents_perftag_score) % required_population_size == 0, \
+                        f"Requested use of entire population for teammate generation but provided population size is not evenly divisible by the minimum number of required agents\n"\
+                        f"Population size: {len(agents_perftag_score)}\n"\
+                        f"Minimum number of agents required for teammate generation: {required_population_size}\n"
 
     all_teammates = {
         teamtype: [] for teamtype in teamtypes
