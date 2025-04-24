@@ -15,23 +15,24 @@ def get_teammate_from_pop_file(tm_name, tm_score, pop_path, layout_name):
 
 if __name__ == "__main__":
     args = get_arguments()
-    args.num_players = 5
+    args.num_players = 2
 
-    args.layout = 'dec_5_chefs_counter_circuit'
-    args.p_idx = 0
+    args.layout = 'secret_heaven'
+    args.p_idx = 1
     args.layout_names = [args.layout]
     args.n_envs = 1
 
     teammates_path = [
+        'agent_models/RSS_MRS/Eval/ComplexTest/2/SP_hd256_seed3031/ck_0',
         # 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # green
         # 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best', # orange
         # 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
         # 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
         # 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best',
-        'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-        'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-        'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-        'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed5051/best',
+        # 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        # 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        # 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        # 'agent_models/RSS_MRS/Eval/ComplexTest/5/SP_hd256_seed5051/best',
 
     ]
     teammates = [load_agent(Path(tm_path), args) for tm_path in teammates_path[:args.num_players - 1]]
@@ -41,7 +42,9 @@ if __name__ == "__main__":
     # teammates = [DummyAgent(action='random') for _ in range(args.num_players - 1)]
 
     # player_path = 'agent_models/ALMH_CUR/2/SP_hd64_seed14/best'
-    player_path = 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best'
+    # player_path = 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best'
+    # player_path = 'agent_models/RSS_MRS/Training/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best'
+    player_path = 'agent_models/RSS_MRS/Training/Complex/2/SP_hd256_seed1010/best'
     player = load_agent(Path(player_path), args)
     # player = teammates[0]
     # player = 'human' # blue
