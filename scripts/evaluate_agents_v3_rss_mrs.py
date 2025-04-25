@@ -246,8 +246,6 @@ def plot_evaluation_results_bar(all_mean_rewards,
         elif max_reward:
             # Normalize reward and turn it into a percentage using the provided maximum
             reward = reward / max_reward * 100.0
-
-            print(f"Normalized reward: {reward}")
         return reward
 
     for i, layout_name in enumerate(layout_names):
@@ -261,11 +259,10 @@ def plot_evaluation_results_bar(all_mean_rewards,
 
                 for unseen_count in unseen_counts:
                     if normalize_rewards:
-                        print(f"Using normalized rewards...")
+                        # Use same max for both the mean reward and the std 
                         max_mean_reward = max(all_mean_rewards[agent_name][team][layout_name][unseen_count])
-                        max_std_reward = max(all_std_rewards[agent_name][team][layout_name][unseen_count])
                         mean_rewards = [process_reward(r, max_reward=max_mean_reward) for r in all_mean_rewards[agent_name][team][layout_name][unseen_count]]
-                        std_rewards = [process_reward(r, max_reward=max_std_reward) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
+                        std_rewards = [process_reward(r, max_reward=max_mean_reward) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
                     else:
                         mean_rewards = [process_reward(r) for r in all_mean_rewards[agent_name][team][layout_name][unseen_count]]
                         std_rewards = [process_reward(r) for r in all_std_rewards[agent_name][team][layout_name][unseen_count]]
@@ -288,7 +285,12 @@ def plot_evaluation_results_bar(all_mean_rewards,
             ax.set_xlabel('Number of Unseen Teammates')
             ax.set_xticks(x_values)
             ax.set_xticklabels(unseen_counts)
-            ax.set_yticks(np.arange(0, max(std_values), 2))
+            if display_delivery:
+                ax.set_yticks(np.arange(0, 20, 1))
+            elif normalize_rewards:
+                ax.set_yticks(np.arange(0, 100, 5))
+            else:
+                ax.set_yticks(np.arange(0, max(mean_rewards), 1))
             ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
 
@@ -306,7 +308,12 @@ def plot_evaluation_results_bar(all_mean_rewards,
         ax.set_xlabel('Number of Unseen Teammates')
         ax.set_xticks(x_values)
         ax.set_xticklabels(unseen_counts)
-        ax.set_yticks(np.arange(0, max(std_values), 2))
+        if display_delivery:
+            ax.set_yticks(np.arange(0, 20, 1))
+        elif normalize_rewards:
+            ax.set_yticks(np.arange(0, 100 + max(std_values), 5))
+        else:
+            ax.set_yticks(np.arange(0, max(mean_rewards), 1))
         ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
 
     # Set y-axis label based on display_delivery
