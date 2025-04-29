@@ -446,7 +446,7 @@ def get_2_player_input_classic(args):
     p_idxes = [0, 1]
     all_agents_paths = {
         'SP':    'agent_models/RSS_MRS/Training/Classic/2/SP_hd256_seed1010/best',
-        'N-1SP': 'agent_models/RSS_MRS/Training/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-1Play': 'agent_models/RSS_MRS/Training/Classic/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
 
     teammate_lvl_sets = [
@@ -467,7 +467,7 @@ def get_2_player_input_complex(args):
     p_idxes = [0, 1]
     all_agents_paths = {
         'SP':    'agent_models/RSS_MRS/Training/Complex/2/SP_hd256_seed1010/best',
-        'N-1SP': 'agent_models/RSS_MRS/Training/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-1Play': 'agent_models/RSS_MRS/Training/Complex/2/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
 
     teammate_lvl_sets = [
@@ -489,8 +489,8 @@ def get_3_player_input_complex(args):
     p_idxes = [0, 1, 2]
     all_agents_paths = {
         'SP':    'agent_models/RSS_MRS/Training/Complex/3/SP_hd256_seed1010/best',
-        'N-1SP': 'agent_models/RSS_MRS/Training/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-        'N-2SP': 'agent_models/RSS_MRS/Training/Complex/3/N-2-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-1Play': 'agent_models/RSS_MRS/Training/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-2Play': 'agent_models/RSS_MRS/Training/Complex/3/N-2-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -513,8 +513,8 @@ def get_5_player_input_complex(args):
     p_idxes = [0, 1, 2, 3, 4]
     all_agents_paths = {
         'SP':    'agent_models/RSS_MRS/Training/Complex/5/SP_hd256_seed1010/best',
-        'N-1SP': 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
-        'N-3SP': 'agent_models/RSS_MRS/Training/Complex/5/N-3-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-1Play': 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-3Play': 'agent_models/RSS_MRS/Training/Complex/5/N-3-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -536,9 +536,11 @@ if __name__ == "__main__":
     number_of_eps = 5
 
     # Number of parallel workers for evaluation
-    args.max_workers = 1
+    args.max_workers = 2
 
     # For display_purposes
+    # unseen_counts = [0, 1]
+    # unseen_counts = [0, 1, 2]
     unseen_counts = [0, 1, 2, 3, 4]
     show_delivery_num = True
 

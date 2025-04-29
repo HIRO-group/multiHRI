@@ -19,7 +19,6 @@ def get_normalized_result(  all_mean_rewards,
 
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
-    num_teamsets = len(team_lvl_set_names)
 
     def process_reward(reward, max_reward=None):
         if max_reward:
@@ -41,9 +40,6 @@ def get_normalized_result(  all_mean_rewards,
     
 
     for i, layout_name in enumerate(layout_names):
-        # if layout_name == 'selected_5_chefs_spacious_room_no_counter_space':
-        #     continue
-
         rewards_for_all_agents = []
         for agent in all_mean_rewards:
             for team in team_lvl_set_keys:
@@ -90,82 +86,90 @@ def plot_unseen_over_teamsize_vs_performance(five_all_mean_rewards, five_all_std
     result_dictionary_2 = {
         '0/2': {
             'SP':      cross_exp_two['SP'][0],
-            'N-XPlay': cross_exp_two['N-1SP'][0],
+            'N-XPlay': cross_exp_two['N-1Play'][0],
         },
         '1/2': {
             'SP':      cross_exp_two['SP'][1],
-            'N-XPlay': cross_exp_two['N-1SP'][1],
+            'N-XPlay': cross_exp_two['N-1Play'][1],
         },
     }
 
     result_dictionary_3 = {
         '0/3': {
             'SP':       cross_exp_three['SP'][0],
-            'N-XPlay': max(cross_exp_three['N-1SP'][0], cross_exp_three['N-2SP'][0]),
+            'N-XPlay': max(cross_exp_three['N-1Play'][0], cross_exp_three['N-2Play'][0]),
         },
         '1/3': {
             'SP':       cross_exp_three['SP'][1],
-            'N-XPlay': max(cross_exp_three['N-1SP'][1], cross_exp_three['N-2SP'][1]),
+            'N-XPlay': max(cross_exp_three['N-1Play'][1], cross_exp_three['N-2Play'][1]),
         },
         '2/3': {
             'SP':       cross_exp_three['SP'][2],
-            'N-XPlay': max(cross_exp_three['N-1SP'][2], cross_exp_three['N-2SP'][2]),
+            'N-XPlay': max(cross_exp_three['N-1Play'][2], cross_exp_three['N-2Play'][2]),
         },
     }
 
     result_dictionary_5 = {
         '0/5': {
            'SP':       cross_exp_five['SP'][0],
-           'N-XPlay': max(cross_exp_five['N-1SP'][0], cross_exp_five['N-3SP'][0]),
+           'N-XPlay': max(cross_exp_five['N-1Play'][0], cross_exp_five['N-3Play'][0]),
         },
 
         '1/5': {
             'SP':       cross_exp_five['SP'][1],
-            'N-XPlay': max(cross_exp_five['N-1SP'][1], cross_exp_five['N-3SP'][1]),
+            'N-XPlay': max(cross_exp_five['N-1Play'][1], cross_exp_five['N-3Play'][1]),
         },
 
         '2/5': {
             'SP':       cross_exp_five['SP'][2],
-            'N-XPlay': max(cross_exp_five['N-1SP'][2], cross_exp_five['N-3SP'][2]),
+            'N-XPlay': max(cross_exp_five['N-1Play'][2], cross_exp_five['N-3Play'][2]),
         },
 
         '3/5': {
             'SP':       cross_exp_five['SP'][3],
-            'N-XPlay': max(cross_exp_five['N-1SP'][3], cross_exp_five['N-3SP'][3]),
+            'N-XPlay': max(cross_exp_five['N-1Play'][3], cross_exp_five['N-3Play'][3]),
         },
         '4/5': {
             'SP':       cross_exp_five['SP'][4],
-            'N-XPlay': max(cross_exp_five['N-1SP'][4], cross_exp_five['N-3SP'][4]),
+            'N-XPlay': max(cross_exp_five['N-1Play'][4], cross_exp_five['N-3Play'][4]),
         },
     }
 
-    # print('result_dictionary_2', result_dictionary_2)
-    # print('result_dictionary_3', result_dictionary_3)
-    # print('result_dictionary_5', result_dictionary_5)
-    # result_dictionary = {**result_dictionary_2 , **result_dictionary_3, **result_dictionary_5}
-    result_dictionary = result_dictionary_2
+    FONT_SIZE = 20
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4), sharey=True)
+    # plt.rcParams.update({'font.size': FONT_SIZE})
+    def plot_dictionary_data(ax, result_dict, title):
+        x = []
+        y_sp = []
+        y_nxplay = []
+        
+        for key in sorted(result_dict.keys(), key=lambda s: eval(s)):
+            x.append(key)
+            y_sp.append(result_dict[key]['SP'])
+            y_nxplay.append(result_dict[key]['N-XPlay'])
+        
+        ax.plot(x, y_sp, marker='o', label='SP', color='orange')
+        ax.plot(x, y_nxplay, marker='s', label='N-XPlay', color='seagreen')
+        
+        if title == 'Team Size = 2':
+            ax.set_ylabel('Normalized Reward', fontsize=FONT_SIZE)
+            ax.legend(loc='best', fontsize=FONT_SIZE, fancybox=True, framealpha=0.5)
 
-    x = []
-    y_sp = []
-    y_nxplay = []
+        if title == 'Team Size = 3': 
+            ax.set_xlabel('Unseen Count / Team Size', fontsize=FONT_SIZE)
 
-    for key in sorted(result_dictionary.keys(), key=lambda s: eval(s)):
-        # frac = eval(key)
-        x.append(key)
-        y_sp.append(result_dictionary[key]['SP'])
-        y_nxplay.append(result_dictionary[key]['N-XPlay'])
+        ax.set_title(title, fontsize=FONT_SIZE)
+        ax.set_ylim(0, 1)
+        ax.tick_params(axis='both', labelsize=FONT_SIZE)
 
-    plt.figure(figsize=(8, 6))
-    plt.plot(x, y_sp, marker='o', label='SP')
-    plt.plot(x, y_nxplay, marker='s', label='N-XPlay')
-    plt.xlabel('Unseen Teammates / Team Size')
-    plt.ylabel('Performance')
-    plt.title('Performance vs. Unseen Teammates per Team Size')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig('data/plots/unseen_vs_performance_2.png')
-    plt.show()
-    
+
+    plot_dictionary_data(axes[0], result_dictionary_2, 'Team Size = 2')
+    plot_dictionary_data(axes[1], result_dictionary_3, 'Team Size = 3')
+    plot_dictionary_data(axes[2], result_dictionary_5, 'Team Size = 5')
+
+    plt.tight_layout()
+    plt.savefig('data/plots/rss_mrs/unseen_vs_performance_comparison.png')
+    plt.show()    
     
 
 if __name__ == "__main__":
