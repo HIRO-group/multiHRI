@@ -304,20 +304,20 @@ def plot_evaluation_results_bar(all_mean_rewards,
 
             if not only_show_avg_plots:
                 team_name_print = team_name.strip("[]'\"")
-                ax.set_title(f'{DISPLAY_NAME_MAP[layout_name]}\n{team_name_print}')
-                ax.set_xlabel('Number of Unseen Teammates', fontsize=18)
+                # ax.set_title(f'{DISPLAY_NAME_MAP[layout_name]}\n{team_name_print}')
+                ax.set_xlabel('Unseen Teammates', fontsize=30)
                 ax.set_xticks(x_values)
                 ax.set_xticklabels(unseen_counts)
                 if display_delivery:
                     ax.set_yticks(np.arange(0, 20, 1))
-                    axes[0,i].set_ylabel('Number Deliveries', fontsize=18)
+                    axes[0,i].set_ylabel('Number Deliveries', fontsize=30)
                 elif normalize_rewards:
-                    ax.set_yticks(np.arange(0, 1 + max(std_values), 0.1))
-                    axes[0,i].set_ylabel('Normalized Reward', fontsize=18)
+                    ax.set_yticks(np.arange(0, 1 + max(std_values), 0.2))
+                    axes[0,i].set_ylabel('Normalized Reward', fontsize=30)
                 else:
                     ax.set_yticks(np.arange(0, max(mean_rewards), 1))
-                    axes[0][i].set_ylabel('Reward', fontsize=18)
-                ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+                    axes[0][i].set_ylabel('Reward', fontsize=30)
+                ax.legend(loc='best', fontsize=28, fancybox=True, framealpha=0.5)
 
 
         # Average plot across all teamsets
@@ -330,11 +330,11 @@ def plot_evaluation_results_bar(all_mean_rewards,
             std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
 
             x = x_values + idx * width - width * (num_agents - 1) / 2
-            ax.bar(x, mean_values, width, yerr=std_values, label=f"Agent: {agent_name}", color=AGENT_COLOR_MAP[agent_name], capsize=5)
+            ax.bar(x, mean_values, width, yerr=std_values, label=f"{agent_name}", color=AGENT_COLOR_MAP[agent_name], capsize=5)
 
 
         # ax.set_title(f"Avg. {DISPLAY_NAME_MAP[layout_name]}")
-        ax.set_xlabel('Number of Unseen Teammates', fontsize=18)
+        ax.set_xlabel('Unseen Teammates', fontsize=30)
         ax.set_xticks(x_values)
         ax.set_xticklabels(unseen_counts)
         if display_delivery:
@@ -343,7 +343,7 @@ def plot_evaluation_results_bar(all_mean_rewards,
             ax.set_yticks(np.arange(0, 1 + max(std_values), 0.1))
         else:
             ax.set_yticks(np.arange(0, max(mean_rewards), 1))
-        ax.legend(loc='upper right', fontsize=12, fancybox=True, framealpha=0.5)
+        ax.legend(loc='best', fontsize=28, fancybox=True, framealpha=0.5)
 
     # Set y-axis label based on display_delivery
     if display_delivery:
@@ -352,7 +352,7 @@ def plot_evaluation_results_bar(all_mean_rewards,
         y_label = 'Normalized Reward'
     else:
         y_label = 'Reward'
-    fig.text(0.0, 0.5, y_label, va='center', fontsize=18, rotation='vertical')
+    fig.text(0.0, 0.5, y_label, va='center', fontsize=30, rotation='vertical')
 
     plt.tight_layout()
     plt.savefig(f'data/plots/{plot_name}_{"deliveries" if display_delivery else "rewards"}_bar.png')
@@ -411,13 +411,9 @@ def plot_evaluation_results_line(all_mean_rewards,
 
             # Determine the max reward received by any agent in this layout across all unseen counts
             rewards_for_all_agents = []
-            # print(f"-----")
             for agent in all_mean_rewards:
-                # print(f"agent: {agent}")
-                # print(f"all_mean_rewards[agent][team][layout_name] :{all_mean_rewards[agent][team][layout_name]}")
                 rewards_for_all_agents.extend(np.concatenate(list(all_mean_rewards[agent][team][layout_name].values())))
 
-            # print(f"rewards_for_all_agents: {rewards_for_all_agents}")
             max_mean_reward = max(rewards_for_all_agents)
 
             for agent_name in all_mean_rewards:
@@ -445,62 +441,58 @@ def plot_evaluation_results_line(all_mean_rewards,
 
                 if not only_show_avg_plots:
                     ax.errorbar(x_values, mean_values, yerr=std_values, fmt='-o',
-                                label=f'Agent: {agent_name}', color=AGENT_COLOR_MAP[agent_name], capsize=5)
+                                label=f'{agent_name}', color=AGENT_COLOR_MAP[agent_name], capsize=5)
 
             if not only_show_avg_plots:
                 team_name_print = team_name.strip("[]'\"")
-                ax.set_title(f'{DISPLAY_NAME_MAP[layout_name]}\n{team_name_print}')
-                ax.set_xlabel('Number of Unseen Teammates', fontsize=18)
+                # ax.set_title(f'{DISPLAY_NAME_MAP[layout_name]}\n{team_name_print}')
+                ax.set_xlabel('Unseen Teammates', fontsize=30)
                 ax.set_xticks(x_values)
                 if display_delivery:
                     ax.set_yticks(np.arange(0, 20, 1))
                     axes[0][i].set_ylabel('Number Deliveries')
                 elif normalize_rewards:
-                    ax.set_yticks(np.arange(0, 1.1, 0.1))
+                    ax.set_yticks(np.arange(0, 1.1, 0.2))
                     axes[0][i].set_ylabel('Normalized Reward')
                 else:
                     ax.set_yticks(np.arange(0, max(mean_rewards), 1))
                     axes[0][i].set_ylabel('Reward')
 
-                ax.legend(loc='upper right', fontsize='small', fancybox=True, framealpha=0.5)
+                ax.legend(loc='best', fontsize=28, fancybox=True, framealpha=0.5)
 
         if only_show_avg_plots:
             ax = axes[i]
             if display_delivery:
-                axes[0].set_ylabel('Number Deliveries', fontsize=18)
+                axes[0].set_ylabel('Number Deliveries', fontsize=30)
             elif normalize_rewards:
-                axes[0].set_ylabel('Normalized Reward', fontsize=18)
+                axes[0].set_ylabel('Normalized Reward', fontsize=30)
             else:
-                axes[0].set_ylabel('Reward', fontsize=14)
+                axes[0].set_ylabel('Reward', fontsize=30)
         else:
             ax = axes[-1][i]
             if display_delivery:
-                axes[0][i].set_ylabel('Number Deliveries', fontsize=18)
+                axes[0][i].set_ylabel('Number Deliveries', fontsize=30)
             elif normalize_rewards:
-                axes[0][i].set_ylabel('Normalized Reward', fontsize=18)
+                axes[0][i].set_ylabel('Normalized Reward', fontsize=30)
             else:
-                axes[0][i].set_ylabel('Reward', fontsize=18)
+                axes[0][i].set_ylabel('Reward', fontsize=30)
 
         for agent_name in all_mean_rewards:
-            # print(f"===============")
-            # print(f"agent: {agent_name}")
-            # print(f"cross_exp_mean: {cross_exp_mean[agent_name]}")
             mean_values = [v / num_teamsets for v in cross_exp_mean[agent_name]]
             std_values = [v / num_teamsets for v in cross_exp_std[agent_name]]
-            # print(f"std_values: {std_values}")
-            ax.errorbar(x_values, mean_values, yerr=std_values, fmt="-o", label=f"Agent: {agent_name}", color=AGENT_COLOR_MAP[agent_name], capsize=5)
+            ax.errorbar(x_values, mean_values, yerr=std_values, fmt="-o", label=f"{agent_name}", color=AGENT_COLOR_MAP[agent_name], capsize=5)
 
         # ax.set_title(f"Avg. {DISPLAY_NAME_MAP[layout_name]}")
-        ax.set_xlabel('Number of Unseen Teammates', fontsize=18)
+        ax.set_xlabel('Unseen Teammates', fontsize=30)
         ax.set_xticks(x_values)
         if display_delivery:
                 ax.set_yticks(np.arange(0, 20, 1))
         elif normalize_rewards:
-            ax.set_yticks(np.arange(0, 1.1, 0.1))
+            ax.set_yticks(np.arange(0, 1.1, 0.2))
         else:
             ax.set_yticks(np.arange(0, max(mean_rewards), 1))
-        ax.tick_params(axis='both', labelsize=12)
-        ax.legend(loc='upper right', fontsize=14, fancybox=True, framealpha=0.5)
+        ax.tick_params(axis='both', labelsize=22)
+        ax.legend(loc='best', fontsize=28, fancybox=True, framealpha=0.5)
 
 
 
