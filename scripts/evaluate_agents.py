@@ -434,7 +434,6 @@ def run_parallel_evaluation(args, all_agents_paths, layout_names, p_idxes, deter
     return all_mean_rewards, all_std_rewards
 
 
-
 def get_2_player_input_classic(args):
     args.num_players = 2
     args.layout_names = [
@@ -491,6 +490,7 @@ def get_3_player_input_complex(args):
     all_agents_paths = {
         'SP':    'agent_models/RSS_MRS/Training/Complex/3/SP_hd256_seed1010/best',
         'N-1SP': 'agent_models/RSS_MRS/Training/Complex/3/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-2SP': 'agent_models/RSS_MRS/Training/Complex/3/N-2-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -514,6 +514,7 @@ def get_5_player_input_complex(args):
     all_agents_paths = {
         'SP':    'agent_models/RSS_MRS/Training/Complex/5/SP_hd256_seed1010/best',
         'N-1SP': 'agent_models/RSS_MRS/Training/Complex/5/N-1-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
+        'N-3SP': 'agent_models/RSS_MRS/Training/Complex/5/N-3-SP_s1010_h256_tr[SPH_SPM_SPL]_ran_originaler/best',
     }
     teammate_lvl_sets = [
         [Eval.LOW],
@@ -526,9 +527,9 @@ def get_5_player_input_complex(args):
 if __name__ == "__main__":
     args = get_arguments()
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_complex(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
 
     deterministic = False # deterministic = True does not actually work :sweat_smile:
     max_num_teams_per_layout_per_x = 4
@@ -538,10 +539,10 @@ if __name__ == "__main__":
     args.max_workers = 1
 
     # For display_purposes
-    unseen_counts = [0, 1]
+    unseen_counts = [0, 1, 2, 3, 4]
     show_delivery_num = True
 
-    plot_name = generate_plot_name( prefix=prefix,
+    plot_name = generate_plot_name(prefix=prefix,
                                     num_players=args.num_players,
                                     deterministic=deterministic,
                                     p_idxes=p_idxes,
