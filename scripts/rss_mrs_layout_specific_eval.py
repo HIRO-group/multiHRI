@@ -8,6 +8,10 @@ from evaluate_agents import run_parallel_evaluation, get_2_player_input_classic,
 from evaluate_agents_v3_rss_mrs import DISPLAY_NAME_MAP
 
 
+# Set font for all plots
+plt.rcParams['font.family'] = 'Times New Roman'
+LINEWIDTH = 5
+
 def get_normalized_reward(args, all_mean_rewards, all_std_rewards, layout_names):
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
     team_lvl_set_names = [str([eval_key_lut[l] for l in t]) for t in teammate_lvl_sets]
@@ -76,6 +80,7 @@ def get_normalized_reward(args, all_mean_rewards, all_std_rewards, layout_names)
 def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, layout_names):
     AXIS_FONT_SIZE = 22 # Kept same across N agents
     FONT_SIZE = 40
+    LEGEND_FONT_SIZE = 24
     # Two players = 40
     # Three players = 26
 
@@ -94,7 +99,7 @@ def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, l
         layout_name: mpimg.imread(f"data/screenshots/{layout_name}/-1.png") for layout_name in layout_names
     }
     
-    fig = plt.figure(figsize=(5 * num_layouts, 8))
+    fig = plt.figure(figsize=(5 * num_layouts, 6))
     gs = gridspec.GridSpec(2, num_layouts, height_ratios=[2, 3],
                             wspace=0.01,
                             hspace=0.01,
@@ -116,7 +121,7 @@ def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, l
         for agent in all_mean_rewards:
             means = [cross_exp_mean_final[layout][agent][uc] for uc in unseen_counts]
             stds = [cross_exp_std_final[layout][agent][uc] for uc in unseen_counts]
-            ax.errorbar(unseen_counts, means, yerr=stds, label=agent, marker='o', capsize=5, color=custom_colors[agent],linewidth=2.5)
+            ax.errorbar(unseen_counts, means, yerr=stds, label=agent, marker='o', capsize=5, color=custom_colors[agent],linewidth=LINEWIDTH)
 
         ax.set_xlabel('Unseen Count', fontsize=FONT_SIZE)
         ax.set_xticks(unseen_counts)
@@ -129,7 +134,7 @@ def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, l
             ax.set_ylabel('')       
 
         if idx == 2:
-            ax.legend(loc='best', fontsize=FONT_SIZE, fancybox=True, framealpha=0.5)
+            ax.legend(loc='best', fontsize=LEGEND_FONT_SIZE, fancybox=True, framealpha=0.5)
     
     # plt.tight_layout()
     plt.savefig(f'data/plots/rss_mrs/layout_specific_eval_{args.num_players}.png', dpi=300, bbox_inches='tight')
