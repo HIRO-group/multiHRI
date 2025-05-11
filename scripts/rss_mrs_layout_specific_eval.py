@@ -11,6 +11,15 @@ from evaluate_agents_v3_rss_mrs import DISPLAY_NAME_MAP
 # Set font for all plots
 plt.rcParams['font.family'] = 'Times New Roman'
 LINEWIDTH = 5
+# TWO PLAYER
+# AXIS_FONT_SIZE = 30 # Kept same across N agents
+# FONT_SIZE = 55
+# LEGEND_FONT_SIZE = 40
+
+# THREE PLAYER
+AXIS_FONT_SIZE = 25 # Kept same across N agents
+FONT_SIZE = 45
+LEGEND_FONT_SIZE = 30
 
 def get_normalized_reward(args, all_mean_rewards, all_std_rewards, layout_names):
     team_lvl_set_keys = [str(t) for t in teammate_lvl_sets]
@@ -78,9 +87,6 @@ def get_normalized_reward(args, all_mean_rewards, all_std_rewards, layout_names)
 
 
 def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, layout_names):
-    AXIS_FONT_SIZE = 22 # Kept same across N agents
-    FONT_SIZE = 40
-    LEGEND_FONT_SIZE = 24
     # Two players = 40
     # Three players = 26
 
@@ -89,7 +95,7 @@ def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, l
     custom_colors = {
         'SP':      'orange',
         'N-1Play': 'seagreen',
-        'N-2Play': 'navy',
+        'N-2Play': 'lightskyblue',
         'N-3Play': 'orchid',
         'N-4Play': 'saddlebrown',
     }
@@ -111,7 +117,7 @@ def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, l
 
     for idx, layout in enumerate(layout_names):
         ax_title = fig.add_subplot(gs[0, idx])
-        ax_title.text(0.5, 1.1, DISPLAY_NAME_MAP[layout] ,fontsize=FONT_SIZE, ha='center', va='center')
+        ax_title.text(0.5, 1.2, DISPLAY_NAME_MAP[layout] ,fontsize=FONT_SIZE, ha='center', va='center')
         ax_title.axis('off')
         ax_img = fig.add_subplot(gs[0, idx])
         ax_img.imshow(layout_images[layout])
@@ -128,12 +134,13 @@ def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, l
         ax.tick_params(axis='both', labelsize=AXIS_FONT_SIZE)
 
         if idx == 0:
-            ax.set_ylabel('Normalized Reward', fontsize=FONT_SIZE)
+            ax.set_ylabel('   Normalized Reward', fontsize=FONT_SIZE)
+            ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
         else:
             ax.set_yticklabels([])  
             ax.set_ylabel('')       
 
-        if idx == 2:
+        if idx == 0:
             ax.legend(loc='best', fontsize=LEGEND_FONT_SIZE, fancybox=True, framealpha=0.5)
     
     # plt.tight_layout()
@@ -143,8 +150,8 @@ def plot_normalized_reward_per_layout(args, all_mean_rewards, all_std_rewards, l
 
 if __name__ == "__main__":
     args = get_arguments()
-    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
-    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
+    # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_2_player_input_classic(args)
+    layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_3_player_input_complex(args)
     # layout_names, p_idxes, all_agents_paths, teammate_lvl_sets, args, prefix = get_5_player_input_complex(args)
     
     args.max_workers = 2

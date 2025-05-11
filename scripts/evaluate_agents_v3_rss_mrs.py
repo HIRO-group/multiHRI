@@ -52,8 +52,8 @@ DISPLAY_NAME_MAP = {
     'secret_heaven': "Secret Resources",
     'storage_room': "Resource Corridor",
 
-    'coordination_ring': "Coordination Ring",
-    'counter_circuit': "Counter Circuit",
+    'coordination_ring': "Coord. Ring",
+    'counter_circuit': "Counter Circ.",
     'cramped_room': "Cramped Room",
     'asymmetric_advantages': "Asym. Adv.",
     'forced_coordination': "Forced Coord.",

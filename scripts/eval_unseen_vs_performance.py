@@ -13,6 +13,9 @@ eval_key_lut = {
 
 # Set font for all plots
 plt.rcParams['font.family'] = 'Times New Roman'
+FONT_SIZE = 30
+LEGEND_FONT_SIZE = 22
+LINEWIDTH = 4
 
 def get_normalized_result(  all_mean_rewards,
                             all_std_rewards,
@@ -138,9 +141,6 @@ def plot_unseen_over_teamsize_vs_performance(five_all_mean_rewards, five_all_std
         },
     }
 
-    FONT_SIZE = 30
-    LEGEND_FONT_SIZE = 22
-    LINEWIDTH = 5
     fig, axes = plt.subplots(1, 3, figsize=(10, 4), sharey=True)
     # plt.rcParams.update({'font.size': FONT_SIZE})
     def plot_dictionary_data(ax, result_dict, title):
@@ -161,11 +161,11 @@ def plot_unseen_over_teamsize_vs_performance(five_all_mean_rewards, five_all_std
             ax.legend(loc='best', fontsize=LEGEND_FONT_SIZE, fancybox=True, framealpha=0.5)
 
         if title == 'Team Size = 3': 
-            ax.set_xlabel('Unseen Count / Team Size', fontsize=FONT_SIZE)
+            ax.set_xlabel('Unseen Count/Team Size', fontsize=FONT_SIZE)
 
         ax.set_title(title, fontsize=FONT_SIZE)
         ax.set_ylim(0, 1)
-        ax.tick_params(axis='both', labelsize=FONT_SIZE)
+        ax.tick_params(axis='both', labelsize=FONT_SIZE-10)
 
 
     plot_dictionary_data(axes[0], result_dictionary_2, 'Team Size = 2')
