@@ -7,7 +7,7 @@ from oai_agents.common.arguments import get_arguments
 from evaluate_agents import run_parallel_evaluation, eval_key_lut, Eval
 
 
-def get_c1_input():
+def get_c1_input(args):
     args.num_players = 2
     args.layout_names = ['c1']
     all_agents_paths = {
@@ -17,7 +17,7 @@ def get_c1_input():
     return args.layout_names, all_agents_paths, args, 'c1'
 
 
-def get_c2_input():
+def get_c2_input(args):
     args.num_players = 2
     args.layout_names = ['c2']
     all_agents_paths = {
@@ -27,7 +27,7 @@ def get_c2_input():
     return args.layout_names, all_agents_paths, args, 'c2'
 
 
-def get_c3_input():
+def get_c3_input(args):
     args.num_players = 2
     args.layout_names = ['c3']
     all_agents_paths = {
@@ -37,7 +37,7 @@ def get_c3_input():
     return args.layout_names, all_agents_paths, args, 'c3'
 
 
-def get_c4_input():
+def get_c4_input(args):
     args.num_players = 2
     args.layout_names = ['c4']
     all_agents_paths = {
