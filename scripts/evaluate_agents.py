@@ -18,7 +18,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from utils import (
-    Complex, Classic, C1, C2
+    Complex, Classic, C1, C2, C3, C4
 )
 
 class Eval:
