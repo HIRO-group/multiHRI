@@ -355,15 +355,21 @@ def evaluate_agent(args,
     for layout_name in layout_names:
         for unseen_count in [1]:
             for teammates in all_teammates[layout_name][unseen_count]:
+
+                teammates_collection = {'eval': {layout_name: {'run_type': [teammates]}}}
                 env = OvercookedGymEnv(args=args,
                                        layout_name=layout_name,
                                        ret_completed_subtasks=False,
                                        is_eval_env=True,
                                        horizon=400,
                                        deterministic=deterministic,
-                                       learner_type='originaler'
+                                       learner_type='originaler',
+                                       teammates_collection=teammates_collection,
+                                       curriculum=None,
                                        )
-                env.set_teammates(teammates)
+                env.set_teammates(teamtype='run_type')
+                # env.set_teammates(teammates)
+                
                 for p_idx in p_idxes:
                     env.set_reset_p_idx(p_idx)
                     mean_reward, std_reward = evaluate_policy(primary_agent, env,
