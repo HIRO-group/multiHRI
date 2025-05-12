@@ -24,6 +24,90 @@ def print_selected_agents_for_evaluation(selected_agents_for_evaluation):
                         team_members = [(member.name, member.layout_scores[layout_name]) for member in team]
                         print(f"        Team {i + 1}: {team_members}")
 
+class C1:
+    L = [
+        'agent_models/bbe/c1_v1/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c1_v2/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c1_v3/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c1_v4/SP_s1010_h256_tr[SP]_ran/ck_0',
+    ]
+    M = [
+        'agent_models/bbe/c1_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_252.0',
+        'agent_models/bbe/c1_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_284.0',
+        'agent_models/bbe/c1_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_234.0',
+        'agent_models/bbe/c1_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_246.0',
+    ]
+    H = [
+        'agent_models/bbe/c1_v1/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c1_v2/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c1_v3/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c1_v4/SP_s1010_h256_tr[SP]_ran/best',
+    ]
+
+class C2:
+    L = [
+        'agent_models/bbe/c2_v1/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c2_v2/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c2_v3/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c2_v4/SP_s1010_h256_tr[SP]_ran/ck_0',
+    ]
+    M = [
+        'agent_models/bbe/c2_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_246.0',
+        'agent_models/bbe/c2_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_256.0',
+        'agent_models/bbe/c2_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_178.0',
+        'agent_models/bbe/c2_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_186.0',
+    ]
+    H = [
+        'agent_models/bbe/c2_v1/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c2_v2/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c2_v3/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c2_v4/SP_s1010_h256_tr[SP]_ran/best',
+    ]
+
+
+class C3:
+    L = [
+        'agent_models/bbe/c3_v1/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c3_v2/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c3_v3/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c3_v4/SP_s1010_h256_tr[SP]_ran/ck_0',
+    ]
+    M = [
+        'agent_models/bbe/c3_v1/SP_s1010_h256_tr[SP]_ran/ck_1_rew_16.0',
+        'agent_models/bbe/c3_v2/SP_s1010_h256_tr[SP]_ran/ck_1_rew_14.0',
+        'agent_models/bbe/c3_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_108.0',
+        'agent_models/bbe/c3_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_90.0',
+    ]
+    H = [
+        'agent_models/bbe/c3_v1/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c3_v2/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c3_v3/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c3_v4/SP_s1010_h256_tr[SP]_ran/best',
+    ]
+
+class C4:
+    L = [
+        'agent_models/bbe/c4_v1/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c4_v2/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c4_v3/SP_s1010_h256_tr[SP]_ran/ck_0',
+        'agent_models/bbe/c4_v4/SP_s1010_h256_tr[SP]_ran/ck_0',
+    ]
+    M = [
+        'agent_models/bbe/c4_v1/SP_s1010_h256_tr[SP]_ran/ck_2_rew_192.0',
+        'agent_models/bbe/c4_v2/SP_s1010_h256_tr[SP]_ran/ck_2_rew_118.0',
+        'agent_models/bbe/c4_v3/SP_s1010_h256_tr[SP]_ran/ck_1_rew_54.0',
+        'agent_models/bbe/c4_v4/SP_s1010_h256_tr[SP]_ran/ck_1_rew_104.0',
+    ]
+    H = [
+        'agent_models/bbe/c4_v1/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c4_v2/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c4_v3/SP_s1010_h256_tr[SP]_ran/best',
+        'agent_models/bbe/c4_v4/SP_s1010_h256_tr[SP]_ran/best',
+    ]
+
+
+
+
 class Complex:
     L_2 = [
         'agent_models/ComplexTest/2/SP_hd256_seed3031/ck_0',

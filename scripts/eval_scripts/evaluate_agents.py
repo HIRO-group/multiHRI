@@ -18,7 +18,7 @@ from oai_agents.common.arguments import get_arguments
 from oai_agents.gym_environments.base_overcooked_env import OvercookedGymEnv
 
 from utils import (
-    Complex, Classic
+    Complex, Classic, C1, C2
 )
 
 class Eval:
@@ -33,6 +33,27 @@ eval_key_lut = {
 }
 
 LAYOUT_NAMES_PATHs = {
+    'c1': {
+        Eval.LOW: C1.L,
+        Eval.MEDIUM: C1.M,
+        Eval.HIGH: C1.H,
+    },
+    'c2': {
+        Eval.LOW: C2.L,
+        Eval.MEDIUM: C2.M,
+        Eval.HIGH: C2.H,
+    },
+    'c3': {
+        Eval.LOW: C3.L,
+        Eval.MEDIUM: C3.M,
+        Eval.HIGH: C3.H,
+    },
+    'c4': {
+        Eval.LOW: C4.L,
+        Eval.MEDIUM: C4.M,
+        Eval.HIGH: C4.H,
+    },
+
     'secret_heaven': {
         Eval.LOW: Complex.L_2,
         Eval.MEDIUM: Complex.M_2,
