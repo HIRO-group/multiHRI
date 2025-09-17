@@ -2,12 +2,15 @@
 
 ALGO="SPN_XSPCKP"
 TEAMMATES_LEN=1
+NUM_PLAYERS=$((TEAMMATES_LEN + 1))
 HOW_LONG=20
 NUM_OF_CKPOINTS=40
 LAYOUT_NAMES="counter_circuit,coordination_ring,cramped_room,asymmetric_advantages,forced_coordination"
 EXP_DIR="Classic/$NUM_PLAYERS" # When quick_test=True this will be overwritten to "Test/$EXP_DIR"
-TOTAL_EGO_AGENTS=4
+TOTAL_SP_AGENTS=4
 QUICK_TEST=false
+USE_CUDA=false
+USE_MULTIPLEPROCESSES=false
 
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
@@ -37,10 +40,12 @@ python scripts/train_agents.py \
     --fcp-total-training-timesteps ${FCP_TOTAL_TRAINING_TIMESTEPS} \
     --adversary-total-training-timesteps ${ADVERSARY_TOTAL_TRAINING_TIMESTEPS} \
     --n-x-fcp-total-training-timesteps ${N_X_FCP_TOTAL_TRAINING_TIMESTEPS} \
-    --total-ego-agents ${TOTAL_EGO_AGENTS} \
+    --total-sp-agents ${TOTAL_SP_AGENTS} \
     --wandb-mode ${WANDB_MODE} \
     --pop-force-training ${POP_FORCE_TRAINING} \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \
     --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \
     --exp-name-prefix "${EXP_NAME_PREFIX}" \
+    --use-cuda ${USE_CUDA} \
+    --use-multipleprocesses ${USE_MULTIPLEPROCESSES} \

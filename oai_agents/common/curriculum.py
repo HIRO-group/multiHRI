@@ -103,6 +103,7 @@ class Curriculum:
             population = [population_teamtypes[t] for t in population_teamtypes.keys()]
             teammates_per_type = population[np.random.randint(len(population))]
             teammates = teammates_per_type[np.random.randint(len(teammates_per_type))]
+
         elif self.prioritized_sampling:
             teammates = self.select_teammates_prioritized_sampling(population_teamtypes, layout)
         else:

@@ -72,7 +72,7 @@ def get_teammates(agents_perftag_score:list, teamtypes:list, teammates_len:int, 
 
             elif teamtype == TeamType.SELF_PLAY:
                 assert agent is not None
-                all_teammates[teamtype] = [agent for _ in range(teammates_len)]
+                all_teammates[teamtype] = [[agent for _ in range(teammates_len)]]
 
             elif teamtype == TeamType.SELF_PLAY_HIGH:
                 assert agent is not None

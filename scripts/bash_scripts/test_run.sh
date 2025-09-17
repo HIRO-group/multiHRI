@@ -1,20 +1,30 @@
-#!/bin/bash
+#!/bin/sh
 
-ALGO="SP"
+ALGO="FCP_traditional"
 TEAMMATES_LEN=1
-HOW_LONG=20
-NUM_OF_CKPOINTS=40
-LAYOUT_NAMES="c4_v2"
-EXP_DIR=${LAYOUT_NAMES}
-TOTAL_SP_AGENTS=1
-QUICK_TEST=false
+NUM_PLAYERS=$((TEAMMATES_LEN + 1))
+NUM_OF_CKPOINTS=10
+LAYOUT_NAMES="counter_circuit"
+EXP_DIR="$NUM_PLAYERS" # When quick_test=True this will be overwritten to "Test/$EXP_DIR"
+TOTAL_SP_AGENTS=2
+QUICK_TEST=true
+HOW_LONG=1
+USE_CUDA=false
+USE_MULTIPLEPROCESSES=false
 
-WANDB_MODE="online"
 POP_FORCE_TRAINING=false
 ADVERSARY_FORCE_TRAINING=false
 PRIMARY_FORCE_TRAINING=false
+# EXP_NAME_PREFIX="test_"
 
 source scripts/bash_scripts/env_config.sh
+# Overwrite the default values from env_config here if needed
+N_ENVS=5
+WANDB_MODE="disabled"
+EPOCH_TIMESTEPS=2500
+N_X_SP_TOTAL_TRAINING_TIMESTEPS=10000
+FCP_TOTAL_TRAINING_TIMESTEPS=10000
+
 
 python scripts/train_agents.py \
     --layout-names ${LAYOUT_NAMES} \
@@ -42,3 +52,6 @@ python scripts/train_agents.py \
     --adversary-force-training ${ADVERSARY_FORCE_TRAINING} \
     --primary-force-training ${PRIMARY_FORCE_TRAINING} \
     --how-long ${HOW_LONG} \
+    --exp-name-prefix "${EXP_NAME_PREFIX}" \
+    --use-cuda ${USE_CUDA} \
+    --use-multipleprocesses ${USE_MULTIPLEPROCESSES} \

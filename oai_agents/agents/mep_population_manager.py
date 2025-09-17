@@ -19,7 +19,7 @@ class MEPPopulationManager:
         self.epoch_timesteps = args.epoch_timesteps  # Number of timesteps per training episode
         seeds, h_dims = generate_hdim_and_seed(
             for_evaluation=args.gen_pop_for_eval,
-            total_ego_agents=population_size
+            total_sp_agents=population_size
         )
 
         self.population: List[RLAgentTrainer] = []
@@ -204,9 +204,9 @@ if __name__ == "__main__":
 
     set_input(args=args)
 
-    args.total_ego_agents = 4
+    args.total_sp_agents = 4
 
-    manager = MEPPopulationManager(population_size=args.total_ego_agents, args=args)
+    manager = MEPPopulationManager(population_size=args.total_sp_agents, args=args)
     manager.train_population(
         total_timesteps=args.pop_total_training_timesteps,
         num_of_ckpoints=args.num_of_ckpoints,
